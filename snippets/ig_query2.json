@@ -1,0 +1,2616 @@
+{
+  "data": {
+    "xdt_api__v1__feed__timeline__connection": {
+      "edges": [
+        {
+          "node": {
+            "media": null,
+            "ad": null,
+            "explore_story": {
+              "media": {
+                "id": "3670370682657151156_7234657898",
+                "brs_severity": null,
+                "pk": "3670370682657151156",
+                "inventory_source": "mixed_unconnected",
+                "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFtTop4cNAA==",
+                "explore": { "title": "Suggested for you" },
+                "main_feed_carousel_starting_media_id": null,
+                "carousel_media": [
+                  {
+                    "pk": "3670370670955196425",
+                    "id": "3670370670955196425_7234657898",
+                    "original_height": 1440,
+                    "original_width": 2151,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. 花、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516151459_18307810816241899_2242033352441598067_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=o0QrNz_mxngQ7kNvwHhfAsM\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDk1NTE5NjQyNQ%3D%3D.3-ccb7-5\u0026oh=00_AfRbQ1XqJwzAKvpZU9ba5NrljteK31zfoqC1Cy_Dct9Lew\u0026oe=687BEABC\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 2151
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516151459_18307810816241899_2242033352441598067_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=o0QrNz_mxngQ7kNvwHhfAsM\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDk1NTE5NjQyNQ%3D%3D.3-ccb7-5\u0026oh=00_AfTRZ3rP2hIu2D_t3adi-RDezgoMlOJGW93KUsD0bq1g3Q\u0026oe=687BEABC\u0026_nc_sid=ca40e6",
+                          "height": 723,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670887990754",
+                    "id": "3670370670887990754_7234657898",
+                    "original_height": 1440,
+                    "original_width": 2151,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. 花、カーネーション、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515382802_18307810831241899_6551024352751015894_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=ygxZIVDYUuEQ7kNvwEEUk2G\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDg4Nzk5MDc1NA%3D%3D.3-ccb7-5\u0026oh=00_AfSjNZDrG69hWWuKRSBaLBszfq90TgLkPNGGGJWOW8_40g\u0026oe=687BD2BB\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 2151
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515382802_18307810831241899_6551024352751015894_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=ygxZIVDYUuEQ7kNvwEEUk2G\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDg4Nzk5MDc1NA%3D%3D.3-ccb7-5\u0026oh=00_AfQPIp0I5kL-o9lU1zKlaL49NIgZwdD7w5yn7-K5gYlkVA\u0026oe=687BD2BB\u0026_nc_sid=ca40e6",
+                          "height": 723,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670820907864",
+                    "id": "3670370670820907864_7234657898",
+                    "original_height": 1440,
+                    "original_width": 2151,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. 花、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/517350704_18307810795241899_2892811790589679080_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=ifBOBng10zoQ7kNvwGP18WK\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDgyMDkwNzg2NA%3D%3D.3-ccb7-5\u0026oh=00_AfQLf9r2FyuNSuc9NX7ypkx-umYx4qQBwrGqL266lbnsRg\u0026oe=687BC698\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 2151
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/517350704_18307810795241899_2892811790589679080_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=ifBOBng10zoQ7kNvwGP18WK\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDgyMDkwNzg2NA%3D%3D.3-ccb7-5\u0026oh=00_AfT6YiLYo0d9qcl2Pi33rhwiVAqcOPz8Ef9KCQcFiwwvmg\u0026oe=687BC698\u0026_nc_sid=ca40e6",
+                          "height": 723,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670602786211",
+                    "id": "3670370670602786211_7234657898",
+                    "original_height": 1439,
+                    "original_width": 2150,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. 花、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515729070_18307810792241899_5873681575528971393_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTB4MTQzOS5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=r9yfoiNf0Y4Q7kNvwE-LZ9j\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjc4NjIxMQ%3D%3D.3-ccb7-5\u0026oh=00_AfR1ReFWVSQ-5smfUR4IW8K2G1m0rjaAHobELWQbl6wQqg\u0026oe=687BEDF8\u0026_nc_sid=ca40e6",
+                          "height": 1439,
+                          "width": 2150
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515729070_18307810792241899_5873681575528971393_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTB4MTQzOS5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=r9yfoiNf0Y4Q7kNvwE-LZ9j\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjc4NjIxMQ%3D%3D.3-ccb7-5\u0026oh=00_AfTt_X-WNIasMFMUkBgbqqvwhYbh-sqRzUoKBfgRhge0uw\u0026oe=687BEDF8\u0026_nc_sid=ca40e6",
+                          "height": 723,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670602656180",
+                    "id": "3670370670602656180_7234657898",
+                    "original_height": 1440,
+                    "original_width": 2151,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. ネモフィラの花、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515472513_18307810825241899_7955211890849441224_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=y68SXOwdBhYQ7kNvwFssMVW\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjY1NjE4MA%3D%3D.3-ccb7-5\u0026oh=00_AfTZkIuyIDr6ijOtxVeMKpFl3eHI0pNoPpoKHw54NnJ_tA\u0026oe=687BD803\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 2151
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515472513_18307810825241899_7955211890849441224_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=y68SXOwdBhYQ7kNvwFssMVW\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjY1NjE4MA%3D%3D.3-ccb7-5\u0026oh=00_AfRs89lxEvBCIeYVakonP2xh0NarGXl2RMdJ5k5vqxzAEg\u0026oe=687BD803\u0026_nc_sid=ca40e6",
+                          "height": 723,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670611035729",
+                    "id": "3670370670611035729_7234657898",
+                    "original_height": 1440,
+                    "original_width": 2151,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. インディアン・ペイントブラシ、千日紅、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/504611219_18307810777241899_2148459777204649532_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=Uge_d4XKqqQQ7kNvwGJDlFV\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYxMTAzNTcyOQ%3D%3D.3-ccb7-5\u0026oh=00_AfRQGcVBFUMwREShfLxOr6DhM-wGPQLKkPAjn1wLCRw1yg\u0026oe=687BCC3B\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 2151
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/504611219_18307810777241899_2148459777204649532_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=Uge_d4XKqqQQ7kNvwGJDlFV\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYxMTAzNTcyOQ%3D%3D.3-ccb7-5\u0026oh=00_AfRhR5J3gkjsJ2JCIat7V1MhOlrJiJaS817md5EjmNQQTA\u0026oe=687BCC3B\u0026_nc_sid=ca40e6",
+                          "height": 723,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670887996190",
+                    "id": "3670370670887996190_7234657898",
+                    "original_height": 1440,
+                    "original_width": 2151,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. 旗、花、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516702909_18307810828241899_8807764706963119694_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PMUzix3IVdIQ7kNvwH2i90N\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDg4Nzk5NjE5MA%3D%3D.3-ccb7-5\u0026oh=00_AfS_3Jr0dRr6gUYTVdbaXOytS9cO5uTP4cvNE7cnjv-Cbw\u0026oe=687BEC57\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 2151
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516702909_18307810828241899_8807764706963119694_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PMUzix3IVdIQ7kNvwH2i90N\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDg4Nzk5NjE5MA%3D%3D.3-ccb7-5\u0026oh=00_AfRI4K-9Y_aNm45QtRBGrO0UQHho5HqfmGr9ptkUhLGMIQ\u0026oe=687BEC57\u0026_nc_sid=ca40e6",
+                          "height": 723,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670602689902",
+                    "id": "3670370670602689902_7234657898",
+                    "original_height": 718,
+                    "original_width": 1073,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. ポスター、、「花畑を楽しむならみよや ノロッコ号 カート 乗り合いバス 4人乗り 花畑には行かないで 乗って楽しむなら バギー 1人乗り 1人乗り12人乗！ 2人乗り 花畑の約半分を15分で のんびり走ります （身障者手帳ご提示で100円引き） 園内を自由に 15分レンタル （普通免許が必要） 白樺林（砂利道）のコース 1周約700m約3~4分 1周約700m 約３～４分 （運転できるのは16歳以上） 1台 高校生・ 高校生·大人 高校生·大人500 大人 500円 小・中学生300円 300円 小・中学生 6歳以下無料 10名様以上団体割引あり 2500円 1人乗り 800円 身障者手帳お持ちの方は 1台2300円 1슴 2300円 5分延長ことに＋500円 +500円 2人乗り 120０円 ヘルメットを着用して いただきます」というテキストのマンガのようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515312762_18307810768241899_4346356599110034011_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjEwNzN4NzE4LnNkci5mODI3ODcuZGVmYXVsdF9pbWFnZSJ9\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PSqIYmEuIngQ7kNvwEW_eYy\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjY4OTkwMg%3D%3D.3-ccb7-5\u0026oh=00_AfSJN9-irSuk8Yo4wGmy69-R2KqPFFTinK10PBdV4NKTuw\u0026oe=687BCF1F\u0026_nc_sid=ca40e6",
+                          "height": 718,
+                          "width": 1073
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/515312762_18307810768241899_4346356599110034011_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjEwNzN4NzE4LnNkci5mODI3ODcuZGVmYXVsdF9pbWFnZSJ9\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PSqIYmEuIngQ7kNvwEW_eYy\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjY4OTkwMg%3D%3D.3-ccb7-5\u0026oh=00_AfSJN9-irSuk8Yo4wGmy69-R2KqPFFTinK10PBdV4NKTuw\u0026oe=687BCF1F\u0026_nc_sid=ca40e6",
+                          "height": 718,
+                          "width": 1073
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3670370670602833592",
+                    "id": "3670370670602833592_7234657898",
+                    "original_height": 708,
+                    "original_width": 1058,
+                    "media_type": 1,
+                    "carousel_parent_id": "3670370682657151156_7234657898",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 四季彩の丘 on July 05, 2025. カレンダー、カスミソウ、ネモフィラの花、千日紅、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516707071_18307810765241899_8235134619618961679_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjEwNTh4NzA4LnNkci5mODI3ODcuZGVmYXVsdF9pbWFnZSJ9\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=Zds-GoQ96xIQ7kNvwHYMWyp\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjgzMzU5Mg%3D%3D.3-ccb7-5\u0026oh=00_AfRiwRoCxd3kYtF9v8928gORSZ195RlN60CtsJoQhVnKBg\u0026oe=687BEC23\u0026_nc_sid=ca40e6",
+                          "height": 708,
+                          "width": 1058
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516707071_18307810765241899_8235134619618961679_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjEwNTh4NzA4LnNkci5mODI3ODcuZGVmYXVsdF9pbWFnZSJ9\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=Zds-GoQ96xIQ7kNvwHYMWyp\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDYwMjgzMzU5Mg%3D%3D.3-ccb7-5\u0026oh=00_AfRiwRoCxd3kYtF9v8928gORSZ195RlN60CtsJoQhVnKBg\u0026oe=687BEC23\u0026_nc_sid=ca40e6",
+                          "height": 708,
+                          "width": 1058
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1751762301,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  }
+                ],
+                "audience": null,
+                "is_seen": false,
+                "media_type": 8,
+                "original_height": 612,
+                "original_width": 612,
+                "has_liked": false,
+                "open_carousel_submission_state": "closed",
+                "media_overlay_info": null,
+                "code": "DLvxrB9yZi0",
+                "user": {
+                  "pk": "7234657898",
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/441269468_743957427938642_5700810419717647296_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=102\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=oRWchKNUq7EQ7kNvwF8gcZI\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfTzrJzjiE0LgtOHyuN0sCHd1VfYstZShiDaDIkBgFBIbQ\u0026oe=687BD6EF\u0026_nc_sid=ca40e6",
+                  "username": "shikisainooka",
+                  "id": "7234657898",
+                  "is_unpublished": false,
+                  "live_broadcast_visibility": null,
+                  "live_broadcast_id": null,
+                  "hd_profile_pic_url_info": {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/441269468_743957427938642_5700810419717647296_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=102\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=oRWchKNUq7EQ7kNvwF8gcZI\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQ9piUpSOfLPiW7JJnd5Cc-U3BEyqdxFKrvxIrorWAFFg\u0026oe=687BD6EF\u0026_nc_sid=ca40e6"
+                  },
+                  "full_name": "四季彩の丘",
+                  "is_verified": false,
+                  "friendship_status": { "following": false, "is_feed_favorite": false },
+                  "is_private": false,
+                  "__typename": "XDTUserDict",
+                  "is_embeds_disabled": false,
+                  "latest_reel_media": 0
+                },
+                "carousel_parent_id": null,
+                "display_uri": null,
+                "is_dash_eligible": null,
+                "number_of_qualities": null,
+                "video_dash_manifest": null,
+                "video_versions": null,
+                "accessibility_caption": null,
+                "image_versions2": {
+                  "candidates": [
+                    {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516151459_18307810816241899_2242033352441598067_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=o0QrNz_mxngQ7kNvwHhfAsM\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDk1NTE5NjQyNQ%3D%3D.3-ccb7-5\u0026oh=00_AfRbQ1XqJwzAKvpZU9ba5NrljteK31zfoqC1Cy_Dct9Lew\u0026oe=687BEABC\u0026_nc_sid=ca40e6",
+                      "height": 1440,
+                      "width": 2151
+                    },
+                    {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516151459_18307810816241899_2242033352441598067_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjIxNTF4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=o0QrNz_mxngQ7kNvwHhfAsM\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MDM3MDY3MDk1NTE5NjQyNQ%3D%3D.3-ccb7-5\u0026oh=00_AfTRZ3rP2hIu2D_t3adi-RDezgoMlOJGW93KUsD0bq1g3Q\u0026oe=687BEABC\u0026_nc_sid=ca40e6",
+                      "height": 723,
+                      "width": 1080
+                    }
+                  ]
+                },
+                "usertags": null,
+                "taken_at": 1751762303,
+                "previous_submitter": null,
+                "link": null,
+                "story_cta": null,
+                "like_count": 822,
+                "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjcwMzcwNjgyNjU3MTUxMTU2Iiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MXwzNjcwMzcwNjgyNjU3MTUxMTU2fDYwNTM4MTExMzQ5fDQ3NWQzNTM4ZWIxY2Q0NGZhMjcwYjBiMGFjYTQ4OTIzNTJhNGYzNGNjMWU0ZTdjYTExNWEwM2Q1NGNjZTUxMmEifSwic2lnbmF0dXJlIjoiIn0=",
+                "owner": {
+                  "pk": "7234657898",
+                  "id": "7234657898",
+                  "transparency_product": null,
+                  "transparency_product_enabled": false,
+                  "transparency_label": null,
+                  "username": "shikisainooka",
+                  "ai_agent_owner_username": null,
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/441269468_743957427938642_5700810419717647296_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=102\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=oRWchKNUq7EQ7kNvwF8gcZI\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfTzrJzjiE0LgtOHyuN0sCHd1VfYstZShiDaDIkBgFBIbQ\u0026oe=687BD6EF\u0026_nc_sid=ca40e6",
+                  "show_account_transparency_details": true,
+                  "__typename": "XDTUserDict",
+                  "is_private": false,
+                  "friendship_status": { "following": false }
+                },
+                "preview": null,
+                "product_type": "carousel_container",
+                "invited_coauthor_producers": [],
+                "carousel_media_count": 9,
+                "all_previous_submitters": [],
+                "coauthor_producers": [],
+                "sponsor_tags": null,
+                "follow_hashtag_info": null,
+                "is_paid_partnership": false,
+                "affiliate_info": null,
+                "clips_attribution_info": null,
+                "clips_metadata": null,
+                "location": null,
+                "wearable_attribution_info": null,
+                "caption": {
+                  "pk": "17927337684085743",
+                  "text": "2025.07.06\n\n#金魚草　（別名スナップドラゴン）が\n綺麗な彩りとなっています🌈\n名前の通り、花が金魚に似ていることから「金魚草」\nドラゴンの口にも似ている、ということから\n「スナップドラゴン」とも呼ばれています。\n\n現在の四季彩の丘では\nキンギョソウやペチュニア、ブルーサルビア、\nマリーゴールド、ムルチコーレ、ナデシコ、\nカンパニュラ、などを見ることができます🌼\n\n＊＊＊\n\n🚁ヘリコプター・乗り物各種 運行中\n🌼花苗１つ55円で販売中\n\n＊＊＊\n\n------------------------------------\n\n＊6月～9月の営業時間＊\n8：40～17：30\n\n✅アルパカ牧場は30分前閉店\n✅レストラン フロックスホール（2F）\n　 毎週水曜定休日\n✅うどん処麦彩の丘（四季彩の丘向かい）\n　 毎週火曜定休日\n✅12/31・1/1定休日\n------------------------------------\n🔶四季彩の丘\n入園料【7月～9月のみ】\n高校生・大人￥500｜小・中学生￥300\n🔶アルパカ牧場\n高校生・大人￥500｜小・中学生￥300\n🔶駐車場【６～９月のみ】\n普通乗用車・キャンピングカー\n１台 ￥500\n※自転車・バイクは無料駐輪場にお停めください。\n※乗り物・アルパカ牧場・駐車場のお支払いは現金のみ\n------------------------------------\n\n🕐営業時間🕐\n1月　　　8:40-16:30　　\n2月-4月　9:10-17:00\n5月　　　8:40-17:00\n6月-9月　8:40-17:30\n10月　　 8:40-17:00\n11月-12月 9:10-16:30\n\n------------------------------------\n#四季彩の丘　#北海道旅行　#美瑛　#美瑛観光　\n#花畑　#アルパカ　#アルパカ牧場　\n#トラクターバス　#バギー　\n#美瑛グルメ #美瑛ランチ　　\n#鹿ドッグフード　#鹿ソーセージ #鹿肉\n#ヘリコプター遊覧\n#びえいネイチャーリゾート　#bieinatureresort",
+                  "has_translation": true
+                },
+                "caption_is_edited": false,
+                "headline": null,
+                "comment_count": 0,
+                "comments": null,
+                "view_count": null,
+                "top_likers": [],
+                "facepile_top_likers": [],
+                "hidden_likes_string_variant": -1,
+                "fb_like_count": null,
+                "like_and_view_counts_disabled": false,
+                "crosspost_metadata": { "is_feedback_aggregated": null },
+                "social_context": [],
+                "comments_disabled": null,
+                "can_viewer_reshare": true,
+                "can_reshare": null,
+                "saved_collection_ids": null,
+                "has_viewer_saved": null,
+                "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+                "commenting_disabled_for_viewer": true,
+                "boosted_status": null,
+                "boost_unavailable_identifier": null,
+                "boost_unavailable_reason": null,
+                "can_see_insights_as_brand": false,
+                "ig_media_sharing_disabled": false,
+                "feed_demotion_control": null,
+                "feed_recs_demotion_control": {
+                  "title": "Not interested",
+                  "confirmation_body": "We'll suggest fewer posts like this.",
+                  "confirmation_icon": "none",
+                  "confirmation_title": "Post hidden",
+                  "confirmation_style": "tombstone_v2",
+                  "confirmation_title_style": "large_left",
+                  "followup_options": [
+                    {
+                      "id": "dont_suggest_posts_from_author",
+                      "text": "Don't suggest posts from shikisainooka",
+                      "demotion_control": {
+                        "confirmation_body": "We won't suggest posts from shikisainooka.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "snooze_suggested_posts",
+                      "text": "Snooze all suggested posts in feed for 30 days",
+                      "demotion_control": {
+                        "confirmation_body": "We won’t show suggested posts for 30 days, unless you’ve seen all posts from accounts you follow.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "this_post_makes_me_uncomfortable",
+                      "text": "This post made me uncomfortable",
+                      "demotion_control": {
+                        "confirmation_body": "If you think this post goes against our Community Standards you can report it.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    }
+                  ]
+                },
+                "has_audio": null
+              },
+              "view_state_item_type": null,
+              "id": "3670370682657151156",
+              "inventory_source": "mixed_unconnected",
+              "ad": null
+            },
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": null,
+            "ad": {
+              "ad_id": "6821066254472",
+              "global_position": 9,
+              "items": [
+                {
+                  "id": "3676294609962716976_55085581546",
+                  "item_client_gap_rules": { "post_gap_to_previous_ad": "3" },
+                  "pk": "3676294609962716976",
+                  "social_context": null,
+                  "inventory_source": "media_or_ad",
+                  "logging_info_token": null,
+                  "explore": null,
+                  "main_feed_carousel_starting_media_id": null,
+                  "carousel_media": null,
+                  "audience": null,
+                  "is_seen": false,
+                  "media_type": 1,
+                  "original_height": 1080,
+                  "original_width": 1080,
+                  "has_liked": false,
+                  "open_carousel_submission_state": null,
+                  "media_overlay_info": null,
+                  "code": "DME0nhMgs8w",
+                  "user": {
+                    "pk": "55085581546",
+                    "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/432552384_346716875015233_4426640125379739585_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=101\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=quoBn9tiJvIQ7kNvwEEe2k_\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfRrnK6xsjePADGSNr44V1z-5TGNym7Ih6g65PBFqxZ90A\u0026oe=687BCACD\u0026_nc_sid=ca40e6",
+                    "username": "fantasyart_artvivant",
+                    "id": "55085581546",
+                    "is_unpublished": false,
+                    "live_broadcast_visibility": null,
+                    "live_broadcast_id": null,
+                    "hd_profile_pic_url_info": {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/432552384_346716875015233_4426640125379739585_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=101\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=quoBn9tiJvIQ7kNvwEEe2k_\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfStaQVk50N46DPkztMEsid4Ol28qc42xQ9JmKvdhxc7Iw\u0026oe=687BCACD\u0026_nc_sid=ca40e6"
+                    },
+                    "full_name": "ファンタジーアート展",
+                    "is_verified": false,
+                    "friendship_status": { "following": false, "is_feed_favorite": false },
+                    "is_private": false,
+                    "__typename": "XDTUserDict",
+                    "is_embeds_disabled": false,
+                    "latest_reel_media": 1752541267
+                  },
+                  "carousel_parent_id": null,
+                  "display_uri": null,
+                  "is_dash_eligible": null,
+                  "number_of_qualities": null,
+                  "video_dash_manifest": null,
+                  "video_versions": null,
+                  "accessibility_caption": "Photo by ファンタジーアート展 on July 13, 2025. 写真の説明はありません。.",
+                  "image_versions2": {
+                    "candidates": [
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/427390357_386730980724416_1105665914254692517_n.jpg?stp=dst-jpg_e15_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6ImFkc19pbWFnZS4xMDgweDEwODAub3JpZ2luYWw6MTA4MHgxMDgwLnBhZ2U6UGFnZVR5cGVDb2RlLlBBR0VfSU5TVEFHUkFNX1dFQl9GRUVEIn0\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=CiRhSyfVgBgQ7kNvwGdwAIO\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfT_GBBfeDLOWBkL4bqm_iSXPOxhkhJrXTTt4dhpyi-cVA\u0026oe=687BC78A\u0026_nc_sid=ca40e6",
+                        "height": 1080,
+                        "width": 1080
+                      }
+                    ]
+                  },
+                  "usertags": null,
+                  "taken_at": 1752468490,
+                  "previous_submitter": null,
+                  "link": "https://www.facebook.com/ads/ig_redirect/?d=Ad80lezCWE2-afz2kMgMUaiAqzJKaG9B9UK0tt5DXEz0z3awIQfIDLn0_d8zTVTm6cD0CM5lJk3AOakuPTzYUljDsOlJ1Jf2qnkGccsNtwDqMQX4nXfv3Nbo74cYSgOe6WS6iAGymfNpXdMB9qW7kw3r9CfEkbEE8ONnJuN1fgqC5rfNz-jpWW0d9yaY_UeOqG7Crwguzj53dRJMJmIThcYmzCnY2pGwt4PY1xAuHuo_XZ1sddFhcXOtn3D17wdpXJmhNFP-r7CsAIt0rBuR4anBsrrG1MlbiEN5Q9L-LO-STwMmZbixL6hZUatDOHJroZs_K3UZggx7BxKSZKKn_cgWRUClBu8daESZvC3wisyeUGtQeNF_RjWw3OuWZfWGXCaKSDTrxE34wzYWuDpAH13VP5-onmo5GZvYX3uoFZ2ESbn4oUbsBvd2w6CVpniLPTxfdotN_D3CnI_huMdTVQHL8gifSxehFxfgzDMd6YTnNmU_aZVGzpO_v2UU1TJpJEycw0XA1uN42M9LcSMGItJB7dpgXVbpYeVDq8MOWcWuY5GFXJjmy51uyaeLvogrz7U-4U30gqK33Rd1NFxylzjyXW_6AocsvCZTPUWE5TtRWSXBjAOZDZ9SwrJ6SV_z7iVtSljpvfZfIfDGUx18njv_nc2J5QS4QFIorve76rTUol_FIkmiPHd2tBqGBOHftzXy8Lc_UOYzvY0eZaV86Oc2V6BpEk4XBs-UsY8YuFi7kSMLGnsrsweoknd6t33dCVDsDC8FC8h4zcO_aYYDBx5KU31Va23Mbg4jTWjLu5boGBjKzGGzt9cUGYCzAr5hvc3tqaAPeeQbvpkKjri1y-zx7Ks6LnV1sZFPN4c2uR2BIw\u0026a=1\u0026hash=Ad8Wc-nkGX1mMEVtnH0",
+                  "story_cta": null,
+                  "like_count": 7,
+                  "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjc2Mjk0NjA5OTYyNzE2OTc2Iiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTcwMXwzNjc2Mjk0NjA5OTYyNzE2OTc2fDYwNTM4MTExMzQ5fDc1MzljOTE3MjVkOWI3MGJlODVjZjg4ZmVjODI1NWU2MThmMjYwYmYxZjE0ODhhYjE4ZjllMTQzYzY4NzFmMGQifSwic2lnbmF0dXJlIjoiIn0=",
+                  "owner": {
+                    "pk": "55085581546",
+                    "id": "55085581546",
+                    "transparency_product": null,
+                    "transparency_product_enabled": false,
+                    "transparency_label": null,
+                    "username": "fantasyart_artvivant",
+                    "ai_agent_owner_username": null,
+                    "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/432552384_346716875015233_4426640125379739585_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=101\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=quoBn9tiJvIQ7kNvwEEe2k_\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfRrnK6xsjePADGSNr44V1z-5TGNym7Ih6g65PBFqxZ90A\u0026oe=687BCACD\u0026_nc_sid=ca40e6",
+                    "show_account_transparency_details": true,
+                    "__typename": "XDTUserDict",
+                    "is_private": false,
+                    "friendship_status": { "following": false }
+                  },
+                  "preview": null,
+                  "product_type": "ad",
+                  "invited_coauthor_producers": [],
+                  "carousel_media_count": null,
+                  "all_previous_submitters": null,
+                  "coauthor_producers": [],
+                  "sponsor_tags": null,
+                  "follow_hashtag_info": null,
+                  "is_paid_partnership": false,
+                  "affiliate_info": null,
+                  "clips_attribution_info": null,
+                  "clips_metadata": null,
+                  "location": null,
+                  "wearable_attribution_info": null,
+                  "caption": {
+                    "pk": "18120137005477794",
+                    "text": "【札幌で開催】\n入場無料・展示販売会｜WEB来場予約で特典あり",
+                    "has_translation": true
+                  },
+                  "caption_is_edited": false,
+                  "headline": null,
+                  "comment_count": 0,
+                  "comments": null,
+                  "view_count": null,
+                  "top_likers": [],
+                  "facepile_top_likers": [],
+                  "hidden_likes_string_variant": -1,
+                  "fb_like_count": null,
+                  "like_and_view_counts_disabled": false,
+                  "crosspost_metadata": { "is_feedback_aggregated": null },
+                  "comments_disabled": null,
+                  "can_viewer_reshare": true,
+                  "can_reshare": null,
+                  "saved_collection_ids": null,
+                  "has_viewer_saved": null,
+                  "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+                  "commenting_disabled_for_viewer": null,
+                  "boosted_status": null,
+                  "boost_unavailable_identifier": null,
+                  "boost_unavailable_reason": null,
+                  "can_see_insights_as_brand": false,
+                  "ig_media_sharing_disabled": false,
+                  "feed_demotion_control": null,
+                  "feed_recs_demotion_control": null,
+                  "link_text": "Watch more",
+                  "ad_id": null,
+                  "dominant_color": "#9B8766",
+                  "has_audio": null
+                }
+              ],
+              "tracking_token": "AI@AQLi8xKhAznNlCFojSk-FObu_UZyfHni6gDZdIwcbKhXST2y43Kmp6McQCpTfqGSFtHwHhY79W20-uUw1T-JYW4r",
+              "view_state_item_type": null,
+              "brs_threshold": 90,
+              "primary_media_id": "3676294609962716976_55085581546",
+              "media_id": "3676294609962716976",
+              "media_type": 1,
+              "ad_title": "ファンタジーアート展",
+              "display_fb_page_name": null,
+              "label": "Sponsored",
+              "ig_transparency_and_control_disclaimer_data": null,
+              "direct_share": true,
+              "lead_gen_form_id": null
+            },
+            "explore_story": null,
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": {
+              "id": "3669381009805155630_24885295",
+              "owner": {
+                "pk": "24885295",
+                "id": "24885295",
+                "transparency_product": null,
+                "transparency_product_enabled": false,
+                "transparency_label": null,
+                "username": "aquariumpacific",
+                "ai_agent_owner_username": null,
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/61337248_2061010697529291_9190439958500868096_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=103\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=LXcGRP4dMVAQ7kNvwE2-_uD\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfSjUfBCsQbGa-sQ9Zv2fAyD2hhlniA_aUmc2pmmopoxeA\u0026oe=687BBE7B\u0026_nc_sid=ca40e6",
+                "show_account_transparency_details": true,
+                "__typename": "XDTUserDict",
+                "is_private": false,
+                "friendship_status": { "following": true }
+              },
+              "view_state_item_type": null,
+              "brs_severity": null,
+              "pk": "3669381009805155630",
+              "inventory_source": "media_or_ad",
+              "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFqTmr4cNAA==",
+              "explore": null,
+              "main_feed_carousel_starting_media_id": null,
+              "carousel_media": null,
+              "audience": null,
+              "is_seen": false,
+              "media_type": 1,
+              "original_height": 1350,
+              "original_width": 1080,
+              "has_liked": false,
+              "open_carousel_submission_state": null,
+              "media_overlay_info": null,
+              "code": "DLsQpZTAB0u",
+              "user": {
+                "pk": "24885295",
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/61337248_2061010697529291_9190439958500868096_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=103\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=LXcGRP4dMVAQ7kNvwE2-_uD\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfSjUfBCsQbGa-sQ9Zv2fAyD2hhlniA_aUmc2pmmopoxeA\u0026oe=687BBE7B\u0026_nc_sid=ca40e6",
+                "username": "aquariumpacific",
+                "id": "24885295",
+                "is_unpublished": false,
+                "live_broadcast_visibility": null,
+                "live_broadcast_id": null,
+                "hd_profile_pic_url_info": {
+                  "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/61337248_2061010697529291_9190439958500868096_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=103\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=LXcGRP4dMVAQ7kNvwE2-_uD\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQxByJJZoIZBTXOGMHfI1ZDeUB7-P-3bDIU3gJKylscpA\u0026oe=687BBE7B\u0026_nc_sid=ca40e6"
+                },
+                "full_name": "Aquarium of the Pacific",
+                "is_verified": true,
+                "friendship_status": { "following": true, "is_feed_favorite": false },
+                "is_private": false,
+                "__typename": "XDTUserDict",
+                "is_embeds_disabled": false,
+                "latest_reel_media": 0
+              },
+              "carousel_parent_id": null,
+              "display_uri": null,
+              "is_dash_eligible": null,
+              "number_of_qualities": null,
+              "video_dash_manifest": null,
+              "video_versions": null,
+              "accessibility_caption": "Photo by Aquarium of the Pacific on July 04, 2025. ペンギン、カワウソ、アザラシ、テキストの画像のようです.",
+              "image_versions2": {
+                "candidates": [
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516388906_18511108951053296_7293660866104349752_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQuaW1hZ2VfdXJsZ2VuLjEwODB4MTM1MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=uYNDTWThPuEQ7kNvwE5uM7v\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY2OTM4MTAwOTgwNTE1NTYzMA%3D%3D.3-ccb7-5\u0026oh=00_AfS2g01CRbK7Fl-X3kv_STtF1WSHgWqTxh9L1dyfuZxJZA\u0026oe=687BE538\u0026_nc_sid=ca40e6",
+                    "height": 1350,
+                    "width": 1080
+                  },
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516388906_18511108951053296_7293660866104349752_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQuaW1hZ2VfdXJsZ2VuLjEwODB4MTM1MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=uYNDTWThPuEQ7kNvwE5uM7v\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY2OTM4MTAwOTgwNTE1NTYzMA%3D%3D.3-ccb7-5\u0026oh=00_AfS2g01CRbK7Fl-X3kv_STtF1WSHgWqTxh9L1dyfuZxJZA\u0026oe=687BE538\u0026_nc_sid=ca40e6",
+                    "height": 1350,
+                    "width": 1080
+                  }
+                ]
+              },
+              "usertags": null,
+              "taken_at": 1751644328,
+              "previous_submitter": null,
+              "link": null,
+              "story_cta": null,
+              "like_count": 1247,
+              "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjY5MzgxMDA5ODA1MTU1NjMwIiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MHwzNjY5MzgxMDA5ODA1MTU1NjMwfDYwNTM4MTExMzQ5fDEwODQ3NTU3M2UyNThkMWQyMmMxY2EwNDUwYzRhNGNhOTNkZmIzNDc1NzY4Yjg3YmQ3ZGJiZThjMjNjZThhMTYifSwic2lnbmF0dXJlIjoiIn0=",
+              "preview": "ACIqpTREcEbT19OPX/PNQqCTgda2NRTMO+PkA88c/XPoPy71m2TgHqAcYH1Pf8KYh0lpIFyRt/L9ajj06Z/mQAj3NaVxI0ac859OlP0+Vmjfb16j69KVx26Gf/ZU/wDk0VoNFcZOASPXPX9aKjmfZm3s1/Mv6+ZpBBkEDgjB+n0rD1C3W2dXjGAxOR2yOmBV6aciVWi+YnghjhcDv/n8qjnmWVwHwFHU9fxBx/StYpyMZtRtf56WMIbtwByfbk/hXTWEJhUs42lj09AOgqpEIo5AEO7PYAk/XpxWl564B6A1Dut1YqyezuWcCiqRuYv71FK6Hyy7P7mc2rSZDEFgOKnFwjcfcJ7GnzcFQOB6dqY6jyenf+tNtt329ATsrNXXW+/3gCwPyHa3IOD2PvVwISqxjOF4/wDrn1zz+FMhRW25APzN1H+yKuL0/Gtau+uv9bmUNNVp/WxV8r2/T/69FXcCiuaxvzs//9k=",
+              "product_type": "feed",
+              "invited_coauthor_producers": [],
+              "carousel_media_count": null,
+              "all_previous_submitters": null,
+              "coauthor_producers": [],
+              "sponsor_tags": null,
+              "follow_hashtag_info": null,
+              "is_paid_partnership": false,
+              "affiliate_info": null,
+              "clips_attribution_info": null,
+              "clips_metadata": null,
+              "location": null,
+              "wearable_attribution_info": null,
+              "caption": {
+                "pk": "17892878718145809",
+                "text": "Happy 4th of July! ❤️🦦💙\n\nPhoto by Robin Riggs",
+                "has_translation": null
+              },
+              "caption_is_edited": false,
+              "headline": null,
+              "comment_count": 6,
+              "comments": null,
+              "view_count": null,
+              "top_likers": [],
+              "facepile_top_likers": [],
+              "hidden_likes_string_variant": -1,
+              "fb_like_count": null,
+              "like_and_view_counts_disabled": false,
+              "crosspost_metadata": { "is_feedback_aggregated": null },
+              "social_context": [],
+              "comments_disabled": null,
+              "can_viewer_reshare": true,
+              "can_reshare": null,
+              "saved_collection_ids": null,
+              "has_viewer_saved": null,
+              "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+              "commenting_disabled_for_viewer": null,
+              "boosted_status": null,
+              "boost_unavailable_identifier": null,
+              "boost_unavailable_reason": null,
+              "can_see_insights_as_brand": false,
+              "ig_media_sharing_disabled": false,
+              "feed_demotion_control": null,
+              "feed_recs_demotion_control": null,
+              "has_audio": null
+            },
+            "ad": null,
+            "explore_story": null,
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": null,
+            "ad": null,
+            "explore_story": {
+              "media": {
+                "id": "3676930936937292782_32464594676",
+                "brs_severity": null,
+                "pk": "3676930936937292782",
+                "inventory_source": "mixed_unconnected",
+                "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFqTmr4cNAA==",
+                "explore": { "title": "Suggested for you" },
+                "main_feed_carousel_starting_media_id": null,
+                "carousel_media": [
+                  {
+                    "pk": "3676930925688081638",
+                    "id": "3676930925688081638_32464594676",
+                    "original_height": 1440,
+                    "original_width": 1440,
+                    "media_type": 1,
+                    "carousel_parent_id": "3676930936937292782_32464594676",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by ファーム富田【公式】 on July 14, 2025. トラクター、フレンチラベンダー、ラベンダー、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518187228_18070402262082677_1201478091405387893_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=qO4EY-bhNQcQ7kNvwGQ1zm9\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTY4ODA4MTYzOA%3D%3D.3-ccb7-5\u0026oh=00_AfRwvm3_A_XAeh6xgvMYT0P_QiXNuGxFDvg4iuVZhbRhFA\u0026oe=687BE2F0\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 1440
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518187228_18070402262082677_1201478091405387893_n.jpg?se=-1\u0026stp=dst-jpegr_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=qO4EY-bhNQcQ7kNvwGQ1zm9\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTY4ODA4MTYzOA%3D%3D.3-ccb7-5\u0026oh=00_AfSww2XGa-YSHUdRKWykgofpRIaJL4o3VFSG26PgQAiiTw\u0026oe=687BE2F0\u0026_nc_sid=ca40e6",
+                          "height": 1080,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1752544345,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3676930925562420866",
+                    "id": "3676930925562420866_32464594676",
+                    "original_height": 1440,
+                    "original_width": 1440,
+                    "media_type": 1,
+                    "carousel_parent_id": "3676930936937292782_32464594676",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by ファーム富田【公式】 on July 14, 2025. フレンチラベンダー、ラベンダー、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520467541_18070402280082677_8920620215222702646_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=fg5AbDVUK9IQ7kNvwGDpFZ1\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTU2MjQyMDg2Ng%3D%3D.3-ccb7-5\u0026oh=00_AfQgKzo1UD3ZAKUMCQuXbStBo3fu6Ux6gk4gqmcF05PbfQ\u0026oe=687BCC9B\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 1440
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520467541_18070402280082677_8920620215222702646_n.jpg?se=-1\u0026stp=dst-jpegr_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=fg5AbDVUK9IQ7kNvwGDpFZ1\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTU2MjQyMDg2Ng%3D%3D.3-ccb7-5\u0026oh=00_AfQmy1zuUUeS0QHE5xqeO9YVM8sF5YXdGy3h3qluU9XdFQ\u0026oe=687BCC9B\u0026_nc_sid=ca40e6",
+                          "height": 1080,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1752544345,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3676930925562395946",
+                    "id": "3676930925562395946_32464594676",
+                    "original_height": 1440,
+                    "original_width": 1440,
+                    "media_type": 1,
+                    "carousel_parent_id": "3676930936937292782_32464594676",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by ファーム富田【公式】 on July 14, 2025. フレンチラベンダー、ラベンダー、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518725630_18070402271082677_6873107532200520950_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=9VkPh7vQDYAQ7kNvwEjgKiA\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTU2MjM5NTk0Ng%3D%3D.3-ccb7-5\u0026oh=00_AfQvduufllSFusXr89ETDLtJ3xjI64f9TYMEQomj5QoR7w\u0026oe=687BD2A7\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 1440
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518725630_18070402271082677_6873107532200520950_n.jpg?se=-1\u0026stp=dst-jpegr_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=9VkPh7vQDYAQ7kNvwEjgKiA\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTU2MjM5NTk0Ng%3D%3D.3-ccb7-5\u0026oh=00_AfRqEey6qUDlAVwlQXI5Z6QWZ-EGi4zZPM5ilaLFTSFMIg\u0026oe=687BD2A7\u0026_nc_sid=ca40e6",
+                          "height": 1080,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1752544345,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3676930925897815350",
+                    "id": "3676930925897815350_32464594676",
+                    "original_height": 1440,
+                    "original_width": 1440,
+                    "media_type": 1,
+                    "carousel_parent_id": "3676930936937292782_32464594676",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by ファーム富田【公式】 on July 14, 2025. フレンチラベンダー、ラベンダー、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520285211_18070402289082677_5720592731322630708_n.webp?efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PNehYo8BQCcQ7kNvwEMW5lB\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTg5NzgxNTM1MA%3D%3D.3-ccb7-5\u0026oh=00_AfR_1p0k3rcGkCV4V90L7QWIwpWqBggoaL2wI6HGcHAlhg\u0026oe=687BEDE1\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 1440
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520285211_18070402289082677_5720592731322630708_n.webp?stp=dst-webp_s1080x1080\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PNehYo8BQCcQ7kNvwEMW5lB\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTg5NzgxNTM1MA%3D%3D.3-ccb7-5\u0026oh=00_AfTAJ0B0wVu6QdPVchW1DGSgDC4QPZSZiRu5y9Bo7uhSqg\u0026oe=687BEDE1\u0026_nc_sid=ca40e6",
+                          "height": 1080,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1752544345,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  }
+                ],
+                "audience": null,
+                "is_seen": false,
+                "media_type": 8,
+                "original_height": 612,
+                "original_width": 612,
+                "has_liked": false,
+                "open_carousel_submission_state": "closed",
+                "media_overlay_info": null,
+                "code": "DMHFTS3yqPu",
+                "user": {
+                  "pk": "32464594676",
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/90514373_535178060473831_4042043917548388352_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=YhG95ORYIZMQ7kNvwEpVKp8\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQZOsaHgZp1kuDU0rLeGGMTRdMItzDUXrcT6nkQcKXGSg\u0026oe=687BED84\u0026_nc_sid=ca40e6",
+                  "username": "farm_tomita_official",
+                  "id": "32464594676",
+                  "is_unpublished": false,
+                  "live_broadcast_visibility": null,
+                  "live_broadcast_id": null,
+                  "hd_profile_pic_url_info": {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/90514373_535178060473831_4042043917548388352_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=YhG95ORYIZMQ7kNvwEpVKp8\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfRP4yqEyOakgSLatq9_mDbO7kq5tG81xOfH76QXBKNMQg\u0026oe=687BED84\u0026_nc_sid=ca40e6"
+                  },
+                  "full_name": "ファーム富田【公式】",
+                  "is_verified": false,
+                  "friendship_status": { "following": false, "is_feed_favorite": false },
+                  "is_private": false,
+                  "__typename": "XDTUserDict",
+                  "is_embeds_disabled": false,
+                  "latest_reel_media": 0
+                },
+                "carousel_parent_id": null,
+                "display_uri": null,
+                "is_dash_eligible": null,
+                "number_of_qualities": null,
+                "video_dash_manifest": null,
+                "video_versions": null,
+                "accessibility_caption": null,
+                "image_versions2": {
+                  "candidates": [
+                    {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518187228_18070402262082677_1201478091405387893_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=qO4EY-bhNQcQ7kNvwGQ1zm9\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTY4ODA4MTYzOA%3D%3D.3-ccb7-5\u0026oh=00_AfRwvm3_A_XAeh6xgvMYT0P_QiXNuGxFDvg4iuVZhbRhFA\u0026oe=687BE2F0\u0026_nc_sid=ca40e6",
+                      "height": 1440,
+                      "width": 1440
+                    },
+                    {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518187228_18070402262082677_1201478091405387893_n.jpg?se=-1\u0026stp=dst-jpegr_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=qO4EY-bhNQcQ7kNvwGQ1zm9\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjkzMDkyNTY4ODA4MTYzOA%3D%3D.3-ccb7-5\u0026oh=00_AfSww2XGa-YSHUdRKWykgofpRIaJL4o3VFSG26PgQAiiTw\u0026oe=687BE2F0\u0026_nc_sid=ca40e6",
+                      "height": 1080,
+                      "width": 1080
+                    }
+                  ]
+                },
+                "usertags": null,
+                "taken_at": 1752544346,
+                "previous_submitter": null,
+                "link": null,
+                "story_cta": null,
+                "like_count": 1222,
+                "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjc2OTMwOTM2OTM3MjkyNzgyIiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MXwzNjc2OTMwOTM2OTM3MjkyNzgyfDYwNTM4MTExMzQ5fDQ2ZDU4MjkzNGRmYzFhNjViY2FhNzdmY2I5NGUyMDY0MTZiMDNmYjI1MDQ4NmUwOTJhOTY2M2M0MzAzMWJhOGIifSwic2lnbmF0dXJlIjoiIn0=",
+                "owner": {
+                  "pk": "32464594676",
+                  "id": "32464594676",
+                  "transparency_product": null,
+                  "transparency_product_enabled": false,
+                  "transparency_label": null,
+                  "username": "farm_tomita_official",
+                  "ai_agent_owner_username": null,
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/90514373_535178060473831_4042043917548388352_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=YhG95ORYIZMQ7kNvwEpVKp8\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQZOsaHgZp1kuDU0rLeGGMTRdMItzDUXrcT6nkQcKXGSg\u0026oe=687BED84\u0026_nc_sid=ca40e6",
+                  "show_account_transparency_details": true,
+                  "__typename": "XDTUserDict",
+                  "is_private": false,
+                  "friendship_status": { "following": false }
+                },
+                "preview": null,
+                "product_type": "carousel_container",
+                "invited_coauthor_producers": [],
+                "carousel_media_count": 4,
+                "all_previous_submitters": [],
+                "coauthor_producers": [],
+                "sponsor_tags": null,
+                "follow_hashtag_info": null,
+                "is_paid_partnership": false,
+                "affiliate_info": null,
+                "clips_attribution_info": null,
+                "clips_metadata": null,
+                "location": {
+                  "pk": "304777496622824",
+                  "lat": 43.406463643741,
+                  "lng": 142.46812002142,
+                  "name": "ファーム富田 ラベンダーイースト",
+                  "profile_pic_url": null,
+                  "__typename": "XDTLocationDict"
+                },
+                "wearable_attribution_info": null,
+                "caption": {
+                  "pk": "18012496064771239",
+                  "text": "ラベンダーイーストではラベンダー畑の中を一周する、ラベンダーバスにご乗車いただけます。\nおかむらさきはまだまだ綺麗に咲いておりますので、ご来園の際はぜひご乗車ください。\n\n※天候によっては運休となる場合がございます\n\n#ドライフラワー #フラワーアレンジメント #ファーム富田 #ファーム富田ラベンダーイースト #ラベンダー #北海道 #farmtomita #farmtomitalavendereast #lavender #hokkaido #japan #富田農場 #薰衣草 #富田农场 #팜도미타 #라벤더 #홋카이도 #일본",
+                  "has_translation": true
+                },
+                "caption_is_edited": false,
+                "headline": null,
+                "comment_count": 0,
+                "comments": null,
+                "view_count": null,
+                "top_likers": [],
+                "facepile_top_likers": [],
+                "hidden_likes_string_variant": -1,
+                "fb_like_count": null,
+                "like_and_view_counts_disabled": false,
+                "crosspost_metadata": { "is_feedback_aggregated": null },
+                "social_context": [],
+                "comments_disabled": null,
+                "can_viewer_reshare": true,
+                "can_reshare": null,
+                "saved_collection_ids": null,
+                "has_viewer_saved": null,
+                "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+                "commenting_disabled_for_viewer": true,
+                "boosted_status": null,
+                "boost_unavailable_identifier": null,
+                "boost_unavailable_reason": null,
+                "can_see_insights_as_brand": false,
+                "ig_media_sharing_disabled": false,
+                "feed_demotion_control": null,
+                "feed_recs_demotion_control": {
+                  "title": "Not interested",
+                  "confirmation_body": "We'll suggest fewer posts like this.",
+                  "confirmation_icon": "none",
+                  "confirmation_title": "Post hidden",
+                  "confirmation_style": "tombstone_v2",
+                  "confirmation_title_style": "large_left",
+                  "followup_options": [
+                    {
+                      "id": "dont_suggest_posts_from_author",
+                      "text": "Don't suggest posts from farm_tomita_official",
+                      "demotion_control": {
+                        "confirmation_body": "We won't suggest posts from farm_tomita_official.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "snooze_suggested_posts",
+                      "text": "Snooze all suggested posts in feed for 30 days",
+                      "demotion_control": {
+                        "confirmation_body": "We won’t show suggested posts for 30 days, unless you’ve seen all posts from accounts you follow.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "this_post_makes_me_uncomfortable",
+                      "text": "This post made me uncomfortable",
+                      "demotion_control": {
+                        "confirmation_body": "If you think this post goes against our Community Standards you can report it.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    }
+                  ]
+                },
+                "has_audio": null
+              },
+              "view_state_item_type": null,
+              "id": "3676930936937292782",
+              "inventory_source": "mixed_unconnected",
+              "ad": null
+            },
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": {
+              "id": "3667518345210977775_3474649999",
+              "owner": {
+                "pk": "3474649999",
+                "id": "3474649999",
+                "transparency_product": null,
+                "transparency_product_enabled": false,
+                "transparency_label": null,
+                "username": "asahiyamazoo1",
+                "ai_agent_owner_username": null,
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/445368618_894913028641951_251769217521506042_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=1\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=4ppxuIMhHCsQ7kNvwEfAaEz\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfSpej1ptag3zJXVYt14cAghTMzubN1YO_SRQvFK7954ZA\u0026oe=687BD46D\u0026_nc_sid=ca40e6",
+                "show_account_transparency_details": true,
+                "__typename": "XDTUserDict",
+                "is_private": false,
+                "friendship_status": { "following": true }
+              },
+              "view_state_item_type": null,
+              "brs_severity": null,
+              "pk": "3667518345210977775",
+              "inventory_source": "media_or_ad",
+              "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFqTmr4cNAA==",
+              "explore": null,
+              "main_feed_carousel_starting_media_id": null,
+              "carousel_media": null,
+              "audience": null,
+              "is_seen": false,
+              "media_type": 1,
+              "original_height": 810,
+              "original_width": 1440,
+              "has_liked": false,
+              "open_carousel_submission_state": null,
+              "media_overlay_info": null,
+              "code": "DLlpIDth13v",
+              "user": {
+                "pk": "3474649999",
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/445368618_894913028641951_251769217521506042_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=1\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=4ppxuIMhHCsQ7kNvwEfAaEz\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfSpej1ptag3zJXVYt14cAghTMzubN1YO_SRQvFK7954ZA\u0026oe=687BD46D\u0026_nc_sid=ca40e6",
+                "username": "asahiyamazoo1",
+                "id": "3474649999",
+                "is_unpublished": false,
+                "live_broadcast_visibility": null,
+                "live_broadcast_id": null,
+                "hd_profile_pic_url_info": {
+                  "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/445368618_894913028641951_251769217521506042_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=1\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=4ppxuIMhHCsQ7kNvwEfAaEz\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfTKk1w7fB0hQ0kmzSGCaOCwPDrGz7Q1dEy70UyNPqXoTw\u0026oe=687BD46D\u0026_nc_sid=ca40e6"
+                },
+                "full_name": "旭川市旭山動物園（Asahiyama Zoo）",
+                "is_verified": false,
+                "friendship_status": { "following": true, "is_feed_favorite": false },
+                "is_private": false,
+                "__typename": "XDTUserDict",
+                "is_embeds_disabled": false,
+                "latest_reel_media": 0
+              },
+              "carousel_parent_id": null,
+              "display_uri": null,
+              "is_dash_eligible": null,
+              "number_of_qualities": null,
+              "video_dash_manifest": null,
+              "video_versions": null,
+              "accessibility_caption": "Photo by 旭川市旭山動物園（Asahiyama Zoo） in 旭川市旭山動物園（Asahiyama Zoo）. 鹿、アンテロープ、、「ASAHIYAMAZo Zo 7 SUN MO ONI TU July 2025 WED D자 TH THU FR 2 AT 6 4 4 5 12 2 13 20 1 16 1 1 18 19 27 26 3 31 トナカイ/Reindeer」というテキストの画像のようです.",
+              "image_versions2": {
+                "candidates": [
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/514703440_18400014028114000_4522200490161078387_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQuaW1hZ2VfdXJsZ2VuLjE0NDB4ODEwLnNkci5mODI3ODcuZGVmYXVsdF9pbWFnZSJ9\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=104\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PVBIm-I62BAQ7kNvwF_rda2\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY2NzUxODM0NTIxMDk3Nzc3NQ%3D%3D.3-ccb7-5\u0026oh=00_AfQbGot3TX6hZc35PrZtCKB3PsEz3epXzdYQ_KfBXHV_bw\u0026oe=687BE50A\u0026_nc_sid=ca40e6",
+                    "height": 810,
+                    "width": 1440
+                  },
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/514703440_18400014028114000_4522200490161078387_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQuaW1hZ2VfdXJsZ2VuLjE0NDB4ODEwLnNkci5mODI3ODcuZGVmYXVsdF9pbWFnZSJ9\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=104\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=PVBIm-I62BAQ7kNvwF_rda2\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY2NzUxODM0NTIxMDk3Nzc3NQ%3D%3D.3-ccb7-5\u0026oh=00_AfSeYsx35i-wnxxFmnZmgm5wi0w3_GoD9HIoUFMRUVFpig\u0026oe=687BE50A\u0026_nc_sid=ca40e6",
+                    "height": 608,
+                    "width": 1080
+                  }
+                ]
+              },
+              "usertags": null,
+              "taken_at": 1751422278,
+              "previous_submitter": null,
+              "link": null,
+              "story_cta": null,
+              "like_count": 2835,
+              "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjY3NTE4MzQ1MjEwOTc3Nzc1Iiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MXwzNjY3NTE4MzQ1MjEwOTc3Nzc1fDYwNTM4MTExMzQ5fDE2NmIwNTc2YmU0MmRkZTA1MjMxMmZmODE2YmNmM2U4ZWY2MDhmMTMxMjAwZDhkODJlYThlYmIwN2NlNzFhZDQifSwic2lnbmF0dXJlIjoiIn0=",
+              "preview": "ACoYkjz2798f/XqwIj1/KspUnf5grEHuAaW3cq33iD3/APrilcdjXWHHWopZQuNoxzyWGAAOTyRznpwD61HLcuu1lwQOox1/yKqT3QumAdgF6YXPr19elFwsa6SLtBPzH16D/wDV6f4037X/AJxWaQw+7nGOg4/+tnp6e9KUk7fyFMRqW9xEsaqWUYAHJ5yOtYjsN+R6n8s0UUhkplY/LjI9+n40zIXO0Dd3Ioopkk4cv1A+vSpN1FFAz//Z",
+              "product_type": "feed",
+              "invited_coauthor_producers": [],
+              "carousel_media_count": null,
+              "all_previous_submitters": null,
+              "coauthor_producers": [],
+              "sponsor_tags": null,
+              "follow_hashtag_info": null,
+              "is_paid_partnership": false,
+              "affiliate_info": null,
+              "clips_attribution_info": null,
+              "clips_metadata": null,
+              "location": {
+                "pk": "497704516",
+                "lat": 43.769305069795,
+                "lng": 142.47120141926,
+                "name": "旭川市旭山動物園（Asahiyama Zoo）",
+                "profile_pic_url": null,
+                "__typename": "XDTLocationDict"
+              },
+              "wearable_attribution_info": null,
+              "caption": {
+                "pk": "18385787824190153",
+                "text": "【おしらせ】\n\n2025年7月の壁紙カレンダーができました\n\nhttps://www.city.asahikawa.hokkaido.jp/asahiyamazoo/news-blog/osirase/d082017.html\n\n詳しくは　プロフィール欄→ホームページ→ニュース→お知らせ　でご覧いただけます。\n\n✳︎\n#旭山動物園 #asahiyamazoo\n#動物園　#zoo\n#北海道　#hokkaido\n#旭川 #asahikawa\n#壁紙カレンダー #calendar\n#トナカイ #reindeer",
+                "has_translation": true
+              },
+              "caption_is_edited": false,
+              "headline": null,
+              "comment_count": 2,
+              "comments": null,
+              "view_count": null,
+              "top_likers": [],
+              "facepile_top_likers": [],
+              "hidden_likes_string_variant": -1,
+              "fb_like_count": null,
+              "like_and_view_counts_disabled": false,
+              "crosspost_metadata": { "is_feedback_aggregated": null },
+              "social_context": [],
+              "comments_disabled": null,
+              "can_viewer_reshare": true,
+              "can_reshare": null,
+              "saved_collection_ids": null,
+              "has_viewer_saved": null,
+              "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+              "commenting_disabled_for_viewer": null,
+              "boosted_status": null,
+              "boost_unavailable_identifier": null,
+              "boost_unavailable_reason": null,
+              "can_see_insights_as_brand": false,
+              "ig_media_sharing_disabled": false,
+              "feed_demotion_control": null,
+              "feed_recs_demotion_control": null,
+              "has_audio": null
+            },
+            "ad": null,
+            "explore_story": null,
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": null,
+            "ad": null,
+            "explore_story": {
+              "media": {
+                "id": "3618078730885206032_55286345137",
+                "brs_severity": null,
+                "pk": "3618078730885206032",
+                "inventory_source": "mixed_unconnected",
+                "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFqTmr4cNAA==",
+                "explore": { "title": "Suggested for you" },
+                "main_feed_carousel_starting_media_id": null,
+                "carousel_media": null,
+                "audience": null,
+                "is_seen": false,
+                "media_type": 2,
+                "original_height": 1920,
+                "original_width": 1080,
+                "has_liked": false,
+                "open_carousel_submission_state": null,
+                "media_overlay_info": null,
+                "code": "DI1_2-zzxAQ",
+                "user": {
+                  "pk": "55286345137",
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/462765556_1218204049384247_4281607202293024427_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=111\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=uVVtJZjs8YwQ7kNvwHcMQt_\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfS5XKyXHmEAax6yIwx3FLl8RTKnqtil_NpT3ITy6B20iA\u0026oe=687BD44F\u0026_nc_sid=ca40e6",
+                  "username": "nobu.sun.manmo",
+                  "id": "55286345137",
+                  "is_unpublished": false,
+                  "live_broadcast_visibility": null,
+                  "live_broadcast_id": null,
+                  "hd_profile_pic_url_info": {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/462765556_1218204049384247_4281607202293024427_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=111\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=uVVtJZjs8YwQ7kNvwHcMQt_\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfSFiMWGR1yKPl2OKXSYtNjkxnS4Dmh_iJ335xDkc84Y8Q\u0026oe=687BD44F\u0026_nc_sid=ca40e6"
+                  },
+                  "full_name": "のぶ・まんも",
+                  "is_verified": false,
+                  "friendship_status": { "following": false, "is_feed_favorite": false },
+                  "is_private": false,
+                  "__typename": "XDTUserDict",
+                  "is_embeds_disabled": false,
+                  "latest_reel_media": 0
+                },
+                "carousel_parent_id": null,
+                "display_uri": null,
+                "is_dash_eligible": 1,
+                "number_of_qualities": 2,
+                "video_dash_manifest": "\u003c?xml version=\"1.0\" encoding=\"UTF-8\"?\u003e\n\u003cMPD xmlns=\"urn:mpeg:dash:schema:mpd:2011\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:mpeg:dash:schema:mpd:2011 DASH-MPD.xsd\" profiles=\"urn:mpeg:dash:profile:isoff-on-demand:2011\" minBufferTime=\"PT2S\" type=\"static\" mediaPresentationDuration=\"PT46.809978S\" FBManifestIdentifier=\"FgAYEGlnX2Rhc2hfYmFzZWxpbmUZNtjUqOvZgIgEqrvqjpfWswT64certbzSISIYGGRhc2hfbG5faGVhYWNfdmJyM19hdWRpbyIA\"\u003e\u003cPeriod id=\"0\" duration=\"PT46.809978S\"\u003e\u003cAdaptationSet id=\"0\" contentType=\"video\" subsegmentAlignment=\"true\" par=\"9:16\" FBUnifiedUploadResolutionMos=\"360:87.7\"\u003e\u003cSupplementalProperty schemeIdUri=\"urn:mpeg:mpegB:cicp:TransferCharacteristics\" value=\"1\"/\u003e\u003cRepresentation id=\"9470032089774205vd\" bandwidth=\"3580450\" codecs=\"avc1.64001f\" mimeType=\"video/mp4\" sar=\"1:1\" FBEncodingTag=\"dash_baseline_1_v1\" FBContentLength=\"20945637\" FBPlaybackResolutionMos=\"0:100,360:98.5,480:97.4,720:94.4,1080:80.2\" FBPlaybackResolutionMosConfidenceLevel=\"high\" FBPlaybackResolutionCsvqm=\"0:100,360:99.66,480:99.42,720:98.04,1080:93.1\" FBAbrPolicyTags=\"\" width=\"720\" height=\"1280\" frameRate=\"15360/512\" FBDefaultQuality=\"1\" FBQualityClass=\"hd\" FBQualityLabel=\"720p\"\u003e\u003cBaseURL\u003ehttps://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t2/f2/m86/AQP0d-XYM4fhvuE5Wh_fTQJx5FxD5zWtLTkKzXnZmkh3zqRihNXkZ416nKVzTkJHajOudvmwLisAylRRAYrVwDYhoDgZgo6OAoHXVWM.mp4?_nc_cat=101\u0026amp;_nc_oc=AdmnebFNxY5sfK-D0gnJDCf-krWe9_bQzWKb684Uc_mD5jha109Qq77Td5f_7TMpREA\u0026amp;_nc_sid=9ca052\u0026amp;_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026amp;_nc_ohc=dSH9dMIEqv8Q7kNvwHRdmRa\u0026amp;efg=eyJ2ZW5jb2RlX3RhZyI6ImlnLXhwdmRzLmNsaXBzLmMyLUMzLmRhc2hfYmFzZWxpbmVfMV92MSIsInZpZGVvX2lkIjpudWxsLCJvaWxfdXJsZ2VuX2FwcF9pZCI6OTM2NjE5NzQzMzkyNDU5LCJjbGllbnRfbmFtZSI6ImlnIiwieHB2X2Fzc2V0X2lkIjo1Nzk1NDE0OTc4ODk0NzcsInZpX3VzZWNhc2VfaWQiOjEwMDk5LCJkdXJhdGlvbl9zIjo0NiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9\u0026amp;ccb=17-1\u0026amp;_nc_zt=28\u0026amp;oh=00_AfQOOrSF88-d0nx7-ITIXLAuTChUkNGIPLxyKx37uvMM2Q\u0026amp;oe=6877C25A\u003c/BaseURL\u003e\u003cSegmentBase indexRange=\"892-1043\" timescale=\"15360\" FBMinimumPrefetchRange=\"1044-85195\" FBPartialPrefetchDuration=\"2500\" FBPartialPrefetchRange=\"1044-1185092\" FBFirstSegmentRange=\"1044-2293395\" FBFirstSegmentDuration=\"5000\" FBSecondSegmentRange=\"2293396-4650334\" FBPrefetchSegmentRange=\"1044-2293395\" FBPrefetchSegmentDuration=\"5000\"\u003e\u003cInitialization range=\"0-891\"/\u003e\u003c/SegmentBase\u003e\u003c/Representation\u003e\u003cRepresentation id=\"1239530664185557v\" bandwidth=\"716687\" codecs=\"avc1.4d001e\" mimeType=\"video/mp4\" sar=\"1:1\" FBEncodingTag=\"dash_baseline_3_v1\" FBContentLength=\"4192622\" FBPlaybackResolutionMos=\"0:100,360:66.3,480:60.9,720:52.1,1080:41.8\" FBPlaybackResolutionMosConfidenceLevel=\"high\" FBPlaybackResolutionCsvqm=\"0:100,360:81.3,480:76.1,720:67,1080:56.1\" FBAbrPolicyTags=\"\" width=\"360\" height=\"640\" frameRate=\"15360/512\" FBQualityClass=\"sd\" FBQualityLabel=\"360p\"\u003e\u003cBaseURL\u003ehttps://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t2/f2/m86/AQOBG5a0ovZ-tpo_QNAT9dqx8rqFRTuepbUyIcp2o84warq9NkceZoDp2l0-gyBy_R7HCvBu7LDi1F03g6As8IT9NpNR20ww9PW1ge4.mp4?_nc_cat=108\u0026amp;_nc_oc=AdkcqicNGadX3r7AMqP9r6YxEkq7cRAI66KI-h5ZUDvlkqrDgQErcjyvt4RAlnhe1No\u0026amp;_nc_sid=9ca052\u0026amp;_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026amp;_nc_ohc=Et2n4gos8MYQ7kNvwFIxkom\u0026amp;efg=eyJ2ZW5jb2RlX3RhZyI6ImlnLXhwdmRzLmNsaXBzLmMyLUMzLmRhc2hfYmFzZWxpbmVfM192MSIsInZpZGVvX2lkIjpudWxsLCJvaWxfdXJsZ2VuX2FwcF9pZCI6OTM2NjE5NzQzMzkyNDU5LCJjbGllbnRfbmFtZSI6ImlnIiwieHB2X2Fzc2V0X2lkIjo1Nzk1NDE0OTc4ODk0NzcsInZpX3VzZWNhc2VfaWQiOjEwMDk5LCJkdXJhdGlvbl9zIjo0NiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9\u0026amp;ccb=17-1\u0026amp;_nc_zt=28\u0026amp;oh=00_AfSNommuZrfpvOZXGc8p4eQhKjnutNxyhnD2pi4w291z9A\u0026amp;oe=6877EA59\u003c/BaseURL\u003e\u003cSegmentBase indexRange=\"887-1038\" timescale=\"15360\" FBMinimumPrefetchRange=\"1039-26785\" FBPartialPrefetchDuration=\"2500\" FBPartialPrefetchRange=\"1039-217669\" FBFirstSegmentRange=\"1039-418540\" FBFirstSegmentDuration=\"5000\" FBSecondSegmentRange=\"418541-806085\" FBPrefetchSegmentRange=\"1039-418540\" FBPrefetchSegmentDuration=\"5000\"\u003e\u003cInitialization range=\"0-886\"/\u003e\u003c/SegmentBase\u003e\u003c/Representation\u003e\u003c/AdaptationSet\u003e\u003cAdaptationSet id=\"1\" contentType=\"audio\" subsegmentStartsWithSAP=\"1\" subsegmentAlignment=\"true\"\u003e\u003cRepresentation id=\"1143504150795564ad\" bandwidth=\"64891\" codecs=\"mp4a.40.5\" mimeType=\"audio/mp4\" FBAvgBitrate=\"64891\" audioSamplingRate=\"44100\" FBEncodingTag=\"dash_ln_heaac_vbr3_audio\" FBContentLength=\"380836\" FBPaqMos=\"82.67\" FBAbrPolicyTags=\"\" FBDefaultQuality=\"1\"\u003e\u003cAudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"2\"/\u003e\u003cBaseURL\u003ehttps://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t16/f2/m69/AQPQJoGQisoI7DF4gJeFyaobnlmb5wOQW2JDEnMrEGAqGdKexkSmQgxkvt4t6qsFRAyL19urLt16tSOM7L48P0AT.mp4?strext=1\u0026amp;_nc_cat=107\u0026amp;_nc_oc=AdlHs6sc2s5tXspNwT_nXzuctwrP83uYBKJ2OJ26udbaa3N4-1ZAlKgkCD0W5E8oF3w\u0026amp;_nc_sid=9ca052\u0026amp;_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026amp;_nc_ohc=q7nUNfFymy4Q7kNvwFwQnfB\u0026amp;efg=eyJ2ZW5jb2RlX3RhZyI6ImlnLXhwdmRzLmNsaXBzLmMyLUMzLmRhc2hfbG5faGVhYWNfdmJyM19hdWRpbyIsInZpZGVvX2lkIjpudWxsLCJvaWxfdXJsZ2VuX2FwcF9pZCI6OTM2NjE5NzQzMzkyNDU5LCJjbGllbnRfbmFtZSI6ImlnIiwieHB2X2Fzc2V0X2lkIjo1Nzk1NDE0OTc4ODk0NzcsInZpX3VzZWNhc2VfaWQiOjEwMDk5LCJkdXJhdGlvbl9zIjo0NiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9\u0026amp;ccb=17-1\u0026amp;_nc_zt=28\u0026amp;oh=00_AfRoAXv9FHAd1CMKZzzse5JiwlARhEjgT46tSMT_Iv-GUA\u0026amp;oe=687BE155\u003c/BaseURL\u003e\u003cSegmentBase indexRange=\"824-1143\" timescale=\"44100\" FBMinimumPrefetchRange=\"1144-1487\" FBPartialPrefetchDuration=\"2500\" FBPartialPrefetchRange=\"1144-21741\" FBFirstSegmentRange=\"1144-18475\" FBFirstSegmentDuration=\"2021\" FBSecondSegmentRange=\"18476-34368\" FBPrefetchSegmentRange=\"1144-34368\" FBPrefetchSegmentDuration=\"4017\"\u003e\u003cInitialization range=\"0-823\"/\u003e\u003c/SegmentBase\u003e\u003c/Representation\u003e\u003c/AdaptationSet\u003e\u003c/Period\u003e\u003c/MPD\u003e\n",
+                "video_versions": [
+                  {
+                    "type": 101,
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t2/f2/m86/AQP0d-XYM4fhvuE5Wh_fTQJx5FxD5zWtLTkKzXnZmkh3zqRihNXkZ416nKVzTkJHajOudvmwLisAylRRAYrVwDYhoDgZgo6OAoHXVWM.mp4?_nc_cat=101\u0026_nc_oc=AdmnebFNxY5sfK-D0gnJDCf-krWe9_bQzWKb684Uc_mD5jha109Qq77Td5f_7TMpREA\u0026_nc_sid=5e9851\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_ohc=dSH9dMIEqv8Q7kNvwHRdmRa\u0026efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5JTlNUQUdSQU0uQ0xJUFMuQzMuNzIwLmRhc2hfYmFzZWxpbmVfMV92MSIsInhwdl9hc3NldF9pZCI6NTc5NTQxNDk3ODg5NDc3LCJ2aV91c2VjYXNlX2lkIjoxMDA5OSwiZHVyYXRpb25fcyI6NDYsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D\u0026ccb=17-1\u0026vs=b8a63b4a14c4f4cd\u0026_nc_vs=HBksFQIYUmlnX3hwdl9yZWVsc19wZXJtYW5lbnRfc3JfcHJvZC9BOTQxNjNEM0I4RjE3RTQyMUVBRjVDNTMyMjdDRUM4Ml92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYOnBhc3N0aHJvdWdoX2V2ZXJzdG9yZS9HSjR5U1IyZVVYT0hnaFVHQUVneVF0dnFJQlZUYnFfRUFBQUYVAgLIARIAKAAYABsCiAd1c2Vfb2lsATEScHJvZ3Jlc3NpdmVfcmVjaXBlATEVAAAmiovq0eDFhwIVAigCQzMsF0BHZmZmZmZmGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHX-B2XmnQEA\u0026_nc_zt=28\u0026oh=00_AfTbmoXyv5Jm1LmPDp652XUa5TgxdORwO9Wi0770nXEFqw\u0026oe=6877C25A",
+                    "width": 720,
+                    "height": 1280
+                  },
+                  {
+                    "type": 102,
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t2/f2/m86/AQP0d-XYM4fhvuE5Wh_fTQJx5FxD5zWtLTkKzXnZmkh3zqRihNXkZ416nKVzTkJHajOudvmwLisAylRRAYrVwDYhoDgZgo6OAoHXVWM.mp4?_nc_cat=101\u0026_nc_oc=AdmnebFNxY5sfK-D0gnJDCf-krWe9_bQzWKb684Uc_mD5jha109Qq77Td5f_7TMpREA\u0026_nc_sid=5e9851\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_ohc=dSH9dMIEqv8Q7kNvwHRdmRa\u0026efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5JTlNUQUdSQU0uQ0xJUFMuQzMuNzIwLmRhc2hfYmFzZWxpbmVfMV92MSIsInhwdl9hc3NldF9pZCI6NTc5NTQxNDk3ODg5NDc3LCJ2aV91c2VjYXNlX2lkIjoxMDA5OSwiZHVyYXRpb25fcyI6NDYsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D\u0026ccb=17-1\u0026vs=b8a63b4a14c4f4cd\u0026_nc_vs=HBksFQIYUmlnX3hwdl9yZWVsc19wZXJtYW5lbnRfc3JfcHJvZC9BOTQxNjNEM0I4RjE3RTQyMUVBRjVDNTMyMjdDRUM4Ml92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYOnBhc3N0aHJvdWdoX2V2ZXJzdG9yZS9HSjR5U1IyZVVYT0hnaFVHQUVneVF0dnFJQlZUYnFfRUFBQUYVAgLIARIAKAAYABsCiAd1c2Vfb2lsATEScHJvZ3Jlc3NpdmVfcmVjaXBlATEVAAAmiovq0eDFhwIVAigCQzMsF0BHZmZmZmZmGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHX-B2XmnQEA\u0026_nc_zt=28\u0026oh=00_AfTbmoXyv5Jm1LmPDp652XUa5TgxdORwO9Wi0770nXEFqw\u0026oe=6877C25A",
+                    "width": 720,
+                    "height": 1280
+                  },
+                  {
+                    "type": 103,
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t2/f2/m86/AQP0d-XYM4fhvuE5Wh_fTQJx5FxD5zWtLTkKzXnZmkh3zqRihNXkZ416nKVzTkJHajOudvmwLisAylRRAYrVwDYhoDgZgo6OAoHXVWM.mp4?_nc_cat=101\u0026_nc_oc=AdmnebFNxY5sfK-D0gnJDCf-krWe9_bQzWKb684Uc_mD5jha109Qq77Td5f_7TMpREA\u0026_nc_sid=5e9851\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_ohc=dSH9dMIEqv8Q7kNvwHRdmRa\u0026efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5JTlNUQUdSQU0uQ0xJUFMuQzMuNzIwLmRhc2hfYmFzZWxpbmVfMV92MSIsInhwdl9hc3NldF9pZCI6NTc5NTQxNDk3ODg5NDc3LCJ2aV91c2VjYXNlX2lkIjoxMDA5OSwiZHVyYXRpb25fcyI6NDYsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D\u0026ccb=17-1\u0026vs=b8a63b4a14c4f4cd\u0026_nc_vs=HBksFQIYUmlnX3hwdl9yZWVsc19wZXJtYW5lbnRfc3JfcHJvZC9BOTQxNjNEM0I4RjE3RTQyMUVBRjVDNTMyMjdDRUM4Ml92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYOnBhc3N0aHJvdWdoX2V2ZXJzdG9yZS9HSjR5U1IyZVVYT0hnaFVHQUVneVF0dnFJQlZUYnFfRUFBQUYVAgLIARIAKAAYABsCiAd1c2Vfb2lsATEScHJvZ3Jlc3NpdmVfcmVjaXBlATEVAAAmiovq0eDFhwIVAigCQzMsF0BHZmZmZmZmGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHX-B2XmnQEA\u0026_nc_zt=28\u0026oh=00_AfTbmoXyv5Jm1LmPDp652XUa5TgxdORwO9Wi0770nXEFqw\u0026oe=6877C25A",
+                    "width": 720,
+                    "height": 1280
+                  }
+                ],
+                "accessibility_caption": null,
+                "image_versions2": {
+                  "candidates": [
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=dst-jpg_e15_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfSHM1yr7iAhHzfOKGLDjE85aXCrj71dBgRt27D5clWCrQ\u0026oe=687BCF09",
+                      "height": 3154,
+                      "width": 1774
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=dst-jpg_e35_p1080x1080_sh0.08_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfSsbWMg66bEHIqAHK2z7F8m29LRr5elEjHbGBjexqO3AQ\u0026oe=687BCF09",
+                      "height": 1920,
+                      "width": 1080
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=dst-jpg_e35_p720x720_sh0.08_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfQ7-lOwVZSC2BOq1Bw_l5cEZhiG5YAzhWuFaN5bgPxvXQ\u0026oe=687BCF09",
+                      "height": 1280,
+                      "width": 720
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=dst-jpg_e35_p640x640_sh0.08_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfQLTyjD1O4jo334au3TDBTgyTRoNYIFwOd8xhgS8Lm1_Q\u0026oe=687BCF09",
+                      "height": 1138,
+                      "width": 640
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=dst-jpg_e15_p480x480_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfQoMzeqmy_exbKq_UC59g1eh2ZKhVrEW_upQbXEh2379A\u0026oe=687BCF09",
+                      "height": 853,
+                      "width": 480
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=dst-jpg_e15_p320x320_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfRxNKO3ZSM4UsushdZdW7TEpoPxMLOxN84nRWui7XJHnQ\u0026oe=687BCF09",
+                      "height": 569,
+                      "width": 320
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=dst-jpg_e15_p240x240_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfTAyHPWh0imA0XrY3f_8VReVwBbWmG-Gx452ls6HJP2mg\u0026oe=687BCF09",
+                      "height": 427,
+                      "width": 240
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=c0.690.1774.1774a_dst-jpg_e35_s1080x1080_sh0.08_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfRdKhoTvGgnzz152jaAlEesPQBZovgwRKfS9AnYkogeNg\u0026oe=687BCF09",
+                      "height": 1080,
+                      "width": 1080
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=c0.690.1774.1774a_dst-jpg_e35_s750x750_sh0.08_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfQSWvoMJSiMXgdkFTvtAJj5YgtNyBBb9LMNcDVXoH7JZg\u0026oe=687BCF09",
+                      "height": 750,
+                      "width": 750
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=c0.689.1774.1776a_dst-jpg_e35_s640x640_sh0.08_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfRVLI5rIvX8d2oThTiycegw8YAvW9v3qNCVm352tAAq8Q\u0026oe=687BCF09",
+                      "height": 640,
+                      "width": 640
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=c0.690.1774.1774a_dst-jpg_e15_s480x480_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfQikWPYYKE6H51muDm2YTs0K1DT043jiesbt1ms1QERSw\u0026oe=687BCF09",
+                      "height": 480,
+                      "width": 480
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=c0.689.1774.1776a_dst-jpg_e15_s320x320_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfS8SByIc2t2QQ2khIbxhA1YtgoVUEd4NCy6H-zLMwODrA\u0026oe=687BCF09",
+                      "height": 320,
+                      "width": 319
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=c0.689.1774.1776a_dst-jpg_e15_s240x240_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfSvYx1wRbCiFG7wgQyk14NbhXV-EKrDX_GqKmRMJroG1g\u0026oe=687BCF09",
+                      "height": 240,
+                      "width": 240
+                    },
+                    {
+                      "url": "https://scontent.cdninstagram.com/v/t51.75761-15/491455801_17974596449841138_7319139792872946273_n.jpg?stp=c0.688.1774.1778a_dst-jpg_e15_s150x150_tt6\u0026_nc_cat=104\u0026ig_cache_key=MzYxODA3ODczMDg4NTIwNjAzMjE3OTc0NTk2NDQzODQxMTM4.3-ccb1-7\u0026ccb=1-7\u0026_nc_sid=58cdad\u0026efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE3NzR4MzE1NC5zZHIifQ%3D%3D\u0026_nc_ohc=bQxaHOSezJ0Q7kNvwHv7eiF\u0026_nc_oc=AdmvF5mlm-Iu1aCc82085HQBxKsIBLzuJ_JHln7CPh5vkmhxhSO6yb9nAIvGFl21jvg\u0026_nc_ad=z-m\u0026_nc_cid=0\u0026_nc_zt=23\u0026_nc_ht=scontent.cdninstagram.com\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026oh=00_AfSODg0asM0SU0l1Llgaa80Eri1oOvgTyYlfyvrmCmZu-A\u0026oe=687BCF09",
+                      "height": 150,
+                      "width": 150
+                    }
+                  ]
+                },
+                "usertags": null,
+                "taken_at": 1745529325,
+                "previous_submitter": null,
+                "link": null,
+                "story_cta": null,
+                "like_count": 43845,
+                "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjE4MDc4NzMwODg1MjA2MDMyIiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MXwzNjE4MDc4NzMwODg1MjA2MDMyfDYwNTM4MTExMzQ5fDczZjFmYmNiYjRmY2NlNGU0NTM3ZTZiMjQyMjQxMTEwMGMyODhkZGJlMGFiNGZhMzYzOGExNGNhNDczNDIyNTYifSwic2lnbmF0dXJlIjoiIn0=",
+                "owner": {
+                  "pk": "55286345137",
+                  "id": "55286345137",
+                  "transparency_product": null,
+                  "transparency_product_enabled": false,
+                  "transparency_label": null,
+                  "username": "nobu.sun.manmo",
+                  "ai_agent_owner_username": null,
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/462765556_1218204049384247_4281607202293024427_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=111\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=uVVtJZjs8YwQ7kNvwHcMQt_\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfS5XKyXHmEAax6yIwx3FLl8RTKnqtil_NpT3ITy6B20iA\u0026oe=687BD44F\u0026_nc_sid=ca40e6",
+                  "show_account_transparency_details": true,
+                  "__typename": "XDTUserDict",
+                  "is_private": false,
+                  "friendship_status": { "following": false }
+                },
+                "preview": "ABgqhVzM5Y9F/wAgfgOfqa1YM7Bj0z+dZkamNAOhPX6mteFlVSO+OKL20Ax5YzvJ6H2op8mSx9qKmwGz9mTapVAx4JyxHbOfzoMLf3F6/wB89PX/AOtWVCSSSOwxUgl+baeT/nrzRcZfa1XY7MgVsHGGJ7Z/nRVC4kHGKKpMQltgJn+8f/1U7Znn1pIfuL9BVkf1/pWbKM6fPGaKmuB8v/AqKpCZ/9k=",
+                "product_type": "clips",
+                "invited_coauthor_producers": [],
+                "carousel_media_count": null,
+                "all_previous_submitters": null,
+                "coauthor_producers": [],
+                "sponsor_tags": null,
+                "follow_hashtag_info": null,
+                "is_paid_partnership": false,
+                "affiliate_info": null,
+                "clips_attribution_info": null,
+                "clips_metadata": {
+                  "music_info": null,
+                  "original_sound_info": {
+                    "audio_asset_id": "1677339756475726",
+                    "original_audio_title": "WHITE BGM",
+                    "ig_artist": { "username": "nobu.sun.manmo", "id": "55286345137" },
+                    "is_explicit": false,
+                    "should_mute_audio": false,
+                    "consumption_info": { "should_mute_audio_reason": "", "is_trending_in_clips": false }
+                  },
+                  "is_shared_to_fb": false
+                },
+                "location": null,
+                "wearable_attribution_info": null,
+                "caption": {
+                  "pk": "18058017839158605",
+                  "text": "藻が生えてない1番の理由は、お掃除です。\n藻が発生した時に取り除くと次の藻ができるまで少し時間がかかりますが、藻ができてしまったら、そのできた藻がさらに成長していきます。\nそして水温が上がった時に一気にドバッと増えます。\n\n藻はめだかなどの魚の残した餌、排泄物などが大好きです。\n栄養がたくさんあると増え続けます。\n\nそして光の強さも関係があります。\n強い光は藻大好きです。そして成長を早めてくれます。\n遮光シートをカットし、私（嫁）が作ったのですが、主人がそれを見て、\n「俺作り直しす」とのことです。😄\n\n確かに私のよりも、主人の作ったのがいいかと思います。\n外のめだか鉢遮光しましたら、投稿致します。\n\n外のめだか鉢も鉢の周りの滑りをとってから、底砂の藻をとっています。m(_ _)m\n\n見ていただきとっても嬉しいです。\nありがとうございます。m(_ _)mまんも\n#ビオトープ #めだか",
+                  "has_translation": true
+                },
+                "caption_is_edited": false,
+                "headline": null,
+                "comment_count": 390,
+                "comments": null,
+                "view_count": null,
+                "top_likers": [],
+                "facepile_top_likers": [],
+                "hidden_likes_string_variant": -1,
+                "fb_like_count": null,
+                "like_and_view_counts_disabled": false,
+                "crosspost_metadata": { "is_feedback_aggregated": null },
+                "social_context": [],
+                "comments_disabled": null,
+                "can_viewer_reshare": true,
+                "can_reshare": null,
+                "saved_collection_ids": null,
+                "has_viewer_saved": null,
+                "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+                "commenting_disabled_for_viewer": null,
+                "boosted_status": null,
+                "boost_unavailable_identifier": null,
+                "boost_unavailable_reason": null,
+                "can_see_insights_as_brand": false,
+                "ig_media_sharing_disabled": false,
+                "feed_demotion_control": null,
+                "feed_recs_demotion_control": {
+                  "title": "Not interested",
+                  "confirmation_body": "We'll suggest fewer posts like this.",
+                  "confirmation_icon": "none",
+                  "confirmation_title": "Post hidden",
+                  "confirmation_style": "tombstone_v2",
+                  "confirmation_title_style": "large_left",
+                  "followup_options": [
+                    {
+                      "id": "dont_suggest_posts_from_author",
+                      "text": "Don't suggest posts from nobu.sun.manmo",
+                      "demotion_control": {
+                        "confirmation_body": "We won't suggest posts from nobu.sun.manmo.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "snooze_suggested_posts",
+                      "text": "Snooze all suggested posts in feed for 30 days",
+                      "demotion_control": {
+                        "confirmation_body": "We won’t show suggested posts for 30 days, unless you’ve seen all posts from accounts you follow.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "this_post_makes_me_uncomfortable",
+                      "text": "This post made me uncomfortable",
+                      "demotion_control": {
+                        "confirmation_body": "If you think this post goes against our Community Standards you can report it.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    }
+                  ]
+                },
+                "has_audio": true
+              },
+              "view_state_item_type": null,
+              "id": "3618078730885206032",
+              "inventory_source": "mixed_unconnected",
+              "ad": null
+            },
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": null,
+            "ad": {
+              "ad_id": "120228439492700761",
+              "global_position": 14,
+              "items": [
+                {
+                  "id": "3666237939106681200_3085730046",
+                  "item_client_gap_rules": { "post_gap_to_previous_ad": "3" },
+                  "pk": "3666237939106681200",
+                  "social_context": null,
+                  "inventory_source": "media_or_ad",
+                  "logging_info_token": null,
+                  "explore": null,
+                  "main_feed_carousel_starting_media_id": null,
+                  "carousel_media": null,
+                  "audience": null,
+                  "is_seen": false,
+                  "media_type": 1,
+                  "original_height": 2080,
+                  "original_width": 2080,
+                  "has_liked": false,
+                  "open_carousel_submission_state": null,
+                  "media_overlay_info": null,
+                  "code": "DLhF_smg5Fw",
+                  "user": {
+                    "pk": "3085730046",
+                    "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/28429542_847872615384811_8421755513913475072_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=IiFp4d3G1X0Q7kNvwHBsNvV\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfR9sBB1bYn4QmfQOqQw2fGvrf52HiNedyW2l_v4RBB38A\u0026oe=687BBE3B\u0026_nc_sid=ca40e6",
+                    "username": "yoani_official",
+                    "id": "3085730046",
+                    "is_unpublished": false,
+                    "live_broadcast_visibility": null,
+                    "live_broadcast_id": null,
+                    "hd_profile_pic_url_info": {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/28429542_847872615384811_8421755513913475072_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=IiFp4d3G1X0Q7kNvwHBsNvV\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfRXM7ZZcfk7SBId1fnDWP26a8ckh7K5DBzxisu5nI2Mhw\u0026oe=687BBE3B\u0026_nc_sid=ca40e6"
+                    },
+                    "full_name": "代々木アニメーション学院",
+                    "is_verified": false,
+                    "friendship_status": { "following": false, "is_feed_favorite": false },
+                    "is_private": false,
+                    "__typename": "XDTUserDict",
+                    "is_embeds_disabled": false,
+                    "latest_reel_media": 1752486654
+                  },
+                  "carousel_parent_id": null,
+                  "display_uri": null,
+                  "is_dash_eligible": null,
+                  "number_of_qualities": null,
+                  "video_dash_manifest": null,
+                  "video_versions": null,
+                  "accessibility_caption": "Photo by 代々木アニメーション学院 on June 30, 2025. 写真の説明はありません。.",
+                  "image_versions2": {
+                    "candidates": [
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/514321227_1184399536827607_6457222385720870237_n.jpg?stp=dst-jpg_e15_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6ImFkc19pbWFnZS4yMDgweDIwODAub3JpZ2luYWw6MjA4MHgyMDgwLnBhZ2U6UGFnZVR5cGVDb2RlLlBBR0VfSU5TVEFHUkFNX1dFQl9GRUVEIn0\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=V-XvWNDBTzwQ7kNvwEgzWxk\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQdgV7PCzBAhz4y6sRQxxYVdflk0dLF26tp0CPUd-v7sA\u0026oe=687BD5FE\u0026_nc_sid=ca40e6",
+                        "height": 2080,
+                        "width": 2080
+                      }
+                    ]
+                  },
+                  "usertags": null,
+                  "taken_at": 1751269641,
+                  "previous_submitter": null,
+                  "link": "https://www.facebook.com/ads/ig_redirect/?d=Ad_bXm_x195AMGmfbj3-4APa8ELOIEcfrXpdnXSozzQXOMYf2trgmlDmXK8MEQrZZ3DzJIFToZEHJGSGOcTdOxpGdDAnkXLb8IrFi3hOdkwd_rStLkJlxrCljMS-Jz4V3gX_-9pyjWvOidJLip9Io76cxCpG7mnDo2kHaGihYod9aSQyK6-YI42j7kxJnizlW9fzlZL_kEobqST4eziS-N1vMiBstktbQJUQLgvxqFE6_fFGIsObq5n9OE_f5jMb-khL9WdjWUoU7JE731Jcx0ilB4y-h6s3-Al5K1mockftzEW6XgNZ_2J3Yrs-UWbrDKJCZPdXxCd6u1b3urcQLi4IT30pWnoqq0thMUIByrXvilteTY2jPwM_Zc0u8Sl5kvDBvlqquhUwtPBSPwc8xtfqZrhlUgwvZVu3gzmlhsoVmhfmYbQNAJtWZEzThwpGBS5IVzUFmH7NwuABs1enLTlwVfVLD48TfCdVa1HZ6sdktdBvBL3Y1uAvZv8Bh3NrD8rtGzf4ws6B7Q1nTriloz6-xeL598-oMSrtUlu3Xkl6G3SUCZwoVhuMngS3Tc23i789lol9VbWmB2B2DNHkzNivWMPH_QoSQgolB8TjZbdYsX5XXEgxDXEyflbDud5Lx7S8yk_C47iJpAXiw4-Y4tNtUzvDCEac9BJOJOXIQV5SitRBL4oiv2bnkhEYz0YHAK4Q3s035GV53kM5Z7SJiCHDm6uOfD8SppBNtmXWY-dw3mWCmVV4wM3pfdQQomCm9L1K625G1TxCTL4LgpJkdZ4ijjO3ZFhZ1_gMGKCYLwiLwCJ8VVJBDTr8UL2UXMZydwGt3VAMn9NFsZt2zam_Ya7fE21bE_qibC64DoGvhS_T5VyiWLreNS2X1cmg7sq8bz7-CsKONNU2KtFZ9XZHllVWvliy__QcrlHS4PiWRtJxUA\u0026a=1\u0026hash=Ad8hcKcQVVTi6gpOll0",
+                  "story_cta": null,
+                  "like_count": 21,
+                  "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjY2MjM3OTM5MTA2NjgxMjAwIiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTcwNnwzNjY2MjM3OTM5MTA2NjgxMjAwfDYwNTM4MTExMzQ5fDhmYmQ0OGYzYmIwMzhkMzNlOGFiNjQ3MzFkYzA5MDMyOGU3MmZjYTIwNjU4YjRjZjM5NjgyNmI5Y2FkMzFkMDUifSwic2lnbmF0dXJlIjoiIn0=",
+                  "owner": {
+                    "pk": "3085730046",
+                    "id": "3085730046",
+                    "transparency_product": null,
+                    "transparency_product_enabled": false,
+                    "transparency_label": null,
+                    "username": "yoani_official",
+                    "ai_agent_owner_username": null,
+                    "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/28429542_847872615384811_8421755513913475072_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QGTq41GtnrpqAVK144zTdZmJYlewf99JfdYqGlMKuBmmyqdyTYi5eVKsoIyRkB0Usc\u0026_nc_ohc=IiFp4d3G1X0Q7kNvwHBsNvV\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfR9sBB1bYn4QmfQOqQw2fGvrf52HiNedyW2l_v4RBB38A\u0026oe=687BBE3B\u0026_nc_sid=ca40e6",
+                    "show_account_transparency_details": true,
+                    "__typename": "XDTUserDict",
+                    "is_private": false,
+                    "friendship_status": { "following": false }
+                  },
+                  "preview": null,
+                  "product_type": "ad",
+                  "invited_coauthor_producers": [],
+                  "carousel_media_count": null,
+                  "all_previous_submitters": null,
+                  "coauthor_producers": [],
+                  "sponsor_tags": null,
+                  "follow_hashtag_info": null,
+                  "is_paid_partnership": false,
+                  "affiliate_info": null,
+                  "clips_attribution_info": null,
+                  "clips_metadata": null,
+                  "location": null,
+                  "wearable_attribution_info": null,
+                  "caption": {
+                    "pk": "18081557575833723",
+                    "text": "【7/21(月/祝)】『函館市亀田交流プラザ』に代アニが行きます☝️/「出張体験型」オープンキャンパス/創立46年、あの人気アニメ作品をはじめ、日本のアニメ・エンタメ業界を支える代々木アニメーション学院のオープンキャンパス予約受付中！",
+                    "has_translation": true
+                  },
+                  "caption_is_edited": false,
+                  "headline": null,
+                  "comment_count": 0,
+                  "comments": null,
+                  "view_count": null,
+                  "top_likers": [],
+                  "facepile_top_likers": [],
+                  "hidden_likes_string_variant": -1,
+                  "fb_like_count": null,
+                  "like_and_view_counts_disabled": false,
+                  "crosspost_metadata": { "is_feedback_aggregated": null },
+                  "comments_disabled": null,
+                  "can_viewer_reshare": true,
+                  "can_reshare": null,
+                  "saved_collection_ids": null,
+                  "has_viewer_saved": null,
+                  "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+                  "commenting_disabled_for_viewer": null,
+                  "boosted_status": null,
+                  "boost_unavailable_identifier": null,
+                  "boost_unavailable_reason": null,
+                  "can_see_insights_as_brand": false,
+                  "ig_media_sharing_disabled": false,
+                  "feed_demotion_control": null,
+                  "feed_recs_demotion_control": null,
+                  "link_text": "Learn more",
+                  "ad_id": null,
+                  "dominant_color": "#D55485",
+                  "has_audio": null
+                }
+              ],
+              "tracking_token": "AI@AQLHFKz8v2aYzRsJgsSnageRpZyJHOXhelX2IhRkurevmA9RIf3rqdMHa0Y_bl3Qgw42n8zcsWSfcSxiEExF2qljnKNEcAjLxnIPbCJVX68SQA",
+              "view_state_item_type": null,
+              "brs_threshold": 90,
+              "primary_media_id": "3666237939106681200_3085730046",
+              "media_id": "3666237939106681200",
+              "media_type": 1,
+              "ad_title": "代々木アニメーション学院",
+              "display_fb_page_name": null,
+              "label": "Sponsored",
+              "ig_transparency_and_control_disclaimer_data": null,
+              "direct_share": true,
+              "lead_gen_form_id": null
+            },
+            "explore_story": null,
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": {
+              "id": "3676979510442227835_6200739991",
+              "owner": {
+                "pk": "6200739991",
+                "id": "6200739991",
+                "transparency_product": null,
+                "transparency_product_enabled": false,
+                "transparency_label": null,
+                "username": "kidsplaza.hakodate",
+                "ai_agent_owner_username": null,
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/447243442_965565488644714_1678475985504320359_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=110\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=sF1I4--IPDIQ7kNvwEKBQse\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfTheuvgE-_NHlZ2OQjXrLDPVu1SMtXtWR2yEQBC1sDmqw\u0026oe=687BBBB7\u0026_nc_sid=ca40e6",
+                "show_account_transparency_details": true,
+                "__typename": "XDTUserDict",
+                "is_private": false,
+                "friendship_status": { "following": true }
+              },
+              "view_state_item_type": null,
+              "brs_severity": null,
+              "pk": "3676979510442227835",
+              "inventory_source": "media_or_ad",
+              "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFqTmr4cNAA==",
+              "explore": null,
+              "main_feed_carousel_starting_media_id": null,
+              "carousel_media": [
+                {
+                  "pk": "3676979502179586589",
+                  "id": "3676979502179586589_6200739991",
+                  "original_height": 1920,
+                  "original_width": 1440,
+                  "media_type": 1,
+                  "carousel_parent_id": "3676979510442227835_6200739991",
+                  "display_uri": null,
+                  "user": null,
+                  "is_dash_eligible": null,
+                  "number_of_qualities": null,
+                  "video_dash_manifest": null,
+                  "video_versions": null,
+                  "accessibility_caption": "Photo by 【はこだてキッズプラザ】函館/こども/遊び場 on July 14, 2025. 5人、テキストの画像のようです.",
+                  "image_versions2": {
+                    "candidates": [
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520395395_18331648801203992_8520720787462752926_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=haIbkifts-EQ7kNvwE83W7V\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjE3OTU4NjU4OQ%3D%3D.3-ccb7-5\u0026oh=00_AfRtEZeT-5Je_ig9_2AxMA1PNJj9hGVxCP10bcl2AkBFlQ\u0026oe=687BEB75\u0026_nc_sid=ca40e6",
+                        "height": 1920,
+                        "width": 1440
+                      },
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520395395_18331648801203992_8520720787462752926_n.jpg?se=-1\u0026stp=dst-jpegr_e35_p1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=haIbkifts-EQ7kNvwE83W7V\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjE3OTU4NjU4OQ%3D%3D.3-ccb7-5\u0026oh=00_AfS9dSu13tXzHrY3Kzz5HWh3ufSl6N6lzSHWS9BKVbswag\u0026oe=687BEB75\u0026_nc_sid=ca40e6",
+                        "height": 1440,
+                        "width": 1080
+                      }
+                    ]
+                  },
+                  "usertags": null,
+                  "taken_at": 1752550135,
+                  "previous_submitter": null,
+                  "link": null,
+                  "story_cta": null,
+                  "has_liked": null,
+                  "like_count": null,
+                  "organic_tracking_token": null,
+                  "inventory_source": null,
+                  "logging_info_token": null,
+                  "owner": null,
+                  "media_overlay_info": null,
+                  "headline": null,
+                  "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                  "preview": null,
+                  "has_audio": null
+                },
+                {
+                  "pk": "3676979502297031931",
+                  "id": "3676979502297031931_6200739991",
+                  "original_height": 1920,
+                  "original_width": 1440,
+                  "media_type": 1,
+                  "carousel_parent_id": "3676979510442227835_6200739991",
+                  "display_uri": null,
+                  "user": null,
+                  "is_dash_eligible": null,
+                  "number_of_qualities": null,
+                  "video_dash_manifest": null,
+                  "video_versions": null,
+                  "accessibility_caption": "Photo by 【はこだてキッズプラザ】函館/こども/遊び場 on July 14, 2025. 8人、子供、テキストの画像のようです.",
+                  "image_versions2": {
+                    "candidates": [
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520410034_18331648816203992_3618479929033654450_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=ZHwVZZKDHPgQ7kNvwHieYjD\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjI5NzAzMTkzMQ%3D%3D.3-ccb7-5\u0026oh=00_AfT5z7XUNIfUKfDWOfs6pYIxpmXtzhb5ESxKeQDsNruR4Q\u0026oe=687BEC60\u0026_nc_sid=ca40e6",
+                        "height": 1920,
+                        "width": 1440
+                      },
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520410034_18331648816203992_3618479929033654450_n.jpg?se=-1\u0026stp=dst-jpegr_e35_p1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=ZHwVZZKDHPgQ7kNvwHieYjD\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjI5NzAzMTkzMQ%3D%3D.3-ccb7-5\u0026oh=00_AfS1xXl4tSmjvq6Nqnid9dxbMS91qEJoWSb5DFGph13nAA\u0026oe=687BEC60\u0026_nc_sid=ca40e6",
+                        "height": 1440,
+                        "width": 1080
+                      }
+                    ]
+                  },
+                  "usertags": null,
+                  "taken_at": 1752550135,
+                  "previous_submitter": null,
+                  "link": null,
+                  "story_cta": null,
+                  "has_liked": null,
+                  "like_count": null,
+                  "organic_tracking_token": null,
+                  "inventory_source": null,
+                  "logging_info_token": null,
+                  "owner": null,
+                  "media_overlay_info": null,
+                  "headline": null,
+                  "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                  "preview": null,
+                  "has_audio": null
+                },
+                {
+                  "pk": "3676979502540258168",
+                  "id": "3676979502540258168_6200739991",
+                  "original_height": 1920,
+                  "original_width": 1440,
+                  "media_type": 1,
+                  "carousel_parent_id": "3676979510442227835_6200739991",
+                  "display_uri": null,
+                  "user": null,
+                  "is_dash_eligible": null,
+                  "number_of_qualities": null,
+                  "video_dash_manifest": null,
+                  "video_versions": null,
+                  "accessibility_caption": "Photo by 【はこだてキッズプラザ】函館/こども/遊び場 on July 14, 2025. 10人、テキストの画像のようです.",
+                  "image_versions2": {
+                    "candidates": [
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520247028_18331648825203992_4745660812489373263_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=gBrqcAA9nMgQ7kNvwGiwQXX\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjU0MDI1ODE2OA%3D%3D.3-ccb7-5\u0026oh=00_AfQHtIXFY_k0DeWu6OeBfpqSlBTzBGVvtQSAg4YiNDzMxw\u0026oe=687BBE7A\u0026_nc_sid=ca40e6",
+                        "height": 1920,
+                        "width": 1440
+                      },
+                      {
+                        "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520247028_18331648825203992_4745660812489373263_n.jpg?se=-1\u0026stp=dst-jpegr_e35_p1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=gBrqcAA9nMgQ7kNvwGiwQXX\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjU0MDI1ODE2OA%3D%3D.3-ccb7-5\u0026oh=00_AfSmYSWLNXkPL9hLx3Qh4RIQzBPa8oJmiz1W-hdwwN9YMA\u0026oe=687BBE7A\u0026_nc_sid=ca40e6",
+                        "height": 1440,
+                        "width": 1080
+                      }
+                    ]
+                  },
+                  "usertags": null,
+                  "taken_at": 1752550135,
+                  "previous_submitter": null,
+                  "link": null,
+                  "story_cta": null,
+                  "has_liked": null,
+                  "like_count": null,
+                  "organic_tracking_token": null,
+                  "inventory_source": null,
+                  "logging_info_token": null,
+                  "owner": null,
+                  "media_overlay_info": null,
+                  "headline": null,
+                  "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                  "preview": null,
+                  "has_audio": null
+                }
+              ],
+              "audience": null,
+              "is_seen": false,
+              "media_type": 8,
+              "original_height": 612,
+              "original_width": 612,
+              "has_liked": false,
+              "open_carousel_submission_state": "closed",
+              "media_overlay_info": null,
+              "code": "DMHQWIeTHh7",
+              "user": {
+                "pk": "6200739991",
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/447243442_965565488644714_1678475985504320359_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=110\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=sF1I4--IPDIQ7kNvwEKBQse\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfTheuvgE-_NHlZ2OQjXrLDPVu1SMtXtWR2yEQBC1sDmqw\u0026oe=687BBBB7\u0026_nc_sid=ca40e6",
+                "username": "kidsplaza.hakodate",
+                "id": "6200739991",
+                "is_unpublished": false,
+                "live_broadcast_visibility": null,
+                "live_broadcast_id": null,
+                "hd_profile_pic_url_info": {
+                  "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/447243442_965565488644714_1678475985504320359_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=110\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=sF1I4--IPDIQ7kNvwEKBQse\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfSdcxbZ2ucEryYVw6UPL91MeJd_hyLTx7NDF41uH1BvXg\u0026oe=687BBBB7\u0026_nc_sid=ca40e6"
+                },
+                "full_name": "【はこだてキッズプラザ】函館/こども/遊び場",
+                "is_verified": false,
+                "friendship_status": { "following": true, "is_feed_favorite": false },
+                "is_private": false,
+                "__typename": "XDTUserDict",
+                "is_embeds_disabled": false,
+                "latest_reel_media": 0
+              },
+              "carousel_parent_id": null,
+              "display_uri": null,
+              "is_dash_eligible": null,
+              "number_of_qualities": null,
+              "video_dash_manifest": null,
+              "video_versions": null,
+              "accessibility_caption": null,
+              "image_versions2": {
+                "candidates": [
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520395395_18331648801203992_8520720787462752926_n.jpg?se=-1\u0026stp=dst-jpegr_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=haIbkifts-EQ7kNvwE83W7V\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjE3OTU4NjU4OQ%3D%3D.3-ccb7-5\u0026oh=00_AfRtEZeT-5Je_ig9_2AxMA1PNJj9hGVxCP10bcl2AkBFlQ\u0026oe=687BEB75\u0026_nc_sid=ca40e6",
+                    "height": 1920,
+                    "width": 1440
+                  },
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520395395_18331648801203992_8520720787462752926_n.jpg?se=-1\u0026stp=dst-jpegr_e35_p1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5oZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=108\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=haIbkifts-EQ7kNvwE83W7V\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3Njk3OTUwMjE3OTU4NjU4OQ%3D%3D.3-ccb7-5\u0026oh=00_AfS9dSu13tXzHrY3Kzz5HWh3ufSl6N6lzSHWS9BKVbswag\u0026oe=687BEB75\u0026_nc_sid=ca40e6",
+                    "height": 1440,
+                    "width": 1080
+                  }
+                ]
+              },
+              "usertags": null,
+              "taken_at": 1752550136,
+              "previous_submitter": null,
+              "link": null,
+              "story_cta": null,
+              "like_count": 2,
+              "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjc2OTc5NTEwNDQyMjI3ODM1Iiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MXwzNjc2OTc5NTEwNDQyMjI3ODM1fDYwNTM4MTExMzQ5fDAyMGJhZTcyMWM3OTEzMGU2MmM4MzBiMjU4MTUwYjQ4YzY3NGRkZWQyYTY2ZmNkODE5YjIyZDYwNWVlODQ2MTQifSwic2lnbmF0dXJlIjoiIn0=",
+              "preview": null,
+              "product_type": "carousel_container",
+              "invited_coauthor_producers": [],
+              "carousel_media_count": 3,
+              "all_previous_submitters": [],
+              "coauthor_producers": [],
+              "sponsor_tags": null,
+              "follow_hashtag_info": null,
+              "is_paid_partnership": false,
+              "affiliate_info": null,
+              "clips_attribution_info": null,
+              "clips_metadata": null,
+              "location": null,
+              "wearable_attribution_info": null,
+              "caption": {
+                "pk": "18074187838780910",
+                "text": "【7/15(火)#はっぱのうしろはだれだ？】\n\nこんにちは！\n今日のイベントの様子です！\nはっぱのうしろにかくれているのはだれかな～？はっぱさんにバイバイして正解を見てみよう！(*^▽^*)\n\n明日のイベント案内です。\n【まちがい探しクイズ】\n■時間：12時・15時\n■場所：はこだてキッズプラザ\n\n#はこだてキッズプラザ　#イベント　#函館で子どもが遊ぶ場所　#はこだてみらい館　#キラリス函館　#函館　#函館駅前　#子ども　#親子　#屋内遊戯施設　#室内　#キッズプラザ",
+                "has_translation": true
+              },
+              "caption_is_edited": false,
+              "headline": null,
+              "comment_count": 0,
+              "comments": null,
+              "view_count": null,
+              "top_likers": [],
+              "facepile_top_likers": [],
+              "hidden_likes_string_variant": -1,
+              "fb_like_count": null,
+              "like_and_view_counts_disabled": false,
+              "crosspost_metadata": { "is_feedback_aggregated": null },
+              "social_context": [],
+              "comments_disabled": null,
+              "can_viewer_reshare": true,
+              "can_reshare": null,
+              "saved_collection_ids": null,
+              "has_viewer_saved": null,
+              "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+              "commenting_disabled_for_viewer": true,
+              "boosted_status": null,
+              "boost_unavailable_identifier": null,
+              "boost_unavailable_reason": null,
+              "can_see_insights_as_brand": false,
+              "ig_media_sharing_disabled": false,
+              "feed_demotion_control": null,
+              "feed_recs_demotion_control": null,
+              "has_audio": null
+            },
+            "ad": null,
+            "explore_story": null,
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": null,
+            "ad": null,
+            "explore_story": {
+              "media": {
+                "id": "3676324635747348280_14949373756",
+                "brs_severity": null,
+                "pk": "3676324635747348280",
+                "inventory_source": "mixed_unconnected",
+                "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFqTmr4cNAA==",
+                "explore": { "title": "Suggested for you" },
+                "main_feed_carousel_starting_media_id": null,
+                "carousel_media": [
+                  {
+                    "pk": "3676324627795072504",
+                    "id": "3676324627795072504_14949373756",
+                    "original_height": 1440,
+                    "original_width": 1440,
+                    "media_type": 1,
+                    "carousel_parent_id": "3676324635747348280_14949373756",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 高原温泉ヒグマ情報センター on July 13, 2025. ヒグマ、クマ、クロクマ、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518165083_18113886700501757_3919629865136094457_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=poJaoesBAdwQ7kNvwHwauMZ\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzc5NTA3MjUwNA%3D%3D.3-ccb7-5\u0026oh=00_AfT7ajiZxDsg8n0U8GMKBIXG-wLfigzc5S68CH5lNVykQA\u0026oe=687BB9F4\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 1440
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518165083_18113886700501757_3919629865136094457_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=poJaoesBAdwQ7kNvwHwauMZ\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzc5NTA3MjUwNA%3D%3D.3-ccb7-5\u0026oh=00_AfSFMgGZzJ_-x0LeZRGmGAGziaBw2P6HnZneoENZjFgC1A\u0026oe=687BB9F4\u0026_nc_sid=ca40e6",
+                          "height": 1080,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1752472068,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3676324627920840580",
+                    "id": "3676324627920840580_14949373756",
+                    "original_height": 1440,
+                    "original_width": 1440,
+                    "media_type": 1,
+                    "carousel_parent_id": "3676324635747348280_14949373756",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 高原温泉ヒグマ情報センター on July 13, 2025. クマ、クロクマ、ヒグマ、テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518646793_18113886709501757_4666221006510150548_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=IYFkjDUG66wQ7kNvwEEeZ1Z\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzkyMDg0MDU4MA%3D%3D.3-ccb7-5\u0026oh=00_AfSdF-IojBXNK8cbnnxRIv5gSsXRRsUaxkBOsDqUtzr1pw\u0026oe=687BDA95\u0026_nc_sid=ca40e6",
+                          "height": 1440,
+                          "width": 1440
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518646793_18113886709501757_4666221006510150548_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=IYFkjDUG66wQ7kNvwEEeZ1Z\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzkyMDg0MDU4MA%3D%3D.3-ccb7-5\u0026oh=00_AfSs5GE5WlRnO6mLCO2tQaZFUJfJ6Bvp8SRCFI9IEO0dYA\u0026oe=687BDA95\u0026_nc_sid=ca40e6",
+                          "height": 1080,
+                          "width": 1080
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1752472068,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  },
+                  {
+                    "pk": "3676324627929238630",
+                    "id": "3676324627929238630_14949373756",
+                    "original_height": 742,
+                    "original_width": 742,
+                    "media_type": 1,
+                    "carousel_parent_id": "3676324635747348280_14949373756",
+                    "display_uri": null,
+                    "user": null,
+                    "is_dash_eligible": null,
+                    "number_of_qualities": null,
+                    "video_dash_manifest": null,
+                    "video_versions": null,
+                    "accessibility_caption": "Photo by 高原温泉ヒグマ情報センター on July 13, 2025. テキストの画像のようです.",
+                    "image_versions2": {
+                      "candidates": [
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520534658_18113886691501757_6468892536539217825_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjc0Mng3NDIuc2RyLmY4Mjc4Ny5kZWZhdWx0X2ltYWdlIn0\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=faqV7Ka-ticQ7kNvwEKYZed\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzkyOTIzODYzMA%3D%3D.3-ccb7-5\u0026oh=00_AfRomkqwV8oamo2P1H4An-SGEty28rKb_m_yQKdmzIN2iQ\u0026oe=687BE7ED\u0026_nc_sid=ca40e6",
+                          "height": 742,
+                          "width": 742
+                        },
+                        {
+                          "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/520534658_18113886691501757_6468892536539217825_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjc0Mng3NDIuc2RyLmY4Mjc4Ny5kZWZhdWx0X2ltYWdlIn0\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=faqV7Ka-ticQ7kNvwEKYZed\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzkyOTIzODYzMA%3D%3D.3-ccb7-5\u0026oh=00_AfRomkqwV8oamo2P1H4An-SGEty28rKb_m_yQKdmzIN2iQ\u0026oe=687BE7ED\u0026_nc_sid=ca40e6",
+                          "height": 742,
+                          "width": 742
+                        }
+                      ]
+                    },
+                    "usertags": null,
+                    "taken_at": 1752472068,
+                    "previous_submitter": null,
+                    "link": null,
+                    "story_cta": null,
+                    "has_liked": null,
+                    "like_count": null,
+                    "organic_tracking_token": null,
+                    "inventory_source": null,
+                    "logging_info_token": null,
+                    "owner": null,
+                    "media_overlay_info": null,
+                    "sharing_friction_info": { "bloks_app_url": null, "should_have_sharing_friction": false },
+                    "preview": null,
+                    "has_audio": null
+                  }
+                ],
+                "audience": null,
+                "is_seen": false,
+                "media_type": 8,
+                "original_height": 612,
+                "original_width": 612,
+                "has_liked": false,
+                "open_carousel_submission_state": "closed",
+                "media_overlay_info": null,
+                "code": "DME7cc4vO84",
+                "user": {
+                  "pk": "14949373756",
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/152919640_243328594088266_1375148803639496736_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=110\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=OF3LtsUVitYQ7kNvwHG4vg3\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQ_e5-wUkaHP3dWnpdHLdFJnbcOJe02bp0bhm_pg_ja8g\u0026oe=687BBF38\u0026_nc_sid=ca40e6",
+                  "username": "higuma.center",
+                  "id": "14949373756",
+                  "is_unpublished": false,
+                  "live_broadcast_visibility": null,
+                  "live_broadcast_id": null,
+                  "hd_profile_pic_url_info": {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/152919640_243328594088266_1375148803639496736_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=110\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=OF3LtsUVitYQ7kNvwHG4vg3\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQ0swCM8VwiHAvsThVE-M6YhAhEJ0FZwIu8kr47-gz4XQ\u0026oe=687BBF38\u0026_nc_sid=ca40e6"
+                  },
+                  "full_name": "高原温泉ヒグマ情報センター",
+                  "is_verified": false,
+                  "friendship_status": { "following": false, "is_feed_favorite": false },
+                  "is_private": false,
+                  "__typename": "XDTUserDict",
+                  "is_embeds_disabled": false,
+                  "latest_reel_media": 0
+                },
+                "carousel_parent_id": null,
+                "display_uri": null,
+                "is_dash_eligible": null,
+                "number_of_qualities": null,
+                "video_dash_manifest": null,
+                "video_versions": null,
+                "accessibility_caption": null,
+                "image_versions2": {
+                  "candidates": [
+                    {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518165083_18113886700501757_3919629865136094457_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=poJaoesBAdwQ7kNvwHwauMZ\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzc5NTA3MjUwNA%3D%3D.3-ccb7-5\u0026oh=00_AfT7ajiZxDsg8n0U8GMKBIXG-wLfigzc5S68CH5lNVykQA\u0026oe=687BB9F4\u0026_nc_sid=ca40e6",
+                      "height": 1440,
+                      "width": 1440
+                    },
+                    {
+                      "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/518165083_18113886700501757_3919629865136094457_n.jpg?stp=dst-jpg_e35_s1080x1080_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTQ0MC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UifQ\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=105\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=poJaoesBAdwQ7kNvwHwauMZ\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3NjMyNDYyNzc5NTA3MjUwNA%3D%3D.3-ccb7-5\u0026oh=00_AfSFMgGZzJ_-x0LeZRGmGAGziaBw2P6HnZneoENZjFgC1A\u0026oe=687BB9F4\u0026_nc_sid=ca40e6",
+                      "height": 1080,
+                      "width": 1080
+                    }
+                  ]
+                },
+                "usertags": null,
+                "taken_at": 1752472069,
+                "previous_submitter": null,
+                "link": null,
+                "story_cta": null,
+                "like_count": 604,
+                "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjc2MzI0NjM1NzQ3MzQ4MjgwIiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MXwzNjc2MzI0NjM1NzQ3MzQ4MjgwfDYwNTM4MTExMzQ5fDFhODdhMmMyMTdlMGE1MGUxNTkwOWIxM2JmYzI4NDQ0YzYwMGQyMDQ0NjgzZTU0NTMyMjFjOWViNTBhMjJiMDAifSwic2lnbmF0dXJlIjoiIn0=",
+                "owner": {
+                  "pk": "14949373756",
+                  "id": "14949373756",
+                  "transparency_product": null,
+                  "transparency_product_enabled": false,
+                  "transparency_label": null,
+                  "username": "higuma.center",
+                  "ai_agent_owner_username": null,
+                  "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/152919640_243328594088266_1375148803639496736_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=110\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=OF3LtsUVitYQ7kNvwHG4vg3\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfQ_e5-wUkaHP3dWnpdHLdFJnbcOJe02bp0bhm_pg_ja8g\u0026oe=687BBF38\u0026_nc_sid=ca40e6",
+                  "show_account_transparency_details": true,
+                  "__typename": "XDTUserDict",
+                  "is_private": false,
+                  "friendship_status": { "following": false }
+                },
+                "preview": null,
+                "product_type": "carousel_container",
+                "invited_coauthor_producers": [],
+                "carousel_media_count": 3,
+                "all_previous_submitters": [],
+                "coauthor_producers": [],
+                "sponsor_tags": null,
+                "follow_hashtag_info": null,
+                "is_paid_partnership": false,
+                "affiliate_info": null,
+                "clips_attribution_info": null,
+                "clips_metadata": null,
+                "location": null,
+                "wearable_attribution_info": null,
+                "caption": {
+                  "pk": "18057530723352005",
+                  "text": "【7/14親子グマがセンター脇に】\nはじめは林道にて目撃された親子グマが、センター脇5ｍほどのところで撮影されました。（親子連れのクマの写真は登山者様よりご提供いただきました。ありがとうございます。）\n真後ろにはセンターの車が映っているのが確認できます。\n巡視時には、センターから３㎞ほどにある湯沼手前の沢沿いに12～13㎝の足跡があり、帰り道ではセンターから500ｍ、100ｍほどの2ヵ所の藪の中でガサガサと藪が揺れるのを確認しました。目視にて動物の判別は出来ませんでしたが、重量感のある音でした。\n今後もコースの開放には慎重にならざるを得ない状況です。\nいけだ\n\n#大雪山山守隊 \n#ヒグマ情報センター \n#高原温泉 \n#白雲岳避難小屋 \n#大雪山国立公園 \n#北海道山岳整備 \n#高原温泉沼巡りコース \n#白雲岳整備人 \n#旭岳整備人",
+                  "has_translation": true
+                },
+                "caption_is_edited": false,
+                "headline": null,
+                "comment_count": 0,
+                "comments": null,
+                "view_count": null,
+                "top_likers": [],
+                "facepile_top_likers": [],
+                "hidden_likes_string_variant": -1,
+                "fb_like_count": null,
+                "like_and_view_counts_disabled": false,
+                "crosspost_metadata": { "is_feedback_aggregated": null },
+                "social_context": [],
+                "comments_disabled": null,
+                "can_viewer_reshare": true,
+                "can_reshare": null,
+                "saved_collection_ids": null,
+                "has_viewer_saved": null,
+                "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+                "commenting_disabled_for_viewer": null,
+                "boosted_status": null,
+                "boost_unavailable_identifier": null,
+                "boost_unavailable_reason": null,
+                "can_see_insights_as_brand": false,
+                "ig_media_sharing_disabled": false,
+                "feed_demotion_control": null,
+                "feed_recs_demotion_control": {
+                  "title": "Not interested",
+                  "confirmation_body": "We'll suggest fewer posts like this.",
+                  "confirmation_icon": "none",
+                  "confirmation_title": "Post hidden",
+                  "confirmation_style": "tombstone_v2",
+                  "confirmation_title_style": "large_left",
+                  "followup_options": [
+                    {
+                      "id": "dont_suggest_posts_from_author",
+                      "text": "Don't suggest posts from higuma.center",
+                      "demotion_control": {
+                        "confirmation_body": "We won't suggest posts from higuma.center.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "snooze_suggested_posts",
+                      "text": "Snooze all suggested posts in feed for 30 days",
+                      "demotion_control": {
+                        "confirmation_body": "We won’t show suggested posts for 30 days, unless you’ve seen all posts from accounts you follow.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    },
+                    {
+                      "id": "this_post_makes_me_uncomfortable",
+                      "text": "This post made me uncomfortable",
+                      "demotion_control": {
+                        "confirmation_body": "If you think this post goes against our Community Standards you can report it.",
+                        "confirmation_icon": "checkmark",
+                        "confirmation_style": "tombstone_v2"
+                      }
+                    }
+                  ]
+                },
+                "has_audio": null
+              },
+              "view_state_item_type": null,
+              "id": "3676324635747348280",
+              "inventory_source": "mixed_unconnected",
+              "ad": null
+            },
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        },
+        {
+          "node": {
+            "media": {
+              "id": "3671106733004729803_10869596076",
+              "owner": {
+                "pk": "10869596076",
+                "id": "10869596076",
+                "transparency_product": null,
+                "transparency_product_enabled": false,
+                "transparency_label": null,
+                "username": "oishii.hakodate",
+                "ai_agent_owner_username": null,
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/379560014_969382601031655_6095437960889396992_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=3ePjTamvtikQ7kNvwEAn_Dz\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfRFVkTPiB5g8kCtoq6ayGZTV31uKVNLrSmZ50DdzgxpzA\u0026oe=687BB66E\u0026_nc_sid=ca40e6",
+                "show_account_transparency_details": true,
+                "__typename": "XDTUserDict",
+                "is_private": false,
+                "friendship_status": { "following": true }
+              },
+              "view_state_item_type": null,
+              "brs_severity": null,
+              "pk": "3671106733004729803",
+              "inventory_source": "media_or_ad",
+              "logging_info_token": "GCAyZDNmNWFmMjAxYTE0MzZiOGUzOWE4N2I4M2E0MTE1YkaS/a+HDSaS/a+HDRgDY2NvFqTmr4cNAA==",
+              "explore": null,
+              "main_feed_carousel_starting_media_id": null,
+              "carousel_media": null,
+              "audience": null,
+              "is_seen": false,
+              "media_type": 1,
+              "original_height": 900,
+              "original_width": 900,
+              "has_liked": false,
+              "open_carousel_submission_state": null,
+              "media_overlay_info": null,
+              "code": "DLyZB-RSq3L",
+              "user": {
+                "pk": "10869596076",
+                "profile_pic_url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/379560014_969382601031655_6095437960889396992_n.jpg?stp=dst-jpg_s150x150_tt6\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=3ePjTamvtikQ7kNvwEAn_Dz\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfRFVkTPiB5g8kCtoq6ayGZTV31uKVNLrSmZ50DdzgxpzA\u0026oe=687BB66E\u0026_nc_sid=ca40e6",
+                "username": "oishii.hakodate",
+                "id": "10869596076",
+                "is_unpublished": false,
+                "live_broadcast_visibility": null,
+                "live_broadcast_id": null,
+                "hd_profile_pic_url_info": {
+                  "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-19/379560014_969382601031655_6095437960889396992_n.jpg?_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=107\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=3ePjTamvtikQ7kNvwEAn_Dz\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026oh=00_AfThLzNeSU-XwJi6pCsutULPaGTlcd_OBxxxzQLROgTYYg\u0026oe=687BB66E\u0026_nc_sid=ca40e6"
+                },
+                "full_name": "函館市公式 食の魅力発信サイト「おいしい函館」",
+                "is_verified": false,
+                "friendship_status": { "following": true, "is_feed_favorite": false },
+                "is_private": false,
+                "__typename": "XDTUserDict",
+                "is_embeds_disabled": false,
+                "latest_reel_media": 0
+              },
+              "carousel_parent_id": null,
+              "display_uri": null,
+              "is_dash_eligible": null,
+              "number_of_qualities": null,
+              "video_dash_manifest": null,
+              "video_versions": null,
+              "accessibility_caption": "Photo by 函館市公式 食の魅力発信サイト「おいしい函館」 on July 06, 2025. フラワーアレンジメント、ヒスイラン、カーネーション、テキストの画像のようです.",
+              "image_versions2": {
+                "candidates": [
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516801068_18161241448364077_855037098378219258_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQuaW1hZ2VfdXJsZ2VuLjkwMHg5MDAuc2RyLmY4Mjc4Ny5kZWZhdWx0X2ltYWdlIn0\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=101\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=-RbNWFPmrjcQ7kNvwGPehpp\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MTEwNjczMzAwNDcyOTgwMw%3D%3D.3-ccb7-5\u0026oh=00_AfQ2CX6fTlTbsaaLPoSG4gPdr_ZWBBkbmNQeRjrfsImb4Q\u0026oe=687BCF4F\u0026_nc_sid=ca40e6",
+                    "height": 900,
+                    "width": 900
+                  },
+                  {
+                    "url": "https://instagram.fhkd1-1.fna.fbcdn.net/v/t51.2885-15/516801068_18161241448364077_855037098378219258_n.jpg?stp=dst-jpg_e35_tt6\u0026efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQuaW1hZ2VfdXJsZ2VuLjkwMHg5MDAuc2RyLmY4Mjc4Ny5kZWZhdWx0X2ltYWdlIn0\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_cat=101\u0026_nc_oc=Q6cZ2QG5LBkrcCR1Kej2KFI8f2nnE6pOh9AdFnOXLSegc-OK4HbA1kX4rO3ejnZjkE6GAQo\u0026_nc_ohc=-RbNWFPmrjcQ7kNvwGPehpp\u0026_nc_gid=9UfDRBo5TG8EakeTiyAM6A\u0026edm=APNOSGoBAAAA\u0026ccb=7-5\u0026ig_cache_key=MzY3MTEwNjczMzAwNDcyOTgwMw%3D%3D.3-ccb7-5\u0026oh=00_AfQ2CX6fTlTbsaaLPoSG4gPdr_ZWBBkbmNQeRjrfsImb4Q\u0026oe=687BCF4F\u0026_nc_sid=ca40e6",
+                    "height": 900,
+                    "width": 900
+                  }
+                ]
+              },
+              "usertags": null,
+              "taken_at": 1751850047,
+              "previous_submitter": null,
+              "link": null,
+              "story_cta": null,
+              "like_count": 75,
+              "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjp0cnVlLCJ1dWlkIjoiZmZkNjJiNmQ3MWEzNDljYzlmMTFmYWM4NDc3OGU5ZTczNjcxMTA2NzMzMDA0NzI5ODAzIiwic2VydmVyX3Rva2VuIjoiMTc1MjU2MzUyOTE0MXwzNjcxMTA2NzMzMDA0NzI5ODAzfDYwNTM4MTExMzQ5fGE5NmY1ZjdjYWUxOWY0YWI3MWZiODU0ZGU3OTA1MmZmM2NiMTJkYTU5YTMzMGIzNTI2ZWM2MzJmMWQ3ZDZhYjkifSwic2lnbmF0dXJlIjoiIn0=",
+              "preview": "ACoq6FhmlBxSGqbXYU4IP+H1qb2KNAHPNIarLLv6dO5pS23BzTuKxOKWog1PzTENaqE4VeQBkH065/w61aZ8cdSe1Zj3Akl8kk7s4PHpyRx7fhWTeuhZOj+ZxHnA/Dmn5OAD15qvbI8LMHI2nlQPr+fSpS46tgH8x+Bqkw2fcsxtkVPms0TiMZOcdPp9aX7env8Ap/jRzLuKzZa3DORz71TkjjD79oD9c8/41bUDFG0egqbAUSQTnucDP+NTbwR0zjuas7R6CmMB6UgKNyw2cjuP61m4Fas6gr0HWqexfQflSa1LWx//2Q==",
+              "product_type": "feed",
+              "invited_coauthor_producers": [],
+              "carousel_media_count": null,
+              "all_previous_submitters": null,
+              "coauthor_producers": [],
+              "sponsor_tags": null,
+              "follow_hashtag_info": null,
+              "is_paid_partnership": false,
+              "affiliate_info": null,
+              "clips_attribution_info": null,
+              "clips_metadata": null,
+              "location": null,
+              "wearable_attribution_info": null,
+              "caption": {
+                "pk": "18043813835288465",
+                "text": "🎉【受賞のお知らせ】🎉\n\n「和創菓ひとひら」吉田貴之さんが、第28回全国菓子大博覧会・北海道（あさひかわ菓子博2025）にて、工芸菓子部門の最高賞「名誉総裁賞」を受賞されました。\n\n詳しくはプロフィールURLの「食ニュース」をチェック ✔️\n🔗 https://www.oishii-hakodate.jp/news/250707/\n\n#おいしい函館 #函館 #北海道\n#函館グルメ #北海道グルメ #美味しい #おいしい #グルメ\n#函館イベント #イベント\n#hakodate #hokkaido #gourmet\n#delicious #yummy #cuisine\n#oishiihakodate_event\n#グルメ好きな人と繋がりたい\n#美味 #美食\n#和創菓ひとひら #吉田食品\n#工芸菓子",
+                "has_translation": true
+              },
+              "caption_is_edited": true,
+              "headline": null,
+              "comment_count": 0,
+              "comments": null,
+              "view_count": null,
+              "top_likers": [],
+              "facepile_top_likers": [],
+              "hidden_likes_string_variant": -1,
+              "fb_like_count": null,
+              "like_and_view_counts_disabled": false,
+              "crosspost_metadata": { "is_feedback_aggregated": null },
+              "social_context": [],
+              "comments_disabled": null,
+              "can_viewer_reshare": true,
+              "can_reshare": null,
+              "saved_collection_ids": null,
+              "has_viewer_saved": null,
+              "sharing_friction_info": { "should_have_sharing_friction": false, "bloks_app_url": null },
+              "commenting_disabled_for_viewer": null,
+              "boosted_status": null,
+              "boost_unavailable_identifier": null,
+              "boost_unavailable_reason": null,
+              "can_see_insights_as_brand": false,
+              "ig_media_sharing_disabled": false,
+              "feed_demotion_control": null,
+              "feed_recs_demotion_control": null,
+              "has_audio": null
+            },
+            "ad": null,
+            "explore_story": null,
+            "end_of_feed_demarcator": null,
+            "stories_netego": null,
+            "suggested_users": null,
+            "bloks_netego": null,
+            "abra_icebreakers_in_feed_unit": null,
+            "__typename": "XDTFeedItem"
+          },
+          "cursor": ""
+        }
+      ],
+      "page_info": {
+        "has_next_page": true,
+        "end_cursor": "KJEBAH_PggGUnsQyy61KkR9k8jIQEM-zb_81MhbDhm6vsOwyIpG2k1Yb_TJnbEYCR3BiMqcISv1E9Ooy7qPKtzQVBzPvXYftgKTlMjDPgkx40gQzLh0AU5ZC7DJwkYMm-xfhMrOvov8osuYytJjJfbDG7zL110kP8QjjMjjvvDjH7QQze3hMHmJBBzM-YMiL98kFMxby_ujOgWZGBlIyKOEFAPwhyZTLrmsyBgexRwz69jIJJ8gTH5ChMgpxya6ZBOQyDTIgPlpA8DIQEM-zb_81MhIDy_lVLMkyFsOGbq-w7DIdjEuOC_XyMh6Dhz_UIPwyHs3LbBwe8TIgIMggZIb4MiARTt0NXDcyIpG2k1Yb_TIkBkotXwTkMiQRhhSQZvQyKaY9sEu5-DIqwkoo0VT2Mi4dAFOWQuwyMkiymPC39TI31by08jrcMjjvvDjH7QQzOivPJAUx9TI6owm7UlDnMj2YzP5LV_oyPmDIi_fJBTM_6jzK-e_gMkBBykfQIwMzQcEEhK_f9DJDrc1W2PP_MkRlzXsYfuMySc4FxMahBDNV4cwe3KrDMlgHhiYQtfMyYHVFmLhvBTNm1Mh1Wd_6MmdsRgJHcGIyaDEG5xBs8jJpJj_tJ37HMmyOylnRBTAyb0NL92cZ9jJy1r2LRiDvMnOFBn5NVvsydL5P-dle8DJ1pk_iUiXBMnT9zIVaweUydeVPLL517TJ4UsnCDCMDM3nmShM3uPMydkvPUdxT6DJ7eEweYkEHM31wykk_IPEygBFLKm8f8TKKTMxmJCKdMo2NyuypA-Qyl2RO7fE06zKfkU2mlT39MqJKz0EAnpEypXcCMePeAjOnCEr9RPTqMqnMSpZKkusyr_NMVqqIBDOwcMqUDIzoMrOvov8osuYytJjJfbDG7zK5WkSxwfEEM7w_SOxMa-kyvpAFGk9g8jLAYwZtoPTqMsGASzisxgUzwd1OpizX_DLGnIXfKGryMseOyeF5HfEyyEi6K01Z5jLLrUqRH2TyMswRy-IxjfIy0aclRtOGjDLSx8RqmUybMtupzfSn7vIy4BgkOvD45DLl80ob3WfpMuiApa-4wIky6XXNKxfB-DLr9SYQP17NMu6jyrc0FQcz712H7YCk5TL0T0kaNSQDM_XXSQ_xCOMy9sdLVRAB5DL5BswaAwEDM_sCyJjzd-cy_HhNBmeC_zJWhP2vhw0A",
+        "has_previous_page": false,
+        "start_cursor": null
+      }
+    }
+  },
+  "extensions": {
+    "is_final": true,
+    "all_video_dash_prefetch_representations": [
+      {
+        "video_id": "3618078730885206032",
+        "representations": [
+          {
+            "base_url": "https://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t2/f2/m86/AQP0d-XYM4fhvuE5Wh_fTQJx5FxD5zWtLTkKzXnZmkh3zqRihNXkZ416nKVzTkJHajOudvmwLisAylRRAYrVwDYhoDgZgo6OAoHXVWM.mp4?_nc_cat=101\u0026_nc_oc=AdmnebFNxY5sfK-D0gnJDCf-krWe9_bQzWKb684Uc_mD5jha109Qq77Td5f_7TMpREA\u0026_nc_sid=9ca052\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_ohc=dSH9dMIEqv8Q7kNvwHRdmRa\u0026efg=eyJ2ZW5jb2RlX3RhZyI6ImlnLXhwdmRzLmNsaXBzLmMyLUMzLmRhc2hfYmFzZWxpbmVfMV92MSIsInZpZGVvX2lkIjpudWxsLCJvaWxfdXJsZ2VuX2FwcF9pZCI6OTM2NjE5NzQzMzkyNDU5LCJjbGllbnRfbmFtZSI6ImlnIiwieHB2X2Fzc2V0X2lkIjo1Nzk1NDE0OTc4ODk0NzcsInZpX3VzZWNhc2VfaWQiOjEwMDk5LCJkdXJhdGlvbl9zIjo0NiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9\u0026ccb=17-1\u0026_nc_zt=28\u0026oh=00_AfQOOrSF88-d0nx7-ITIXLAuTChUkNGIPLxyKx37uvMM2Q\u0026oe=6877C25A",
+            "bandwidth": 3580450,
+            "width": 720,
+            "height": 1280,
+            "mime_type": "video/mp4",
+            "codecs": "avc1.64001f",
+            "playback_resolution_mos": "0:100,360:98.5,480:97.4,720:94.4,1080:80.2",
+            "playback_resolution_csvqm": "0:100,360:99.66,480:99.42,720:98.04,1080:93.1",
+            "segments": [
+              { "start": 0, "end": 891 },
+              { "start": 892, "end": 1043 },
+              { "start": 1044, "end": 85195 }
+            ],
+            "representation_id": "9470032089774205vd"
+          },
+          {
+            "base_url": "https://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t2/f2/m86/AQOBG5a0ovZ-tpo_QNAT9dqx8rqFRTuepbUyIcp2o84warq9NkceZoDp2l0-gyBy_R7HCvBu7LDi1F03g6As8IT9NpNR20ww9PW1ge4.mp4?_nc_cat=108\u0026_nc_oc=AdkcqicNGadX3r7AMqP9r6YxEkq7cRAI66KI-h5ZUDvlkqrDgQErcjyvt4RAlnhe1No\u0026_nc_sid=9ca052\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_ohc=Et2n4gos8MYQ7kNvwFIxkom\u0026efg=eyJ2ZW5jb2RlX3RhZyI6ImlnLXhwdmRzLmNsaXBzLmMyLUMzLmRhc2hfYmFzZWxpbmVfM192MSIsInZpZGVvX2lkIjpudWxsLCJvaWxfdXJsZ2VuX2FwcF9pZCI6OTM2NjE5NzQzMzkyNDU5LCJjbGllbnRfbmFtZSI6ImlnIiwieHB2X2Fzc2V0X2lkIjo1Nzk1NDE0OTc4ODk0NzcsInZpX3VzZWNhc2VfaWQiOjEwMDk5LCJkdXJhdGlvbl9zIjo0NiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9\u0026ccb=17-1\u0026_nc_zt=28\u0026oh=00_AfSNommuZrfpvOZXGc8p4eQhKjnutNxyhnD2pi4w291z9A\u0026oe=6877EA59",
+            "bandwidth": 716687,
+            "width": 360,
+            "height": 640,
+            "mime_type": "video/mp4",
+            "codecs": "avc1.4d001e",
+            "playback_resolution_mos": "0:100,360:66.3,480:60.9,720:52.1,1080:41.8",
+            "playback_resolution_csvqm": "0:100,360:81.3,480:76.1,720:67,1080:56.1",
+            "segments": [
+              { "start": 0, "end": 886 },
+              { "start": 887, "end": 1038 },
+              { "start": 1039, "end": 26785 }
+            ],
+            "representation_id": "1239530664185557v"
+          },
+          {
+            "base_url": "https://instagram.fhkd1-1.fna.fbcdn.net/o1/v/t16/f2/m69/AQPQJoGQisoI7DF4gJeFyaobnlmb5wOQW2JDEnMrEGAqGdKexkSmQgxkvt4t6qsFRAyL19urLt16tSOM7L48P0AT.mp4?strext=1\u0026_nc_cat=107\u0026_nc_oc=AdlHs6sc2s5tXspNwT_nXzuctwrP83uYBKJ2OJ26udbaa3N4-1ZAlKgkCD0W5E8oF3w\u0026_nc_sid=9ca052\u0026_nc_ht=instagram.fhkd1-1.fna.fbcdn.net\u0026_nc_ohc=q7nUNfFymy4Q7kNvwFwQnfB\u0026efg=eyJ2ZW5jb2RlX3RhZyI6ImlnLXhwdmRzLmNsaXBzLmMyLUMzLmRhc2hfbG5faGVhYWNfdmJyM19hdWRpbyIsInZpZGVvX2lkIjpudWxsLCJvaWxfdXJsZ2VuX2FwcF9pZCI6OTM2NjE5NzQzMzkyNDU5LCJjbGllbnRfbmFtZSI6ImlnIiwieHB2X2Fzc2V0X2lkIjo1Nzk1NDE0OTc4ODk0NzcsInZpX3VzZWNhc2VfaWQiOjEwMDk5LCJkdXJhdGlvbl9zIjo0NiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9\u0026ccb=17-1\u0026_nc_zt=28\u0026oh=00_AfRoAXv9FHAd1CMKZzzse5JiwlARhEjgT46tSMT_Iv-GUA\u0026oe=687BE155",
+            "bandwidth": 64891,
+            "width": 0,
+            "height": 0,
+            "mime_type": "audio/mp4",
+            "codecs": "mp4a.40.5",
+            "playback_resolution_mos": "",
+            "playback_resolution_csvqm": null,
+            "segments": [
+              { "start": 0, "end": 823 },
+              { "start": 824, "end": 1143 },
+              { "start": 1144, "end": 1487 }
+            ],
+            "representation_id": "1143504150795564ad"
+          }
+        ],
+        "initial_representation_ids": []
+      }
+    ],
+    "server_metadata": { "request_start_time_ms": 1752563528250, "time_at_flush_ms": 1752563529864 }
+  },
+  "status": "ok"
+}
