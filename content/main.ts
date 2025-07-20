@@ -32,17 +32,17 @@ async function initObserver() {
 
   injectCSS()
 
-  const emitScrollChange = debounce((payload) => emit({ type: 'scroll', payload }), 200)
+  // const emitScrollChange = debounce((payload) => emit({ type: 'scroll', payload }), 200)
 
-  let lastScrollY = 0
-  document.addEventListener('scroll', (e) => {
-    if (Math.abs(window.scrollY - lastScrollY) < 100) {
-      return
-    }
-    const up = window.scrollY < lastScrollY
-    lastScrollY = window.scrollY
-    window.requestAnimationFrame(() => {
-      emitScrollChange(up)
-    })
-  })
+  // let lastScrollY = 0
+  // document.addEventListener('scroll', (e) => {
+  //   if (Math.abs(window.scrollY - lastScrollY) < 100) {
+  //     return
+  //   }
+  //   const up = window.scrollY < lastScrollY
+  //   lastScrollY = window.scrollY
+  //   window.requestAnimationFrame(() => {
+  //     emitScrollChange(up)
+  //   })
+  // })
 }
