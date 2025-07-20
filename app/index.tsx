@@ -87,11 +87,11 @@ export default function HomeScreen() {
 
   const onMessage = async (e: { nativeEvent: { payload: string } }) => {
     const { type, payload } = JSON.parse(e.nativeEvent.payload)
-    switch (type) {
-      case 'scroll':
-        setHeaderShown(payload)
-        break
-    }
+    /* switch (type) {
+     *   case 'scroll':
+     *     setHeaderShown(payload)
+     *     break
+     * } */
   }
 
   return (
