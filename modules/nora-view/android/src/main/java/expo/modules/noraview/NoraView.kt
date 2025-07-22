@@ -1,7 +1,9 @@
 package expo.modules.noraview
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.AttributeSet
 import android.view.View
 import android.webkit.CookieManager
@@ -21,6 +23,13 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 val BLOCK_HOSTS = arrayOf(
   "www.googletagmanager.com",
   "googleads.g.doubleclick.net"
+)
+
+val VIEW_HOSTS = arrayOf(
+  "www.instagram.com",
+  "www.reddit.com",
+  "www.threads.com",
+  "x.com"
 )
 
 class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
@@ -89,6 +98,18 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
             }
             return null
+          }
+
+          override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            val uri = Uri.parse(url)
+            if (uri.host in VIEW_HOSTS) {
+              return false
+            } else {
+              view.getContext().startActivity(
+                Intent(Intent.ACTION_VIEW, uri)
+              )
+              return true
+            }
           }
         }
 
