@@ -2,6 +2,7 @@ import { blockAds, hideAds } from './ad'
 import { injectCSS } from './css'
 import { debounce, retry } from 'es-toolkit'
 import { emit } from './utils'
+import { handleDialogs } from './dialogs'
 
 try {
   blockAds()
@@ -24,6 +25,7 @@ async function initObserver() {
 
   const observer = new MutationObserver((mutations) => {
     hideAds(mutations)
+    handleDialogs()
   })
   observer.observe(target, {
     childList: true,
