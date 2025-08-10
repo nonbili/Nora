@@ -15,6 +15,14 @@ const withAndroidSigningConfig: ConfigPlugin = (config) => {
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
+    }
+    splits {
+        abi {
+            reset()
+            enable true
+            universalApk false
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
     }`,
     )
 

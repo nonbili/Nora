@@ -48,9 +48,12 @@ jobs:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
       - name: rename apk
-        run: mv ${{ steps.sign_apk.outputs.signedReleaseFile }} app-release.apk
+        run: |
+          sudo apt-get update && sudo apt-get install -y rename
+          rename 's/release-unsigned-signed/release/' *.apk
+        working-directory: android/app/build/outputs/apk/release
 
       - uses: softprops/action-gh-release@v2
         name: upload apk
         with:
-          files: app-release.apk
+          files: android/app/build/outputs/apk/release/*-release.apk
