@@ -1,0 +1,1 @@
+- support injecting auth cookie into webview to workaround x.com login problem

@@ -34,6 +34,7 @@ jobs:
           BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
           echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
           echo build tool version: $BUILD_TOOL_VERSION
+          echo "VERSION_CODE=$(jq -r '.versionCode' package.json)" >> $GITHUB_ENV
 
       - uses: r0adkll/sign-android-release@v1
         name: sign apk
@@ -56,4 +57,5 @@ jobs:
       - uses: softprops/action-gh-release@v2
         name: upload apk
         with:
+          body_path: metadata/en-US/changelogs/${{ env.VERSION_CODE }}04.txt
           files: android/app/build/outputs/apk/release/*-release.apk

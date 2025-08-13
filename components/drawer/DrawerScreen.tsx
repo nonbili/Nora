@@ -11,6 +11,7 @@ import { fixSharingUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
+import { InjectCookieModal } from '../modal/InjectCookieModal'
 
 export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ nora, headerShown }) => {
   const navigation = useNavigation()
@@ -20,6 +21,10 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
 
   const { width, height } = Dimensions.get('window')
   const isPortrait = height > width
+
+  const injectCookie = (cookie: string) => {
+    nora?.eval(`document.cookie="${cookie};max-age=31536000"; document.location.reload()`)
+  }
 
   return (
     <>
@@ -82,6 +87,15 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
                   >
                     Settings
                   </Button>
+                  <Button
+                    elementColors={{
+                      containerColor: colors.bg,
+                      contentColor: colors.text,
+                    }}
+                    onPress={() => ui$.injectCookieModalOpen.set(true)}
+                  >
+                    Inject cookie
+                  </Button>
                 </ContextMenu.Items>
                 <ContextMenu.Trigger>
                   <MaterialIcons.Button
@@ -99,6 +113,7 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
         }}
       />
       {settingsModalShown && <SettingsModal onClose={() => setSettingsModalShown(false)} />}
+      <InjectCookieModal onSubmit={injectCookie} />
     </>
   )
 }

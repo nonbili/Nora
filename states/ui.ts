@@ -5,10 +5,12 @@ interface Store {
   url: string
   pageUrl: string
   title: string
+  injectCookieModalOpen: boolean
 }
 
 export const ui$ = observable<Store>({
   url: '',
   pageUrl: '',
   title: '',
+  injectCookieModalOpen: false,
 })
