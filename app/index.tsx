@@ -18,7 +18,7 @@ function openSharedUrl(url: string) {
   try {
     const { host } = new URL(fixSharingUrl(url))
     if (Object.keys(hostHomes).includes(host)) {
-      ui$.url.set(url)
+      ui$.url.set(url.replace('nora://', 'https://'))
     }
   } catch (e) {
     console.error(e)
@@ -37,8 +37,9 @@ export default function HomeScreen() {
   const [headerShown, setHeaderShown] = useState(true)
 
   useEffect(() => {
-    if (hasShareIntent && shareIntent.webUrl) {
-      openSharedUrl(shareIntent.webUrl)
+    const url = shareIntent.webUrl || shareIntent.text
+    if (hasShareIntent && url) {
+      openSharedUrl(url)
     }
   }, [hasShareIntent, shareIntent])
 
@@ -58,13 +59,15 @@ export default function HomeScreen() {
       }
     })()
 
-    ui$.url.set(getHomeUrl(settings$.home.get()))
+    if (!ui$.url.get()) {
+      ui$.url.set(getHomeUrl(settings$.home.get()))
+    }
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', function () {
       return true
     })
 
-    Appearance.addChangeListener(() => reloadAppAsync())
+    /* Appearance.addChangeListener(() => reloadAppAsync()) */
     return () => subscription.remove()
   }, [])
 
