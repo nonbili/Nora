@@ -21,7 +21,10 @@ export class InstagramService extends BaseService {
 
   transformResponse(res: string) {
     const data = JSON.parse(res) as InstagramTimeline
-    const before = data.data.xdt_api__v1__feed__timeline__connection.edges
+    const before = data.data.xdt_api__v1__feed__timeline__connection?.edges
+    if (!before) {
+      return res
+    }
     const after = before.filter((x) => !x.node.ad)
     data.data.xdt_api__v1__feed__timeline__connection.edges = after
     return JSON.stringify(data)

@@ -41,6 +41,16 @@ interface TwitterTimeline {
     threaded_conversation_with_injections_v2?: {
       instructions: TwitterTimelineInstruction[]
     }
+    // UserTweets
+    user?: {
+      result: {
+        timeline: {
+          timeline: {
+            instructions: TwitterTimelineInstruction[]
+          }
+        }
+      }
+    }
   }
 }
 
@@ -56,7 +66,7 @@ function transformInstructions(instructions: TwitterTimelineInstruction[]) {
 }
 
 const re1 = new RegExp(
-  'https://x.com/i/api/graphql/[\\w-]+/(HomeTimeline|HomeLatestTimeline|SearchTimeline|TweetDetail)',
+  'https://x.com/i/api/graphql/[\\w-]+/(HomeTimeline|HomeLatestTimeline|SearchTimeline|TweetDetail|UserTweets)',
 )
 
 export class TwitterService extends BaseService {
@@ -66,7 +76,7 @@ export class TwitterService extends BaseService {
 
   transformResponse(res: string) {
     const data = JSON.parse(res) as TwitterTimeline
-    const { home, search_by_raw_query, threaded_conversation_with_injections_v2 } = data.data
+    const { home, search_by_raw_query, threaded_conversation_with_injections_v2, user } = data.data
     if (home) {
       home.home_timeline_urt.instructions = transformInstructions(home.home_timeline_urt.instructions)
       // const before = data.data.home.home_timeline_urt.instructions[0].entries
@@ -80,6 +90,8 @@ export class TwitterService extends BaseService {
       threaded_conversation_with_injections_v2.instructions = transformInstructions(
         threaded_conversation_with_injections_v2.instructions,
       )
+    } else if (user) {
+      user.result.timeline.timeline.instructions = transformInstructions(user.result.timeline.timeline.instructions)
     }
     return JSON.stringify(data)
   }
