@@ -27,6 +27,7 @@ val BLOCK_HOSTS = arrayOf(
 
 val VIEW_HOSTS = arrayOf(
   "www.instagram.com",
+  "chat.reddit.com",
   "www.reddit.com",
   "www.threads.com",
   "x.com"
