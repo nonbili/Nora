@@ -13,7 +13,7 @@ android {`,
       )
       .replace(
         /buildTypes \{([\s\S]*?)release \{([\s\S]*?)signingConfig signingConfigs\.debug/,
-        `buildTypes {$1release { `,
+        `buildTypes {$1release {`,
       )
       .replace(
         /androidResources \{([\s\S]*?)}/,

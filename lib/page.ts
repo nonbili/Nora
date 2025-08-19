@@ -26,6 +26,8 @@ export function fixSharingUrl(v: string) {
       'utm_name',
       'utm_term',
       'utm-content',
+      // instagram
+      'igsh',
       // threads
       'xmt',
     ].forEach((x) => url.searchParams.delete(x))

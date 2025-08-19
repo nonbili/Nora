@@ -1,0 +1,2 @@
+- handle nora://* link
+- block ads in UserTweets
