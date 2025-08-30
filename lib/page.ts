@@ -1,4 +1,5 @@
 export const homeUrls: Record<string, string> = {
+  facebook: 'https://m.facebook.com',
   instagram: 'https://www.instagram.com',
   threads: 'https://www.threads.com',
   reddit: 'https://www.reddit.com',
@@ -6,6 +7,7 @@ export const homeUrls: Record<string, string> = {
 }
 
 export const hostHomes: Record<string, string> = {
+  'm.facebook.com': 'facebook',
   'www.instagram.com': 'instagram',
   'www.threads.com': 'threads',
   'www.reddit.com': 'reddit',

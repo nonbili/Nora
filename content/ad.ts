@@ -44,6 +44,22 @@ export function hideAds(mutations: MutationRecord[]) {
           el.style.visibility = 'hidden'
         }
       }
+      if (
+        el.classList?.contains('fixed-container') &&
+        el.classList?.contains('bottom') &&
+        el?.clientHeight &&
+        el.clientHeight < 100
+      ) {
+        // facebook open app btn
+        el.style.display = 'none'
+      }
+      if (el.dataset?.trackingDurationId) {
+        const text = el.querySelector('.native-text.rslh .f5')?.textContent
+        if (el.textContent?.includes('Sponsored')) {
+          // facebook server rendered ads
+          el.style.display = 'none'
+        }
+      }
     }
   }
 }

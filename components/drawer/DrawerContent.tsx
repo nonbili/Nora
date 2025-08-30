@@ -14,6 +14,11 @@ import { clsx } from '@/lib/utils'
 
 const items: [string, string, ReactNode][] = [
   [
+    'facebook',
+    'Facebook',
+    <Image source={require('@/assets/images/facebook.svg')} style={{ height: 24, width: 24 }} />,
+  ],
+  [
     'instagram',
     'Instagram',
     <Image source={require('@/assets/images/instagram.svg')} style={{ height: 24, width: 24 }} />,
