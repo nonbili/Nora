@@ -35,11 +35,11 @@ export const InjectCookieModal: React.FC<{ onSubmit: (cookie: string) => void }>
   }
 
   const _onSubmit = () => {
-    const authCookie = text.split(';').find((x) => x.trim().startsWith('auth_token='))
-    if (!authCookie) {
-      ToastAndroid.show('Invalid cookie, must contain auth_token', ToastAndroid.SHORT)
+    const cookie = text.trim()
+    if (!cookie) {
+      ToastAndroid.show('Invalid cookie', ToastAndroid.SHORT)
     } else {
-      onSubmit(authCookie.trim())
+      onSubmit(cookie)
       onClose()
       setText('')
     }
@@ -51,7 +51,7 @@ export const InjectCookieModal: React.FC<{ onSubmit: (cookie: string) => void }>
         <View className="flex-1">
           <NouText className="text-lg font-semibold mb-4">Inject auth cookie into the webview</NouText>
           <NouText className="mb-6 text-slate-200 leading-[20px]">
-            Copy the x.com cookie from your PC browser. This is a workaround when you couldn't login with
+            Copy the Cookie header value from your PC browser. This is a workaround when you couldn't login with
             email/password.
           </NouText>
           <TextInput

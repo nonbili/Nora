@@ -23,7 +23,9 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
   const isPortrait = height > width
 
   const injectCookie = (cookie: string) => {
-    nora?.eval(`document.cookie="${cookie};max-age=31536000"; document.location.reload()`)
+    cookie
+      .split(';')
+      .forEach((x) => nora?.eval(`document.cookie="${x.trim()};max-age=31536000"; document.location.reload()`))
   }
 
   return (
