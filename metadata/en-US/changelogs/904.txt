@@ -1,0 +1,2 @@
+- support facebook
+- support injecting cookie in all services

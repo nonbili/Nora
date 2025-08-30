@@ -1,6 +1,6 @@
 # Nora
 
-Instagram, Reddit, Threads and X in a single app. No ads.
+Facebook, Instagram, Reddit, Threads and X in a single app. No ads.
 
 [<img src="https://f-droid.org/badge/get-it-on.png"
      alt="Get it on F-Droid"
