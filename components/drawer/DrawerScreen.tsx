@@ -41,9 +41,6 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
           headerTitleContainerStyle: {
             maxWidth: isPortrait ? '60%' : '80%',
           },
-          headerStyle: {
-            height: 88,
-          },
           headerLeft: (props) => (
             <View className="pl-3">
               <MaterialIcons.Button
