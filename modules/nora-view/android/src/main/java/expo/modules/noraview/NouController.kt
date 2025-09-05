@@ -1,8 +1,13 @@
 package expo.modules.noraview
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,6 +16,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 class NouController {
   private var activity: Activity? = null
   private var noraView: NoraView? = null
+  private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
 
   fun setActivity(v: Activity) {
     activity = v
@@ -56,6 +62,27 @@ class NouController {
     // WindowCompat.setDecorFitsSystemWindows(window, true)
     val controller = WindowCompat.getInsetsController(window, window.decorView)
     controller.show(WindowInsetsCompat.Type.systemBars())
+  }
+
+  fun onShowFileChooser(
+    view: WebView,
+    callback: ValueCallback<Array<Uri>>,
+    params: WebChromeClient.FileChooserParams
+  ): Boolean {
+    // https://stackoverflow.com/a/62625964
+    fileChooserCallback = callback
+    val intent = params.createIntent()
+    activity!!.startActivityForResult(intent, 0)
+    return true
+  }
+
+  fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    if (resultCode == Activity.RESULT_OK) {
+      fileChooserCallback?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
+    } else {
+      fileChooserCallback?.onReceiveValue(null)
+    }
+    fileChooserCallback = null
   }
 }
 

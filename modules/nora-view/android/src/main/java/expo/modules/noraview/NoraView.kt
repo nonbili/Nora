@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.JsResult
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -138,6 +139,12 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         override fun onHideCustomView() {
           nouController.exitFullscreen(customView!!)
         }
+
+        override fun onShowFileChooser(
+          view: WebView,
+          callback: ValueCallback<Array<Uri>>,
+          params: WebChromeClient.FileChooserParams
+        ): Boolean = nouController.onShowFileChooser(view, callback, params)
       }
     }
 

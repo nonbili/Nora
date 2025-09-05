@@ -8,6 +8,10 @@ class NoraViewModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("NoraView")
 
+    OnActivityResult { activity, payload ->
+      nouController.onActivityResult(payload.requestCode, payload.resultCode, payload.data)
+    }
+
     View(NoraView::class) {
       Prop("url") { view: NoraView, url: String ->
         view.webView.loadUrl(url)
