@@ -1,0 +1,2 @@
+- Support file picker to upload media
+- Add "Scroll to top" menu item

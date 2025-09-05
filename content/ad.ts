@@ -47,8 +47,8 @@ export function hideAds(mutations: MutationRecord[]) {
       if (
         el.classList?.contains('fixed-container') &&
         el.classList?.contains('bottom') &&
-        el?.clientHeight &&
-        el.clientHeight < 100
+        el?.offsetHeight &&
+        el.offsetHeight < 150
       ) {
         // facebook open app btn
         el.style.display = 'none'

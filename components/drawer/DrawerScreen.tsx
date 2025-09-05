@@ -73,6 +73,24 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
                       containerColor: colors.bg,
                       contentColor: colors.text,
                     }}
+                    onPress={() => nora?.eval(`window.scrollTo(0, 0, {behavior: 'smooth'})`)}
+                  >
+                    Scroll to top
+                  </Button>
+                  <Button
+                    elementColors={{
+                      containerColor: colors.bg,
+                      contentColor: colors.text,
+                    }}
+                    onPress={() => ui$.injectCookieModalOpen.set(true)}
+                  >
+                    Inject cookie
+                  </Button>
+                  <Button
+                    elementColors={{
+                      containerColor: colors.bg,
+                      contentColor: colors.text,
+                    }}
                     onPress={() => Share.share({ message: fixSharingUrl(uiState.pageUrl) })}
                   >
                     Share
@@ -85,15 +103,6 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
                     onPress={() => setSettingsModalShown(true)}
                   >
                     Settings
-                  </Button>
-                  <Button
-                    elementColors={{
-                      containerColor: colors.bg,
-                      contentColor: colors.text,
-                    }}
-                    onPress={() => ui$.injectCookieModalOpen.set(true)}
-                  >
-                    Inject cookie
                   </Button>
                 </ContextMenu.Items>
                 <ContextMenu.Trigger>
