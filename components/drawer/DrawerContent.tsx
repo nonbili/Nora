@@ -9,10 +9,11 @@ import { getHomeUrl } from '@/lib/page'
 import { DrawerContentComponentProps, DrawerContentScrollView } from '@react-navigation/drawer'
 import { colors } from '@/lib/colors'
 import { settings$ } from '@/states/settings'
-import { IconReddit, IconThreads, IconTwitter } from '../icons/Icons'
+import { IconBluesky, IconReddit, IconThreads, IconTumblr, IconTwitter, IconVK } from '../icons/Icons'
 import { clsx } from '@/lib/utils'
 
 const items: [string, string, ReactNode][] = [
+  ['bluesky', 'Bluesky', <IconBluesky />],
   [
     'facebook',
     'Facebook',
@@ -25,6 +26,8 @@ const items: [string, string, ReactNode][] = [
   ],
   ['reddit', 'Reddit', <IconReddit />],
   ['threads', 'Threads', <IconThreads />],
+  ['tumblr', 'Tumblr', <IconTumblr />],
+  ['vk', 'VK', <IconVK />],
   ['x', 'X', <IconTwitter />],
 ]
 

@@ -27,12 +27,19 @@ val BLOCK_HOSTS = arrayOf(
 )
 
 val VIEW_HOSTS = arrayOf(
+  "bsky.app",
   "m.facebook.com",
   "www.facebook.com",
   "www.instagram.com",
   "chat.reddit.com",
   "www.reddit.com",
   "www.threads.com",
+  "www.tumblr.com",
+  "id.vk.com",
+  "login.vk.com",
+  "login.vk.ru",
+  "m.vk.com",
+  "vk.com",
   "x.com"
 )
 
