@@ -10,8 +10,6 @@ import { Button, ContextMenu } from '@expo/ui/jetpack-compose'
 import { fixSharingUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { colors } from '@/lib/colors'
-import { SettingsModal } from '../modal/SettingsModal'
-import { InjectCookieModal } from '../modal/InjectCookieModal'
 
 export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ nora, headerShown }) => {
   const navigation = useNavigation()
@@ -82,27 +80,9 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
                       containerColor: colors.bg,
                       contentColor: colors.text,
                     }}
-                    onPress={() => ui$.injectCookieModalOpen.set(true)}
-                  >
-                    Inject cookie
-                  </Button>
-                  <Button
-                    elementColors={{
-                      containerColor: colors.bg,
-                      contentColor: colors.text,
-                    }}
                     onPress={() => Share.share({ message: fixSharingUrl(uiState.pageUrl) })}
                   >
                     Share
-                  </Button>
-                  <Button
-                    elementColors={{
-                      containerColor: colors.bg,
-                      contentColor: colors.text,
-                    }}
-                    onPress={() => setSettingsModalShown(true)}
-                  >
-                    Settings
                   </Button>
                 </ContextMenu.Items>
                 <ContextMenu.Trigger>
@@ -120,8 +100,6 @@ export const DrawerScreen: React.FC<{ nora: any; headerShown: boolean }> = ({ no
           ),
         }}
       />
-      {settingsModalShown && <SettingsModal onClose={() => setSettingsModalShown(false)} />}
-      <InjectCookieModal onSubmit={injectCookie} />
     </>
   )
 }

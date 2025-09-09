@@ -12,7 +12,8 @@ import { DrawerScreen } from '@/components/drawer/DrawerScreen'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useURL } from 'expo-linking'
 import { reloadAppAsync } from 'expo'
-import { DrawerContent } from '@/components/drawer/DrawerContent'
+import { MainPage } from '@/components/page/MainPage'
+import { nIf } from '@/lib/utils'
 
 function openSharedUrl(url: string) {
   try {
@@ -28,7 +29,6 @@ function openSharedUrl(url: string) {
 export default function HomeScreen() {
   const navigation = useNavigation()
   const uiState = use$(ui$)
-  const hideShorts = use$(settings$.hideShorts)
   const [scriptOnStart, setScriptOnStart] = useState('')
   const { hasShareIntent, shareIntent } = useShareIntent()
   const insets = useSafeAreaInsets()
@@ -71,49 +71,5 @@ export default function HomeScreen() {
     return () => subscription.remove()
   }, [])
 
-  useObserveEffect(settings$.theme, ({ value }) => Appearance.setColorScheme(value))
-
-  const onLoad = async (e: { nativeEvent: any }) => {
-    const { url, title } = e.nativeEvent
-    if (url) {
-      ui$.pageUrl.set(url)
-      const { host } = new URL(url)
-      settings$.home.set((hostHomes[host] || 'x') as any)
-    }
-    if (title) {
-      ui$.title.set(title)
-    }
-    const webview = ref.current
-    ref.current.eval("document.querySelector('video')?.muted=false")
-    navigation.dispatch(DrawerActions.closeDrawer)
-  }
-
-  const onMessage = async (e: { nativeEvent: { payload: string } }) => {
-    const { type, payload } = JSON.parse(e.nativeEvent.payload)
-    /* switch (type) {
-     *   case 'scroll':
-     *     setHeaderShown(payload)
-     *     break
-     * } */
-  }
-
-  return (
-    <>
-      <DrawerScreen nora={ref.current} headerShown={headerShown} />
-
-      <View style={{ flex: 1, paddingBottom: insets.bottom }}>
-        {scriptOnStart && (
-          <NoraView
-            // @ts-expect-error ??
-            ref={ref}
-            style={{ flex: 1 }}
-            url={uiState.url}
-            scriptOnStart={scriptOnStart}
-            onLoad={onLoad}
-            onMessage={onMessage}
-          />
-        )}
-      </View>
-    </>
-  )
+  return nIf(scriptOnStart, <MainPage contentJs={scriptOnStart} />)
 }

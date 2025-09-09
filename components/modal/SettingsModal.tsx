@@ -1,4 +1,4 @@
-import { Button, Modal, Text, Pressable, View, Switch, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { Button, Text, Pressable, View, Switch, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { NouText } from '../NouText'
 import { NouLink } from '../NouLink'
 import { version } from '../../package.json'
@@ -8,25 +8,35 @@ import { clsx } from '@/lib/utils'
 import { use$ } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
+import { ui$ } from '@/states/ui'
+import { BaseModal } from './BaseModal'
+import { ServiceManger } from '../service/Services'
+import { NouButton } from '../button/NouButton'
 
 const repo = 'https://github.com/nonbili/Nora'
 const tabs = ['Settings', 'About']
 const themes = [null, 'dark', 'light'] as const
 
-export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const SettingsModal = () => {
+  const settingsModalOpen = use$(ui$.settingsModalOpen)
+  const onClose = () => ui$.settingsModalOpen.set(false)
   const [tabIndex, setTabIndex] = useState(0)
   const settings = use$(settings$)
 
+  if (!settingsModalOpen) {
+    return null
+  }
+
   return (
-    <Modal animationType="slide" transparent={true} visible={true} onRequestClose={onClose}>
-      <View className="flex-1 bg-[#222] py-6 px-4">
+    <BaseModal onClose={() => ui$.settingsModalOpen.set(false)}>
+      <View className="py-6 px-4">
         <View className="items-center">
           <Segemented options={tabs} selectedIndex={tabIndex} onChange={setTabIndex} />
         </View>
-        <View className="flex-1">
+        <View className="mt-4">
           {tabIndex == 0 && (
             <>
-              <View className="my-6">
+              <View className="my-8">
                 <View className="items-center flex-row justify-between">
                   <NouText className="font-medium">Theme</NouText>
                   <Segemented
@@ -40,11 +50,17 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                   Restart manually if change not reflected in webview.
                 </NouText>
               </View>
+              <View className="flex-row justify-center mb-8">
+                <NouButton variant="outline" onPress={() => ui$.cookieModalOpen.set(true)}>
+                  Inject cookie
+                </NouButton>
+              </View>
+              <ServiceManger />
             </>
           )}
           {tabIndex == 1 && (
             <>
-              <View className="items-center my-8">
+              <View className="items-center my-4">
                 <NouText className="text-lg font-medium">Nora</NouText>
                 <NouText>v{version}</NouText>
               </View>
@@ -57,12 +73,7 @@ export const SettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </>
           )}
         </View>
-        <View className="items-center mt-12">
-          <TouchableOpacity onPress={onClose}>
-            <NouText className="py-2 px-6 text-center bg-gray-700 rounded-full">Close</NouText>
-          </TouchableOpacity>
-        </View>
       </View>
-    </Modal>
+    </BaseModal>
   )
 }

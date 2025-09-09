@@ -5,12 +5,26 @@ interface Store {
   url: string
   pageUrl: string
   title: string
-  injectCookieModalOpen: boolean
+
+  // modals
+  cookieModalOpen: boolean
+  navModalOpen: boolean
+  settingsModalOpen: boolean
+
+  // webview
+  webview: any
 }
 
 export const ui$ = observable<Store>({
   url: '',
   pageUrl: '',
   title: '',
-  injectCookieModalOpen: false,
+
+  // modals
+  cookieModalOpen: false,
+  navModalOpen: false,
+  settingsModalOpen: false,
+
+  // webview
+  webview: undefined,
 })

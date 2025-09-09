@@ -25,12 +25,12 @@ const repo = 'https://github.com/nonbili/Nora'
 const tabs = ['Settings', 'About']
 const themes = [null, 'dark', 'light'] as const
 
-export const InjectCookieModal: React.FC<{ onSubmit: (cookie: string) => void }> = ({ onSubmit }) => {
-  const injectCookieModalOpen = use$(ui$.injectCookieModalOpen)
-  const onClose = () => ui$.injectCookieModalOpen.set(false)
+export const CookieModal = () => {
+  const cookieModalOpen = use$(ui$.cookieModalOpen)
+  const onClose = () => ui$.cookieModalOpen.set(false)
   const [text, setText] = useState('')
 
-  if (!injectCookieModalOpen) {
+  if (!cookieModalOpen) {
     return null
   }
 
@@ -39,7 +39,10 @@ export const InjectCookieModal: React.FC<{ onSubmit: (cookie: string) => void }>
     if (!cookie) {
       ToastAndroid.show('Invalid cookie', ToastAndroid.SHORT)
     } else {
-      onSubmit(cookie)
+      const webview = ui$.webview.get()
+      cookie
+        .split(';')
+        .forEach((x) => webview?.eval(`document.cookie="${x.trim()};max-age=31536000"; document.location.reload()`))
       onClose()
       setText('')
     }

@@ -7,6 +7,9 @@ interface Store {
 
   hideShorts: boolean
   theme: null | 'dark' | 'light'
+
+  disabledServices: Set<string>
+  toggleService: (service: string) => void
 }
 
 export const settings$ = observable<Store>({
@@ -14,6 +17,15 @@ export const settings$ = observable<Store>({
 
   hideShorts: true,
   theme: null,
+
+  disabledServices: new Set(),
+  toggleService: (service) => {
+    if (settings$.disabledServices.has(service)) {
+      settings$.disabledServices.delete(service)
+    } else {
+      settings$.disabledServices.add(service)
+    }
+  },
 })
 
 syncObservable(settings$, {
