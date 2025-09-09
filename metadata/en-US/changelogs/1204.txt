@@ -1,0 +1,3 @@
+- support bluesky, tumblr, vk
+- add monochrome icon
+- rewrite header and modals
