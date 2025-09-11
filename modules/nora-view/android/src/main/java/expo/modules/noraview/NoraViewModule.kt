@@ -14,7 +14,7 @@ class NoraViewModule : Module() {
 
     View(NoraView::class) {
       Prop("url") { view: NoraView, url: String ->
-        view.webView.loadUrl(url)
+        view.loadUrl(url)
       }
       Prop("scriptOnStart") { view: NoraView, script: String ->
         view.setScriptOnStart(script)

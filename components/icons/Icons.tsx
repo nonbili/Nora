@@ -14,6 +14,10 @@ export const IconFacebook = (props: any) => (
   <Image source={require('@/assets/images/facebook.svg')} style={{ height: 24, width: 24 }} />
 )
 
+export const IconFacebookMessenger = (props: any) => (
+  <Image source={require('@/assets/images/facebook_messenger.svg')} style={{ height: 24, width: 24 }} />
+)
+
 export const IconInstagram = (props: any) => (
   <Image source={require('@/assets/images/instagram.svg')} style={{ height: 24, width: 24 }} />
 )

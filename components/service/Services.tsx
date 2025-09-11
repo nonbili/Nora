@@ -8,6 +8,7 @@ import {
   IconTumblr,
   IconTwitter,
   IconVK,
+  IconFacebookMessenger,
 } from '../icons/Icons'
 import { Image } from 'expo-image'
 import { Text, TouchableHighlight, View } from 'react-native'
@@ -20,6 +21,7 @@ import { use$ } from '@legendapp/state/react'
 export const services: [string, string, ReactNode][] = [
   ['bluesky', 'Bluesky', <IconBluesky />],
   ['facebook', 'Facebook', <IconFacebook />],
+  ['facebook-messenger', 'Facebook Messenger', <IconFacebookMessenger />],
   ['instagram', 'Instagram', <IconInstagram />],
   ['reddit', 'Reddit', <IconReddit />],
   ['threads', 'Threads', <IconThreads />],

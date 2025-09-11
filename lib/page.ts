@@ -1,6 +1,7 @@
 export const homeUrls: Record<string, string> = {
   bluesky: 'https://bsky.app',
   facebook: 'https://m.facebook.com',
+  'facebook-messenger': 'https://www.facebook.com/messages/',
   instagram: 'https://www.instagram.com',
   reddit: 'https://www.reddit.com',
   threads: 'https://www.threads.com',
@@ -12,6 +13,7 @@ export const homeUrls: Record<string, string> = {
 export const hostHomes: Record<string, string> = {
   'bsky.app': 'bluesky',
   'm.facebook.com': 'facebook',
+  'www.facebook.com': 'facebook-messenger',
   'www.instagram.com': 'instagram',
   'chat.reddit.com': 'reddit',
   'www.reddit.com': 'reddit',

@@ -85,6 +85,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var pageUrl = ""
   private var customView: View? = null
 
+  private var userAgent: String? = null
+
   internal val webView =
     NouWebView(context).apply {
       layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
@@ -159,6 +161,19 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     nouController.setNoraView(this)
 
     addView(webView)
+
+    userAgent = webView.settings.userAgentString
+  }
+
+  fun loadUrl(url: String) {
+    if (url.startsWith("https://www.facebook.com/messages/")) {
+      webView.settings.setUserAgentString(
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+      )
+    } else {
+      webView.settings.setUserAgentString(userAgent)
+    }
+    webView.loadUrl(url)
   }
 
   fun setScriptOnStart(script: String) {
