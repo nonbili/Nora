@@ -94,8 +94,8 @@ android {
         applicationId 'jp.nonbili.nora'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 13
-        versionName "0.2.1"
+        versionCode 14
+        versionName "0.2.2"
     }
     signingConfigs {
         debug {

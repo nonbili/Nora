@@ -13,13 +13,14 @@ class NoraViewModule : Module() {
     }
 
     View(NoraView::class) {
-      Prop("url") { view: NoraView, url: String ->
-        view.loadUrl(url)
-      }
       Prop("scriptOnStart") { view: NoraView, script: String ->
         view.setScriptOnStart(script)
       }
       Events("onLoad", "onMessage")
+
+      AsyncFunction("loadUrl") { view: NoraView, url: String ->
+        view.load(url)
+      }
 
       AsyncFunction("eval") Coroutine { view: NoraView, script: String ->
         return@Coroutine view.webView.eval(script)

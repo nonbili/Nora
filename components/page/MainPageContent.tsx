@@ -19,6 +19,15 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     }
   }, [nativeRef])
 
+  useObserveEffect(ui$.url, ({ value }) => {
+    const native = nativeRef.current
+    if (value) {
+      if (native) {
+        native.loadUrl(value)
+      }
+    }
+  })
+
   const onLoad = async (e: { nativeEvent: any }) => {
     const { url, title } = e.nativeEvent
     if (url) {
@@ -42,7 +51,6 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
         // @ts-expect-error ??
         ref={nativeRef}
         style={{ flex: 1 }}
-        url={uiState.url}
         scriptOnStart={contentJs}
         onLoad={onLoad}
         onMessage={onMessage}

@@ -13,6 +13,7 @@ export const NavModal = () => {
   const disabledServices = use$(settings$.disabledServices)
 
   const setHome = (home: string) => {
+    ui$.url.set('')
     ui$.assign({ url: getHomeUrl(home), navModalOpen: false })
   }
 

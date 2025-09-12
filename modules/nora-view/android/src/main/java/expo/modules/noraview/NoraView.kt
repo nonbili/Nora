@@ -93,6 +93,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       webViewClient =
         object : WebViewClient() {
           override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
+            if (url.startsWith("https://m.facebook.com/messages/")) {
+              load("https://www.facebook.com/messages/")
+              return
+            }
             pageUrl = url
             onLoad(
               mapOf(
@@ -165,7 +169,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     userAgent = webView.settings.userAgentString
   }
 
-  fun loadUrl(url: String) {
+  fun load(url: String) {
     if (url.startsWith("https://www.facebook.com/messages/")) {
       webView.settings.setUserAgentString(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
