@@ -1,3 +1,4 @@
+import { l10nSponsored } from './services/facebook'
 import { getService } from './services/manager'
 import { emit } from './utils'
 
@@ -55,9 +56,12 @@ export function hideAds(mutations: MutationRecord[]) {
       }
       if (el.dataset?.trackingDurationId) {
         const text = el.querySelector('.native-text.rslh .f5')?.textContent
-        if (el.textContent?.includes('Sponsored')) {
-          // facebook server rendered ads
-          el.style.display = 'none'
+        for (const text of l10nSponsored) {
+          if (el.textContent?.includes(text)) {
+            // facebook server rendered ads
+            el.style.display = 'none'
+            break
+          }
         }
       }
     }
