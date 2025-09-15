@@ -8,6 +8,12 @@ Facebook, Instagram, Reddit, Threads and X in a single app. No ads.
 
 Or download the latest APK from the [Releases Section](https://github.com/nonbili/Nora/releases/latest).
 
+## Desktop version
+
+Desktop version features a deck view to easily browse multiple timelines.
+Desktop version shares the same code base with mobile version.
+Download Linux/macOS/Windows version from [Nora-Desktop](https://github.com/nonbili/Nora-Desktop/releases).
+
 ## How it works
 
 - Wrap the SNS websites in Android webview
