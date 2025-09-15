@@ -14,6 +14,7 @@ import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
 import { MaterialButton } from '../button/IconButtons'
 import { share } from '@/lib/share'
+import { ServiceIcon } from '../service/Services'
 
 const userAgent =
   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.52 Mobile Safari/537.36'
@@ -86,8 +87,8 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
   if (isWeb) {
     return (
       <View className="w-[25rem] shrink-0">
-        <View className="flex-row justify-between bg-zinc-800">
-          <NouText></NouText>
+        <View className="flex-row items-center justify-between bg-zinc-800 pl-2">
+          <ServiceIcon url={url} />
           <NouMenu
             trigger={<MaterialButton name="more-vert" />}
             items={[
@@ -101,7 +102,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
           />
         </View>
         {/*  @ts-expect-error ?? */}
-        <NoraView className="h-full" ref={webviewRef} partition="persist:webview" />
+        <NoraView className="h-full" ref={webviewRef} partition="persist:webview" useragent={userAgent} />
       </View>
     )
   }

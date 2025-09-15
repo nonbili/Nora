@@ -31,7 +31,7 @@ export const NavModal = () => {
   return (
     <BaseModal className={navModalOpen ? 'block' : 'hidden'} onClose={() => ui$.navModalOpen.set(false)}>
       <ScrollView className="py-8 pl-4 pr-10">
-        {services.map(([value, label, icon]) =>
+        {Object.entries(services).map(([value, [label, icon]]) =>
           nIf(
             !disabledServices.has(value),
             <TouchableHighlight key={value} onPress={() => onPress(value)}>
