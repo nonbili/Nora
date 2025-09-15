@@ -22,7 +22,7 @@ class NoraViewModule : Module() {
         view.load(url)
       }
 
-      AsyncFunction("eval") Coroutine { view: NoraView, script: String ->
+      AsyncFunction("executeJavaScript") Coroutine { view: NoraView, script: String ->
         return@Coroutine view.webView.eval(script)
       }
     }

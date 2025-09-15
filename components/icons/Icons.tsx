@@ -1,5 +1,10 @@
 import { Image } from 'expo-image'
 import Svg, { Circle, G, Path } from 'react-native-svg'
+import iconFacebook from '@/assets/images/facebook.svg'
+import iconFacebookMessenger from '@/assets/images/facebook_messenger.svg'
+import iconInstagram from '@/assets/images/instagram.svg'
+import iconTumblr from '@/assets/images/tumblr.png'
+import iconX from '@/assets/images/x.jpg'
 
 export const IconBluesky = (props: any) => (
   <Svg width="24" height="24" viewBox="0 0 600 530">
@@ -10,17 +15,13 @@ export const IconBluesky = (props: any) => (
   </Svg>
 )
 
-export const IconFacebook = (props: any) => (
-  <Image source={require('@/assets/images/facebook.svg')} style={{ height: 24, width: 24 }} />
-)
+export const IconFacebook = (props: any) => <Image source={iconFacebook} style={{ height: 24, width: 24 }} />
 
 export const IconFacebookMessenger = (props: any) => (
-  <Image source={require('@/assets/images/facebook_messenger.svg')} style={{ height: 24, width: 24 }} />
+  <Image source={iconFacebookMessenger} style={{ height: 24, width: 24 }} />
 )
 
-export const IconInstagram = (props: any) => (
-  <Image source={require('@/assets/images/instagram.svg')} style={{ height: 24, width: 24 }} />
-)
+export const IconInstagram = (props: any) => <Image source={iconInstagram} style={{ height: 24, width: 24 }} />
 
 export const IconReddit = (props: any) => (
   <Svg width="24" height="24" viewBox="0 0 800 800">
@@ -48,19 +49,9 @@ export const IconTumblr0 = (props: any) => (
   </Svg>
 )
 
-export const IconTumblr = (props: any) => (
-  <Image source={require('@/assets/images/tumblr.png')} style={{ height: 24, width: 24 }} />
-)
+export const IconTumblr = (props: any) => <Image source={iconTumblr} style={{ height: 24, width: 24 }} />
 
-export const IconTwitter0 = (props: any) => (
-  <Svg viewBox="0 0 1200 1227" width="24" height="24" {...props}>
-    <Path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" />
-  </Svg>
-)
-
-export const IconTwitter = (props: any) => (
-  <Image source={require('@/assets/images/x.jpg')} style={{ height: 24, width: 24 }} />
-)
+export const IconTwitter = (props: any) => <Image source={iconX} style={{ height: 24, width: 24 }} />
 
 export const IconVK = (props: any) => (
   <Svg width="24" height="24" viewBox="0 0 48 48">

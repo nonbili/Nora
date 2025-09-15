@@ -5,56 +5,39 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { settings$ } from '@/states/settings'
 import { fixSharingUrl, getHomeUrl, hostHomes } from '@/lib/page'
 import { NouHeader } from '../header/NouHeader'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
+import type { WebviewTag } from 'electron'
+import { clsx, isWeb } from '@/lib/utils'
+import { tabs$ } from '@/states/tabs'
+import { NoraTab } from '../tab/NoraTab'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const uiState = use$(ui$)
-  const nativeRef = useRef<any>(null)
+  const tabs = use$(tabs$.tabs)
 
-  useEffect(() => {
-    const webview = nativeRef.current
-    if (webview) {
-      ui$.webview.set(ObservableHint.opaque(webview))
-    }
-  }, [nativeRef])
-
-  useObserveEffect(ui$.url, ({ value }) => {
-    const native = nativeRef.current
-    if (value) {
-      if (native) {
-        native.loadUrl(value)
-      }
+  useObserveEffect(tabs$.tabs, ({ value }) => {
+    if (!value?.length) {
+      tabs$.openTab(getHomeUrl(settings$.home.get()))
     }
   })
 
-  const onLoad = async (e: { nativeEvent: any }) => {
-    const { url, title } = e.nativeEvent
-    if (url) {
-      ui$.pageUrl.set(url)
-      const { host } = new URL(url)
-      settings$.home.set((hostHomes[host] || 'x') as any)
-    }
-    if (title) {
-      ui$.title.set(title)
-    }
-  }
-
-  const onMessage = async (e: { nativeEvent: { payload: string } }) => {
-    const { type, payload } = JSON.parse(e.nativeEvent.payload)
-  }
-
   return (
     <View className="flex-1 h-full lg:flex-row overflow-hidden">
-      <NouHeader nora={nativeRef.current} />
-      <NoraView
-        // @ts-expect-error ??
-        ref={nativeRef}
-        style={{ flex: 1 }}
-        scriptOnStart={contentJs}
-        onLoad={onLoad}
-        onMessage={onMessage}
-      />
+      <NouHeader nora={undefined} />
+      {isWeb ? (
+        <ScrollView
+          className={clsx('flex-row', isWeb && 'bg-zinc-600 p-2')}
+          horizontal
+          contentContainerStyle={{ gap: '0.5rem' }}
+        >
+          {tabs.map((tab, index) => (
+            <NoraTab url={tab.url} contentJs={contentJs} index={index} key={tab.id} />
+          ))}
+        </ScrollView>
+      ) : (
+        <NoraTab url={tabs[0]?.url} contentJs={contentJs} index={0} />
+      )}
     </View>
   )
 }

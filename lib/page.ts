@@ -1,3 +1,5 @@
+import { ui$ } from '@/states/ui'
+
 export const homeUrls: Record<string, string> = {
   bluesky: 'https://bsky.app',
   facebook: 'https://m.facebook.com',
@@ -45,5 +47,16 @@ export function fixSharingUrl(v: string) {
     return url.href
   } catch (e) {
     return ''
+  }
+}
+
+export function openSharedUrl(url: string) {
+  try {
+    const { host } = new URL(fixSharingUrl(url))
+    if (Object.keys(hostHomes).includes(host)) {
+      ui$.url.set(url.replace('nora://', 'https://'))
+    }
+  } catch (e) {
+    console.error(e)
   }
 }

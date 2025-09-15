@@ -1,10 +1,11 @@
 import { Button, Text, Pressable, View, Switch, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { NouText } from '../NouText'
-import { NouLink } from '../NouLink'
+import { NouLink } from '../link/NouLink'
 import { version } from '../../package.json'
+import { version as desktopVersion } from '../../desktop/package.json'
 import { useState } from 'react'
 import { colors } from '@/lib/colors'
-import { clsx } from '@/lib/utils'
+import { clsx, isWeb, nIf } from '@/lib/utils'
 import { use$ } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
@@ -36,25 +37,31 @@ export const SettingsModal = () => {
         <View className="mt-4">
           {tabIndex == 0 && (
             <>
-              <View className="my-8">
-                <View className="items-center flex-row justify-between">
-                  <NouText className="font-medium">Theme</NouText>
-                  <Segemented
-                    options={['System', 'Dark', 'Light']}
-                    selectedIndex={themes.indexOf(settings.theme)}
-                    size={1}
-                    onChange={(index) => settings$.theme.set(themes[index])}
-                  />
-                </View>
-                <NouText className="mt-2 text-sm text-gray-400 text-right">
-                  Restart manually if change not reflected in webview.
-                </NouText>
-              </View>
-              <View className="flex-row justify-center mb-8">
-                <NouButton variant="outline" onPress={() => ui$.cookieModalOpen.set(true)}>
-                  Inject cookie
-                </NouButton>
-              </View>
+              {nIf(
+                !isWeb,
+                <View className="my-8">
+                  <View className="items-center flex-row justify-between">
+                    <NouText className="font-medium">Theme</NouText>
+                    <Segemented
+                      options={['System', 'Dark', 'Light']}
+                      selectedIndex={themes.indexOf(settings.theme)}
+                      size={1}
+                      onChange={(index) => settings$.theme.set(themes[index])}
+                    />
+                  </View>
+                  <NouText className="mt-2 text-sm text-gray-400 text-right">
+                    Restart manually if change not reflected in webview.
+                  </NouText>
+                </View>,
+              )}
+              {nIf(
+                !isWeb,
+                <View className="flex-row justify-center mb-8">
+                  <NouButton variant="outline" onPress={() => ui$.cookieModalOpen.set(true)}>
+                    Inject cookie
+                  </NouButton>
+                </View>,
+              )}
               <ServiceManger />
             </>
           )}
@@ -62,11 +69,11 @@ export const SettingsModal = () => {
             <>
               <View className="items-center my-4">
                 <NouText className="text-lg font-medium">Nora</NouText>
-                <NouText>v{version}</NouText>
+                <NouText>v{isWeb ? desktopVersion : version}</NouText>
               </View>
               <View className="">
                 <NouText className="font-medium">Source code</NouText>
-                <NouLink className="text-blue-300" href={repo}>
+                <NouLink className="text-indigo-400 text-sm" href={repo}>
                   {repo}
                 </NouLink>
               </View>

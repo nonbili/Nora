@@ -1,0 +1,4 @@
+provider: github
+owner: nonbili
+repo: Nora-Desktop
+updaterCacheDirName: nora-desktop-updater

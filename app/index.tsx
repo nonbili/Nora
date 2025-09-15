@@ -4,27 +4,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { use$, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
-import { fixSharingUrl, getHomeUrl, hostHomes } from '@/lib/page'
+import { fixSharingUrl, getHomeUrl, hostHomes, openSharedUrl } from '@/lib/page'
 import { Asset } from 'expo-asset'
 import { settings$ } from '@/states/settings'
 import { useShareIntent } from 'expo-share-intent'
-import { DrawerScreen } from '@/components/drawer/DrawerScreen'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useURL } from 'expo-linking'
 import { reloadAppAsync } from 'expo'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
-
-function openSharedUrl(url: string) {
-  try {
-    const { host } = new URL(fixSharingUrl(url))
-    if (Object.keys(hostHomes).includes(host)) {
-      ui$.url.set(url.replace('nora://', 'https://'))
-    }
-  } catch (e) {
-    console.error(e)
-  }
-}
 
 export default function HomeScreen() {
   const navigation = useNavigation()
@@ -58,10 +46,6 @@ export default function HomeScreen() {
         setScriptOnStart(content)
       }
     })()
-
-    if (!ui$.url.get()) {
-      ui$.url.set(getHomeUrl(settings$.home.get()))
-    }
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', function () {
       return true

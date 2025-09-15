@@ -11,7 +11,6 @@ import {
   ToastAndroid,
 } from 'react-native'
 import { NouText } from '../NouText'
-import { NouLink } from '../NouLink'
 import { version } from '../../package.json'
 import { useState } from 'react'
 import { colors } from '@/lib/colors'
@@ -20,6 +19,7 @@ import { use$ } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
 import { ui$ } from '@/states/ui'
+import { showToast } from '@/lib/toast'
 
 const repo = 'https://github.com/nonbili/Nora'
 const tabs = ['Settings', 'About']
@@ -37,7 +37,7 @@ export const CookieModal = () => {
   const _onSubmit = () => {
     const cookie = text.trim()
     if (!cookie) {
-      ToastAndroid.show('Invalid cookie', ToastAndroid.SHORT)
+      showToast('Invalid cookie')
     } else {
       const webview = ui$.webview.get()
       cookie
