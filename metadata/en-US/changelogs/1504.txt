@@ -1,0 +1,3 @@
+- add more intent filters
+- allow text selection
+- prevent crash in fb

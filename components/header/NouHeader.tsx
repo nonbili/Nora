@@ -17,8 +17,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const webview = ui$.webview.get()
 
   return (
-    <View className="bg-zinc-800 flex-row lg:flex-col justify-between px-2 py-1 lg:px-1 lg:py-2">
-      <View className="">
+    <View className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2">
+      <View className="items-center">
         <MaterialIcons.Button
           color={colors.icon}
           backgroundColor="transparent"
@@ -29,7 +29,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           underlayColor={colors.underlay}
         />
       </View>
-      <View className="flex flex-row lg:flex-col gap-2">
+      <View className="flex flex-row lg:flex-col items-center gap-2">
         <MaterialIcons.Button
           color={colors.icon}
           backgroundColor="transparent"
