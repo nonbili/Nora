@@ -1,5 +1,6 @@
 package expo.modules.noraview
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,6 +15,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
@@ -122,9 +124,12 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             if (uri.host in VIEW_HOSTS) {
               return false
             } else {
-              view.getContext().startActivity(
-                Intent(Intent.ACTION_VIEW, uri)
-              )
+              try {
+                view.getContext().startActivity(Intent(Intent.ACTION_VIEW, uri))
+              } catch (e: ActivityNotFoundException) {
+                Toast.makeText(context, "No application can handle this", Toast.LENGTH_LONG).show()
+                e.printStackTrace()
+              }
               return true
             }
           }
