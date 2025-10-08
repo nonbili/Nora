@@ -32,6 +32,18 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
           data: [
             {
               scheme: 'https',
+              host: 'bsky.app',
+            },
+            {
+              scheme: 'https',
+              host: 'm.facebook.com',
+            },
+            {
+              scheme: 'https',
+              host: 'www.facebook.com',
+            },
+            {
+              scheme: 'https',
               host: 'www.instagram.com',
             },
             {
@@ -41,6 +53,14 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
             {
               scheme: 'https',
               host: 'www.threads.com',
+            },
+            {
+              scheme: 'https',
+              host: 'www.tumblr.com',
+            },
+            {
+              scheme: 'https',
+              host: 'm.vk.com',
             },
             {
               scheme: 'https',

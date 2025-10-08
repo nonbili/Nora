@@ -1,7 +1,4 @@
 const css = `
-* {
-  user-select: none;
-}
 /* ig: Open in app */
 ._acc8._abpk,
 /* reddit */
