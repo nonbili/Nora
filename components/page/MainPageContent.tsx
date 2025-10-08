@@ -24,7 +24,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
 
   return (
     <View className="flex-1 h-full lg:flex-row overflow-hidden">
-      <NouHeader nora={undefined} />
+      <NouHeader />
       {isWeb ? (
         <ScrollView
           className={clsx('flex-row', isWeb && 'bg-zinc-600 p-2')}

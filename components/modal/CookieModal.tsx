@@ -42,7 +42,9 @@ export const CookieModal = () => {
       const webview = ui$.webview.get()
       cookie
         .split(';')
-        .forEach((x) => webview?.eval(`document.cookie="${x.trim()};max-age=31536000"; document.location.reload()`))
+        .forEach((x) =>
+          webview?.executeJavaScript(`document.cookie="${x.trim()};max-age=31536000"; document.location.reload()`),
+        )
       onClose()
       setText('')
     }

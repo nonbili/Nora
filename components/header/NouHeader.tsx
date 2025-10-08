@@ -12,8 +12,9 @@ import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
 import { isWeb } from '@/lib/utils'
 
-export const NouHeader: React.FC<{ nora: any }> = ({ nora }) => {
+export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = use$(ui$)
+  const webview = ui$.webview.get()
 
   return (
     <View className="bg-zinc-800 flex-row lg:flex-col justify-between px-2 py-1 lg:px-1 lg:py-2">
@@ -35,25 +36,19 @@ export const NouHeader: React.FC<{ nora: any }> = ({ nora }) => {
           iconStyle={{ marginRight: 0 }}
           name="refresh"
           size={24}
-          onPress={() => nora?.eval('document.location.reload()')}
+          onPress={() => webview?.executeJavaScript('document.location.reload()')}
           underlayColor={colors.underlay}
         />
         <NouMenu
-          trigger={
-            <MaterialIcons.Button
-              color={colors.icon}
-              backgroundColor="transparent"
-              iconStyle={{ marginRight: 0 }}
-              name="more-vert"
-              size={24}
-              underlayColor={colors.underlay}
-            />
-          }
+          trigger="filled.MoreVert"
           items={[
             ...(isWeb
               ? []
               : [
-                  { label: 'Scroll to top', handler: () => nora?.eval(`window.scrollTo(0, 0, {behavior: 'smooth'})`) },
+                  {
+                    label: 'Scroll to top',
+                    handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),
+                  },
                   { label: 'Share', handler: () => Share.share({ message: fixSharingUrl(uiState.pageUrl) }) },
                 ]),
             { label: 'Settings', handler: () => ui$.settingsModalOpen.set(true) },

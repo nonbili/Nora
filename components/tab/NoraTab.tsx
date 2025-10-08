@@ -56,6 +56,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     }
 
     webview.addEventListener('dom-ready', () => {
+      ui$.webview.set(ObservableHint.opaque(webview))
       webview.executeJavaScript(contentJs)
     })
     webview.addEventListener('did-navigate', (e) => {
@@ -70,6 +71,13 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     })
     webview.addEventListener('ipc-message', (e) => {})
   }, [webviewRef])
+
+  useEffect(() => {
+    const webview = nativeRef.current
+    if (webview) {
+      ui$.webview.set(ObservableHint.opaque(webview))
+    }
+  }, [nativeRef])
 
   const onLoad = async (e: { nativeEvent: any }) => {
     const { url, title } = e.nativeEvent
