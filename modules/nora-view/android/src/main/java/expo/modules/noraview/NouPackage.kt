@@ -12,20 +12,19 @@ import expo.modules.core.interfaces.ReactActivityLifecycleListener
 class NouActivityLifecycleListener : ReactActivityLifecycleListener {
   override fun onCreate(activity: Activity, savedInstanceState: Bundle?) {
     nouController.setActivity(activity)
-    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    //   activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
-    //     Log.d("back1", "goBack")
-    //     nouController.goBack()
-    //   }
-    // }
+    if (Build.VERSION.SDK_INT in 31..35) {
+      activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
+        nouController.goBack()
+      }
+    }
   }
 
   override fun onBackPressed(): Boolean {
-    // if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-    nouController.goBack()
-    return true
-    // }
-    // return super.onBackPressed()
+    if (Build.VERSION.SDK_INT !in 31..35) {
+      nouController.goBack()
+      return true
+    }
+    return super.onBackPressed()
   }
 }
 
