@@ -175,7 +175,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   fun load(url: String) {
-    if (url.startsWith("https://www.facebook.com/messages/")) {
+    if (url.startsWith("https://www.facebook.com/messages/") ||
+      url.startsWith("https://www.tiktok.com/")
+    ) {
       webView.settings.setUserAgentString(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
       )

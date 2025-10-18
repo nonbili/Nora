@@ -57,6 +57,10 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
             },
             {
               scheme: 'https',
+              host: 'www.tiktok.com',
+            },
+            {
+              scheme: 'https',
               host: 'www.tumblr.com',
             },
             {
