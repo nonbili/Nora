@@ -11,6 +11,7 @@ import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
 import { isWeb } from '@/lib/utils'
+import { tabs$ } from '@/states/tabs'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = use$(ui$)
@@ -49,7 +50,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     label: 'Scroll to top',
                     handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),
                   },
-                  { label: 'Share', handler: () => Share.share({ message: fixSharingUrl(uiState.pageUrl) }) },
+                  { label: 'Share', handler: () => Share.share({ message: fixSharingUrl(tabs$.tabs[0].url.get()) }) },
                 ]),
             { label: 'Settings', handler: () => ui$.settingsModalOpen.set(true) },
           ]}

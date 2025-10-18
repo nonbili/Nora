@@ -127,7 +127,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               try {
                 view.getContext().startActivity(Intent(Intent.ACTION_VIEW, uri))
               } catch (e: ActivityNotFoundException) {
-                Toast.makeText(context, "No application can handle this", Toast.LENGTH_LONG).show()
+                // Toast.makeText(context, "No application can handle this url: $url", Toast.LENGTH_LONG).show()
                 e.printStackTrace()
               }
               return true

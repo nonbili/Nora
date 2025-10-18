@@ -1,4 +1,4 @@
-import { ui$ } from '@/states/ui'
+import { tabs$ } from '@/states/tabs'
 
 export const homeUrls: Record<string, string> = {
   bluesky: 'https://bsky.app',
@@ -54,7 +54,7 @@ export function openSharedUrl(url: string) {
   try {
     const { host } = new URL(fixSharingUrl(url))
     if (Object.keys(hostHomes).includes(host)) {
-      ui$.url.set(url.replace('nora://', 'https://'))
+      tabs$.setTab(0, url.replace('nora://', 'https://'))
     }
   } catch (e) {
     console.error(e)
