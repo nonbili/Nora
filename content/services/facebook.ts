@@ -9,7 +9,7 @@ export const l10nSponsored = [
   'May Sponsor', // Filipino
   'Commandité', // French (Canada)
   'Sponsorisé', // French
-  'Gesponsert', // German
+  'Anzeige', // German
   'Χορηγούμενη', // Greek
   'ממומן', // Hebrew
   'प्रायोजित', // Hindi
