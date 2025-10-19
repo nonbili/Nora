@@ -1,11 +1,18 @@
 package expo.modules.noraview
 
+import android.app.Activity
+import android.app.DownloadManager
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Environment
 import android.util.AttributeSet
+import android.view.ContextMenu
+import android.view.MenuItem
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.JsResult
@@ -88,6 +95,46 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var customView: View? = null
 
   private var userAgent: String? = null
+
+  private val currentActivity: Activity?
+    get() = appContext.activityProvider?.currentActivity
+
+  override fun onCreateContextMenu(menu: ContextMenu) {
+    super.onCreateContextMenu(menu)
+
+    val result = webView.getHitTestResult()
+    val url = result.getExtra()
+    val activity = currentActivity
+
+    if (
+      result.getType() in arrayOf(WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) &&
+      url != null && activity != null
+    ) {
+      val onDownload = object : MenuItem.OnMenuItemClickListener {
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+          val uri = Uri.parse(url)
+          val request = DownloadManager.Request(uri)
+          request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, uri.getLastPathSegment())
+
+          request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+          val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+          downloadManager.enqueue(request)
+          return true
+        }
+      }
+      val onCopyLink = object : MenuItem.OnMenuItemClickListener {
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+          val clipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+          val clipData = ClipData.newPlainText("image", url)
+          clipboardManager.setPrimaryClip(clipData)
+          return true
+        }
+      }
+
+      menu.add("Save image").setOnMenuItemClickListener(onDownload)
+      menu.add("Copy image link").setOnMenuItemClickListener(onCopyLink)
+    }
+  }
 
   internal val webView =
     NouWebView(context).apply {
@@ -172,11 +219,14 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     addView(webView)
 
     userAgent = webView.settings.userAgentString
+
+    val activity = currentActivity
+    activity?.registerForContextMenu(webView)
   }
 
   fun load(url: String) {
     if (url.startsWith("https://www.facebook.com/messages/") ||
-      url.startsWith("https://www.tiktok.com/")
+      url.startsWith("https://www.tiktok.com")
     ) {
       webView.settings.setUserAgentString(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
