@@ -34,6 +34,15 @@ async function initObserver() {
 
   injectCSS()
 
+  const viewport = document.querySelector('meta[name=viewport]')
+  if (viewport) {
+    const viewportContent = viewport.getAttribute('content')
+    if (viewportContent?.includes('maximum-scale=1')) {
+      const contents = viewportContent.split(',').filter((x) => !x.includes('maximum-scale'))
+      viewport.setAttribute('content', contents.join(','))
+    }
+  }
+
   // const emitScrollChange = debounce((payload) => emit({ type: 'scroll', payload }), 200)
 
   // let lastScrollY = 0
