@@ -1,0 +1,2 @@
+- fix fb ad blocking for German
+- support long press image to download
