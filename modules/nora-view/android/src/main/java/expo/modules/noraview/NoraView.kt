@@ -76,6 +76,23 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
 
     setWebContentsDebuggingEnabled(true)
     addJavascriptInterface(NouJsInterface(context), "NoraI")
+
+    // setDownloadListener(
+    //   object : DownloadListener() {
+    //     override fun onDownloadStart(
+    //       url: String,
+    //       userAgent: String,
+    //       contentDisposition: String,
+    //       mimeType: String,
+    //       contentLength: Long
+    //     ) {}
+    //   }
+    // )
+
+    // setDownloadListener { url, userAgent, contentDisposition, mimeType, contentLength ->
+    // Handle the download here
+    // ...
+    // }
   }
 
   suspend fun eval(script: String): String = suspendCancellableCoroutine { cont ->
@@ -224,7 +241,19 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     userAgent = webView.settings.userAgentString
 
     val activity = currentActivity
-    activity?.registerForContextMenu(webView)
+    if (activity != null) {
+      activity.registerForContextMenu(webView)
+
+      webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, contentLength ->
+        val uri = Uri.parse(url)
+        val request = DownloadManager.Request(uri)
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, uri.getLastPathSegment())
+
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        downloadManager.enqueue(request)
+      }
+    }
   }
 
   fun load(url: String) {

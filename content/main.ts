@@ -3,11 +3,16 @@ import { injectCSS } from './css'
 import { debounce, retry } from 'es-toolkit'
 import { emit } from './utils'
 import { handleDialogs } from './dialogs'
+import { initNora } from './nora'
 
 try {
   blockAds()
 
   initObserver()
+
+  if (!window.electron) {
+    window.Nora = initNora()
+  }
 } catch (e) {
   console.error('NouScript: ', e)
 }

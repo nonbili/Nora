@@ -1,5 +1,5 @@
 export function emit(payload: Record<string, any>) {
-  NoraI.onMessage(JSON.stringify(payload))
+  window.NoraI.onMessage(JSON.stringify(payload))
 }
 
 export function parseJson(v: string | null, fallback: any) {
