@@ -1,0 +1,2 @@
+- support pinch to zoom
+- support download fb/ig image

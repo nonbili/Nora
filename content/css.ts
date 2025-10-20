@@ -12,6 +12,15 @@ shreddit-comments-page-ad,
 ._nora_hidden_ {
   display: none !important;
 }
+
+img {
+  pointer-events: initial !important;
+}
+
+/* ig blocking div */
+._aagw {
+  pointer-events: none !important;
+}
 `
 
 export function injectCSS() {
