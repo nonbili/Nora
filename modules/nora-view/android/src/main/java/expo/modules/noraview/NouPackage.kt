@@ -12,7 +12,7 @@ import expo.modules.core.interfaces.ReactActivityLifecycleListener
 class NouActivityLifecycleListener : ReactActivityLifecycleListener {
   override fun onCreate(activity: Activity, savedInstanceState: Bundle?) {
     nouController.setActivity(activity)
-    if (Build.VERSION.SDK_INT in 31..35) {
+    if (Build.VERSION.SDK_INT in 33..35) {
       activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
         nouController.goBack()
       }
@@ -20,7 +20,7 @@ class NouActivityLifecycleListener : ReactActivityLifecycleListener {
   }
 
   override fun onBackPressed(): Boolean {
-    if (Build.VERSION.SDK_INT !in 31..35) {
+    if (Build.VERSION.SDK_INT !in 33..35) {
       nouController.goBack()
       return true
     }
