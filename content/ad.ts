@@ -1,4 +1,5 @@
-import { l10nSponsored } from './services/facebook'
+import { fbL10nSponsored } from './services/facebook'
+import { linkedinL10nPromoted } from './services/linkedin'
 import { getService } from './services/manager'
 import { emit } from './utils'
 
@@ -56,11 +57,21 @@ export function hideAds(mutations: MutationRecord[]) {
       }
       if (el.dataset?.trackingDurationId) {
         const text = el.querySelector('.native-text.rslh .f5')?.textContent
-        for (const text of l10nSponsored) {
+        for (const text of fbL10nSponsored) {
           if (el.textContent?.includes(text)) {
             // facebook server rendered ads
             el.style.display = 'none'
             break
+          }
+        }
+      }
+
+      if (document.location.host == 'www.linkedin.com') {
+        const items = document.querySelectorAll('.feed-item')
+        for (const item of items) {
+          const label = (item.querySelector('span.text-color-text-low-emphasis') as HTMLElement)?.innerText
+          if (linkedinL10nPromoted.includes(label)) {
+            ;(item as HTMLElement).style.display = 'none'
           }
         }
       }

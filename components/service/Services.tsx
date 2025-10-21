@@ -1,8 +1,9 @@
 import { ReactNode, useMemo, useState } from 'react'
 import {
   IconBluesky,
-  IconInstagram,
   IconFacebook,
+  IconInstagram,
+  IconLinkedIn,
   IconReddit,
   IconThreads,
   IconTiktok,
@@ -25,6 +26,7 @@ export const services: Record<string, [string, ReactNode]> = {
   facebook: ['Facebook', <IconFacebook />],
   'facebook-messenger': ['Facebook Messenger', <IconFacebookMessenger />],
   instagram: ['Instagram', <IconInstagram />],
+  linkedin: ['LinkedIn', <IconLinkedIn />],
   reddit: ['Reddit', <IconReddit />],
   threads: ['Threads', <IconThreads />],
   tiktok: ['Tiktok', <IconTiktok />],

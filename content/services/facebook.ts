@@ -1,5 +1,5 @@
 // https://github.com/facebook-adblock/facebook_adblock/blob/mainline/src/constants.js
-export const l10nSponsored = [
+export const fbL10nSponsored = [
   'Sponsored',
   'مُموَّل', // Arabic
   '赞助内容', // Chinese (Simplified)
