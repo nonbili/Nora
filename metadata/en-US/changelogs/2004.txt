@@ -1,0 +1,2 @@
+- prevent crash on android 12
+- support linkedin
