@@ -1,29 +1,30 @@
-import { observable } from '@legendapp/state'
+import { observable, syncState, when } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 
 interface Store {
   home: 'instagram' | 'reddit' | 'threads' | 'x'
 
-  hideShorts: boolean
   theme: null | 'dark' | 'light'
 
   disabledServices: Set<string>
+  disabledServicesArr: string[]
   toggleService: (service: string) => void
 }
 
 export const settings$ = observable<Store>({
   home: 'x',
 
-  hideShorts: true,
   theme: null,
 
   disabledServices: new Set(),
+  disabledServicesArr: [],
   toggleService: (service) => {
-    if (settings$.disabledServices.has(service)) {
-      settings$.disabledServices.delete(service)
+    const index = settings$.disabledServicesArr.indexOf(service)
+    if (index == -1) {
+      settings$.disabledServicesArr.push(service)
     } else {
-      settings$.disabledServices.add(service)
+      settings$.disabledServicesArr.splice(index, 1)
     }
   },
 })
@@ -34,3 +35,12 @@ syncObservable(settings$, {
     plugin: ObservablePersistMMKV,
   },
 })
+
+export async function migrateDisabledServices() {
+  await when(syncState(settings$).isPersistLoaded)
+
+  if (settings$.disabledServices.size) {
+    settings$.disabledServicesArr.set([...settings$.disabledServices.get()])
+    settings$.disabledServices.clear()
+  }
+}

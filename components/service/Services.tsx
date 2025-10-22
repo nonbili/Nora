@@ -35,8 +35,8 @@ export const services: Record<string, [string, ReactNode]> = {
   x: ['X', <IconTwitter />],
 }
 
-export const ServiceManger = () => {
-  const disabledServices = use$(settings$.disabledServices)
+export const ServiceManager = () => {
+  const disabledServices = use$(settings$.disabledServicesArr)
 
   return (
     <View className="">
@@ -49,7 +49,7 @@ export const ServiceManger = () => {
               <NouText>{label}</NouText>
             </View>
           }
-          value={!disabledServices.has(value)}
+          value={!disabledServices.includes(value)}
           key={value}
           onPress={() => settings$.toggleService(value)}
         />

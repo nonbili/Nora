@@ -2,7 +2,7 @@ import { NoraView } from '@/modules/nora-view'
 import { use$, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { settings$ } from '@/states/settings'
+import { migrateDisabledServices, settings$ } from '@/states/settings'
 import { fixSharingUrl, getHomeUrl, hostHomes } from '@/lib/page'
 import { NouHeader } from '../header/NouHeader'
 import { ScrollView, View } from 'react-native'
@@ -21,6 +21,10 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
       tabs$.openTab(getHomeUrl(settings$.home.get()))
     }
   })
+
+  useEffect(() => {
+    migrateDisabledServices()
+  }, [])
 
   return (
     <View className="flex-1 h-full lg:flex-row overflow-hidden">

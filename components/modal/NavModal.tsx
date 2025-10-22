@@ -11,7 +11,7 @@ import { tabs$ } from '@/states/tabs'
 export const NavModal = () => {
   const navModalOpen = use$(ui$.navModalOpen)
   const home = use$(settings$.home)
-  const disabledServices = use$(settings$.disabledServices)
+  const disabledServices = use$(settings$.disabledServicesArr)
 
   const setHome = (home: string) => {
     ui$.url.set('')
@@ -30,10 +30,10 @@ export const NavModal = () => {
 
   return (
     <BaseModal className={navModalOpen ? 'block' : 'hidden'} onClose={() => ui$.navModalOpen.set(false)}>
-      <ScrollView className="py-8 pl-4 pr-10">
+      <ScrollView className="my-8 pl-4 pr-10">
         {Object.entries(services).map(([value, [label, icon]]) =>
           nIf(
-            !disabledServices.has(value),
+            !disabledServices.includes(value),
             <TouchableHighlight key={value} onPress={() => onPress(value)}>
               <View
                 className={clsx(
