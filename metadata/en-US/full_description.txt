@@ -1,4 +1,16 @@
-Facebook, Instagram, Reddit, Threads and X in a single app. No ads.
+<h2>Supported SNS</h2>
+<ul>
+<li>Bluesky</li>
+<li>Facebook</li>
+<li>Instagram</li>
+<li>LinkedIn</li>
+<li>Reddit</li>
+<li>Threads</li>
+<li>Tiktok</li>
+<li>Tumblr</li>
+<li>VK</li>
+<li>X (Twitter)</li>
+</ul>
 
 <h2>How it works</h2>
 <ul>

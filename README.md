@@ -14,6 +14,19 @@ Desktop version features a deck view to easily browse multiple timelines.
 Desktop version shares the same code base with mobile version.
 Download Linux/macOS/Windows version from [Nora-Desktop](https://github.com/nonbili/Nora-Desktop/releases).
 
+## Supported SNS
+
+- Bluesky
+- Facebook
+- Instagram
+- LinkedIn
+- Reddit
+- Threads
+- Tiktok
+- Tumblr
+- VK
+- X (Twitter)
+
 ## How it works
 
 - Wrap the SNS websites in Android webview
