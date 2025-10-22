@@ -20,7 +20,7 @@
   "dependencies": {
     "@expo/ui": "0.2.0-beta.6",
     "@expo/vector-icons": "^15.0.2",
-    "@legendapp/state": "^3.0.0-beta.30",
+    "@legendapp/state": "^3.0.0-beta.38",
     "@react-navigation/drawer": "^7.3.9",
     "@react-navigation/native": "^7.1.6",
     "cheerio": "^1.1.0",

@@ -1,5 +1,4 @@
-import { StyleSheet, Text, type TextProps } from 'react-native'
-import { use$ } from '@legendapp/state/react'
+import { Text, type TextProps } from 'react-native'
 import { ui$ } from '@/states/ui'
 import { clsx } from '@/lib/utils'
 

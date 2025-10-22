@@ -1,4 +1,4 @@
-import { Button, Text, Pressable, View, Switch, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { Button, Text, Pressable, View, Switch, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native'
 import { NouText } from '../NouText'
 import { NouLink } from '../link/NouLink'
 import { version } from '../../package.json'
@@ -6,12 +6,12 @@ import { version as desktopVersion } from '../../desktop/package.json'
 import { useState } from 'react'
 import { colors } from '@/lib/colors'
 import { clsx, isWeb, nIf } from '@/lib/utils'
-import { use$ } from '@legendapp/state/react'
+import { useValue } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
 import { ui$ } from '@/states/ui'
 import { BaseModal } from './BaseModal'
-import { ServiceManger } from '../service/Services'
+import { ServiceManager } from '../service/Services'
 import { NouButton } from '../button/NouButton'
 
 const repo = 'https://github.com/nonbili/Nora'
@@ -19,10 +19,10 @@ const tabs = ['Settings', 'About']
 const themes = [null, 'dark', 'light'] as const
 
 export const SettingsModal = () => {
-  const settingsModalOpen = use$(ui$.settingsModalOpen)
+  const settingsModalOpen = useValue(ui$.settingsModalOpen)
   const onClose = () => ui$.settingsModalOpen.set(false)
   const [tabIndex, setTabIndex] = useState(0)
-  const settings = use$(settings$)
+  const settings = useValue(settings$)
 
   if (!settingsModalOpen) {
     return null
@@ -34,7 +34,7 @@ export const SettingsModal = () => {
         <View className="items-center">
           <Segemented options={tabs} selectedIndex={tabIndex} onChange={setTabIndex} />
         </View>
-        <View className="mt-4">
+        <ScrollView className="mt-4">
           {tabIndex == 0 && (
             <>
               {nIf(
@@ -62,7 +62,7 @@ export const SettingsModal = () => {
                   </NouButton>
                 </View>,
               )}
-              <ServiceManger />
+              <ServiceManager />
             </>
           )}
           {tabIndex == 1 && (
@@ -79,7 +79,8 @@ export const SettingsModal = () => {
               </View>
             </>
           )}
-        </View>
+          <View className="h-20" />
+        </ScrollView>
       </View>
     </BaseModal>
   )

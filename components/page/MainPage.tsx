@@ -1,5 +1,5 @@
 import { NoraView } from '@/modules/nora-view'
-import { use$, useObserve, useObserveEffect } from '@legendapp/state/react'
+import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { settings$ } from '@/states/settings'

@@ -1,5 +1,5 @@
 import { NoraView } from '@/modules/nora-view'
-import { use$, useObserve, useObserveEffect } from '@legendapp/state/react'
+import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { migrateDisabledServices, settings$ } from '@/states/settings'
@@ -13,8 +13,8 @@ import { tabs$ } from '@/states/tabs'
 import { NoraTab } from '../tab/NoraTab'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
-  const uiState = use$(ui$)
-  const tabs = use$(tabs$.tabs)
+  const uiState = useValue(ui$)
+  const tabs = useValue(tabs$.tabs)
 
   useObserveEffect(tabs$.tabs, ({ value }) => {
     if (!value?.length) {

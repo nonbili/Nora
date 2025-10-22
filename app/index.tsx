@@ -1,7 +1,7 @@
 import { View, Text, BackHandler, Appearance, ColorSchemeName, ScrollView } from 'react-native'
 import { NoraView } from '@/modules/nora-view'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { use$, useObserve, useObserveEffect } from '@legendapp/state/react'
+import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 import { fixSharingUrl, getHomeUrl, hostHomes, openSharedUrl } from '@/lib/page'
@@ -16,7 +16,7 @@ import { nIf } from '@/lib/utils'
 
 export default function HomeScreen() {
   const navigation = useNavigation()
-  const uiState = use$(ui$)
+  const uiState = useValue(ui$)
   const [scriptOnStart, setScriptOnStart] = useState('')
   const { hasShareIntent, shareIntent } = useShareIntent()
   const insets = useSafeAreaInsets()

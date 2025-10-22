@@ -18,7 +18,7 @@ import { clsx } from '@/lib/utils'
 import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { settings$ } from '@/states/settings'
-import { use$ } from '@legendapp/state/react'
+import { useValue } from '@legendapp/state/react'
 import { hostHomes } from '@/lib/page'
 
 export const services: Record<string, [string, ReactNode]> = {
@@ -36,7 +36,7 @@ export const services: Record<string, [string, ReactNode]> = {
 }
 
 export const ServiceManager = () => {
-  const disabledServices = use$(settings$.disabledServicesArr)
+  const disabledServices = useValue(settings$.disabledServicesArr)
 
   return (
     <View className="">

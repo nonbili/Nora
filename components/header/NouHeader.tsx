@@ -2,7 +2,7 @@ import { Dimensions, View, Text, Share } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Drawer from 'expo-router/drawer'
-import { use$, useObserve } from '@legendapp/state/react'
+import { useValue, useObserve } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 import { fixSharingUrl } from '@/lib/page'
@@ -14,7 +14,7 @@ import { isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 
 export const NouHeader: React.FC<{}> = ({}) => {
-  const uiState = use$(ui$)
+  const uiState = useValue(ui$)
   const webview = ui$.webview.get()
 
   return (

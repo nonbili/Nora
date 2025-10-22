@@ -1,5 +1,5 @@
 import { NoraView } from '@/modules/nora-view'
-import { use$, useObserve, useObserveEffect } from '@legendapp/state/react'
+import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { settings$ } from '@/states/settings'
@@ -20,10 +20,10 @@ const userAgent =
   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.52 Mobile Safari/537.36'
 
 export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }> = ({ url, contentJs, index }) => {
-  const uiState = use$(ui$)
+  const uiState = useValue(ui$)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
-  const tabs = use$(tabs$.tabs)
+  const tabs = useValue(tabs$.tabs)
   const pageUrlRef = useRef('')
 
   useEffect(() => {

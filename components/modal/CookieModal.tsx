@@ -15,7 +15,7 @@ import { version } from '../../package.json'
 import { useState } from 'react'
 import { colors } from '@/lib/colors'
 import { clsx } from '@/lib/utils'
-import { use$ } from '@legendapp/state/react'
+import { useValue } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
 import { ui$ } from '@/states/ui'
@@ -26,7 +26,7 @@ const tabs = ['Settings', 'About']
 const themes = [null, 'dark', 'light'] as const
 
 export const CookieModal = () => {
-  const cookieModalOpen = use$(ui$.cookieModalOpen)
+  const cookieModalOpen = useValue(ui$.cookieModalOpen)
   const onClose = () => ui$.cookieModalOpen.set(false)
   const [text, setText] = useState('')
 

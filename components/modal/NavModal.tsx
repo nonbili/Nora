@@ -1,5 +1,5 @@
 import { ui$ } from '@/states/ui'
-import { use$ } from '@legendapp/state/react'
+import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
 import { services } from '../service/Services'
 import { View, Text, Pressable, ScrollView, TouchableHighlight } from 'react-native'
@@ -9,9 +9,9 @@ import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 
 export const NavModal = () => {
-  const navModalOpen = use$(ui$.navModalOpen)
-  const home = use$(settings$.home)
-  const disabledServices = use$(settings$.disabledServicesArr)
+  const navModalOpen = useValue(ui$.navModalOpen)
+  const home = useValue(settings$.home)
+  const disabledServices = useValue(settings$.disabledServicesArr)
 
   const setHome = (home: string) => {
     ui$.url.set('')
