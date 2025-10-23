@@ -1,0 +1,1 @@
+- bump to support the same SNS sites as android version

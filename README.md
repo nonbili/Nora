@@ -5,6 +5,9 @@ Facebook, Instagram, Reddit, Threads and X in a single app. No ads.
 [<img src="https://f-droid.org/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/jp.nonbili.nora/)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"
+      alt="Get it on Google Play"
+      height="80">](https://play.google.com/store/apps/details?id=jp.nonbili.nora)
 
 Or download the latest APK from the [Releases Section](https://github.com/nonbili/Nora/releases/latest).
 

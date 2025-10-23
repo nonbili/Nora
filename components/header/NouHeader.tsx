@@ -12,6 +12,7 @@ import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
 import { isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
+import { MaterialButton } from '../button/IconButtons'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -41,7 +42,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           underlayColor={colors.underlay}
         />
         <NouMenu
-          trigger="filled.MoreVert"
+          trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
           items={[
             ...(isWeb
               ? []

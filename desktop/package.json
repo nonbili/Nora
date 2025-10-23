@@ -1,7 +1,7 @@
 {
   "name": "nora-desktop",
   "productName": "Nora",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Facebook, Instagram, Reddit, Threads and X in a single app",
   "main": "./out/main/index.js",
   "author": "Nonbili Inc.",
