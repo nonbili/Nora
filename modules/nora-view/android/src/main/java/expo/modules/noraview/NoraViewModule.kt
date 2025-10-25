@@ -18,6 +18,10 @@ class NoraViewModule : Module() {
       }
       Events("onLoad", "onMessage")
 
+      AsyncFunction("setActive") { view: NoraView ->
+        nouController.setNoraView(view)
+      }
+
       AsyncFunction("loadUrl") { view: NoraView, url: String ->
         view.load(url)
       }
