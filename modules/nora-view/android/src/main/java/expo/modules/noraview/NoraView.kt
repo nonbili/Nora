@@ -14,6 +14,7 @@ import android.util.AttributeSet
 import android.view.ContextMenu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.JsResult
 import android.webkit.ValueCallback
@@ -22,7 +23,11 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
@@ -101,8 +106,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   private var userAgent: String? = null
 
-  private val currentActivity: Activity?
-    get() = appContext.activityProvider?.currentActivity
+  internal val currentActivity: Activity?
+    get() = appContext.currentActivity
 
   override fun onCreateContextMenu(menu: ContextMenu) {
     super.onCreateContextMenu(menu)
@@ -203,24 +208,49 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
         override fun onShowCustomView(view: View, cllback: CustomViewCallback) {
           customView = view
-          nouController.showFullscreen(view)
+          val activity = currentActivity
+          if (activity == null) {
+            return
+          }
+          val window = activity.window
+          (window.decorView as FrameLayout).addView(
+            view,
+            FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+          )
+
+          // https://stackoverflow.com/a/64828067
+          val controller = WindowCompat.getInsetsController(window, window.decorView)
+          controller.hide(WindowInsetsCompat.Type.systemBars())
+          controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
 
         override fun onHideCustomView() {
-          nouController.exitFullscreen(customView!!)
+          val activity = currentActivity
+          if (activity == null || customView == null) {
+            return
+          }
+          val window = activity.window
+          (window.decorView as FrameLayout).removeView(customView)
+          val controller = WindowCompat.getInsetsController(window, window.decorView)
+          controller.show(WindowInsetsCompat.Type.systemBars())
         }
 
         override fun onShowFileChooser(
           view: WebView,
           callback: ValueCallback<Array<Uri>>,
           params: WebChromeClient.FileChooserParams
-        ): Boolean = nouController.onShowFileChooser(view, callback, params)
+        ): Boolean {
+          // https://stackoverflow.com/a/62625964
+          nouController.setFileChooserCallback(callback)
+          val intent = params.createIntent()
+          val activity = currentActivity
+          activity?.startActivityForResult(intent, 0)
+          return true
+        }
       }
     }
 
   init {
-    nouController.setNoraView(this)
-
     addView(webView)
 
     userAgent = webView.settings.userAgentString

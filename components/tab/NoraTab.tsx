@@ -37,6 +37,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
         webview.src = url
       } else if (native) {
         native.loadUrl(url)
+        native.setActive()
       }
     }
   }, [url])
