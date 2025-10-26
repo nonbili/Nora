@@ -8,6 +8,8 @@ import { MainPageContent } from './MainPageContent'
 import { NavModal } from '../modal/NavModal'
 import { SettingsModal } from '../modal/SettingsModal'
 import { CookieModal } from '../modal/CookieModal'
+import { isWeb, nIf } from '@/lib/utils'
+import { TabModal } from '../modal/TabModal'
 
 export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   return (
@@ -16,6 +18,12 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
       <NavModal />
       <SettingsModal />
       <CookieModal />
+      {nIf(
+        !isWeb,
+        <>
+          <TabModal />
+        </>,
+      )}
     </>
   )
 }

@@ -13,9 +13,11 @@ import { NouMenu } from '../menu/NouMenu'
 import { isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
+import { NouButton } from '../button/NouButton'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
+  const tabs = useValue(tabs$.tabs)
   const webview = ui$.webview.get()
 
   return (
@@ -32,21 +34,25 @@ export const NouHeader: React.FC<{}> = ({}) => {
         />
       </View>
       <View className="flex flex-row lg:flex-col items-center gap-2">
-        <MaterialIcons.Button
-          color={colors.icon}
-          backgroundColor="transparent"
-          iconStyle={{ marginRight: 0 }}
-          name="refresh"
-          size={24}
-          onPress={() => webview?.executeJavaScript('document.location.reload()')}
-          underlayColor={colors.underlay}
-        />
+        <NouButton
+          className="rounded-md border-white px-[8px]"
+          textClassName="text-xs"
+          variant="outline"
+          size="1"
+          onPress={() => ui$.tabModalOpen.set(true)}
+        >
+          {tabs.length}
+        </NouButton>
         <NouMenu
           trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
           items={[
             ...(isWeb
               ? []
               : [
+                  {
+                    label: 'Reload',
+                    handler: () => webview?.executeJavaScript('document.location.reload()'),
+                  },
                   {
                     label: 'Scroll to top',
                     handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),

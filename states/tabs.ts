@@ -10,6 +10,7 @@ interface Tab {
 
 interface Store {
   tabs: Tab[]
+  activeTabIndex: number
 
   openTab: (url: string) => void
   closeTab: (index: number) => void
@@ -18,13 +19,18 @@ interface Store {
 
 export const tabs$ = observable<Store>({
   tabs: [],
+  activeTabIndex: 0,
 
   openTab: (url) => {
     const tab = { id: genId(), url }
+    tabs$.activeTabIndex.set(tabs$.tabs.length)
     tabs$.tabs.push(tab)
   },
 
   closeTab: (index) => {
+    if (index == tabs$.tabs.length - 1) {
+      tabs$.activeTabIndex.set(index - 1)
+    }
     tabs$.tabs.splice(index, 1)
   },
 

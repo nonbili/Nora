@@ -8,7 +8,7 @@ import { NouHeader } from '../header/NouHeader'
 import { Text, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
-import { isWeb } from '@/lib/utils'
+import { clsx, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
@@ -23,7 +23,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
   const uiState = useValue(ui$)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
-  const tabs = useValue(tabs$.tabs)
+  const { tabs, activeTabIndex } = useValue(tabs$)
   const pageUrlRef = useRef('')
 
   useEffect(() => {
@@ -120,7 +120,8 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     <NoraView
       // @ts-expect-error ??
       ref={nativeRef}
-      style={{ flex: 1 }}
+      className={clsx(index != activeTabIndex && 'hidden')}
+      style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
       scriptOnStart={contentJs}
       onLoad={onLoad}
       onMessage={onMessage}

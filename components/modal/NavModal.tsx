@@ -20,11 +20,7 @@ export const NavModal = () => {
 
   const onPress = (home: string) => {
     const url = getHomeUrl(home)
-    if (isWeb) {
-      tabs$.openTab(url)
-    } else {
-      tabs$.setTab(0, url)
-    }
+    tabs$.openTab(url)
     ui$.assign({ navModalOpen: false })
   }
 

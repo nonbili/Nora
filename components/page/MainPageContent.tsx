@@ -11,6 +11,7 @@ import type { WebviewTag } from 'electron'
 import { clsx, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { NoraTab } from '../tab/NoraTab'
+import { NouButton } from '../button/NouButton'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const uiState = useValue(ui$)
@@ -40,7 +41,11 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
           ))}
         </ScrollView>
       ) : (
-        <NoraTab url={tabs[0]?.url} contentJs={contentJs} index={0} />
+        <View className="flex-1">
+          {tabs.map((tab, index) => (
+            <NoraTab url={tab.url} contentJs={contentJs} index={index} key={tab.id} />
+          ))}
+        </View>
       )}
     </View>
   )
