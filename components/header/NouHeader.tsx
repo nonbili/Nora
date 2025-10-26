@@ -17,7 +17,7 @@ import { NouButton } from '../button/NouButton'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
-  const tabs = useValue(tabs$.tabs)
+  const { tabs, activeTabIndex } = useValue(tabs$)
   const webview = ui$.webview.get()
 
   return (
@@ -57,7 +57,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     label: 'Scroll to top',
                     handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),
                   },
-                  { label: 'Share', handler: () => Share.share({ message: fixSharingUrl(tabs$.tabs[0].url.get()) }) },
+                  {
+                    label: 'Share',
+                    handler: () => Share.share({ message: fixSharingUrl(tabs[activeTabIndex].url) }),
+                  },
                 ]),
             { label: 'Settings', handler: () => ui$.settingsModalOpen.set(true) },
           ]}

@@ -3,7 +3,6 @@ import { settings$ } from './settings'
 
 interface Store {
   url: string
-  pageUrl: string
   title: string
 
   // modals
@@ -18,7 +17,6 @@ interface Store {
 
 export const ui$ = observable<Store>({
   url: '',
-  pageUrl: '',
   title: '',
 
   // modals

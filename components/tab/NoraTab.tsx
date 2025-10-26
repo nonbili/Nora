@@ -61,10 +61,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     })
     webview.addEventListener('did-navigate', (e) => {
       const { host } = new URL(e.url)
-      const pageUrl = uiState.pageUrl
       setPageUrl(e.url)
-      if (pageUrl && host != new URL(pageUrl).host) {
-      }
     })
     webview.addEventListener('did-navigate-in-page', (e) => {
       setPageUrl(e.url)
