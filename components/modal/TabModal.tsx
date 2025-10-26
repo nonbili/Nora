@@ -33,9 +33,9 @@ export const TabModal = () => {
             <TouchableHighlight className="w-[88%]" onPress={() => onPress(index)}>
               <View
                 className={clsx(
-                  'flex-1 flex-row items-center gap-4 rounded-md bg-white',
+                  'flex-1 flex-row items-center gap-4 rounded-md',
                   'py-2 px-3 my-3',
-                  index == activeTabIndex ? 'border-4 border-emerald-500' : 'bg-sky-50',
+                  index == activeTabIndex ? 'bg-indigo-200' : 'bg-white',
                 )}
               >
                 <ServiceIcon url={tab.url} />
