@@ -2,7 +2,7 @@ import { tabs$ } from '@/states/tabs'
 
 export const homeUrls: Record<string, string> = {
   bluesky: 'https://bsky.app',
-  facebook: 'https://m.facebook.com',
+  facebook: 'https://www.facebook.com',
   'facebook-messenger': 'https://www.facebook.com/messages/',
   instagram: 'https://www.instagram.com',
   linkedin: 'https://www.linkedin.com',

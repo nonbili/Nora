@@ -260,7 +260,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   fun load(url: String) {
-    if (url.startsWith("https://www.facebook.com/messages/") ||
+    if (url.startsWith("https://www.facebook.com") ||
       url.startsWith("https://www.tiktok.com")
     ) {
       webView.settings.setUserAgentString(
