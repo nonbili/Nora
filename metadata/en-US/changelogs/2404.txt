@@ -1,0 +1,2 @@
+- open shared url in new tab
+- support text selection on fb

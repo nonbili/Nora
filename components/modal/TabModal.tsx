@@ -33,8 +33,8 @@ export const TabModal = () => {
             <TouchableHighlight className="w-[88%]" onPress={() => onPress(index)}>
               <View
                 className={clsx(
-                  'flex-1 flex-row items-center gap-4 rounded-md',
-                  'py-2 px-3 my-3',
+                  'flex-1 flex-row items-center gap-2 rounded-md',
+                  'py-2 px-2 my-3',
                   index == activeTabIndex ? 'bg-indigo-200' : 'bg-white',
                 )}
               >
