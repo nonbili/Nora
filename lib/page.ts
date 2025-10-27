@@ -58,7 +58,7 @@ export function openSharedUrl(url: string) {
   try {
     const { host } = new URL(fixSharingUrl(url))
     if (Object.keys(hostHomes).includes(host)) {
-      tabs$.setTab(0, url.replace('nora://', 'https://'))
+      tabs$.openTab(url.replace('nora://', 'https://'))
     }
   } catch (e) {
     console.error(e)
