@@ -42,8 +42,6 @@ val BLOCK_HOSTS = arrayOf(
 
 val VIEW_HOSTS = arrayOf(
   "bsky.app",
-  "m.facebook.com",
-  "www.facebook.com",
   "www.linkedin.com",
   "www.instagram.com",
   "chat.reddit.com",
@@ -178,7 +176,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
           override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
             val uri = Uri.parse(url)
-            if (uri.host in VIEW_HOSTS) {
+            if (uri.host in VIEW_HOSTS || (uri.host != null && uri.host!!.endsWith(".facebook.com"))) {
               return false
             } else {
               try {
