@@ -51,10 +51,7 @@ export const TabModal = () => {
                 </Text>
               </View>
             </TouchableHighlight>
-            <NouMenu
-              trigger="filled.MoreVert"
-              items={[...(tabs.length > 1 ? [{ label: 'Close', handler: () => tabs$.closeTab(index) }] : [])]}
-            />
+            <NouMenu trigger="filled.MoreVert" items={[{ label: 'Close', handler: () => tabs$.closeTab(index) }]} />
           </View>
         ))}
         <View className="flex-row items-center justify-between mt-8 pr-4">

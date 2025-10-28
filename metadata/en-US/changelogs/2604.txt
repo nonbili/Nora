@@ -1,0 +1,2 @@
+- add button to close all tabs
+- revert back to m.facebook.com to block ads
