@@ -6,6 +6,7 @@ interface Store {
   title: string
 
   // modals
+  bookmarkModalOpen: boolean
   cookieModalOpen: boolean
   navModalOpen: boolean
   settingsModalOpen: boolean
@@ -20,6 +21,7 @@ export const ui$ = observable<Store>({
   title: '',
 
   // modals
+  bookmarkModalOpen: false,
   cookieModalOpen: false,
   navModalOpen: false,
   settingsModalOpen: false,

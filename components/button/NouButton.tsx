@@ -10,18 +10,20 @@ export const NouButton = ({
   loading = false,
   children,
   onPress,
+  disabled,
 }: React.PropsWithChildren<{
   className?: string
   textClassName?: string
   variant?: 'solid' | 'soft' | 'outline'
   size?: '1' | '2'
   loading?: boolean
+  disabled?: boolean
   onPress: () => void
 }>) => {
   return (
     <TouchableOpacity
       className={clsx(
-        'flex-row gap-2 text-center rounded-full',
+        'flex-row gap-2 justify-center rounded-full',
         size == '1' && 'py-1 px-3',
         size == '2' && 'py-2 px-6',
         variant == 'solid' && 'bg-indigo-600',
@@ -29,7 +31,7 @@ export const NouButton = ({
         variant == 'outline' && 'border border-indigo-200',
         className,
       )}
-      onPress={onPress}
+      onPress={() => (disabled ? {} : onPress())}
     >
       {nIf(loading, <ActivityIndicator color="white" />)}
       <NouText className={clsx(variant == 'soft' && 'text-indigo-600', textClassName)}>{children}</NouText>

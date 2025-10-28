@@ -13,10 +13,10 @@ import { ui$ } from '@/states/ui'
 import { BaseModal } from './BaseModal'
 import { ServiceManager } from '../service/Services'
 import { NouButton } from '../button/NouButton'
+import { SettingsModalTabSettings } from './SettingsModalTabSettings'
 
 const repo = 'https://github.com/nonbili/Nora'
 const tabs = ['Settings', 'About']
-const themes = [null, 'dark', 'light'] as const
 
 export const SettingsModal = () => {
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
@@ -35,37 +35,9 @@ export const SettingsModal = () => {
           <Segemented options={tabs} selectedIndex={tabIndex} onChange={setTabIndex} />
         </View>
         <ScrollView className="mt-4">
-          {tabIndex == 0 && (
-            <>
-              {nIf(
-                !isWeb,
-                <View className="my-8">
-                  <View className="items-center flex-row justify-between">
-                    <NouText className="font-medium">Theme</NouText>
-                    <Segemented
-                      options={['System', 'Dark', 'Light']}
-                      selectedIndex={themes.indexOf(settings.theme)}
-                      size={1}
-                      onChange={(index) => settings$.theme.set(themes[index])}
-                    />
-                  </View>
-                  <NouText className="mt-2 text-sm text-gray-400 text-right">
-                    Restart manually if change not reflected in webview.
-                  </NouText>
-                </View>,
-              )}
-              {nIf(
-                !isWeb,
-                <View className="flex-row justify-center mb-8">
-                  <NouButton variant="outline" onPress={() => ui$.cookieModalOpen.set(true)}>
-                    Inject cookie
-                  </NouButton>
-                </View>,
-              )}
-              <ServiceManager />
-            </>
-          )}
-          {tabIndex == 1 && (
+          {nIf(tabIndex == 0, <SettingsModalTabSettings />)}
+          {nIf(
+            tabIndex == 1,
             <>
               <View className="items-center my-4">
                 <NouText className="text-lg font-medium">Nora</NouText>
@@ -77,7 +49,7 @@ export const SettingsModal = () => {
                   {repo}
                 </NouLink>
               </View>
-            </>
+            </>,
           )}
           <View className="h-20" />
         </ScrollView>

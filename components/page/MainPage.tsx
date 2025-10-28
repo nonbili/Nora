@@ -10,6 +10,7 @@ import { SettingsModal } from '../modal/SettingsModal'
 import { CookieModal } from '../modal/CookieModal'
 import { isWeb, nIf } from '@/lib/utils'
 import { TabModal } from '../modal/TabModal'
+import { BookmarkModal } from '../modal/BookmarkModal'
 
 export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   return (
@@ -17,6 +18,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
       <MainPageContent contentJs={contentJs} />
       <NavModal />
       <SettingsModal />
+      <BookmarkModal />
       <CookieModal />
       {nIf(
         !isWeb,
