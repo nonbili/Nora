@@ -8,6 +8,9 @@ import { getHomeUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { NouMenu } from '../menu/NouMenu'
+import { NouButton } from '../button/NouButton'
+import { MaterialButton } from '../button/IconButtons'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
@@ -25,12 +28,16 @@ export const TabModal = () => {
     ui$.assign({ tabModalOpen: false })
   }
 
+  const openNavModal = () => {
+    ui$.assign({ navModalOpen: true, tabModalOpen: false })
+  }
+
   return (
     <BaseModal className={tabModalOpen ? 'block' : 'hidden'} onClose={() => ui$.tabModalOpen.set(false)}>
-      <ScrollView className="my-8 pl-4 pr-10">
+      <ScrollView className="my-8 pl-4">
         {tabs.map((tab, index) => (
           <View className="flex-row items-center justify-between" key={tab.id}>
-            <TouchableHighlight className="w-[88%]" onPress={() => onPress(index)}>
+            <TouchableHighlight className="w-[80%]" onPress={() => onPress(index)}>
               <View
                 className={clsx(
                   'flex-1 flex-row items-center gap-2 rounded-md',
@@ -50,6 +57,24 @@ export const TabModal = () => {
             />
           </View>
         ))}
+        <View className="flex-row items-center justify-between mt-8 pr-4">
+          <NouButton variant="soft" onPress={openNavModal}>
+            <MaterialIcons name="add" size={20} />
+          </NouButton>
+          {nIf(
+            tabs.length,
+            <NouButton
+              variant="outline"
+              size="1"
+              onPress={() => {
+                tabs$.tabs.set([])
+                openNavModal()
+              }}
+            >
+              Close all
+            </NouButton>,
+          )}
+        </View>
       </ScrollView>
     </BaseModal>
   )

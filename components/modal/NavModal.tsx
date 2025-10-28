@@ -8,43 +8,42 @@ import { getHomeUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 
-export const NavModal = () => {
-  const navModalOpen = useValue(ui$.navModalOpen)
-  const home = useValue(settings$.home)
+export const NavModalContent = () => {
   const disabledServices = useValue(settings$.disabledServicesArr)
-
-  const setHome = (home: string) => {
-    ui$.url.set('')
-    ui$.assign({ url: getHomeUrl(home), navModalOpen: false })
-  }
 
   const onPress = (home: string) => {
     const url = getHomeUrl(home)
     tabs$.openTab(url)
     ui$.assign({ navModalOpen: false })
   }
+  return (
+    <ScrollView className="my-8 pl-4 pr-10">
+      {Object.entries(services).map(([value, [label, icon]]) =>
+        nIf(
+          !disabledServices.includes(value),
+          <TouchableHighlight key={value} onPress={() => onPress(value)}>
+            <View
+              className={clsx(
+                'flex-row items-center gap-4 rounded-full bg-sky-50',
+                isWeb ? 'py-2 px-4 my-2' : 'py-3 px-5 my-3',
+              )}
+            >
+              {icon}
+              <Text className={clsx(!isWeb && 'text-lg')}>{label}</Text>
+            </View>
+          </TouchableHighlight>,
+        ),
+      )}
+    </ScrollView>
+  )
+}
+
+export const NavModal = () => {
+  const navModalOpen = useValue(ui$.navModalOpen)
 
   return (
     <BaseModal className={navModalOpen ? 'block' : 'hidden'} onClose={() => ui$.navModalOpen.set(false)}>
-      <ScrollView className="my-8 pl-4 pr-10">
-        {Object.entries(services).map(([value, [label, icon]]) =>
-          nIf(
-            !disabledServices.includes(value),
-            <TouchableHighlight key={value} onPress={() => onPress(value)}>
-              <View
-                className={clsx(
-                  'flex-row items-center gap-4 rounded-full bg-sky-50',
-                  isWeb ? 'py-2 px-4 my-2' : 'py-3 px-5 my-3',
-                  // home == value ? 'bg-emerald-200' : 'bg-sky-50',
-                )}
-              >
-                {icon}
-                <Text className={clsx(!isWeb && 'text-lg')}>{label}</Text>
-              </View>
-            </TouchableHighlight>,
-          ),
-        )}
-      </ScrollView>
+      <NavModalContent />
     </BaseModal>
   )
 }

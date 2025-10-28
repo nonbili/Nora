@@ -1,4 +1,4 @@
-import { Dimensions, View, Text, Share } from 'react-native'
+import { Dimensions, View, Text, Share, TouchableOpacity } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Drawer from 'expo-router/drawer'
@@ -14,6 +14,7 @@ import { isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
+import { NouText } from '../NouText'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -33,16 +34,12 @@ export const NouHeader: React.FC<{}> = ({}) => {
           underlayColor={colors.underlay}
         />
       </View>
-      <View className="flex flex-row lg:flex-col items-center gap-2">
-        <NouButton
-          className="rounded-md border-white px-[8px]"
-          textClassName="text-xs"
-          variant="outline"
-          size="1"
-          onPress={() => ui$.tabModalOpen.set(true)}
-        >
-          {tabs.length}
-        </NouButton>
+      <View className="flex flex-row lg:flex-col items-center gap-2 h-full">
+        <TouchableOpacity className="flex-row items-center px-3 h-full" onPress={() => ui$.tabModalOpen.set(true)}>
+          <View className="rounded-md px-2 py-1 border border-white">
+            <NouText className="text-xs">{tabs.length}</NouText>
+          </View>
+        </TouchableOpacity>
         <NouMenu
           trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
           items={[

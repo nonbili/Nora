@@ -12,16 +12,11 @@ import { clsx, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { NoraTab } from '../tab/NoraTab'
 import { NouButton } from '../button/NouButton'
+import { NavModalContent } from '../modal/NavModal'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const uiState = useValue(ui$)
   const tabs = useValue(tabs$.tabs)
-
-  useObserveEffect(tabs$.tabs, ({ value }) => {
-    if (!value?.length) {
-      tabs$.openTab(getHomeUrl(settings$.home.get()))
-    }
-  })
 
   useEffect(() => {
     migrateDisabledServices()
@@ -40,11 +35,15 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
             <NoraTab url={tab.url} contentJs={contentJs} index={index} key={tab.id} />
           ))}
         </ScrollView>
-      ) : (
+      ) : tabs.length ? (
         <View className="flex-1">
           {tabs.map((tab, index) => (
             <NoraTab url={tab.url} contentJs={contentJs} index={index} key={tab.id} />
           ))}
+        </View>
+      ) : (
+        <View className="flex-1 bg-gray-950">
+          <NavModalContent />
         </View>
       )}
     </View>
