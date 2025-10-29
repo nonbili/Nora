@@ -17,7 +17,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
-      <View className="bg-zinc-800" style={{ height: insets.top }} />
+      <View className="bg-zinc-800" style={{ height: insets.top, zIndex: 10 }} />
       <Slot />
       <View className="bg-zinc-800" style={{ height: insets.bottom }} />
     </SafeAreaProvider>

@@ -15,9 +15,44 @@ import { NouMenu } from '../menu/NouMenu'
 import { MaterialButton } from '../button/IconButtons'
 import { share } from '@/lib/share'
 import { ServiceIcon } from '../service/Services'
+import { debounce } from 'es-toolkit'
 
 const userAgent =
   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.52 Mobile Safari/537.36'
+
+let _scrollY = 0
+
+const onScroll = debounce(
+  (scrollY) => {
+    if (scrollY == 0) {
+      ui$.headerMarginTop.set(0)
+      return
+    }
+
+    let shouldReset = !!_scrollY
+    if (!_scrollY) {
+      _scrollY = scrollY
+      return
+    }
+    const deltaY = scrollY - _scrollY
+    if (!deltaY) {
+      return
+    }
+    const height = ui$.headerHeight.get()
+    const top = ui$.headerMarginTop.get()
+    let newTop
+    if (deltaY > 0) {
+      newTop = Math.max(-height, top - deltaY)
+    } else {
+      newTop = Math.max(0, top + deltaY)
+    }
+    ui$.headerMarginTop.set(newTop)
+
+    _scrollY = scrollY
+  },
+  100,
+  { edges: ['leading', 'trailing'] },
+)
 
 export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }> = ({ url, contentJs, index }) => {
   const uiState = useValue(ui$)
@@ -86,6 +121,11 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
 
   const onMessage = async (e: { nativeEvent: { payload: string } }) => {
     const { type, payload } = JSON.parse(e.nativeEvent.payload)
+    switch (type) {
+      case 'scroll':
+        onScroll(payload.scrollY)
+        break
+    }
   }
 
   const webview = webviewRef.current || nativeRef.current

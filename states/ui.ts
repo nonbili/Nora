@@ -5,6 +5,10 @@ interface Store {
   url: string
   title: string
 
+  // header
+  headerHeight: number
+  headerMarginTop: number
+
   // modals
   bookmarkModalOpen: boolean
   cookieModalOpen: boolean
@@ -19,6 +23,10 @@ interface Store {
 export const ui$ = observable<Store>({
   url: '',
   title: '',
+
+  // header
+  headerHeight: 0,
+  headerMarginTop: 0,
 
   // modals
   bookmarkModalOpen: false,

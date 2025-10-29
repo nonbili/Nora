@@ -1,4 +1,4 @@
-import { Dimensions, View, Text, Share, TouchableOpacity } from 'react-native'
+import { Dimensions, View, Text, Share, TouchableOpacity, LayoutChangeEvent } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Drawer from 'expo-router/drawer'
@@ -21,8 +21,20 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const { tabs, activeTabIndex } = useValue(tabs$)
   const webview = ui$.webview.get()
 
+  const onLayout = (event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    if (Math.abs(uiState.headerHeight - height) < 1) {
+      return
+    }
+    ui$.assign({ headerHeight: height, headerMarginTop: 0 })
+  }
+
   return (
-    <View className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2">
+    <View
+      className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
+      style={{ marginTop: uiState.headerMarginTop }}
+      onLayout={onLayout}
+    >
       <View className="items-center">
         <MaterialIcons.Button
           color={colors.icon}

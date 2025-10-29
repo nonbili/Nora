@@ -15,7 +15,6 @@ import { NouButton } from '../button/NouButton'
 import { NavModalContent } from '../modal/NavModal'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
-  const uiState = useValue(ui$)
   const tabs = useValue(tabs$.tabs)
 
   useEffect(() => {

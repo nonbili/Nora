@@ -255,6 +255,16 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
     val activity = currentActivity
     activity?.registerForContextMenu(webView)
+
+    webView.setOnScrollChangeListener(
+      object : View.OnScrollChangeListener {
+        override fun onScrollChange(v: View, scrollX: Int, scrollY: Int, oldScrollX: Int, oldScrollY: Int) {
+          onMessage(
+            mapOf("payload" to """{"type": "scroll", "payload": {"scrollY": $scrollY, "oldScrollY": $oldScrollY}}""")
+          )
+        }
+      }
+    )
   }
 
   fun load(url: String) {
