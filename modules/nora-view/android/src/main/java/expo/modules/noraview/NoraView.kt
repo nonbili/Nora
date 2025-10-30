@@ -144,8 +144,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
   }
 
-  internal val webView =
-    NouWebView(context).apply {
+  internal val webView = initWebView()
+
+  fun initWebView(): NouWebView {
+    return NouWebView(context).apply {
       layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
       webViewClient =
         object : WebViewClient() {
@@ -245,10 +247,19 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           activity?.startActivityForResult(intent, 0)
           return true
         }
+
+        override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail) {
+          //
+        }
       }
     }
+  }
 
   init {
+    recreate()
+  }
+
+  fun recreate() {
     addView(webView)
 
     userAgent = webView.settings.userAgentString
