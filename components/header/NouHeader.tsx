@@ -36,15 +36,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
       onLayout={onLayout}
     >
       <View className="items-center">
-        <MaterialIcons.Button
-          color={colors.icon}
-          backgroundColor="transparent"
-          iconStyle={{ marginRight: 0 }}
-          name="web-stories"
-          size={24}
-          onPress={() => ui$.navModalOpen.set(true)}
-          underlayColor={colors.underlay}
-        />
+        <MaterialButton name="add" onPress={() => ui$.navModalOpen.set(true)} />
       </View>
       <View className="flex flex-row lg:flex-col items-center gap-2 h-full">
         <TouchableOpacity className="flex-row items-center px-3 h-full" onPress={() => ui$.tabModalOpen.set(true)}>

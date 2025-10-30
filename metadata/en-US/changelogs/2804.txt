@@ -1,0 +1,1 @@
+- hide top header bar on scroll
