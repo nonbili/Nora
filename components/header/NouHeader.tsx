@@ -38,8 +38,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
       <View className="items-center">
         <MaterialButton name="add" onPress={() => ui$.navModalOpen.set(true)} />
       </View>
-      <View className="flex flex-row lg:flex-col items-center gap-2 h-full">
-        <TouchableOpacity className="flex-row items-center px-3 h-full" onPress={() => ui$.tabModalOpen.set(true)}>
+      <View className="flex flex-row lg:flex-col items-center justify-end gap-2 lg:gap-5 h-full lg:h-[100px]">
+        <TouchableOpacity className="flex-row items-center px-3" onPress={() => ui$.tabModalOpen.set(true)}>
           <View className="rounded-md px-2 py-1 border border-white">
             <NouText className="text-xs">{tabs.length}</NouText>
           </View>

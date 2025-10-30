@@ -22,7 +22,10 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[] }> = ({ trigg
     <ContextMenu color={colors.bg}>
       <ContextMenu.Items>{menuItems}</ContextMenu.Items>
       <ContextMenu.Trigger>
-        <Button elementColors={{ containerColor: 'transparent' }} leadingIcon={trigger as any}>
+        <Button
+          elementColors={{ containerColor: 'transparent', contentColor: colors.icon }}
+          leadingIcon={trigger as any}
+        >
           {''}
         </Button>
       </ContextMenu.Trigger>
