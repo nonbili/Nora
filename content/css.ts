@@ -21,6 +21,12 @@ img {
 ._aagw {
   pointer-events: none !important;
 }
+
+/* fb text */
+.native-text {
+  user-select: text !important;
+  pointer-events: initial !important;
+}
 `
 
 export function injectCSS() {
