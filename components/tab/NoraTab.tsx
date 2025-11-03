@@ -16,6 +16,7 @@ import { MaterialButton } from '../button/IconButtons'
 import { share } from '@/lib/share'
 import { ServiceIcon } from '../service/Services'
 import { debounce } from 'es-toolkit'
+import { showToast } from '@/lib/toast'
 
 const userAgent =
   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.52 Mobile Safari/537.36'
@@ -109,6 +110,16 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     if (webview && activeTabIndex == index) {
       webview.setActive()
       ui$.webview.set(ObservableHint.opaque(webview))
+      ;(async () => {
+        try {
+          const location = await webview.executeJavaScript('document.location.href')
+          if (location == 'about:blank') {
+            webview.loadUrl(url)
+          }
+        } catch (e) {
+          webview.loadUrl(url)
+        }
+      })()
     }
   }, [nativeRef, activeTabIndex, index])
 
