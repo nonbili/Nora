@@ -79,7 +79,7 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
     setFocusable(true)
     setFocusableInTouchMode(true)
 
-    setWebContentsDebuggingEnabled(true)
+    // setWebContentsDebuggingEnabled(true)
     addJavascriptInterface(NouJsInterface(context), "NoraI")
   }
 

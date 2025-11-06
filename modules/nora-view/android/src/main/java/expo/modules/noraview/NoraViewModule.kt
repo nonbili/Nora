@@ -18,16 +18,24 @@ class NoraViewModule : Module() {
       }
       Events("onLoad", "onMessage")
 
+      AsyncFunction("executeJavaScript") Coroutine
+        { view: NoraView, script: String ->
+          return@Coroutine view.webView.eval(script)
+        }
+
+      AsyncFunction("goBack") { view: NoraView ->
+        val webView = view.webView
+        if (webView.canGoBack()) {
+          webView.goBack()
+        } else {
+          view.currentActivity?.finish()
+        }
+      }
+
+      AsyncFunction("loadUrl") { view: NoraView, url: String -> view.load(url) }
+
       AsyncFunction("setActive") { view: NoraView ->
         nouController.setNoraView(view)
-      }
-
-      AsyncFunction("loadUrl") { view: NoraView, url: String ->
-        view.load(url)
-      }
-
-      AsyncFunction("executeJavaScript") Coroutine { view: NoraView, script: String ->
-        return@Coroutine view.webView.eval(script)
       }
     }
   }

@@ -24,7 +24,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
-      predictiveBackGestureEnabled: true,
+      predictiveBackGestureEnabled: false,
       package: 'jp.nonbili.nora',
       intentFilters: [
         {
