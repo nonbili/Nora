@@ -1,0 +1,3 @@
+- simply back press handling
+- add setting to hide header on scroll
+- add setting to put header on the bottom
