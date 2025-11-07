@@ -5,6 +5,8 @@ import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 interface Store {
   home: 'instagram' | 'reddit' | 'threads' | 'x'
 
+  autoHideHeader: boolean
+  headerPosition: 'top' | 'bottom'
   theme: null | 'dark' | 'light'
 
   disabledServices: Set<string>
@@ -15,6 +17,8 @@ interface Store {
 export const settings$ = observable<Store>({
   home: 'x',
 
+  autoHideHeader: false,
+  headerPosition: 'top',
   theme: null,
 
   disabledServices: new Set(),

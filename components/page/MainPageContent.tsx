@@ -15,6 +15,7 @@ import { NouButton } from '../button/NouButton'
 import { NavModalContent } from '../modal/NavModal'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
+  const headerPosition = useValue(settings$.headerPosition)
   const tabs = useValue(tabs$.tabs)
 
   useEffect(() => {
@@ -22,7 +23,9 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
   }, [])
 
   return (
-    <View className="flex-1 h-full lg:flex-row overflow-hidden">
+    <View
+      className={clsx('flex-1 h-full lg:flex-row overflow-hidden', headerPosition == 'bottom' && 'flex-col-reverse')}
+    >
       <NouHeader />
       {isWeb ? (
         <ScrollView

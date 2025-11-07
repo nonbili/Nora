@@ -18,6 +18,7 @@ import { NouText } from '../NouText'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
+  const autoHideHeader = useValue(settings$.autoHideHeader)
   const { tabs, activeTabIndex } = useValue(tabs$)
   const webview = ui$.webview.get()
 
@@ -32,7 +33,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   return (
     <View
       className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
-      style={{ marginTop: uiState.headerMarginTop }}
+      style={{ marginTop: autoHideHeader ? uiState.headerMarginTop : 0 }}
       onLayout={onLayout}
     >
       <View className="items-center">

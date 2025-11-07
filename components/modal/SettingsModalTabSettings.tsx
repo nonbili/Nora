@@ -10,7 +10,9 @@ import { Segemented } from '../picker/Segmented'
 import { bookmarks$ } from '@/states/bookmarks'
 import { Image } from 'expo-image'
 import { NouMenu } from '../menu/NouMenu'
+import { NouSwitch } from '../switch/NouSwitch'
 
+const headerPositions = ['top', 'bottom'] as const
 const themes = [null, 'dark', 'light'] as const
 
 export const SettingsModalTabSettings = () => {
@@ -22,6 +24,21 @@ export const SettingsModalTabSettings = () => {
       {nIf(
         !isWeb,
         <View className="my-8">
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">Hide header on scroll</NouText>}
+            value={settings.autoHideHeader}
+            onPress={() => settings$.autoHideHeader.toggle()}
+          />
+          <View className="items-center flex-row justify-between mb-6">
+            <NouText className="font-medium">Header position</NouText>
+            <Segemented
+              options={['Top', 'Bottom']}
+              selectedIndex={headerPositions.indexOf(settings.headerPosition)}
+              size={1}
+              onChange={(index) => settings$.headerPosition.set(headerPositions[index])}
+            />
+          </View>
           <View className="items-center flex-row justify-between">
             <NouText className="font-medium">Theme</NouText>
             <Segemented

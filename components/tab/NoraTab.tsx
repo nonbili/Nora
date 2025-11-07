@@ -56,6 +56,7 @@ const onScroll = debounce(
 )
 
 export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }> = ({ url, contentJs, index }) => {
+  const autoHideHeader = useValue(settings$.autoHideHeader)
   const uiState = useValue(ui$)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
@@ -134,7 +135,9 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     const { type, payload } = JSON.parse(e.nativeEvent.payload)
     switch (type) {
       case 'scroll':
-        onScroll(payload.scrollY)
+        if (autoHideHeader) {
+          onScroll(payload.scrollY)
+        }
         break
     }
   }
