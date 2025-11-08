@@ -136,7 +136,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     switch (type) {
       case 'scroll':
         if (autoHideHeader) {
-          onScroll(payload.scrollY)
+          /* onScroll(payload.scrollY) */
         }
         break
     }

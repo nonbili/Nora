@@ -15,6 +15,7 @@ import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
+import Animated, { useSharedValue, withSpring, withTiming } from 'react-native-reanimated'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -24,16 +25,27 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
-    if (Math.abs(uiState.headerHeight - height) < 1) {
-      return
+    /* if (Math.abs(uiState.headerHeight - height) < 1) {
+     *   return
+     * } */
+    if (!uiState.headerHeight) {
+      ui$.assign({ headerHeight: height, headerMarginTop: 0 })
     }
-    ui$.assign({ headerHeight: height, headerMarginTop: 0 })
   }
 
+  const marginTop = useSharedValue(0)
+
+  useEffect(() => {
+    if (!uiState.headerHeight) {
+      return
+    }
+    marginTop.value = withTiming(autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0)
+  }, [autoHideHeader, uiState.headerShown, uiState.headerHeight])
+
   return (
-    <View
+    <Animated.View
       className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
-      style={{ marginTop: autoHideHeader ? uiState.headerMarginTop : 0 }}
+      style={{ marginTop }}
       onLayout={onLayout}
     >
       <View className="items-center">
@@ -68,6 +80,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
           ]}
         />
       </View>
-    </View>
+    </Animated.View>
   )
 }

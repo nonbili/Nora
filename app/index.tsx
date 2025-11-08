@@ -1,4 +1,4 @@
-import { View, Text, BackHandler, Appearance, ColorSchemeName, ScrollView } from 'react-native'
+import { View, Text, BackHandler, Appearance, ColorSchemeName, ScrollView, PanResponder } from 'react-native'
 import { NoraView } from '@/modules/nora-view'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
@@ -16,12 +16,14 @@ import { nIf } from '@/lib/utils'
 
 export default function HomeScreen() {
   const navigation = useNavigation()
-  const uiState = useValue(ui$)
+  const webview = useValue(ui$.webview)
   const [scriptOnStart, setScriptOnStart] = useState('')
   const { hasShareIntent, shareIntent } = useShareIntent()
   const insets = useSafeAreaInsets()
   const ref = useRef<any>(null)
-  const [headerShown, setHeaderShown] = useState(true)
+  /* const [headerShown, setHeaderShown] = useState(true) */
+  /* const headerHeight = useValue(ui$.headerHeight)
+   * const headerShown = useValue(ui$.headerShown) */
 
   useEffect(() => {
     const url = shareIntent.webUrl || shareIntent.text
@@ -48,7 +50,7 @@ export default function HomeScreen() {
     })()
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      uiState.webview?.goBack()
+      webview?.goBack()
       return true
     })
 
@@ -56,5 +58,39 @@ export default function HomeScreen() {
     return () => subscription.remove()
   }, [])
 
-  return nIf(scriptOnStart, <MainPage contentJs={scriptOnStart} />)
+  /* console.log('- index', { headerHeight }) */
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const isModalOpen = ui$.isModalOpen.get()
+        const headerHeight = ui$.headerHeight.get()
+        const headerShown = ui$.headerShown.get()
+        const { dy } = gestureState
+        console.log({ isModalOpen, dy, headerShown, headerHeight })
+        return !isModalOpen && Math.abs(dy) > headerHeight / 2 && ((dy < 0 && headerShown) || (dy > 0 && !headerShown))
+      },
+
+      onPanResponderMove: (evt, gestureState) => {
+        const { dy } = gestureState
+        const headerShown = ui$.headerShown.get()
+        if (headerShown) {
+          if (dy < 0) {
+            ui$.headerShown.set(false)
+          }
+        } else if (dy > 0) {
+          ui$.headerShown.set(true)
+        }
+      },
+      onShouldBlockNativeResponder: (evt, gestureState) => {
+        return false
+      },
+    }),
+  )
+
+  return nIf(
+    scriptOnStart,
+    <View className="h-full" {...panResponder.current.panHandlers}>
+      <MainPage contentJs={scriptOnStart} />
+    </View>,
+  )
 }
