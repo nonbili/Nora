@@ -1,4 +1,4 @@
-import { View, Text, BackHandler, Appearance, ColorSchemeName, ScrollView } from 'react-native'
+import { View, Text, BackHandler, Appearance, ColorSchemeName, ScrollView, PanResponder } from 'react-native'
 import { NoraView } from '@/modules/nora-view'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
@@ -13,15 +13,18 @@ import * as Linking from 'expo-linking'
 import { reloadAppAsync } from 'expo'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 
 export default function HomeScreen() {
   const navigation = useNavigation()
-  const uiState = useValue(ui$)
+  const webview = useValue(ui$.webview)
   const [scriptOnStart, setScriptOnStart] = useState('')
   const { hasShareIntent, shareIntent } = useShareIntent()
   const insets = useSafeAreaInsets()
   const ref = useRef<any>(null)
-  const [headerShown, setHeaderShown] = useState(true)
+  /* const [headerShown, setHeaderShown] = useState(true) */
+  const headerHeight = useValue(ui$.headerHeight)
+  const headerShown = useValue(ui$.headerShown)
 
   useEffect(() => {
     const url = shareIntent.webUrl || shareIntent.text
@@ -48,7 +51,7 @@ export default function HomeScreen() {
     })()
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      uiState.webview?.goBack()
+      webview?.goBack()
       return true
     })
 
@@ -56,5 +59,20 @@ export default function HomeScreen() {
     return () => subscription.remove()
   }, [])
 
-  return nIf(scriptOnStart, <MainPage contentJs={scriptOnStart} />)
+  /* console.log('- index', { headerHeight }) */
+
+  const showHeader = useCallback((shown: boolean) => {
+    ui$.headerShown.set(shown)
+  }, [])
+
+  return nIf(
+    scriptOnStart,
+    /* <View className="h-full" {...panResponder.current.panHandlers}> */
+    <GestureHandlerRootView>
+      {/* <GestureDetector gesture={gesture}> */}
+      <MainPage contentJs={scriptOnStart} />
+      {/* </GestureDetector> */}
+    </GestureHandlerRootView>,
+    /* </View>, */
+  )
 }

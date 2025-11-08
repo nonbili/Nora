@@ -8,6 +8,7 @@ interface Store {
   // header
   headerHeight: number
   headerMarginTop: number
+  headerShown: boolean
 
   // modals
   bookmarkModalOpen: boolean
@@ -18,6 +19,9 @@ interface Store {
 
   // webview
   webview: any
+
+  // computed
+  isModalOpen: () => boolean
 }
 
 export const ui$ = observable<Store>({
@@ -27,6 +31,7 @@ export const ui$ = observable<Store>({
   // header
   headerHeight: 0,
   headerMarginTop: 0,
+  headerShown: true,
 
   // modals
   bookmarkModalOpen: false,
@@ -37,4 +42,10 @@ export const ui$ = observable<Store>({
 
   // webview
   webview: undefined,
+
+  // computed
+  isModalOpen: (): boolean => {
+    const { bookmarkModalOpen, cookieModalOpen, navModalOpen, settingsModalOpen, tabModalOpen } = ui$.get()
+    return [bookmarkModalOpen, cookieModalOpen, navModalOpen, settingsModalOpen, tabModalOpen].some((x) => x)
+  },
 })
