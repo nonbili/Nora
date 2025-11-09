@@ -94,8 +94,8 @@ android {
         applicationId 'jp.nonbili.nora'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 31
-        versionName "0.4.4"
+        versionCode 32
+        versionName "0.4.5"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }

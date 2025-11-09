@@ -1,0 +1,3 @@
+- animate hiding header on scroll
+- redirect www.facebook.com to m.facebook.com
+- fix opening Nora by clicking links
