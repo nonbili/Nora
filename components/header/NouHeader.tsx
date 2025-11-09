@@ -15,25 +15,31 @@ import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
+import Animated, { useSharedValue, withTiming } from 'react-native-reanimated'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const { tabs, activeTabIndex } = useValue(tabs$)
   const webview = ui$.webview.get()
+  const marginTop = useSharedValue(0)
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
     if (Math.abs(uiState.headerHeight - height) < 1) {
       return
     }
-    ui$.assign({ headerHeight: height, headerMarginTop: 0 })
+    ui$.headerHeight.set(height)
   }
 
+  useEffect(() => {
+    marginTop.value = withTiming(autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0)
+  }, [autoHideHeader, uiState.headerHeight, uiState.headerShown])
+
   return (
-    <View
+    <Animated.View
       className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
-      style={{ marginTop: autoHideHeader ? uiState.headerMarginTop : 0 }}
+      style={{ marginTop }}
       onLayout={onLayout}
     >
       <View className="items-center">
@@ -68,6 +74,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
           ]}
         />
       </View>
-    </View>
+    </Animated.View>
   )
 }

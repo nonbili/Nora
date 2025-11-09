@@ -7,7 +7,7 @@ interface Store {
 
   // header
   headerHeight: number
-  headerMarginTop: number
+  headerShown: boolean
 
   // modals
   bookmarkModalOpen: boolean
@@ -26,7 +26,7 @@ export const ui$ = observable<Store>({
 
   // header
   headerHeight: 0,
-  headerMarginTop: 0,
+  headerShown: true,
 
   // modals
   bookmarkModalOpen: false,

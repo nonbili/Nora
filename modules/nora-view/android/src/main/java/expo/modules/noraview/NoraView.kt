@@ -11,8 +11,11 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import android.util.AttributeSet
+import android.util.Log
 import android.view.ContextMenu
+import android.view.GestureDetector
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -25,6 +28,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -104,6 +108,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   private var userAgent: String? = null
 
+  private var gestureDetector = GestureDetectorCompat(context, NoraGestureListener())
+
   internal val currentActivity: Activity?
     get() = appContext.currentActivity
 
@@ -141,6 +147,20 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
       menu.add("Save image").setOnMenuItemClickListener(onDownload)
       menu.add("Copy image link").setOnMenuItemClickListener(onCopyLink)
+    }
+  }
+
+  inner class NoraGestureListener : GestureDetector.SimpleOnGestureListener() {
+
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+      var dy = distanceY
+      if (e1 != null) {
+        dy = e2.y - e1.y
+      }
+      onMessage(
+        mapOf("payload" to """{"type": "scroll", "payload": {"dy": $dy}}""")
+      )
+      return false
     }
   }
 
@@ -256,15 +276,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     val activity = currentActivity
     activity?.registerForContextMenu(webView)
 
-    webView.setOnScrollChangeListener(
-      object : View.OnScrollChangeListener {
-        override fun onScrollChange(v: View, scrollX: Int, scrollY: Int, oldScrollX: Int, oldScrollY: Int) {
-          onMessage(
-            mapOf("payload" to """{"type": "scroll", "payload": {"scrollY": $scrollY, "oldScrollY": $oldScrollY}}""")
-          )
-        }
-      }
-    )
+    webView.setOnTouchListener(object : OnTouchListener {
+      override fun onTouch(v: View, event: MotionEvent): Boolean = gestureDetector.onTouchEvent(event)
+    })
   }
 
   fun load(url: String) {
