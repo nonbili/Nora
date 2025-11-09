@@ -174,6 +174,13 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               load("https://www.facebook.com/messages/")
               return
             }
+            if (
+              url.startsWith("https://www.facebook.com/") &&
+              !url.startsWith("https://www.facebook.com/messages/")
+            ) {
+              load(url.replace("www", "m"))
+              return
+            }
             pageUrl = url
             onLoad(
               mapOf(
@@ -282,7 +289,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   fun load(url: String) {
-    if (url.startsWith("https://www.facebook.com") ||
+    if (url.startsWith("https://www.facebook.com/messages/") ||
       url.startsWith("https://www.tiktok.com")
     ) {
       webView.settings.setUserAgentString(
