@@ -9,7 +9,7 @@ import { Asset } from 'expo-asset'
 import { settings$ } from '@/states/settings'
 import { useShareIntent } from 'expo-share-intent'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import * as Linking from 'expo-linking'
+import { useLinkingURL } from 'expo-linking'
 import { reloadAppAsync } from 'expo'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
@@ -22,6 +22,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets()
   const ref = useRef<any>(null)
   const [headerShown, setHeaderShown] = useState(true)
+  const linkingUrl = useLinkingURL()
 
   useEffect(() => {
     const url = shareIntent.webUrl || shareIntent.text
@@ -31,11 +32,10 @@ export default function HomeScreen() {
   }, [hasShareIntent, shareIntent])
 
   useEffect(() => {
-    const subscription = Linking.addEventListener('url', (e) => {
-      openSharedUrl(e.url)
-    })
-    return () => subscription.remove()
-  }, [])
+    if (linkingUrl) {
+      openSharedUrl(linkingUrl)
+    }
+  }, [linkingUrl])
 
   useEffect(() => {
     ;(async () => {
