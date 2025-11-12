@@ -312,6 +312,24 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     scriptOnStart = script
   }
 
+  fun download(url: String, fileName: String?) {
+    val activity = currentActivity
+    if (activity == null) {
+      return
+    }
+
+    val uri = Uri.parse(url)
+    val request = DownloadManager.Request(uri)
+    var name = fileName
+    if (name == null) {
+      name = uri.getLastPathSegment()
+    }
+    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
+    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+    val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    downloadManager.enqueue(request)
+  }
+
   fun saveFile(fileName: String, mimeType: String, content: String) {
     val contentValues = ContentValues().apply {
       put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)

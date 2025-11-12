@@ -10,19 +10,35 @@ import { settings$ } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
-import { isWeb } from '@/lib/utils'
+import { isWeb, nIf } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import Animated, { useSharedValue, withTiming } from 'react-native-reanimated'
+import { EncodingType, StorageAccessFramework } from 'expo-file-system/legacy'
+import { File, writeAsStringAsync, Directory } from 'expo-file-system'
+import NoraViewModule from '@/modules/nora-view'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const { tabs, activeTabIndex } = useValue(tabs$)
+  const currentUrl = useValue(tabs$.currentUrl)
   const webview = ui$.webview.get()
   const marginTop = useSharedValue(0)
+
+  let slugs = [],
+    hostname = '',
+    canDownload = false
+
+  if (currentUrl) {
+    const { hostname, pathname } = new URL(currentUrl)
+    const slugs = pathname.split('/')
+    /* console.log('- hostname', hostname, slugs) */
+    canDownload = hostname == 'www.instagram.com' && (slugs[1] == 'reels' || slugs[2] == 'reel')
+  }
+  /* console.log('- canDownload', canDownload) */
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
@@ -36,6 +52,17 @@ export const NouHeader: React.FC<{}> = ({}) => {
     marginTop.value = withTiming(autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0)
   }, [autoHideHeader, uiState.headerHeight, uiState.headerShown])
 
+  const download = async () => {
+    if (uiState.downloadUrl) {
+      webview?.download(uiState.downloadUrl, 'ig.mp4')
+    }
+    /* const title = await webview?.executeJavaScript('document.title') */
+    /* const res = await webview?.executeJavaScript('(async () => await window.Nora.downloadVideo())()') */
+    /* const res = await webview?.executeJavaScript('window.Nora.downloadVideo()')
+     * console.log('-- res', res, !!webview, title) */
+    /* await webview.saveFile('1.txt', 'text/plain', 'abcd') */
+  }
+
   return (
     <Animated.View
       className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
@@ -46,6 +73,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         <MaterialButton name="add" onPress={() => ui$.navModalOpen.set(true)} />
       </View>
       <View className="flex flex-row lg:flex-col items-center justify-end gap-2 lg:gap-5 h-full lg:h-[100px]">
+        {nIf(canDownload, <MaterialButton name="download" onPress={() => ui$.downloadVideoModalOpen.set(true)} />)}
         <TouchableOpacity className="flex-row items-center px-3" onPress={() => ui$.tabModalOpen.set(true)}>
           <View className="rounded-md px-2 py-1 border border-white">
             <NouText className="text-xs">{tabs.length}</NouText>

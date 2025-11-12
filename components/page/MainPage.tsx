@@ -11,6 +11,7 @@ import { CookieModal } from '../modal/CookieModal'
 import { isWeb, nIf } from '@/lib/utils'
 import { TabModal } from '../modal/TabModal'
 import { BookmarkModal } from '../modal/BookmarkModal'
+import { DownloadVideoModal } from '../modal/DownloadVideoModal'
 
 export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   return (
@@ -23,6 +24,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
       {nIf(
         !isWeb,
         <>
+          <DownloadVideoModal contentJs={contentJs} />
           <TabModal />
         </>,
       )}

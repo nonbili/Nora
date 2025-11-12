@@ -12,6 +12,8 @@ interface Store {
   tabs: Tab[]
   activeTabIndex: number
 
+  currentUrl: () => string
+
   openTab: (url: string) => void
   closeTab: (index: number) => void
   setTab: (index: number, url: string) => void
@@ -20,6 +22,10 @@ interface Store {
 export const tabs$ = observable<Store>({
   tabs: [],
   activeTabIndex: 0,
+
+  currentUrl: (): string => {
+    return tabs$.tabs[tabs$.activeTabIndex.get()].get()?.url
+  },
 
   openTab: (url) => {
     const tab = { id: genId(), url }
