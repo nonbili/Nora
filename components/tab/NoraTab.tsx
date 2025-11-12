@@ -102,25 +102,34 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     }
   }, [nativeRef, activeTabIndex, index])
 
+  const webview = webviewRef.current || nativeRef.current
+
   const onLoad = async (e: { nativeEvent: any }) => {
     const { url, title } = e.nativeEvent
     if (url) {
       setPageUrl(url)
+      const { host, pathname } = new URL(url)
+      const slugs = pathname.split('/')
+      if (host == 'www.instagram.com' && slugs.includes('reel')) {
+        webview?.executeJavaScript('window.Nora.getVideoUrl()')
+      }
     }
   }
 
   const onMessage = async (e: { nativeEvent: { payload: string } }) => {
-    const { type, payload } = JSON.parse(e.nativeEvent.payload)
+    const { type, data } = JSON.parse(e.nativeEvent.payload)
     switch (type) {
+      case '[content]':
+      case '[kotlin]':
+        console.log(type, data)
+        break
       case 'scroll':
         if (autoHideHeader) {
-          onScroll(payload.dy)
+          onScroll(data.dy)
         }
         break
     }
   }
-
-  const webview = webviewRef.current || nativeRef.current
 
   if (isWeb) {
     return (

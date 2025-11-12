@@ -12,6 +12,7 @@ interface Store {
   // modals
   bookmarkModalOpen: boolean
   cookieModalOpen: boolean
+  downloadVideoModalOpen: boolean
   navModalOpen: boolean
   settingsModalOpen: boolean
   tabModalOpen: boolean
@@ -31,6 +32,7 @@ export const ui$ = observable<Store>({
   // modals
   bookmarkModalOpen: false,
   cookieModalOpen: false,
+  downloadVideoModalOpen: false,
   navModalOpen: false,
   settingsModalOpen: false,
   tabModalOpen: false,
