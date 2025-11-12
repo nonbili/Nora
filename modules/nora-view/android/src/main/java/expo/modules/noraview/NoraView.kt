@@ -5,11 +5,14 @@ import android.app.DownloadManager
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.AttributeSet
 import android.util.Log
 import android.view.ContextMenu
@@ -36,6 +39,10 @@ import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.nio.charset.Charset
+import java.util.Base64
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -157,7 +164,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         dy = e2.y - e1.y
       }
       onMessage(
-        mapOf("payload" to """{"type": "scroll", "payload": {"dy": $dy}}""")
+        mapOf("payload" to """{"type": "scroll", "data": {"dy": $dy}}""")
       )
       return false
     }
@@ -303,5 +310,28 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   fun setScriptOnStart(script: String) {
     scriptOnStart = script
+  }
+
+  fun saveFile(fileName: String, mimeType: String, content: String) {
+    val contentValues = ContentValues().apply {
+      put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+      put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+      put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+    }
+
+    val resolver = context.contentResolver
+    var uri: Uri? = null
+    try {
+      uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+      uri?.let {
+        resolver.openOutputStream(it)?.use { outputStream ->
+          outputStream.write(Base64.getDecoder().decode(content))
+        }
+      }
+    } catch (e: Exception) {
+      e.printStackTrace()
+      // Handle error, e.g., delete the incomplete file
+      uri?.let { resolver.delete(it, null, null) }
+    }
   }
 }

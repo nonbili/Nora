@@ -1,8 +1,14 @@
 package expo.modules.noraview
 
+import android.os.Environment
+import android.provider.MediaStore
+import android.widget.Toast
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import java.io.File
+import java.io.FileOutputStream
+import java.io.FileWriter
 
 class NoraViewModule : Module() {
   override fun definition() = ModuleDefinition {
@@ -33,6 +39,10 @@ class NoraViewModule : Module() {
       }
 
       AsyncFunction("loadUrl") { view: NoraView, url: String -> view.load(url) }
+
+      AsyncFunction("saveFile") { view: NoraView, fileName: String, mimeType: String, content: String ->
+        view.saveFile(fileName, mimeType, content)
+      }
     }
   }
 }
