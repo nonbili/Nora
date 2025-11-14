@@ -33,10 +33,6 @@ class NoraViewModule : Module() {
       }
 
       AsyncFunction("loadUrl") { view: NoraView, url: String -> view.load(url) }
-
-      AsyncFunction("setActive") { view: NoraView ->
-        nouController.setNoraView(view)
-      }
     }
   }
 }

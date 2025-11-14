@@ -84,7 +84,6 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
     setFocusableInTouchMode(true)
 
     // setWebContentsDebuggingEnabled(true)
-    addJavascriptInterface(NouJsInterface(context), "NoraI")
   }
 
   suspend fun eval(script: String): String = suspendCancellableCoroutine { cont ->
@@ -283,6 +282,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     val activity = currentActivity
     activity?.registerForContextMenu(webView)
 
+    webView.addJavascriptInterface(NouJsInterface(context, this), "NoraI")
     webView.setOnTouchListener(object : OnTouchListener {
       override fun onTouch(v: View, event: MotionEvent): Boolean = gestureDetector.onTouchEvent(event)
     })

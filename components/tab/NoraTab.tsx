@@ -88,7 +88,6 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
   useEffect(() => {
     const webview = nativeRef.current
     if (webview && activeTabIndex == index) {
-      webview.setActive()
       ui$.webview.set(ObservableHint.opaque(webview))
       ;(async () => {
         try {
