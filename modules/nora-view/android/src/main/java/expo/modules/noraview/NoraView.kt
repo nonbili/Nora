@@ -51,23 +51,6 @@ val BLOCK_HOSTS = arrayOf(
   "googleads.g.doubleclick.net"
 )
 
-val VIEW_HOSTS = arrayOf(
-  "bsky.app",
-  "www.linkedin.com",
-  "www.instagram.com",
-  "chat.reddit.com",
-  "www.reddit.com",
-  "www.threads.com",
-  "www.tiktok.com",
-  "www.tumblr.com",
-  "id.vk.com",
-  "login.vk.com",
-  "login.vk.ru",
-  "m.vk.com",
-  "vk.com",
-  "x.com"
-)
-
 class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
   WebView(context, attrs, defStyleAttr) {
 
@@ -209,7 +192,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
           override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
             val uri = Uri.parse(url)
-            if (uri.host in VIEW_HOSTS || (uri.host != null && uri.host!!.endsWith(".facebook.com"))) {
+            if (uri.scheme in arrayOf("http", "https")) {
               return false
             } else {
               try {
