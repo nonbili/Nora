@@ -3,7 +3,7 @@ import Svg, { Circle, G, Path } from 'react-native-svg'
 import iconFacebook from '@/assets/images/facebook.svg'
 import iconFacebookMessenger from '@/assets/images/facebook_messenger.svg'
 import iconInstagram from '@/assets/images/instagram.svg'
-import iconTiktok from '@/assets/images/tiktok.png'
+import iconTikTok from '@/assets/images/tiktok.png'
 import iconTumblr from '@/assets/images/tumblr.png'
 import iconX from '@/assets/images/x.jpg'
 
@@ -56,7 +56,7 @@ export const IconThreads = (props: any) => (
   </Svg>
 )
 
-export const IconTiktok = (props: any) => <Image source={iconTiktok} style={{ height: 24, width: 24 }} />
+export const IconTikTok = (props: any) => <Image source={iconTikTok} style={{ height: 24, width: 24 }} />
 
 export const IconTumblr0 = (props: any) => (
   <Svg width="24" height="24" viewBox="0 0 90.2 159.3">

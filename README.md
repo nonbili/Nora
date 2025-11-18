@@ -17,6 +17,12 @@ Desktop version features a deck view to easily browse multiple timelines.
 Desktop version shares the same code base with mobile version.
 Download Linux/macOS/Windows version from [Nora-Desktop](https://github.com/nonbili/Nora-Desktop/releases).
 
+## Features
+
+- Download image
+- Download ig reel
+- Zoom
+
 ## Supported SNS
 
 - Bluesky
@@ -25,7 +31,7 @@ Download Linux/macOS/Windows version from [Nora-Desktop](https://github.com/nonb
 - LinkedIn
 - Reddit
 - Threads
-- Tiktok
+- TikTok
 - Tumblr
 - VK
 - X (Twitter)

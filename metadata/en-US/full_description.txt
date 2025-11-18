@@ -1,3 +1,10 @@
+<h2>Features</h2>
+<ul>
+<li>Download image</li>
+<li>Download ig reel</li>
+<li>Zoom</li>
+</ul>
+
 <h2>Supported SNS</h2>
 <ul>
 <li>Bluesky</li>
@@ -6,7 +13,7 @@
 <li>LinkedIn</li>
 <li>Reddit</li>
 <li>Threads</li>
-<li>Tiktok</li>
+<li>TikTok</li>
 <li>Tumblr</li>
 <li>VK</li>
 <li>X (Twitter)</li>
