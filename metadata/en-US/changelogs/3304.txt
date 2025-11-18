@@ -1,0 +1,2 @@
+- support download ig reel
+- open all websites in Nora instead of external browser
