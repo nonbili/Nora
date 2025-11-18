@@ -63,9 +63,9 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
       javaScriptEnabled = true
       domStorageEnabled = true
       mediaPlaybackRequiresUserGesture = false
-      supportZoom()
       builtInZoomControls = true
       displayZoomControls = false
+      setSupportMultipleWindows(true)
     }
     CookieManager.getInstance().setAcceptCookie(true)
 
@@ -146,9 +146,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       if (e1 != null) {
         dy = e2.y - e1.y
       }
-      onMessage(
-        mapOf("payload" to """{"type": "scroll", "data": {"dy": $dy}}""")
-      )
+      emit("scroll", mapOf("dy" to dy))
       return false
     }
   }
@@ -261,6 +259,25 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           activity?.startActivityForResult(intent, 0)
           return true
         }
+
+        override fun onCreateWindow(
+          view: WebView,
+          isDialog: Boolean,
+          isUserGesture: Boolean,
+          resultMsg: android.os.Message
+        ): Boolean {
+          val newWebView = WebView(view.getContext())
+          newWebView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+              emit("new-tab", mapOf("url" to url))
+              return true
+            }
+          }
+          val transport = resultMsg.obj as WebView.WebViewTransport
+          transport.setWebView(newWebView)
+          resultMsg.sendToTarget()
+          return true
+        }
       }
     }
 
@@ -333,5 +350,14 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       e.printStackTrace()
       uri?.let { resolver.delete(it, null, null) }
     }
+  }
+
+  fun log(msg: String) {
+    emit("[kotlin]", msg)
+  }
+
+  fun emit(type: String, data: Any) {
+    val payload = mapOf("type" to type, "data" to data)
+    onMessage(mapOf("payload" to payload))
   }
 }
