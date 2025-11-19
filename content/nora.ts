@@ -1,6 +1,33 @@
 import { emit, log, waitUntil } from './utils'
 import { retry } from 'es-toolkit'
 
+async function blobToBase64(blob: Blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onerror = reject
+    reader.onload = () => {
+      if (typeof reader.result == 'string') {
+        resolve(reader.result.split(',')[1])
+      } else {
+        resolve(reader.result)
+      }
+    }
+
+    reader.readAsDataURL(blob)
+  })
+}
+
+async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
+  const res = await fetch(url)
+  const blob = await res.blob()
+  const content = await blobToBase64(blob)
+  if (!fileName) {
+    fileName = url.split('/').at(-1)
+  }
+  emit('save-file', { content, fileName, mimeType })
+}
+
 async function getVideoUrl() {
   const slugs = document.location.pathname.split('/')
   const src = await waitUntil(() => document.querySelector('video')?.src)
@@ -30,6 +57,7 @@ async function getVideoUrl() {
 
 export function initNora() {
   return {
+    downloadBlob,
     getVideoUrl,
   }
 }

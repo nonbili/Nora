@@ -22,7 +22,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.DownloadListener
 import android.webkit.JsResult
+import android.webkit.MimeTypeMap
+import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -45,6 +48,7 @@ import java.nio.charset.Charset
 import java.util.Base64
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.apache.tika.Tika
 
 val BLOCK_HOSTS = arrayOf(
   "www.googletagmanager.com",
@@ -140,7 +144,6 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   inner class NoraGestureListener : GestureDetector.SimpleOnGestureListener() {
-
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
       var dy = distanceY
       if (e1 != null) {
@@ -279,6 +282,34 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           return true
         }
       }
+
+      setDownloadListener(
+        object : DownloadListener {
+          override fun onDownloadStart(
+            url: String,
+            userAgent: String,
+            contentDisposition: String,
+            mimeType: String,
+            contentLength: Long
+          ) {
+            var fileName: String? = null
+            if (contentDisposition != "") {
+              fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
+            }
+            if (url.startsWith("blob:")) {
+              if (fileName != null) {
+                fileName = "'$fileName'"
+              }
+              evaluateJavascript("window.Nora?.downloadBlob('$url', $fileName, '$mimeType')", null)
+            } else {
+              download(url, fileName)
+            }
+          }
+        }
+      )
+      setOnTouchListener(object : OnTouchListener {
+        override fun onTouch(v: View, event: MotionEvent): Boolean = gestureDetector.onTouchEvent(event)
+      })
     }
 
   init {
@@ -290,9 +321,6 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     activity?.registerForContextMenu(webView)
 
     webView.addJavascriptInterface(NouJsInterface(context, this), "NoraI")
-    webView.setOnTouchListener(object : OnTouchListener {
-      override fun onTouch(v: View, event: MotionEvent): Boolean = gestureDetector.onTouchEvent(event)
-    })
   }
 
   fun load(url: String) {
@@ -328,9 +356,21 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
     val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     downloadManager.enqueue(request)
+    Toast.makeText(context, "Download started, check the system notification", Toast.LENGTH_LONG).show()
   }
 
-  fun saveFile(fileName: String, mimeType: String, content: String) {
+  fun saveFile(content: String, _fileName: String, _mimeType: String?) {
+    val bytes = Base64.getDecoder().decode(content)
+    var mimeType = _mimeType
+    if (mimeType == null || mimeType == "application/octet-stream") {
+      val tika = Tika()
+      mimeType = tika.detect(bytes)
+    }
+    var fileName = _fileName
+    if (!fileName.contains(".")) {
+      val mimeTypeMap = MimeTypeMap.getSingleton()
+      fileName += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
+    }
     val contentValues = ContentValues().apply {
       put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
       put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
@@ -343,12 +383,17 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
       uri?.let {
         resolver.openOutputStream(it)?.use { outputStream ->
+          val bytes = Base64.getDecoder().decode(content)
+          val tika = Tika()
+          val type = tika.detect(bytes)
           outputStream.write(Base64.getDecoder().decode(content))
         }
       }
+      Toast.makeText(context, "Saved to the Downloads folder", Toast.LENGTH_LONG).show()
     } catch (e: Exception) {
       e.printStackTrace()
       uri?.let { resolver.delete(it, null, null) }
+      Toast.makeText(context, "Failed to download", Toast.LENGTH_LONG).show()
     }
   }
 
