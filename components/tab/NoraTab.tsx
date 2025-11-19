@@ -122,6 +122,9 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
       case 'new-tab':
         tabs$.openTab(data.url)
         break
+      case 'save-file':
+        webview?.saveFile(data.content, data.fileName, data.mimeType)
+        break
       case 'scroll':
         if (autoHideHeader) {
           onScroll(data.dy)
