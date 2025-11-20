@@ -18,7 +18,7 @@ export function parseJson(v: string | null, fallback: any) {
   }
 }
 
-export async function waitUntil(predicate: () => any, retries = 100, delay = 200, count = 0) {
+export async function waitUntil(predicate: () => any, retries = 10, delay = 200, count = 0) {
   const res = await predicate()
   if (res) {
     return res

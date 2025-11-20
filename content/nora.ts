@@ -1,19 +1,11 @@
 import { emit, log, waitUntil } from './utils'
-import { retry } from 'es-toolkit'
+import { delay, retry } from 'es-toolkit'
 
 async function blobToBase64(blob: Blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-
     reader.onerror = reject
-    reader.onload = () => {
-      if (typeof reader.result == 'string') {
-        resolve(reader.result.split(',')[1])
-      } else {
-        resolve(reader.result)
-      }
-    }
-
+    reader.onloadend = () => resolve(reader.result)
     reader.readAsDataURL(blob)
   })
 }
@@ -29,27 +21,45 @@ async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
 }
 
 async function getVideoUrl() {
-  const slugs = document.location.pathname.split('/')
+  const { hostname, pathname } = document.location
+  const slugs = pathname.split('/')
+  const canDownload =
+    (hostname == 'www.instagram.com' && (slugs[1] == 'reels' || slugs[2] == 'reel')) ||
+    (hostname == 'm.facebook.com' && ['reel', 'stories', 'watch'].includes(slugs[1]))
+  if (!canDownload) {
+    return
+  }
   const src = await waitUntil(() => document.querySelector('video')?.src)
-  if ((slugs[1] != 'reels' && slugs[2] != 'reel') || !src) {
+  if (hostname == 'www.instagram.com' && !src) {
     return
   }
   const fileName = slugs.filter(Boolean).at(-1) + '.mp4'
-  if (src.startsWith('https://')) {
+  if (src?.startsWith('https://')) {
     emit('download', { url: src, fileName })
-  } else if (src.startsWith('blob:https://')) {
-    const scripts = document.scripts
-    for (const script of [...scripts]) {
-      const text = script.textContent
-      const term = '"video_versions":'
-      const start = text.indexOf(term)
-      if (start > -1) {
-        const end = text.indexOf(']', start)
-        const slice = text.slice(start + term.length, end + 1)
-        const videos = JSON.parse(slice)
-        emit('download', { url: videos[0].url, fileName })
-        return
-      }
+  } else if (!src || src.startsWith('blob:https://')) {
+    switch (hostname) {
+      case 'www.instagram.com':
+        const scripts = document.scripts
+        for (const script of [...scripts]) {
+          const text = script.textContent
+          const term = '"video_versions":'
+          const start = text.indexOf(term)
+          if (start > -1) {
+            const end = text.indexOf(']', start)
+            const slice = text.slice(start + term.length, end + 1)
+            const videos = JSON.parse(slice)
+            emit('download', { url: videos[0].url, fileName })
+            return
+          }
+        }
+        break
+      case 'm.facebook.com':
+        const url = document.querySelector('[data-video-url]')?.getAttribute('data-video-url')
+        if (url) {
+          emit('download', { url, fileName })
+          return
+        }
+        break
     }
     emit('video-not-found', {})
   }

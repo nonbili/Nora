@@ -9,6 +9,7 @@ import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
 import { tabs$ } from '@/states/tabs'
+import { delay } from 'es-toolkit'
 
 const repo = 'https://github.com/nonbili/Nora'
 const tabs = ['Settings', 'About']
@@ -20,26 +21,36 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const nativeRef = useRef<any>(null)
+  const parsingStartedRef = useRef(false)
 
   useEffect(() => {
     if (!downloadVideoModalOpen) {
       nativeRef.current = null
       setTitle('Loading...')
+      setUrl('')
+      parsingStartedRef.current = false
     }
   }, [downloadVideoModalOpen])
 
   useEffect(() => {
     const webview = nativeRef.current
-    const url = tabs$.currentUrl()
-    if (webview && url) {
-      webview.loadUrl(url)
+    const currentUrl = tabs$.currentUrl()
+    if (webview && currentUrl) {
+      if (currentUrl.startsWith('https://m.facebook.com/reel/')) {
+        const canonical = new URL(currentUrl)
+        canonical.search = ''
+        webview.loadUrl(canonical.href)
+      } else {
+        webview.loadUrl(currentUrl)
+      }
     }
   }, [nativeRef, downloadVideoModalOpen])
 
   const webview = nativeRef.current
 
   useEffect(() => {
-    if (url) {
+    if (url && !parsingStartedRef.current) {
+      parsingStartedRef.current = true
       webview?.executeJavaScript('window.Nora.getVideoUrl()')
     }
   }, [url])
@@ -61,7 +72,9 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
     switch (type) {
       case 'download':
         setTitle('Downloading...')
-        webview?.download(data.url, data.filename)
+        webview?.download(data.url, data.fileName)
+        await delay(500)
+        onClose()
         break
       case 'video-not-found':
         setTitle('Failed to find video url')

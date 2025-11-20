@@ -35,7 +35,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
   if (currentUrl) {
     const { hostname, pathname } = new URL(currentUrl)
     const slugs = pathname.split('/')
-    canDownload = hostname == 'www.instagram.com' && (slugs[1] == 'reels' || slugs[2] == 'reel')
+    canDownload =
+      (hostname == 'www.instagram.com' && (slugs[1] == 'reels' || slugs[2] == 'reel')) ||
+      (hostname == 'm.facebook.com' && ['reel', 'stories', 'watch'].includes(slugs[1]))
   }
 
   const onLayout = (event: LayoutChangeEvent) => {
