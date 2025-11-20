@@ -106,6 +106,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
 
   const onLoad = async (e: { nativeEvent: any }) => {
     const { url, title } = e.nativeEvent
+    console.log('- onLoad', url)
     if (url) {
       setPageUrl(url)
     }

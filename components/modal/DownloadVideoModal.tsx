@@ -9,6 +9,7 @@ import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
 import { tabs$ } from '@/states/tabs'
+import { delay } from 'es-toolkit'
 
 const repo = 'https://github.com/nonbili/Nora'
 const tabs = ['Settings', 'About']
@@ -19,27 +20,40 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   const onClose = () => ui$.downloadVideoModalOpen.set(false)
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
+  /* const [loadStarted, setLoadStarted] = useState(false) */
   const nativeRef = useRef<any>(null)
+  /* const loadStartedRef = useRef(false) */
+  const parsingStartedRef = useRef(false)
 
   useEffect(() => {
     if (!downloadVideoModalOpen) {
       nativeRef.current = null
       setTitle('Loading...')
+      setUrl('')
+      /* setLoadStarted(false) */
+      /* loadStartedRef.current = false */
+      parsingStartedRef.current = false
     }
   }, [downloadVideoModalOpen])
 
   useEffect(() => {
     const webview = nativeRef.current
-    const url = tabs$.currentUrl()
-    if (webview && url) {
-      webview.loadUrl(url)
+    const currentUrl = tabs$.currentUrl()
+    if (webview && currentUrl) {
+      const canonical = new URL(currentUrl)
+      canonical.search = ''
+      /* setLoadStarted(true) */
+      /* loadStartedRef.current = true */
+      webview.loadUrl(canonical.href)
     }
   }, [nativeRef, downloadVideoModalOpen])
 
   const webview = nativeRef.current
 
   useEffect(() => {
-    if (url) {
+    console.log('- url', url)
+    if (url && !parsingStartedRef.current) {
+      parsingStartedRef.current = true
       webview?.executeJavaScript('window.Nora.getVideoUrl()')
     }
   }, [url])
@@ -58,10 +72,13 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
 
   const onMessage = async (e: { nativeEvent: { payload: string } }) => {
     const { type, data } = JSON.parse(e.nativeEvent.payload)
+    console.log('- onMessage', type, data)
     switch (type) {
       case 'download':
         setTitle('Downloading...')
-        webview?.download(data.url, data.filename)
+        webview?.download(data.url, data.fileName)
+        await delay(1000)
+        onClose()
         break
       case 'video-not-found':
         setTitle('Failed to find video url')
