@@ -25,6 +25,6 @@ export function interceptClipboard() {
   const writeText = navigator.clipboard.writeText
   navigator.clipboard.writeText = async function (text) {
     const clean = fixSharingUrl(text)
-    return writeText(clean || text)
+    return writeText.call(this, clean || text)
   }
 }
