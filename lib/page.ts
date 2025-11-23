@@ -1,4 +1,6 @@
 import { tabs$ } from '@/states/tabs'
+import { fixSharingUrl } from '@/content/clipboard'
+export { fixSharingUrl } from '@/content/clipboard'
 
 export const homeUrls: Record<string, string> = {
   bluesky: 'https://bsky.app',
@@ -33,33 +35,9 @@ export function getHomeUrl(home: string) {
   return homeUrls[home] || homeUrls.x
 }
 
-export function fixSharingUrl(v: string) {
-  try {
-    const url = new URL(v)
-    ;[
-      // instagram & reddit
-      'utm_source',
-      'utm_medium',
-      'utm_name',
-      'utm_term',
-      'utm-content',
-      // instagram
-      'igsh',
-      // threads
-      'xmt',
-    ].forEach((x) => url.searchParams.delete(x))
-    return url.href
-  } catch (e) {
-    return ''
-  }
-}
-
 export function openSharedUrl(url: string) {
   try {
-    const { host } = new URL(fixSharingUrl(url))
-    if (Object.keys(hostHomes).includes(host)) {
-      tabs$.openTab(url.replace('nora://', 'https://'))
-    }
+    tabs$.openTab(fixSharingUrl(url.replace('nora://', 'https://')))
   } catch (e) {
     console.error(e)
   }

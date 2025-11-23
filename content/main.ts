@@ -4,12 +4,14 @@ import { debounce, retry } from 'es-toolkit'
 import { emit } from './utils'
 import { handleDialogs } from './dialogs'
 import { initNora } from './nora'
+import { interceptClipboard } from './clipboard'
 
 try {
   blockAds()
 
   window.Nora = initNora()
   initObserver()
+  interceptClipboard()
 } catch (e) {
   console.error('NouScript: ', e)
 }

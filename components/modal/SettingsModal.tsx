@@ -17,6 +17,7 @@ import { SettingsModalTabSettings } from './SettingsModalTabSettings'
 
 const repo = 'https://github.com/nonbili/Nora'
 const tabs = ['Settings', 'About']
+const donateLinks = ['https://github.com/sponsors/rnons', 'https://liberapay.com/rnons', 'https://paypal.me/rnons']
 
 export const SettingsModal = () => {
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
@@ -43,11 +44,19 @@ export const SettingsModal = () => {
                 <NouText className="text-lg font-medium">Nora</NouText>
                 <NouText>v{isWeb ? desktopVersion : version}</NouText>
               </View>
-              <View className="">
-                <NouText className="font-medium">Source code</NouText>
+              <View className="mb-6">
+                <NouText className="font-medium mb-1">Source code</NouText>
                 <NouLink className="text-indigo-400 text-sm" href={repo}>
                   {repo}
                 </NouLink>
+              </View>
+              <View className="mb-6">
+                <NouText className="font-medium mb-1">Donate</NouText>
+                {donateLinks.map((url) => (
+                  <NouLink className="text-indigo-400 text-sm mb-2" href={url} key={url}>
+                    {url}
+                  </NouLink>
+                ))}
               </View>
             </>,
           )}
