@@ -20,8 +20,9 @@ Download Linux/macOS/Windows version from [Nora-Desktop](https://github.com/nonb
 ## Features
 
 - Download image
-- Download ig reel
+- Download fb/ig reel
 - Zoom
+- Remove tracking query params in shared url
 
 ## Supported SNS
 
