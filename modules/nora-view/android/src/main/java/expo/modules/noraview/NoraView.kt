@@ -55,12 +55,12 @@ val BLOCK_HOSTS = arrayOf(
   "googleads.g.doubleclick.net"
 )
 
+// https://www.whatismybrowser.com/guides/the-latest-user-agent/chrome
+val uaAndroid = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.172 Mobile Safari/537.36"
+val uaLinux = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+
 class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
   WebView(context, attrs, defStyleAttr) {
-
-  override fun onWindowVisibilityChanged(visibility: Int) {
-    super.onWindowVisibilityChanged(VISIBLE)
-  }
 
   init {
     settings.run {
@@ -98,8 +98,6 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var scriptOnStart = ""
   private var pageUrl = ""
   private var customView: View? = null
-
-  private var userAgent: String? = null
 
   private var gestureDetector = GestureDetectorCompat(context, NoraGestureListener())
 
@@ -315,8 +313,6 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   init {
     addView(webView)
 
-    userAgent = webView.settings.userAgentString
-
     val activity = currentActivity
     activity?.registerForContextMenu(webView)
 
@@ -327,11 +323,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     if (url.startsWith("https://www.facebook.com/messages/") ||
       url.startsWith("https://www.tiktok.com")
     ) {
-      webView.settings.setUserAgentString(
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-      )
+      webView.settings.setUserAgentString(uaLinux)
     } else {
-      webView.settings.setUserAgentString(userAgent)
+      webView.settings.setUserAgentString(uaAndroid)
     }
     webView.loadUrl(url)
   }
