@@ -1,0 +1,2 @@
+- stop media playing when exiting Nora
+- fix uploading photos
