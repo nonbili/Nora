@@ -158,7 +158,7 @@
   dependencies:
     "@babel/types" "^7.27.1"
 
-"@babel/helper-plugin-utils@^7.0.0", "@babel/helper-plugin-utils@^7.10.4", "@babel/helper-plugin-utils@^7.12.13", "@babel/helper-plugin-utils@^7.14.5", "@babel/helper-plugin-utils@^7.27.1", "@babel/helper-plugin-utils@^7.8.0":
+"@babel/helper-plugin-utils@^7.0.0", "@babel/helper-plugin-utils@^7.10.4", "@babel/helper-plugin-utils@^7.12.13", "@babel/helper-plugin-utils@^7.14.5", "@babel/helper-plugin-utils@^7.18.9", "@babel/helper-plugin-utils@^7.27.1", "@babel/helper-plugin-utils@^7.8.0", "@babel/helper-plugin-utils@^7.8.3":
   version "7.27.1"
   resolved "https://registry.yarnpkg.com/@babel/helper-plugin-utils/-/helper-plugin-utils-7.27.1.tgz#ddb2f876534ff8013e6c2b299bf4d39b3c51d44c"
   integrity sha512-1gn1Up5YXka3YYAHGKpbideQ5Yjf1tDa9qYcgysz+cNCXukyLl6DjPXhD3VRwSb8c0J9tA4b2+rHEZtc6R0tlw==
@@ -254,6 +254,14 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.27.1"
 
+"@babel/plugin-proposal-export-namespace-from@^7.18.9":
+  version "7.18.9"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-export-namespace-from/-/plugin-proposal-export-namespace-from-7.18.9.tgz#5f7313ab348cdb19d590145f9247540e94761203"
+  integrity sha512-k1NtHyOMvlDDFeb9G5PhUXuGj8m/wiwojgQVEhJ/fsVsMCpLyOP4h0uGEjYJKrRI+EVPlb5Jk+Gt9P97lOGwtA==
+  dependencies:
+    "@babel/helper-plugin-utils" "^7.18.9"
+    "@babel/plugin-syntax-export-namespace-from" "^7.8.3"
+
 "@babel/plugin-syntax-async-generators@^7.8.4":
   version "7.8.4"
   resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-async-generators/-/plugin-syntax-async-generators-7.8.4.tgz#a983fb1aeb2ec3f6ed042a210f640e90e786fe0d"
@@ -302,6 +310,13 @@
   integrity sha512-eBC/3KSekshx19+N40MzjWqJd7KTEdOoLesAfa4IDFI8eRz5a47i5Oszus6zG/cwIXN63YhgLOMSSNJx49sENg==
   dependencies:
     "@babel/helper-plugin-utils" "^7.27.1"
+
+"@babel/plugin-syntax-export-namespace-from@^7.8.3":
+  version "7.8.3"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-export-namespace-from/-/plugin-syntax-export-namespace-from-7.8.3.tgz#028964a9ba80dbc094c915c487ad7c4e7a66465a"
+  integrity sha512-MXf5laXo6c1IbEbegDmzGPwGNTsHZmEy6QGznu5Sh2UCWvueywb2ee+CCE4zQiZstxU9BMoQO9i6zUFSY0Kj0Q==
+  dependencies:
+    "@babel/helper-plugin-utils" "^7.8.3"
 
 "@babel/plugin-syntax-flow@^7.12.1", "@babel/plugin-syntax-flow@^7.27.1":
   version "7.27.1"
@@ -8805,10 +8820,10 @@ react-native-svg@15.12.1:
     css-tree "^1.1.3"
     warn-once "0.1.1"
 
-react-native-web@^0.21.0:
-  version "0.21.1"
-  resolved "https://registry.yarnpkg.com/react-native-web/-/react-native-web-0.21.1.tgz#ba36a42f02a19da0cfdb70f6f963acaede4a7b3c"
-  integrity sha512-BeNsgwwe4AXUFPAoFU+DKjJ+CVQa3h54zYX77p7GVZrXiiNo3vl03WYDYVEy5R2J2HOPInXtQZB5gmj3vuzrKg==
+react-native-web@^0.21.2:
+  version "0.21.2"
+  resolved "https://registry.yarnpkg.com/react-native-web/-/react-native-web-0.21.2.tgz#0f6983dfea600d9cc1c66fda87ff9ca585eaa647"
+  integrity sha512-SO2t9/17zM4iEnFvlu2DA9jqNbzNhoUP+AItkoCOyFmDMOhUnBBznBDCYN92fGdfAkfQlWzPoez6+zLxFNsZEg==
   dependencies:
     "@babel/runtime" "^7.18.6"
     "@react-native/normalize-colors" "^0.74.1"
@@ -8819,10 +8834,10 @@ react-native-web@^0.21.0:
     postcss-value-parser "^4.2.0"
     styleq "^0.1.3"
 
-react-native-worklets@0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/react-native-worklets/-/react-native-worklets-0.5.1.tgz#d153242655e3757b6c62a474768831157316ad33"
-  integrity sha512-lJG6Uk9YuojjEX/tQrCbcbmpdLCSFxDK1rJlkDhgqkVi1KZzG7cdcBFQRqyNOOzR9Y0CXNuldmtWTGOyM0k0+w==
+react-native-worklets@0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/react-native-worklets/-/react-native-worklets-0.6.1.tgz#daa56dea896c7bdcead064b675ef341ac1f41029"
+  integrity sha512-URca8l7c7Uog7gv4mcg9KILdJlnbvwdS5yfXQYf5TDkD2W1VY1sduEKrD+sA3lUPXH/TG1vmXAvNxCNwPMYgGg==
   dependencies:
     "@babel/plugin-transform-arrow-functions" "^7.0.0-0"
     "@babel/plugin-transform-class-properties" "^7.0.0-0"
@@ -10358,10 +10373,10 @@ verror@^1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-vite-plugin-react-native-web@^2.2.1:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/vite-plugin-react-native-web/-/vite-plugin-react-native-web-2.3.0.tgz#c4c796b246499a0e16cd3d853719e792495c9cc4"
-  integrity sha512-jBLwM1pOFO0n1zl+fybzWhVmPGwD3aPS3Qv860CmxeVeT9rP9ctvCMrPGLG40c1UF1EqErRaPQR8ezWVXl4cYA==
+vite-plugin-react-native-web@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-react-native-web/-/vite-plugin-react-native-web-2.5.0.tgz#c91f4f249847786c954ad438dc8c1197707722a0"
+  integrity sha512-cTrjmu/kJUN32yx0AUqePD8x+GFYBSYLF1vhzncgbSQqV/k/E/OQ5M5MnvFdr8y6ZDXiriFu47mSBjZ5Jrm+pQ==
   dependencies:
     flow-remove-types "^2.275.0"
 

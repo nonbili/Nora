@@ -52,9 +52,12 @@ export const NouHeader: React.FC<{}> = ({}) => {
     marginTop.value = withTiming(autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0)
   }, [autoHideHeader, uiState.headerHeight, uiState.headerShown])
 
+  const Root = isWeb ? View : Animated.View
+
   return (
-    <Animated.View
+    <Root
       className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
+      /* @ts-expect-error */
       style={{ marginTop }}
       onLayout={onLayout}
     >
@@ -63,11 +66,14 @@ export const NouHeader: React.FC<{}> = ({}) => {
       </View>
       <View className="flex flex-row lg:flex-col items-center justify-end gap-2 lg:gap-5 h-full lg:h-[100px]">
         {nIf(canDownload, <MaterialButton name="download" onPress={() => ui$.downloadVideoModalOpen.set(true)} />)}
-        <TouchableOpacity className="flex-row items-center px-3" onPress={() => ui$.tabModalOpen.set(true)}>
-          <View className="rounded-md px-2 py-1 border border-white">
-            <NouText className="text-xs">{tabs.length}</NouText>
-          </View>
-        </TouchableOpacity>
+        {nIf(
+          !isWeb,
+          <TouchableOpacity className="flex-row items-center px-3" onPress={() => ui$.tabModalOpen.set(true)}>
+            <View className="rounded-md px-2 py-1 border border-white">
+              <NouText className="text-xs">{tabs.length}</NouText>
+            </View>
+          </TouchableOpacity>,
+        )}
         <NouMenu
           trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
           items={[
@@ -91,6 +97,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
           ]}
         />
       </View>
-    </Animated.View>
+    </Root>
   )
 }

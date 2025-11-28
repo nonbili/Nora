@@ -35,6 +35,9 @@ export default defineConfig({
                 importSource: 'nativewind',
               },
             ],
+            // https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started/#web
+            '@babel/plugin-proposal-export-namespace-from',
+            'react-native-worklets/plugin',
           ],
         },
       }),

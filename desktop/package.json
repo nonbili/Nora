@@ -1,7 +1,7 @@
 {
   "name": "nora-desktop",
   "productName": "Nora",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Facebook, Instagram, Reddit, Threads and X in a single app",
   "main": "./out/main/index.js",
   "author": "Nonbili Inc.",
@@ -31,6 +31,7 @@
     "react-hot-toast": "^2.5.2"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@types/node": "^24.1.0",
@@ -43,6 +44,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "vite": "^7.0.6",
-    "vite-plugin-react-native-web": "^2.2.1"
+    "vite-plugin-react-native-web": "^2.5.0"
   }
 }

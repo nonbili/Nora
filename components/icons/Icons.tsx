@@ -26,7 +26,7 @@ export const IconInstagram = (props: any) => <Image source={iconInstagram} style
 
 export const IconLinkedIn = (props: any) => (
   <Svg width="24" height="24" viewBox="0 0 72 72">
-    <G fill="none" fill-rule="evenodd">
+    <G fill="none" fillRule="evenodd">
       <Path fill="#0a66c2" d="M8 72h56a8 8 0 0 0 8-8V8a8 8 0 0 0-8-8H8a8 8 0 0 0-8 8v56a8 8 0 0 0 8 8" />
       <Path
         fill="#fff"
