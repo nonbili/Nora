@@ -21,6 +21,20 @@ import { showToast } from '@/lib/toast'
 const userAgent =
   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.52 Mobile Safari/537.36'
 
+const getRedirectTo = (str: string) => {
+  try {
+    const url = new URL(str)
+    if (url.hostname.endsWith('.threads.com')) {
+      return url.searchParams.get('u') || str
+    }
+  } catch (e) {}
+  return str
+}
+
+const forceHttps = (str: string) => {
+  return getRedirectTo(str).replace('http://', 'https://')
+}
+
 const onScroll = (dy: number) => {
   const headerHeight = ui$.headerHeight.get()
   const headerShown = ui$.headerShown.get()
@@ -120,7 +134,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
         console.log(type, data)
         break
       case 'new-tab':
-        tabs$.openTab(data.url)
+        tabs$.openTab(forceHttps(data.url))
         break
       case 'save-file':
         webview?.saveFile(data.content, data.fileName, data.mimeType)

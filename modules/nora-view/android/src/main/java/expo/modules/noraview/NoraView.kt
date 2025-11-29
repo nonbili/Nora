@@ -55,6 +55,23 @@ val BLOCK_HOSTS = arrayOf(
   "googleads.g.doubleclick.net"
 )
 
+val VIEW_HOSTS = arrayOf(
+  "bsky.app",
+  "www.linkedin.com",
+  "www.instagram.com",
+  "chat.reddit.com",
+  "www.reddit.com",
+  "www.threads.com",
+  "www.tiktok.com",
+  "www.tumblr.com",
+  "id.vk.com",
+  "login.vk.com",
+  "login.vk.ru",
+  "m.vk.com",
+  "vk.com",
+  "x.com"
+)
+
 // https://www.whatismybrowser.com/guides/the-latest-user-agent/chrome
 val uaAndroid = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.172 Mobile Safari/537.36"
 val uaLinux = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
@@ -88,6 +105,23 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
         cont.resumeWithException(Exception("evaluateJavascript failed"))
       }
     }
+  }
+}
+
+fun shouldNoraOverrideUrlLoading(view: WebView, url: String): Boolean {
+  val uri = Uri.parse(url)
+  if (uri.host in VIEW_HOSTS ||
+    (uri.host?.endsWith(".facebook.com") ?: false) ||
+    !nouController.settings.openExternalLinkInSystemBrowser
+  ) {
+    return false
+  } else {
+    try {
+      view.getContext().startActivity(Intent(Intent.ACTION_VIEW, uri))
+    } catch (e: ActivityNotFoundException) {
+      e.printStackTrace()
+    }
+    return true
   }
 }
 
@@ -189,20 +223,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             return null
           }
 
-          override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-            val uri = Uri.parse(url)
-            if (uri.scheme in arrayOf("http", "https")) {
-              return false
-            } else {
-              try {
-                view.getContext().startActivity(Intent(Intent.ACTION_VIEW, uri))
-              } catch (e: ActivityNotFoundException) {
-                // Toast.makeText(context, "No application can handle this url: $url", Toast.LENGTH_LONG).show()
-                e.printStackTrace()
-              }
-              return true
-            }
-          }
+          override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean =
+            shouldNoraOverrideUrlLoading(view, url)
         }
 
       webChromeClient = object : WebChromeClient() {
@@ -270,10 +292,16 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           val newWebView = WebView(view.getContext())
           newWebView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-              emit("new-tab", mapOf("url" to url))
-              return true
+              val ret = shouldNoraOverrideUrlLoading(view, url)
+              if (!ret || !nouController.settings.openExternalLinkInSystemBrowser) {
+                log("new-tab: $url")
+                emit("new-tab", mapOf("url" to url))
+                return true
+              }
+              return ret
             }
           }
+
           val transport = resultMsg.obj as WebView.WebViewTransport
           transport.setWebView(newWebView)
           resultMsg.sendToTarget()

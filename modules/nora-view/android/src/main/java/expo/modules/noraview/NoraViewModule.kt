@@ -6,6 +6,8 @@ import android.widget.Toast
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.kotlin.records.Field
+import expo.modules.kotlin.records.Record
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileWriter
@@ -18,10 +20,17 @@ class NoraViewModule : Module() {
       nouController.onActivityResult(payload.requestCode, payload.resultCode, payload.data)
     }
 
+    Events("onLog")
+
+    Function("setSettings") { settings: NoraSettings ->
+      nouController.settings = settings
+    }
+
     View(NoraView::class) {
       Prop("scriptOnStart") { view: NoraView, script: String ->
         view.setScriptOnStart(script)
       }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { view: NoraView, url: String, fileName: String? ->

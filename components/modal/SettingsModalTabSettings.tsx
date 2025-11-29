@@ -26,6 +26,12 @@ export const SettingsModalTabSettings = () => {
         <View className="my-8">
           <NouSwitch
             className="mb-6"
+            label={<NouText className="font-medium">Open external link in system browser</NouText>}
+            value={settings.openExternalLinkInSystemBrowser}
+            onPress={() => settings$.openExternalLinkInSystemBrowser.toggle()}
+          />
+          <NouSwitch
+            className="mb-6"
             label={<NouText className="font-medium">Hide header on scroll</NouText>}
             value={settings.autoHideHeader}
             onPress={() => settings$.autoHideHeader.toggle()}

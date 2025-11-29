@@ -13,9 +13,17 @@ import android.widget.FrameLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import expo.modules.kotlin.records.Field
+import expo.modules.kotlin.records.Record
+
+class NoraSettings : Record {
+  @Field
+  val openExternalLinkInSystemBrowser: Boolean = false
+}
 
 class NouController {
   private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
+  internal var settings = NoraSettings()
 
   fun setFileChooserCallback(callback: ValueCallback<Array<Uri>>) {
     fileChooserCallback = callback

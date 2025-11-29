@@ -14,14 +14,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
-  const home = useValue(settings$.home)
   const disabledServices = useValue(settings$.disabledServicesArr)
   const { tabs, activeTabIndex } = useValue(tabs$)
-
-  const setHome = (home: string) => {
-    ui$.url.set('')
-    ui$.assign({ url: getHomeUrl(home), tabModalOpen: false })
-  }
 
   const onPress = (index: number) => {
     tabs$.activeTabIndex.set(index)
