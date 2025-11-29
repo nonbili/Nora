@@ -13,6 +13,9 @@ import { useLinkingURL } from 'expo-linking'
 import { reloadAppAsync } from 'expo'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
+import NoraViewModule from '@/modules/nora-view'
+
+console.log('- module', NoraViewModule)
 
 export default function HomeScreen() {
   const navigation = useNavigation()
@@ -47,6 +50,11 @@ export default function HomeScreen() {
       }
     })()
 
+    // @ts-expect-error
+    NoraViewModule.addListener('onLog', (evt) => {
+      console.log('[kotlin]', evt)
+    })
+
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       uiState.webview?.goBack()
       return true
@@ -55,6 +63,13 @@ export default function HomeScreen() {
     /* Appearance.addChangeListener(() => reloadAppAsync()) */
     return () => subscription.remove()
   }, [])
+
+  useObserveEffect(settings$, ({ value }) => {
+    console.log('- settings', value)
+    NoraViewModule.setSettings({
+      openExternalLinkInSystemBrowser: value?.openExternalLinkInSystemBrowser,
+    })
+  })
 
   return nIf(scriptOnStart, <MainPage contentJs={scriptOnStart} />)
 }

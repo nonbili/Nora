@@ -51,6 +51,12 @@ export const SettingsModalTabSettings = () => {
           <NouText className="mt-2 text-sm text-gray-400 text-right">
             Restart manually if change not reflected in webview.
           </NouText>
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">Open external link in system browser</NouText>}
+            value={settings.openExternalLinkInSystemBrowser}
+            onPress={() => settings$.openExternalLinkInSystemBrowser.toggle()}
+          />
         </View>,
       )}
       {nIf(
