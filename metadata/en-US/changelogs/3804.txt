@@ -1,0 +1,2 @@
+- add setting for opening link in system browser
+- append .jpg to downloaded twitter image
