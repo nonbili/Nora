@@ -34,7 +34,7 @@ class NoraViewModule : Module() {
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { view: NoraView, url: String, fileName: String? ->
-        view.download(url, fileName)
+        view.download(url, fileName, null)
       }
 
       AsyncFunction("executeJavaScript") Coroutine

@@ -151,13 +151,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     ) {
       val onDownload = object : MenuItem.OnMenuItemClickListener {
         override fun onMenuItemClick(item: MenuItem): Boolean {
-          val uri = Uri.parse(url)
-          val request = DownloadManager.Request(uri)
-          request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, uri.getLastPathSegment())
-
-          request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-          val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-          downloadManager.enqueue(request)
+          download(url, null, "image/jpeg")
           return true
         }
       }
@@ -328,7 +322,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               }
               evaluateJavascript("window.Nora?.downloadBlob('$url', $fileName, '$mimeType')", null)
             } else {
-              download(url, fileName)
+              download(url, fileName, null)
             }
           }
         }
@@ -362,7 +356,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     scriptOnStart = script
   }
 
-  fun download(url: String, fileName: String?) {
+  fun download(url: String, fileName: String?, mimeType: String?) {
     val activity = currentActivity
     if (activity == null) {
       return
@@ -372,7 +366,12 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     val request = DownloadManager.Request(uri)
     var name = fileName
     if (name == null) {
+      val mimeTypeMap = MimeTypeMap.getSingleton()
+      val ext = MimeTypeMap.getFileExtensionFromUrl(url)
       name = uri.getLastPathSegment()
+      if (ext == "" && mimeType != null) {
+        name += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
+      }
     }
     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
