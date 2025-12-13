@@ -3,16 +3,18 @@ import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
 
-interface Tab {
+export interface Tab {
   id: string
   url: string
+  desktopMode?: boolean
 }
 
 interface Store {
   tabs: Tab[]
   activeTabIndex: number
 
-  currentUrl: () => string
+  currentTab: () => Tab | undefined
+  // currentUrl: () => string
 
   openTab: (url: string) => void
   closeTab: (index: number) => void
@@ -23,9 +25,8 @@ export const tabs$ = observable<Store>({
   tabs: [],
   activeTabIndex: 0,
 
-  currentUrl: (): string => {
-    return tabs$.tabs[tabs$.activeTabIndex.get()].get()?.url
-  },
+  currentTab: (): Tab => tabs$.tabs[tabs$.activeTabIndex.get()].get(),
+  // currentUrl: (): string => tabs$.tabs[tabs$.activeTabIndex.get()].get()?.url,
 
   openTab: (url) => {
     const tab = { id: genId(), url }

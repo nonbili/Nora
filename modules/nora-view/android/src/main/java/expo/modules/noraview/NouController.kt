@@ -21,9 +21,16 @@ class NoraSettings : Record {
   val openExternalLinkInSystemBrowser: Boolean = false
 }
 
+typealias LogFn = (String) -> Unit
+
 class NouController {
   private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
   internal var settings = NoraSettings()
+  internal var logFn: LogFn? = null
+
+  fun log(msg: String) {
+    logFn?.invoke(msg)
+  }
 
   fun setFileChooserCallback(callback: ValueCallback<Array<Uri>>) {
     fileChooserCallback = callback

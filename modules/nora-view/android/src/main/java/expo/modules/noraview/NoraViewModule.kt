@@ -13,6 +13,14 @@ import java.io.FileOutputStream
 import java.io.FileWriter
 
 class NoraViewModule : Module() {
+  fun log(msg: String) {
+    sendEvent("onLog", mapOf("msg" to msg))
+  }
+
+  init {
+    nouController.logFn = this::log
+  }
+
   override fun definition() = ModuleDefinition {
     Name("NoraView")
 
@@ -29,6 +37,11 @@ class NoraViewModule : Module() {
     View(NoraView::class) {
       Prop("scriptOnStart") { view: NoraView, script: String ->
         view.setScriptOnStart(script)
+      }
+
+      Prop("useragent") { view: NoraView, ua: String ->
+        view.userAgent = ua
+        view.webView.settings.setUserAgentString(ua)
       }
 
       Events("onLoad", "onMessage")

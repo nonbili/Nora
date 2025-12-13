@@ -9,7 +9,7 @@ import { Text, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
 import { clsx, isWeb } from '@/lib/utils'
-import { tabs$ } from '@/states/tabs'
+import { Tab, tabs$ } from '@/states/tabs'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
 import { MaterialButton } from '../button/IconButtons'
@@ -17,9 +17,9 @@ import { share } from '@/lib/share'
 import { ServiceIcon } from '../service/Services'
 import { debounce } from 'es-toolkit'
 import { showToast } from '@/lib/toast'
+import { getUserAgent } from '@/lib/webview'
 
-const userAgent =
-  'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.52 Mobile Safari/537.36'
+const userAgent = getUserAgent()
 
 const getRedirectTo = (str: string) => {
   try {
@@ -48,7 +48,7 @@ const onScroll = (dy: number) => {
   }
 }
 
-export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }> = ({ url, contentJs, index }) => {
+export const NoraTab: React.FC<{ tab: Tab; contentJs: string; index: number }> = ({ tab, contentJs, index }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const uiState = useValue(ui$)
   const nativeRef = useRef<any>(null)
@@ -57,19 +57,19 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
   const pageUrlRef = useRef('')
 
   useEffect(() => {
-    if (!url) {
+    if (!tab.url) {
       return
     }
-    if (url != pageUrlRef.current) {
+    if (tab.url != pageUrlRef.current) {
       const webview = webviewRef.current
       const native = nativeRef.current
       if (webview) {
-        webview.src = url
+        webview.src = tab.url
       } else if (native) {
-        native.loadUrl(url)
+        native.loadUrl(tab.url)
       }
     }
-  }, [url])
+  }, [tab.url])
 
   const setPageUrl = useCallback(
     (url: string) => {
@@ -107,10 +107,10 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
         try {
           const location = await webview.executeJavaScript('document.location.href')
           if (location == 'about:blank') {
-            webview.loadUrl(url)
+            webview.loadUrl(tab.url)
           }
         } catch (e) {
-          webview.loadUrl(url)
+          webview.loadUrl(tab.url)
         }
       })()
     }
@@ -154,7 +154,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
     return (
       <View className="w-[25rem] shrink-0">
         <View className="flex-row items-center justify-between bg-zinc-800 pl-2">
-          <ServiceIcon url={url} />
+          <ServiceIcon url={tab.url} />
           <NouMenu
             trigger={<MaterialButton name="more-vert" />}
             items={[
@@ -180,6 +180,7 @@ export const NoraTab: React.FC<{ url: string; contentJs: string; index: number }
       className={clsx(index != activeTabIndex && 'hidden')}
       style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
       scriptOnStart={contentJs}
+      useragent={tab.desktopMode ? getUserAgent('linux') : userAgent}
       onLoad={onLoad}
       onMessage={onMessage}
     />

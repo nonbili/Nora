@@ -1,5 +1,5 @@
 export function emit(type: string, data: any) {
-  NoraI.onMessage(JSON.stringify({ type, data }))
+  window.NoraI.onMessage(JSON.stringify({ type, data }))
 }
 
 export function log(...data: any[]) {

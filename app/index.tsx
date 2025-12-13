@@ -50,7 +50,7 @@ export default function HomeScreen() {
 
     // @ts-expect-error
     NoraViewModule.addListener('onLog', (evt) => {
-      console.log('[kotlin]', evt)
+      console.log('[kotlin]', evt.msg)
     })
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {

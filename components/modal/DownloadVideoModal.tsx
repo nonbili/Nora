@@ -34,7 +34,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
 
   useEffect(() => {
     const webview = nativeRef.current
-    const currentUrl = tabs$.currentUrl()
+    const currentUrl = tabs$.currentTab()?.url
     if (webview && currentUrl) {
       if (currentUrl.startsWith('https://m.facebook.com/reel/')) {
         const canonical = new URL(currentUrl)

@@ -24,7 +24,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const { tabs, activeTabIndex } = useValue(tabs$)
-  const currentUrl = useValue(tabs$.currentUrl)
+  const currentTab = useValue(tabs$.currentTab)
   const webview = ui$.webview.get()
   const marginTop = useSharedValue(0)
 
@@ -32,8 +32,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
     hostname = '',
     canDownload = false
 
-  if (currentUrl) {
-    const { hostname, pathname } = new URL(currentUrl)
+  if (currentTab?.url) {
+    const { hostname, pathname } = new URL(currentTab.url)
     const slugs = pathname.split('/')
     canDownload =
       (hostname == 'www.instagram.com' && (slugs[1] == 'reels' || slugs[2] == 'reel')) ||
@@ -89,8 +89,15 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),
                   },
                   {
+                    label: `Desktop site  |  ${currentTab?.desktopMode ? 'On' : 'Off'}`,
+                    handler: () => {
+                      tabs$.tabs[activeTabIndex].desktopMode.toggle()
+                      webview?.executeJavaScript('document.location.reload()')
+                    },
+                  },
+                  {
                     label: 'Share',
-                    handler: () => Share.share({ message: fixSharingUrl(tabs[activeTabIndex].url) }),
+                    handler: () => (currentTab ? Share.share({ message: fixSharingUrl(currentTab.url) }) : {}),
                   },
                 ]),
             { label: 'Settings', handler: () => ui$.settingsModalOpen.set(true) },

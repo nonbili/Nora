@@ -34,13 +34,13 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
           contentContainerStyle={{ gap: '0.5rem' }}
         >
           {tabs.map((tab, index) => (
-            <NoraTab url={tab.url} contentJs={contentJs} index={index} key={tab.id} />
+            <NoraTab tab={tab} contentJs={contentJs} index={index} key={tab.id} />
           ))}
         </ScrollView>
       ) : tabs.length ? (
         <View className="flex-1">
           {tabs.map((tab, index) => (
-            <NoraTab url={tab.url} contentJs={contentJs} index={index} key={tab.id} />
+            <NoraTab tab={tab} contentJs={contentJs} index={index} key={tab.id} />
           ))}
         </View>
       ) : (

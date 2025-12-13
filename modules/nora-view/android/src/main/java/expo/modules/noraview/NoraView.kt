@@ -132,6 +132,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var scriptOnStart = ""
   private var pageUrl = ""
   private var customView: View? = null
+  internal var userAgent: String? = null
 
   private var gestureDetector = GestureDetectorCompat(context, NoraGestureListener())
 
@@ -342,13 +343,15 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   fun load(url: String) {
+    var ua = userAgent
     if (url.startsWith("https://www.facebook.com/messages/") ||
       url.startsWith("https://www.tiktok.com")
     ) {
-      webView.settings.setUserAgentString(uaLinux)
-    } else {
-      webView.settings.setUserAgentString(uaAndroid)
+      ua = uaLinux
+    } else if (ua == null) {
+      ua = uaAndroid
     }
+    webView.settings.setUserAgentString(ua)
     webView.loadUrl(url)
   }
 
