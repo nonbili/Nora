@@ -1,0 +1,3 @@
+- support requesting desktop site
+- support adding back and scroll-to-top button to header
+- fix downloading ig reel
