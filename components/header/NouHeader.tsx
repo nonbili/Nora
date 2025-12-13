@@ -22,7 +22,7 @@ import NoraViewModule from '@/modules/nora-view'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
-  const autoHideHeader = useValue(settings$.autoHideHeader)
+  const settings = useValue(settings$)
   const { tabs, activeTabIndex } = useValue(tabs$)
   const currentTab = useValue(tabs$.currentTab)
   const webview = ui$.webview.get()
@@ -36,7 +36,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     const { hostname, pathname } = new URL(currentTab.url)
     const slugs = pathname.split('/')
     canDownload =
-      (hostname == 'www.instagram.com' && (slugs[1] == 'reels' || slugs[2] == 'reel')) ||
+      (hostname == 'www.instagram.com' && (['reels', 'reel'].includes(slugs[1]) || slugs[2] == 'reel')) ||
       (hostname == 'm.facebook.com' && ['reel', 'stories', 'watch'].includes(slugs[1]))
   }
 
@@ -49,8 +49,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
   }
 
   useEffect(() => {
-    marginTop.value = withTiming(autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0)
-  }, [autoHideHeader, uiState.headerHeight, uiState.headerShown])
+    marginTop.value = withTiming(settings.autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0)
+  }, [settings.autoHideHeader, uiState.headerHeight, uiState.headerShown])
+
+  const scrollToTop = () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`)
 
   const Root = isWeb ? View : Animated.View
 
@@ -61,10 +63,15 @@ export const NouHeader: React.FC<{}> = ({}) => {
       style={{ marginTop }}
       onLayout={onLayout}
     >
-      <View className="items-center">
+      <View className="flex-row lg:flex-col items-center gap-1">
         <MaterialButton name="add" onPress={() => ui$.navModalOpen.set(true)} />
+        {nIf(
+          !isWeb && settings.showBackButtonInHeader,
+          <MaterialButton name="arrow-back" onPress={() => webview?.goBack()} />,
+        )}
+        {nIf(!isWeb && settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
       </View>
-      <View className="flex flex-row lg:flex-col items-center justify-end gap-2 lg:gap-5 h-full lg:h-[100px]">
+      <View className="flex-row lg:flex-col items-center justify-end gap-1 lg:gap-5 h-full lg:h-[100px]">
         {nIf(canDownload, <MaterialButton name="download" onPress={() => ui$.downloadVideoModalOpen.set(true)} />)}
         {nIf(
           !isWeb,
@@ -86,7 +93,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                   },
                   {
                     label: 'Scroll to top',
-                    handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),
+                    handler: scrollToTop,
                   },
                   {
                     label: `Desktop site  |  ${currentTab?.desktopMode ? 'On' : 'Off'}`,

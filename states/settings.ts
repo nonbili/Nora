@@ -8,6 +8,9 @@ interface Store {
   theme: null | 'dark' | 'light'
   openExternalLinkInSystemBrowser: boolean
 
+  showBackButtonInHeader: boolean
+  showScrollButtonInHeader: boolean
+
   disabledServices: Set<string>
   disabledServicesArr: string[]
   toggleService: (service: string) => void
@@ -18,6 +21,9 @@ export const settings$ = observable<Store>({
   headerPosition: 'top',
   theme: null,
   openExternalLinkInSystemBrowser: false,
+
+  showBackButtonInHeader: false,
+  showScrollButtonInHeader: false,
 
   disabledServices: new Set(),
   disabledServicesArr: [],

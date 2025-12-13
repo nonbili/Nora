@@ -45,6 +45,19 @@ export const SettingsModalTabSettings = () => {
               onChange={(index) => settings$.headerPosition.set(headerPositions[index])}
             />
           </View>
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">Show back button</NouText>}
+            value={settings.showBackButtonInHeader}
+            onPress={() => settings$.showBackButtonInHeader.toggle()}
+          />
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">Show scroll to top button</NouText>}
+            value={settings.showScrollButtonInHeader}
+            onPress={() => settings$.showScrollButtonInHeader.toggle()}
+          />
+
           <View className="items-center flex-row justify-between">
             <NouText className="font-medium">Theme</NouText>
             <Segemented
@@ -59,6 +72,7 @@ export const SettingsModalTabSettings = () => {
           </NouText>
         </View>,
       )}
+
       {nIf(
         !isWeb,
         <View className="flex-row justify-center mb-8">
@@ -67,6 +81,7 @@ export const SettingsModalTabSettings = () => {
           </NouButton>
         </View>,
       )}
+
       <ServiceManager />
       {nIf(bookmarks.length, <NouText className="mt-5 mb-1 font-medium">Bookmarks</NouText>)}
       {bookmarks.map((bookmark, index) => (
