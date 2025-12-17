@@ -56,6 +56,12 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const Root = isWeb ? View : Animated.View
 
+  const testDnd = () => {
+    const xs = tabs.slice(0, -2)
+    const [tab1, tab2] = tabs.slice(-2)
+    tabs$.tabs.set([...xs, tab2, tab1])
+  }
+
   return (
     <Root
       className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
@@ -72,6 +78,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         {nIf(!isWeb && settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
       </View>
       <View className="flex-row lg:flex-col items-center justify-end gap-1 lg:gap-5 h-full lg:h-[100px]">
+        <MaterialButton name="download" onPress={() => testDnd()} />
         {nIf(canDownload, <MaterialButton name="download" onPress={() => ui$.downloadVideoModalOpen.set(true)} />)}
         {nIf(
           !isWeb,

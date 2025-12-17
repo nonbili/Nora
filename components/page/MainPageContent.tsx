@@ -22,6 +22,8 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     migrateDisabledServices()
   }, [])
 
+  console.log('- tabs', JSON.stringify(tabs))
+
   return (
     <View
       className={clsx('flex-1 h-full lg:flex-row overflow-hidden', headerPosition == 'bottom' && 'flex-col-reverse')}
