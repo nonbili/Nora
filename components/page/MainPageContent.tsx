@@ -13,6 +13,7 @@ import { tabs$ } from '@/states/tabs'
 import { NoraTab } from '../tab/NoraTab'
 import { NouButton } from '../button/NouButton'
 import { NavModalContent } from '../modal/NavModal'
+import { NoraTabContainer } from '../tab/NoraTabContainer'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
@@ -22,25 +23,27 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     migrateDisabledServices()
   }, [])
 
+  console.log('- tabs', JSON.stringify(tabs))
   return (
     <View
       className={clsx('flex-1 h-full lg:flex-row overflow-hidden', headerPosition == 'bottom' && 'flex-col-reverse')}
     >
       <NouHeader />
       {isWeb ? (
-        <ScrollView
-          className={clsx('flex-row', isWeb && 'bg-zinc-600 p-2')}
-          horizontal
-          contentContainerStyle={{ gap: '0.5rem' }}
-        >
-          {tabs.map((tab, index) => (
+        <NoraTabContainer tabs={tabs} />
+      ) : /* <ScrollView
+            className={clsx('flex-row', isWeb && 'bg-zinc-600 p-2')}
+            horizontal
+            contentContainerStyle={{ gap: '0.5rem' }}
+            >
+            {tabs.map((tab, index) => (
             <NoraTab tab={tab} contentJs={contentJs} index={index} key={tab.id} />
-          ))}
-        </ScrollView>
-      ) : tabs.length ? (
+            ))}
+            </ScrollView> */
+      tabs.length ? (
         <View className="flex-1">
           {tabs.map((tab, index) => (
-            <NoraTab tab={tab} contentJs={contentJs} index={index} key={tab.id} />
+            <NoraTab tab={tab} index={index} key={tab.id} />
           ))}
         </View>
       ) : (

@@ -12,10 +12,11 @@ import { isWeb, nIf } from '@/lib/utils'
 import { TabModal } from '../modal/TabModal'
 import { BookmarkModal } from '../modal/BookmarkModal'
 import { DownloadVideoModal } from '../modal/DownloadVideoModal'
+import { ContentJsContext } from '@/lib/hooks/useContentJs'
 
 export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   return (
-    <>
+    <ContentJsContext.Provider value={contentJs}>
       <MainPageContent contentJs={contentJs} />
       <NavModal />
       <SettingsModal />
@@ -28,6 +29,6 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
           <TabModal />
         </>,
       )}
-    </>
+    </ContentJsContext.Provider>
   )
 }
