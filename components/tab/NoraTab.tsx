@@ -18,6 +18,7 @@ import { ServiceIcon } from '../service/Services'
 import { debounce } from 'es-toolkit'
 import { showToast } from '@/lib/toast'
 import { getUserAgent } from '@/lib/webview'
+import { useContentJs } from '@/lib/hooks/useContentJs'
 
 const userAgent = getUserAgent()
 
@@ -48,13 +49,14 @@ const onScroll = (dy: number) => {
   }
 }
 
-export const NoraTab: React.FC<{ tab: Tab; contentJs: string; index: number }> = ({ tab, contentJs, index }) => {
+export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const uiState = useValue(ui$)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
   const { tabs, activeTabIndex } = useValue(tabs$)
   const pageUrlRef = useRef('')
+  const contentJs = useContentJs()
 
   useEffect(() => {
     if (!tab.url) {
@@ -163,12 +165,12 @@ export const NoraTab: React.FC<{ tab: Tab; contentJs: string; index: number }> =
                 handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),
               },
               { label: 'Share', handler: () => share(pageUrlRef.current) },
-              ...(tabs.length > 1 ? [{ label: 'Close', handler: () => tabs$.closeTab(index) }] : []),
+              { label: 'Close', handler: () => tabs$.closeTab(index) },
             ]}
           />
         </View>
         {/*  @ts-expect-error ?? */}
-        <NoraView className="h-full" ref={webviewRef} partition="persist:webview" useragent={userAgent} />
+        <NoraView className="h-full" ref={webviewRef} partition="persist:webview" useragent={userAgent} key={tab.id} />
       </View>
     )
   }

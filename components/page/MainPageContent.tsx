@@ -13,6 +13,7 @@ import { tabs$ } from '@/states/tabs'
 import { NoraTab } from '../tab/NoraTab'
 import { NouButton } from '../button/NouButton'
 import { NavModalContent } from '../modal/NavModal'
+import { NoraTabContainer } from '../tab/NoraTabContainer'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
@@ -28,19 +29,11 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     >
       <NouHeader />
       {isWeb ? (
-        <ScrollView
-          className={clsx('flex-row', isWeb && 'bg-zinc-600 p-2')}
-          horizontal
-          contentContainerStyle={{ gap: '0.5rem' }}
-        >
-          {tabs.map((tab, index) => (
-            <NoraTab tab={tab} contentJs={contentJs} index={index} key={tab.id} />
-          ))}
-        </ScrollView>
+        <NoraTabContainer tabs={tabs} />
       ) : tabs.length ? (
         <View className="flex-1">
           {tabs.map((tab, index) => (
-            <NoraTab tab={tab} contentJs={contentJs} index={index} key={tab.id} />
+            <NoraTab tab={tab} index={index} key={tab.id} />
           ))}
         </View>
       ) : (

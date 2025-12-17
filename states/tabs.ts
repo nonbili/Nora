@@ -12,6 +12,7 @@ export interface Tab {
 interface Store {
   tabs: Tab[]
   activeTabIndex: number
+  orders: Record<string, number>
 
   currentTab: () => Tab | undefined
   // currentUrl: () => string
@@ -24,6 +25,7 @@ interface Store {
 export const tabs$ = observable<Store>({
   tabs: [],
   activeTabIndex: 0,
+  orders: {},
 
   currentTab: (): Tab => tabs$.tabs[tabs$.activeTabIndex.get()].get(),
   // currentUrl: (): string => tabs$.tabs[tabs$.activeTabIndex.get()].get()?.url,
