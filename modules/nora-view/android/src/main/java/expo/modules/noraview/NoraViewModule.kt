@@ -1,5 +1,9 @@
 package expo.modules.noraview
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
@@ -14,11 +18,35 @@ import java.io.FileWriter
 
 class NoraViewModule : Module() {
   fun log(msg: String) {
-    sendEvent("onLog", mapOf("msg" to msg))
+    sendEvent("log", mapOf("msg" to msg))
   }
 
   init {
     nouController.logFn = this::log
+  }
+
+  private var clipText = ""
+
+  private val clipboardManager: ClipboardManager?
+    get() = appContext.reactContext?.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+
+  private val listener = ClipboardManager.OnPrimaryClipChangedListener {
+    clipboardManager?.primaryClip?.let { clip ->
+      val item = clip.getItemAt(0)
+      val text = item.text.toString()
+      if (clipText == text) {
+        return@let
+      }
+      val uri = Uri.parse(text)
+      if (uri.host in VIEW_HOSTS) {
+        val cleanUrl = removeTrackingParams(text)
+        if (cleanUrl != text) {
+          clipText = cleanUrl
+          val clipData = ClipData.newPlainText("", clipText)
+          clipboardManager?.setPrimaryClip(clipData)
+        }
+      }
+    }
   }
 
   override fun definition() = ModuleDefinition {
@@ -28,7 +56,15 @@ class NoraViewModule : Module() {
       nouController.onActivityResult(payload.requestCode, payload.resultCode, payload.data)
     }
 
-    Events("onLog")
+    Events("log")
+
+    OnStartObserving {
+      clipboardManager?.addPrimaryClipChangedListener(listener)
+    }
+
+    OnStopObserving {
+      clipboardManager?.removePrimaryClipChangedListener(listener)
+    }
 
     Function("setSettings") { settings: NoraSettings ->
       nouController.settings = settings

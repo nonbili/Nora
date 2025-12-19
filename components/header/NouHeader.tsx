@@ -1,11 +1,11 @@
-import { Dimensions, View, Text, Share, TouchableOpacity, LayoutChangeEvent } from 'react-native'
+import { Dimensions, View, Text, TouchableOpacity, LayoutChangeEvent } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Drawer from 'expo-router/drawer'
 import { useValue, useObserve } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
-import { fixSharingUrl } from '@/lib/page'
+import { removeTrackingParams } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
@@ -19,6 +19,7 @@ import Animated, { useSharedValue, withTiming } from 'react-native-reanimated'
 import { EncodingType, StorageAccessFramework } from 'expo-file-system/legacy'
 import { File, writeAsStringAsync, Directory } from 'expo-file-system'
 import NoraViewModule from '@/modules/nora-view'
+import { share } from '@/lib/share'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -104,7 +105,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                   },
                   {
                     label: 'Share',
-                    handler: () => (currentTab ? Share.share({ message: fixSharingUrl(currentTab.url) }) : {}),
+                    handler: () => (currentTab ? share(currentTab.url) : {}),
                   },
                 ]),
             { label: 'Settings', handler: () => ui$.settingsModalOpen.set(true) },

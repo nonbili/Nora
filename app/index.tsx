@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
-import { fixSharingUrl, getHomeUrl, hostHomes, openSharedUrl } from '@/lib/page'
+import { getHomeUrl, hostHomes, openSharedUrl } from '@/lib/page'
 import { Asset } from 'expo-asset'
 import { settings$ } from '@/states/settings'
 import { useShareIntent } from 'expo-share-intent'
@@ -49,7 +49,7 @@ export default function HomeScreen() {
     })()
 
     // @ts-expect-error
-    NoraViewModule.addListener('onLog', (evt) => {
+    NoraViewModule.addListener('log', (evt) => {
       console.log('[kotlin]', evt.msg)
     })
 

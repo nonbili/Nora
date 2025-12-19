@@ -1,26 +1,3 @@
-<h2>Features</h2>
-<ul>
-<li>Download image</li>
-<li>Download ig reel</li>
-<li>Zoom</li>
-</ul>
-
-<h2>Supported SNS</h2>
-<ul>
-<li>Bluesky</li>
-<li>Facebook</li>
-<li>Instagram</li>
-<li>LinkedIn</li>
-<li>Reddit</li>
-<li>Threads</li>
-<li>TikTok</li>
-<li>Tumblr</li>
-<li>VK</li>
-<li>X (Twitter)</li>
-</ul>
-
-<h2>How it works</h2>
-<ul>
-  <li>Wrap the SNS websites in Android webview</li>
-  <li>Inject code to block ads</li>
-</ul>
+<h2>Features</h2><ul><li>Download image</li><li>Download fb/ig reel</li><li>Zoom</li><li>Remove tracking url query params</li> </ul>
+<h2>Supported SNS</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
+<h2>How it works</h2><ul><li>Wrap the SNS websites in Android webview</li><li>Inject code to block ads</li></ul>

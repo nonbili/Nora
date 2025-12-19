@@ -1,6 +1,6 @@
 import { tabs$ } from '@/states/tabs'
-import { fixSharingUrl } from '@/content/clipboard'
-export { fixSharingUrl } from '@/content/clipboard'
+import { removeTrackingParams } from '@/content/clipboard'
+export { removeTrackingParams } from '@/content/clipboard'
 
 export const homeUrls: Record<string, string> = {
   bluesky: 'https://bsky.app',
@@ -37,7 +37,7 @@ export function getHomeUrl(home: string) {
 
 export function openSharedUrl(url: string) {
   try {
-    tabs$.openTab(fixSharingUrl(url.replace('nora://', 'https://')))
+    tabs$.openTab(removeTrackingParams(url.replace('nora://', 'https://')))
   } catch (e) {
     console.error(e)
   }

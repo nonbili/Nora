@@ -1,10 +1,10 @@
 import { Share } from 'react-native'
-import { fixSharingUrl } from '@/lib/page'
+import { removeTrackingParams } from '@/lib/page'
 import { isWeb } from './utils'
 import { showToast } from './toast'
 
 export function share(url: string) {
-  url = fixSharingUrl(url)
+  url = removeTrackingParams(url)
   if (isWeb) {
     navigator.clipboard.writeText(url)
     showToast('Copied to clipboard')
