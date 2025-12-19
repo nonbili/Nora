@@ -20,6 +20,7 @@ import { EncodingType, StorageAccessFramework } from 'expo-file-system/legacy'
 import { File, writeAsStringAsync, Directory } from 'expo-file-system'
 import NoraViewModule from '@/modules/nora-view'
 import { share } from '@/lib/share'
+import { isDownloadable } from '@/content/download'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -36,9 +37,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   if (currentTab?.url) {
     const { hostname, pathname } = new URL(currentTab.url)
     const slugs = pathname.split('/')
-    canDownload =
-      (hostname == 'www.instagram.com' && (['reels', 'reel'].includes(slugs[1]) || slugs[2] == 'reel')) ||
-      (hostname == 'm.facebook.com' && ['reel', 'stories', 'watch'].includes(slugs[1]))
+    canDownload = isDownloadable(currentTab.url)
   }
 
   const onLayout = (event: LayoutChangeEvent) => {

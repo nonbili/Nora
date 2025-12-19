@@ -21,8 +21,9 @@ Download Linux/macOS/Windows version from [Nora-Desktop](https://github.com/nonb
 
 - Download image
 - Download fb/ig reel
+- Select text
 - Zoom
-- Remove tracking query params in shared url
+- Remove tracking url query params
 
 ## Supported SNS
 
