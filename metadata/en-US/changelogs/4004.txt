@@ -1,0 +1,2 @@
+- remove tracking params when sharing from ig/threads
+- fix downloading ig reel
