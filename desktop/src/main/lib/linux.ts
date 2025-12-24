@@ -8,7 +8,7 @@ const templateDesktopFile = (exec: string, icon: string) => `[Desktop Entry]
 Name=Nora
 Exec=${exec} %u
 Type=Application
-Categories=AudioVideo;Network;Utility;
+Categories=Network;Utility;
 Icon=${icon}
 MimeType=x-scheme-handler/nora;
 `

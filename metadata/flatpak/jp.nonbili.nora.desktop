@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Nora
+Comment=SNS Browser
+Exec=/app/bin/run.sh %u
+Type=Application
+Categories=Network;Utility;
+Icon=jp.nonbili.nora
+MimeType=x-scheme-handler/nora;
