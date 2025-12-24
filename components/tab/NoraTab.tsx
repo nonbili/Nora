@@ -168,15 +168,20 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
             ]}
           />
         </View>
-        {/*  @ts-expect-error ?? */}
-        <NoraView className="h-full" ref={webviewRef} partition="persist:webview" useragent={userAgent} key={tab.id} />
+        <NoraView
+          className="h-full"
+          ref={webviewRef}
+          partition="persist:webview"
+          useragent={userAgent}
+          allowpopups="true"
+          key={tab.id}
+        />
       </View>
     )
   }
 
   return (
     <NoraView
-      // @ts-expect-error ??
       ref={nativeRef}
       className={clsx(index != activeTabIndex && 'hidden')}
       style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}

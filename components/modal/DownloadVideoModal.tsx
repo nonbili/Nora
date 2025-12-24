@@ -10,10 +10,9 @@ import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
 import { tabs$ } from '@/states/tabs'
 import { delay } from 'es-toolkit'
+import { getUserAgent } from '@/lib/webview'
 
-const repo = 'https://github.com/nonbili/Nora'
-const tabs = ['Settings', 'About']
-const themes = [null, 'dark', 'light'] as const
+const userAgent = getUserAgent()
 
 export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const downloadVideoModalOpen = useValue(ui$.downloadVideoModalOpen)
@@ -88,11 +87,11 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         <NouText className="text-lg font-semibold mb-4">{title}</NouText>
         <View className="flex-1 bg-gray-800">
           <NoraView
-            // @ts-expect-error ??
             ref={nativeRef}
             className="bg-white"
             style={{ flex: 1 }}
             scriptOnStart={contentJs}
+            useragent={userAgent}
             onLoad={onLoad}
             onMessage={onMessage}
           />

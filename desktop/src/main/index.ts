@@ -7,11 +7,12 @@ import { bindDeeplink } from './lib/deeplink'
 import { genDesktopFile } from './lib/linux'
 import { checkForUpdate } from './lib/auto-update'
 import { initMainChannel } from './ipc/main'
+import contextMenu from 'electron-context-menu'
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1024,
+    width: 1200,
     height: 800,
     show: false,
     autoHideMenuBar: true,
@@ -48,6 +49,29 @@ function createWindow(): void {
   mainWindow.webContents.on('will-attach-webview', (_, webPreferences) => {
     webPreferences.sandbox = false
     webPreferences.preload = join(__dirname, '../preload/index.js')
+  })
+
+  mainWindow.webContents.on('did-attach-webview', (e, wc) => {
+    // @ts-expect-error ?
+    contextMenu.default({
+      window: wc,
+      showCopyImage: false,
+      showLearnSpelling: false,
+      showLookUpSelection: false,
+      showSearchWithGoogle: false,
+      showSelectAll: false,
+    })
+    wc.setWindowOpenHandler((details) => {
+      let url = details.url
+      const { host, pathname, searchParams } = new URL(url)
+      switch (host) {
+        case 'l.threads.com':
+          url = searchParams.get('u') || url
+          break
+      }
+      shell.openExternal(url)
+      return { action: 'deny' }
+    })
   })
 }
 
