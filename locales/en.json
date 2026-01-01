@@ -1,0 +1,44 @@
+{
+  "about": {
+    "label": "About",
+    "code": "Source code",
+    "donate": "Donate"
+  },
+  "buttons": {
+    "closeAll": "Close All"
+  },
+  "bookmarks": {
+    "label": "Bookmarks",
+    "addButton": "Add bookmark"
+  },
+  "menus": {
+    "close": "Close",
+    "delete": "Delete",
+    "desktop": "Desktop site",
+    "desktopOn": "On",
+    "desktopOff": "Off",
+    "reload": "Reload",
+    "scroll": "Scroll to top",
+    "share": "Share"
+  },
+  "settings": {
+    "label": "Settings",
+    "openExternalLink": "Open external link in system browser",
+    "hideHeader": "Hide header on scroll",
+    "headerPosition": {
+      "label": "Header position",
+      "top": "Top",
+      "bottom": "Bottom"
+    },
+    "showBackButton": "Show back button",
+    "showScrollButton": "Show scroll to top button",
+    "theme": {
+      "label": "Theme",
+      "system": "System",
+      "dark": "Dark",
+      "light": "Light",
+      "hint": "Restart manually if change not reflected in webview."
+    },
+    "injectCookie": "Inject cookie"
+  }
+}

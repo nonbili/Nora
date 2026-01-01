@@ -14,9 +14,10 @@ import { BaseModal } from './BaseModal'
 import { ServiceManager } from '../service/Services'
 import { NouButton } from '../button/NouButton'
 import { SettingsModalTabSettings } from './SettingsModalTabSettings'
+import { t } from 'i18next'
 
 const repo = 'https://github.com/nonbili/Nora'
-const tabs = ['Settings', 'About']
+const tabs = [t('settings.label'), t('about.label')]
 const donateLinks = ['https://github.com/sponsors/rnons', 'https://liberapay.com/rnons', 'https://paypal.me/rnons']
 
 export const SettingsModal = () => {
@@ -45,13 +46,13 @@ export const SettingsModal = () => {
                 <NouText>v{isWeb ? desktopVersion : version}</NouText>
               </View>
               <View className="mb-6">
-                <NouText className="font-medium mb-1">Source code</NouText>
+                <NouText className="font-medium mb-1">{t('about.code')}</NouText>
                 <NouLink className="text-indigo-400 text-sm" href={repo}>
                   {repo}
                 </NouLink>
               </View>
               <View className="mb-6">
-                <NouText className="font-medium mb-1">Donate</NouText>
+                <NouText className="font-medium mb-1">{t('about.donate')}</NouText>
                 {donateLinks.map((url) => (
                   <NouLink className="text-indigo-400 text-sm mb-2" href={url} key={url}>
                     {url}

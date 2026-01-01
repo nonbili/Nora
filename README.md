@@ -54,3 +54,7 @@ bun install
 bun dev
 bun run android
 ```
+
+## Translation
+
+Translation is supported by [Weblate](https://hosted.weblate.org/projects/nora).

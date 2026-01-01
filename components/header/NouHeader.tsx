@@ -21,6 +21,7 @@ import { File, writeAsStringAsync, Directory } from 'expo-file-system'
 import NoraViewModule from '@/modules/nora-view'
 import { share } from '@/lib/share'
 import { isDownloadable } from '@/content/download'
+import { t } from 'i18next'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -88,26 +89,26 @@ export const NouHeader: React.FC<{}> = ({}) => {
               ? []
               : [
                   {
-                    label: 'Reload',
+                    label: t('menus.reload'),
                     handler: () => webview?.executeJavaScript('document.location.reload()'),
                   },
                   {
-                    label: 'Scroll to top',
+                    label: t('menus.scroll'),
                     handler: scrollToTop,
                   },
                   {
-                    label: `Desktop site  |  ${currentTab?.desktopMode ? 'On' : 'Off'}`,
+                    label: `${t('menus.desktop')} |  ${currentTab?.desktopMode ? t('menus.desktopOn') : t('menus.desktopOff')}`,
                     handler: () => {
                       tabs$.tabs[activeTabIndex].desktopMode.toggle()
                       webview?.executeJavaScript('document.location.reload()')
                     },
                   },
                   {
-                    label: 'Share',
+                    label: t('menus.share'),
                     handler: () => (currentTab ? share(currentTab.url) : {}),
                   },
                 ]),
-            { label: 'Settings', handler: () => ui$.settingsModalOpen.set(true) },
+            { label: t('settings.label'), handler: () => ui$.settingsModalOpen.set(true) },
           ]}
         />
       </View>

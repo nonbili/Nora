@@ -11,6 +11,7 @@ import { NouMenu } from '../menu/NouMenu'
 import { NouButton } from '../button/NouButton'
 import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { t } from 'i18next'
 
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
@@ -45,7 +46,10 @@ export const TabModal = () => {
                 </Text>
               </View>
             </TouchableHighlight>
-            <NouMenu trigger="filled.MoreVert" items={[{ label: 'Close', handler: () => tabs$.closeTab(index) }]} />
+            <NouMenu
+              trigger="filled.MoreVert"
+              items={[{ label: t('menus.close'), handler: () => tabs$.closeTab(index) }]}
+            />
           </View>
         ))}
         <View className="flex-row items-center justify-between mt-8 pr-4">
@@ -62,7 +66,7 @@ export const TabModal = () => {
                 openNavModal()
               }}
             >
-              Close all
+              {t('buttons.closeAll')}
             </NouButton>,
           )}
         </View>
