@@ -11,44 +11,51 @@ import { NouButton } from '../button/NouButton'
 import { MaterialButton } from '../button/IconButtons'
 import { bookmarks$ } from '@/states/bookmarks'
 import { Image } from 'expo-image'
+import { t } from 'i18next'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
-const cls = clsx('flex-row items-center gap-4 rounded-full bg-sky-50', isWeb ? 'py-2 px-4 my-2' : 'py-2 px-5 my-3')
+const cls = clsx('flex-row items-center gap-2 rounded-full bg-sky-50 w-40 py-2 px-3')
 
 export const NavModalContent = () => {
   const disabledServices = useValue(settings$.disabledServicesArr)
   const bookmarks = useValue(bookmarks$.bookmarks)
 
   const onPress = (url: string) => {
-    tabs$.openTab(url)
+    tabs$.updateTabUrl(url)
     ui$.assign({ navModalOpen: false })
   }
 
   return (
-    <ScrollView className="my-8 px-4">
-      {Object.entries(services).map(([value, [label, icon]]) =>
-        nIf(
-          !disabledServices.includes(value),
-          <TouchableHighlight key={value} onPress={() => onPress(getHomeUrl(value))}>
+    <ScrollView className="p-4 bg-gray-950" contentContainerClassName="min-h-full justify-center">
+      <View className="flex-row flex-wrap justify-center gap-x-6 gap-y-7">
+        {Object.entries(services).map(([value, [label, icon]]) =>
+          nIf(
+            !disabledServices.includes(value),
+            <TouchableHighlight key={value} onPress={() => onPress(getHomeUrl(value))}>
+              <View className={cls}>
+                {icon}
+                <Text className="text-sm" numberOfLines={1}>
+                  {label}
+                </Text>
+              </View>
+            </TouchableHighlight>,
+          ),
+        )}
+        {bookmarks.map((bookmark, index) => (
+          <TouchableHighlight key={index} onPress={() => onPress(bookmark.url)}>
             <View className={cls}>
-              {icon}
-              <Text className={clsx('')}>{label}</Text>
+              <Image source={bookmark.icon} style={{ width: 24, height: 24 }} />
+              <Text className="text-sm" numberOfLines={1}>
+                {bookmark.title}
+              </Text>
             </View>
-          </TouchableHighlight>,
-        ),
-      )}
-      {bookmarks.map((bookmark, index) => (
-        <TouchableHighlight key={index} onPress={() => onPress(bookmark.url)}>
-          <View className={cls}>
-            <Image source={bookmark.icon} style={{ width: 24, height: 24 }} />
-            <Text numberOfLines={1}>{bookmark.title}</Text>
+          </TouchableHighlight>
+        ))}
+        <TouchableHighlight onPress={() => ui$.urlModalOpen.set(true)}>
+          <View className={clsx(cls, 'bg-transparent border border-indigo-200 justify-center')}>
+            <Text className="text-white">{t('buttons.openUrl')}</Text>
           </View>
         </TouchableHighlight>
-      ))}
-      <View className="flex-row items-center justify-between mt-8">
-        <NouButton variant="outline" onPress={() => ui$.bookmarkModalOpen.set(true)}>
-          Add bookmark
-        </NouButton>
-        <MaterialButton name="settings" onPress={() => ui$.settingsModalOpen.set(true)} />
       </View>
     </ScrollView>
   )

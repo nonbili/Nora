@@ -16,6 +16,7 @@ interface Store {
   navModalOpen: boolean
   settingsModalOpen: boolean
   tabModalOpen: boolean
+  urlModalOpen: boolean
 
   // webview
   webview: any
@@ -36,6 +37,7 @@ export const ui$ = observable<Store>({
   navModalOpen: false,
   settingsModalOpen: false,
   tabModalOpen: false,
+  urlModalOpen: false,
 
   // webview
   webview: undefined,
