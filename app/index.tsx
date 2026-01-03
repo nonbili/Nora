@@ -1,11 +1,11 @@
 import { View, Text, BackHandler, Appearance, ColorSchemeName, ScrollView } from 'react-native'
 import { NoraView } from '@/modules/nora-view'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
+import { useValue, useObserve, useObserveEffect, use } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 import { getHomeUrl, openSharedUrl } from '@/lib/page'
-import { Asset } from 'expo-asset'
+import { getScriptContent } from '@/lib/script'
 import { settings$ } from '@/states/settings'
 import { useShareIntent } from 'expo-share-intent'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -18,7 +18,7 @@ import NoraViewModule from '@/modules/nora-view'
 export default function HomeScreen() {
   const navigation = useNavigation()
   const uiState = useValue(ui$)
-  const [scriptOnStart, setScriptOnStart] = useState('')
+  const scriptOnStart = use(getScriptContent())
   const { hasShareIntent, shareIntent } = useShareIntent()
   const insets = useSafeAreaInsets()
   const ref = useRef<any>(null)
@@ -39,15 +39,6 @@ export default function HomeScreen() {
   }, [linkingUrl])
 
   useEffect(() => {
-    ;(async () => {
-      const [{ localUri }] = await Asset.loadAsync(require('../assets/scripts/main.bjs'))
-      if (localUri) {
-        const res = await fetch(localUri)
-        const content = await res.text()
-        setScriptOnStart(content)
-      }
-    })()
-
     // @ts-expect-error
     NoraViewModule.addListener('log', (evt) => {
       console.log('[kotlin]', evt.msg)
