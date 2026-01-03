@@ -16,21 +16,6 @@ export const homeUrls: Record<string, string> = {
   x: 'https://x.com',
 }
 
-export const hostHomes: Record<string, string> = {
-  'bsky.app': 'bluesky',
-  'm.facebook.com': 'facebook',
-  'www.facebook.com': 'facebook-messenger',
-  'www.instagram.com': 'instagram',
-  'www.linkedin.com': 'linkedin',
-  'chat.reddit.com': 'reddit',
-  'www.reddit.com': 'reddit',
-  'www.threads.com': 'threads',
-  'www.tiktok.com': 'tiktok',
-  'www.tumblr.com': 'tumblr',
-  'm.vk.com': 'vk',
-  'x.com': 'x',
-}
-
 export function getHomeUrl(home: string) {
   return homeUrls[home] || homeUrls.x
 }

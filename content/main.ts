@@ -46,18 +46,4 @@ async function initObserver() {
       viewport.setAttribute('content', contents.join(','))
     }
   }
-
-  // const emitScrollChange = debounce((payload) => emit({ type: 'scroll', payload }), 200)
-
-  // let lastScrollY = 0
-  // document.addEventListener('scroll', (e) => {
-  //   if (Math.abs(window.scrollY - lastScrollY) < 100) {
-  //     return
-  //   }
-  //   const up = window.scrollY < lastScrollY
-  //   lastScrollY = window.scrollY
-  //   window.requestAnimationFrame(() => {
-  //     emitScrollChange(up)
-  //   })
-  // })
 }

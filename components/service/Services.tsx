@@ -19,7 +19,7 @@ import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { settings$ } from '@/states/settings'
 import { useValue } from '@legendapp/state/react'
-import { hostHomes } from '@/lib/page'
+import { hostHomes } from '@/content/css'
 
 export const services: Record<string, [string, ReactNode]> = {
   bluesky: ['Bluesky', <IconBluesky />],
