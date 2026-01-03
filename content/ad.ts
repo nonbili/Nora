@@ -46,15 +46,6 @@ export function hideAds(mutations: MutationRecord[]) {
           el.style.visibility = 'hidden'
         }
       }
-      if (
-        el.classList?.contains('fixed-container') &&
-        el.classList?.contains('bottom') &&
-        el?.offsetHeight &&
-        el.offsetHeight < 150
-      ) {
-        // facebook open app btn
-        el.style.display = 'none'
-      }
       if (el.dataset?.trackingDurationId) {
         const text = el.querySelector('.native-text.rslh .f5')?.textContent
         for (const text of fbL10nSponsored) {
@@ -63,6 +54,14 @@ export function hideAds(mutations: MutationRecord[]) {
             el.style.display = 'none'
             break
           }
+        }
+      }
+
+      if (document.location.host == 'm.facebook.com') {
+        const target = document.querySelector('.fixed-container.bottom') as HTMLElement
+        // facebook open app btn
+        if (target?.textContent == 'Open app') {
+          target.style.display = 'none'
         }
       }
 
