@@ -22,6 +22,8 @@ import NoraViewModule from '@/modules/nora-view'
 import { share } from '@/lib/share'
 import { isDownloadable } from '@/content/download'
 import { t } from 'i18next'
+import { bookmarks$ } from '@/states/bookmarks'
+import { showToast } from '@/lib/toast'
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -36,9 +38,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
     canDownload = false
 
   if (currentTab?.url) {
-    const { hostname, pathname } = new URL(currentTab.url)
-    const slugs = pathname.split('/')
-    canDownload = isDownloadable(currentTab.url)
+    try {
+      const { hostname, pathname } = new URL(currentTab.url)
+      const slugs = pathname.split('/')
+      canDownload = isDownloadable(currentTab.url)
+    } catch (e) {}
   }
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -55,6 +59,17 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const scrollToTop = () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`)
 
+  const addBookmark = () => {
+    if (currentTab) {
+      bookmarks$.addBookmark({
+        url: currentTab.url,
+        title: currentTab.title || '',
+        icon: currentTab.icon || '',
+      })
+      showToast(t('toast.pinned'))
+    }
+  }
+
   const Root = isWeb ? View : Animated.View
 
   return (
@@ -65,7 +80,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
       onLayout={onLayout}
     >
       <View className="flex-row lg:flex-col items-center gap-1">
-        <MaterialButton name="add" onPress={() => ui$.navModalOpen.set(true)} />
+        {/* <MaterialButton name="add" onPress={() => ui$.navModalOpen.set(true)} /> */}
         {nIf(
           !isWeb && settings.showBackButtonInHeader,
           <MaterialButton name="arrow-back" onPress={() => webview?.goBack()} />,
@@ -102,6 +117,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       tabs$.tabs[activeTabIndex].desktopMode.toggle()
                       webview?.executeJavaScript('document.location.reload()')
                     },
+                  },
+                  {
+                    label: t('menus.pin'),
+                    handler: addBookmark,
                   },
                   {
                     label: t('menus.share'),

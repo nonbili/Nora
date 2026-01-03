@@ -40,9 +40,9 @@ export const TabModal = () => {
                   index == activeTabIndex ? 'bg-indigo-200' : 'bg-white',
                 )}
               >
-                <ServiceIcon url={tab.url} />
-                <Text className="" numberOfLines={2}>
-                  {tab.url}
+                <ServiceIcon url={tab.url} icon={tab.icon} />
+                <Text className="text-sm" numberOfLines={1}>
+                  {tab.title || tab.url || t('tabs.new')}
                 </Text>
               </View>
             </TouchableHighlight>
@@ -53,7 +53,12 @@ export const TabModal = () => {
           </View>
         ))}
         <View className="flex-row items-center justify-between mt-8 pr-4">
-          <NouButton variant="soft" onPress={openNavModal}>
+          <NouButton
+            onPress={() => {
+              tabs$.openTab('')
+              ui$.tabModalOpen.set(false)
+            }}
+          >
             <MaterialIcons name="add" size={20} />
           </NouButton>
           {nIf(
@@ -62,8 +67,8 @@ export const TabModal = () => {
               variant="outline"
               size="1"
               onPress={() => {
-                tabs$.tabs.set([])
-                openNavModal()
+                tabs$.closeAll()
+                ui$.tabModalOpen.set(false)
               }}
             >
               {t('buttons.closeAll')}

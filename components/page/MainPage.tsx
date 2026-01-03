@@ -11,6 +11,7 @@ import { isWeb, nIf } from '@/lib/utils'
 import { TabModal } from '../modal/TabModal'
 import { BookmarkModal } from '../modal/BookmarkModal'
 import { DownloadVideoModal } from '../modal/DownloadVideoModal'
+import { UrlModal } from '../modal/UrlModal'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { useLocales } from 'expo-localization'
 import { useTranslation } from 'react-i18next'
@@ -30,6 +31,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
       <SettingsModal />
       <BookmarkModal />
       <CookieModal />
+      <UrlModal />
       {nIf(
         !isWeb,
         <>

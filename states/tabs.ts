@@ -6,6 +6,8 @@ import { genId } from '@/lib/utils'
 export interface Tab {
   id: string
   url: string
+  title?: string
+  icon?: string
   desktopMode?: boolean
 }
 
@@ -19,7 +21,8 @@ interface Store {
 
   openTab: (url: string) => void
   closeTab: (index: number) => void
-  setTab: (index: number, url: string) => void
+  closeAll: () => void
+  updateTabUrl: (url: string, index?: number) => void
 }
 
 export const tabs$ = observable<Store>({
@@ -37,13 +40,21 @@ export const tabs$ = observable<Store>({
   },
 
   closeTab: (index) => {
-    if (index == tabs$.tabs.length - 1) {
-      tabs$.activeTabIndex.set(index - 1)
+    const activeIndex = tabs$.activeTabIndex.get()
+    if (activeIndex >= index) {
+      tabs$.activeTabIndex.set(activeIndex - 1)
     }
     tabs$.tabs.splice(index, 1)
   },
 
-  setTab: (index, url) => {
+  closeAll: () => {
+    tabs$.assign({ tabs: [{ id: genId(), url: '' }], activeTabIndex: 0 })
+  },
+
+  updateTabUrl: (url, index) => {
+    if (index == undefined) {
+      index = tabs$.activeTabIndex.get()
+    }
     tabs$.tabs[index].url.set(url)
   },
 })

@@ -4,12 +4,14 @@
     "code": "Source code",
     "donate": "Donate"
   },
-  "buttons": {
-    "closeAll": "Close All"
-  },
   "bookmarks": {
-    "label": "Bookmarks",
-    "addButton": "Add bookmark"
+    "label": "Bookmarks"
+  },
+  "buttons": {
+    "cancel": "Cancel",
+    "closeAll": "Close All",
+    "openUrl": "Open URL",
+    "open": "Open"
   },
   "menus": {
     "close": "Close",
@@ -17,6 +19,7 @@
     "desktop": "Desktop site",
     "desktopOn": "On",
     "desktopOff": "Off",
+    "pin": "Pin to new tab page",
     "reload": "Reload",
     "scroll": "Scroll to top",
     "share": "Share"
@@ -40,5 +43,11 @@
       "hint": "Restart manually if change not reflected in webview."
     },
     "injectCookie": "Inject cookie"
+  },
+  "tabs": {
+    "new": "New tab"
+  },
+  "toast": {
+    "pinned": "Pinned to new tab page"
   }
 }

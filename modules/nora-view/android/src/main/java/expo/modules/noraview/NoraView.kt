@@ -97,12 +97,12 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
     // setWebContentsDebuggingEnabled(true)
   }
 
-  suspend fun eval(script: String): String = suspendCancellableCoroutine { cont ->
+  suspend fun eval(script: String): String? = suspendCancellableCoroutine { cont ->
     evaluateJavascript(script) { result ->
-      if (result != null) {
-        cont.resume(result.removeSurrounding("\""), null)
+      if (result == "null") {
+        cont.resume(null, null)
       } else {
-        cont.resumeWithException(Exception("evaluateJavascript failed"))
+        cont.resume(result, null)
       }
     }
   }
@@ -223,6 +223,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         }
 
       webChromeClient = object : WebChromeClient() {
+        override fun onReceivedIcon(view: WebView, icon: Bitmap) {
+          emit("icon", "")
+        }
+
         override fun onReceivedTitle(view: WebView, title: String) {
           onLoad(
             mapOf(
