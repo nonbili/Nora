@@ -45,6 +45,7 @@ const styles: Record<string, string> = {
   `,
 
   reddit: css`
+    #xpromo-small-header,
     shreddit-ad-post,
     shreddit-comments-page-ad {
       display: none !important;
@@ -101,7 +102,5 @@ export function injectCSS() {
   const content = styles.base + (styles[key] || '')
   style.type = 'text/css'
   style.textContent = content
-  // style.id = '_nora_css_'
   document.head.appendChild(style)
-  console.log('- injectCSS')
 }
