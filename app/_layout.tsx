@@ -6,6 +6,7 @@ import { useObserveEffect } from '@legendapp/state/react'
 import { Slot } from 'expo-router'
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { settings$ } from '@/states/settings'
+import { Suspense } from 'react'
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import enText from '@/locales/en.json'
@@ -36,7 +37,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <View className="bg-zinc-800" style={{ height: insets.top, zIndex: 10 }} />
-      <Slot />
+      <Suspense fallback={null}>
+        <Slot />
+      </Suspense>
       <View className="bg-zinc-800" style={{ height: insets.bottom }} />
     </SafeAreaProvider>
   )
