@@ -19,7 +19,7 @@ export function removeTrackingParams(v: string) {
     trackingParams.forEach((x) => url.searchParams.delete(x))
     return url.href
   } catch (e) {
-    return ''
+    return v
   }
 }
 

@@ -14,6 +14,7 @@ export function parseJson(v: string | null, fallback: any) {
   try {
     return JSON.parse(v)
   } catch (e) {
+    console.warn(e, v)
     return fallback
   }
 }

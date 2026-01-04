@@ -20,9 +20,14 @@ export function getHomeUrl(home: string) {
   return homeUrls[home] || homeUrls.x
 }
 
-export function openSharedUrl(url: string) {
+export function openSharedUrl(url: string, replace = false) {
   try {
-    tabs$.openTab(removeTrackingParams(url.replace('nora://', 'https://')))
+    const newUrl = removeTrackingParams(url.replace('nora://', 'https://'))
+    if (replace) {
+      tabs$.updateTabUrl(newUrl)
+    } else {
+      tabs$.openTab(newUrl)
+    }
   } catch (e) {
     console.error(e)
   }

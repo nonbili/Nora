@@ -96,11 +96,11 @@ export const SettingsModalTabSettings = () => {
           />
         </View>
       ))}
-      <View className="flex-row justify-center mt-8">
-        <NouButton variant="outline" onPress={() => ui$.bookmarkModalOpen.set(true)}>
-          {t('bookmarks.addButton')}
-        </NouButton>
-      </View>
+      {/* <View className="flex-row justify-center mt-8">
+          <NouButton variant="outline" onPress={() => ui$.urlModalOpen.set(true)}>
+          {t('buttons.openUrl')}
+          </NouButton>
+          </View> */}
     </>
   )
 }

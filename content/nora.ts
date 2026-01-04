@@ -2,6 +2,11 @@ import { emit, log, waitUntil } from './utils'
 import { delay, retry } from 'es-toolkit'
 import { isDownloadable } from './download'
 
+function getMeta(url: string) {
+  const icon = document.querySelector('link[rel*=icon]')?.getAttribute('href') || 'favicon.ico'
+  return { title: document.title, icon: new URL(icon, document.location.href).href }
+}
+
 async function blobToBase64(blob: Blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -66,6 +71,7 @@ async function getVideoUrl() {
 
 export function initNora() {
   return {
+    getMeta,
     downloadBlob,
     getVideoUrl,
   }

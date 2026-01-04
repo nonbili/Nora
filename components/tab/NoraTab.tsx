@@ -18,6 +18,7 @@ import { debounce } from 'es-toolkit'
 import { showToast } from '@/lib/toast'
 import { getUserAgent } from '@/lib/webview'
 import { useContentJs } from '@/lib/hooks/useContentJs'
+import { parseJson } from '@/content/utils'
 
 const userAgent = getUserAgent()
 
@@ -75,7 +76,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   const setPageUrl = useCallback(
     (url: string) => {
       pageUrlRef.current = url
-      tabs$.setTab(index, url)
+      tabs$.updateTabUrl(url, index)
     },
     [index],
   )
@@ -133,6 +134,10 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
       case '[content]':
       case '[kotlin]':
         console.log(type, data)
+        break
+      case 'icon':
+        const meta = parseJson(await webview?.executeJavaScript('window.Nora.getMeta()'), {})
+        tabs$.tabs[index].assign({ ...meta })
         break
       case 'new-tab':
         tabs$.openTab(forceHttps(data.url))

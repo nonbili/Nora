@@ -58,7 +58,10 @@ export const ServiceManager = () => {
   )
 }
 
-export const ServiceIcon: React.FC<{ url: string }> = ({ url }) => {
+export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, icon }) => {
+  if (icon) {
+    return <Image source={icon} style={{ height: 24, width: 24 }} />
+  }
   let home: any
   try {
     const { host } = new URL(url)
