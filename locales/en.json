@@ -33,8 +33,10 @@
       "top": "Top",
       "bottom": "Bottom"
     },
+    "showNewTabButton": "Show new tab button",
     "showBackButton": "Show back button",
     "showScrollButton": "Show scroll to top button",
+    "oneHandMode": "One hand mode",
     "theme": {
       "label": "Theme",
       "system": "System",

@@ -19,6 +19,7 @@ const cls = clsx('flex-row items-center gap-2 rounded-full bg-sky-50 w-40 py-2 p
 export const NavModalContent = () => {
   const disabledServices = useValue(settings$.disabledServicesArr)
   const bookmarks = useValue(bookmarks$.bookmarks)
+  const oneHandMode = useValue(settings$.oneHandMode)
 
   const onPress = (url: string) => {
     tabs$.updateTabUrl(url)
@@ -26,7 +27,10 @@ export const NavModalContent = () => {
   }
 
   return (
-    <ScrollView className="p-4 bg-gray-950" contentContainerClassName="min-h-full justify-center">
+    <ScrollView
+      className="p-4 bg-gray-950"
+      contentContainerClassName={clsx('pb-6 min-h-full', oneHandMode ? 'pt-[40vh] justify-end' : 'justify-center')}
+    >
       <View className="flex-row flex-wrap justify-center gap-x-6 gap-y-7">
         {Object.entries(services).map(([value, [label, icon]]) =>
           nIf(

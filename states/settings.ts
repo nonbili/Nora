@@ -8,8 +8,10 @@ interface Store {
   theme: null | 'dark' | 'light'
   openExternalLinkInSystemBrowser: boolean
 
+  showNewTabButtonInHeader: boolean
   showBackButtonInHeader: boolean
   showScrollButtonInHeader: boolean
+  oneHandMode: boolean
 
   disabledServices: Set<string>
   disabledServicesArr: string[]
@@ -22,8 +24,10 @@ export const settings$ = observable<Store>({
   theme: null,
   openExternalLinkInSystemBrowser: false,
 
+  showNewTabButtonInHeader: false,
   showBackButtonInHeader: false,
   showScrollButtonInHeader: false,
+  oneHandMode: false,
 
   disabledServices: new Set(),
   disabledServicesArr: [],

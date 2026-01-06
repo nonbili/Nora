@@ -12,10 +12,13 @@ import { NouButton } from '../button/NouButton'
 import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { t } from 'i18next'
+import { NouSwitch } from '../switch/NouSwitch'
+import { NouText } from '../NouText'
 
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
   const disabledServices = useValue(settings$.disabledServicesArr)
+  const oneHandMode = useValue(settings$.oneHandMode)
   const { tabs, activeTabIndex } = useValue(tabs$)
 
   const onPress = (index: number) => {
@@ -29,7 +32,21 @@ export const TabModal = () => {
 
   return (
     <BaseModal className={tabModalOpen ? 'block' : 'hidden'} onClose={() => ui$.tabModalOpen.set(false)}>
-      <ScrollView className="my-8 pl-4">
+      {nIf(
+        !isWeb,
+        <View>
+          <NouSwitch
+            className="pl-4 pr-2"
+            label={<NouText className="font-medium">{t('settings.oneHandMode')}</NouText>}
+            value={oneHandMode}
+            onPress={() => settings$.oneHandMode.toggle()}
+          />
+        </View>,
+      )}
+      <ScrollView
+        className="my-4 pl-4 min-h-full"
+        contentContainerClassName={clsx('min-h-full pb-4', oneHandMode && 'justify-end pt-[35vh]')}
+      >
         {tabs.map((tab, index) => (
           <View className="flex-row items-center justify-between" key={tab.id}>
             <TouchableHighlight className="w-[80%]" onPress={() => onPress(index)}>

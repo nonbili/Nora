@@ -93,7 +93,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
       onLayout={onLayout}
     >
       <View className="flex-row lg:flex-col items-center gap-1">
-        {/* <MaterialButton name="add" onPress={() => ui$.navModalOpen.set(true)} /> */}
+        {nIf(
+          !isWeb && settings.showNewTabButtonInHeader,
+          <MaterialButton name="add" onPress={() => tabs$.openTab('')} />,
+        )}
         {nIf(
           !isWeb && settings.showBackButtonInHeader,
           <MaterialButton name="arrow-back" onPress={() => webview?.goBack()} />,
@@ -104,7 +107,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         {nIf(canDownload, <MaterialButton name="download" onPress={() => ui$.downloadVideoModalOpen.set(true)} />)}
         {nIf(
           !isWeb,
-          <TouchableOpacity className="flex-row items-center px-3" onPress={() => ui$.tabModalOpen.set(true)}>
+          <TouchableOpacity className="flex-row items-center p-3" onPress={() => ui$.tabModalOpen.set(true)}>
             <View className="rounded-md px-2 py-1 border border-white">
               <NouText className="text-xs">{tabs.length}</NouText>
             </View>

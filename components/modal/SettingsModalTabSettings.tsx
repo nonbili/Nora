@@ -49,6 +49,12 @@ export const SettingsModalTabSettings = () => {
           </View>
           <NouSwitch
             className="mb-6"
+            label={<NouText className="font-medium">{t('settings.showNewTabButton')}</NouText>}
+            value={settings.showNewTabButtonInHeader}
+            onPress={() => settings$.showNewTabButtonInHeader.toggle()}
+          />
+          <NouSwitch
+            className="mb-6"
             label={<NouText className="font-medium">{t('settings.showBackButton')}</NouText>}
             value={settings.showBackButtonInHeader}
             onPress={() => settings$.showBackButtonInHeader.toggle()}
