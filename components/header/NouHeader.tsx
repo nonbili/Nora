@@ -24,6 +24,19 @@ import { isDownloadable } from '@/content/download'
 import { t } from 'i18next'
 import { bookmarks$ } from '@/states/bookmarks'
 import { showToast } from '@/lib/toast'
+import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handler'
+
+function prevTab() {
+  const activeIndex = tabs$.activeTabIndex.get()
+  const newIndex = activeIndex > 0 ? activeIndex - 1 : tabs$.tabs.length - 1
+  tabs$.activeTabIndex.set(newIndex)
+}
+
+function nextTab() {
+  const activeIndex = tabs$.activeTabIndex.get()
+  const newIndex = activeIndex < tabs$.tabs.length - 1 ? activeIndex + 1 : 0
+  tabs$.activeTabIndex.set(newIndex)
+}
 
 export const NouHeader: React.FC<{}> = ({}) => {
   const uiState = useValue(ui$)
@@ -72,7 +85,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const Root = isWeb ? View : Animated.View
 
-  return (
+  const ret = (
     <Root
       className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
       /* @ts-expect-error */
@@ -133,4 +146,42 @@ export const NouHeader: React.FC<{}> = ({}) => {
       </View>
     </Root>
   )
+
+  if (isWeb) {
+    return ret
+  }
+
+  const flingStart = useSharedValue(0)
+  const panStart = useSharedValue(0)
+  const flingGesture = Gesture.Fling()
+    .runOnJS(true)
+    .direction(Directions.RIGHT | Directions.LEFT)
+    .onBegin((e) => {
+      flingStart.value = e.absoluteX
+    })
+    .onEnd((e) => {
+      if (e.absoluteX > flingStart.value) {
+        prevTab()
+      } else {
+        nextTab()
+      }
+    })
+  const panGesture = Gesture.Pan()
+    .runOnJS(true)
+    .onBegin((e) => {
+      panStart.value = e.absoluteX
+    })
+    .onEnd((e) => {
+      if (Math.abs(e.absoluteX - panStart.value) < 50) {
+        return
+      }
+      if (e.absoluteX > panStart.value) {
+        prevTab()
+      } else {
+        nextTab()
+      }
+    })
+
+  const composed = Gesture.Race(flingGesture, panGesture)
+  return <GestureDetector gesture={composed}>{ret}</GestureDetector>
 }

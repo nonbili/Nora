@@ -9,6 +9,7 @@ import { settings$ } from '@/states/settings'
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import enText from '@/locales/en.json'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 /* import jaText from '@/locales/ja.json' */
 
 i18n.use(initReactI18next).init({
@@ -36,7 +37,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <View className="bg-zinc-800" style={{ height: insets.top, zIndex: 10 }} />
-      <Slot />
+      <GestureHandlerRootView>
+        <Slot />
+      </GestureHandlerRootView>
       <View className="bg-zinc-800" style={{ height: insets.bottom }} />
     </SafeAreaProvider>
   )
