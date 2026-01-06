@@ -12,7 +12,7 @@ import { tabs$ } from '@/states/tabs'
 import { NoraTab } from '../tab/NoraTab'
 import { NouButton } from '../button/NouButton'
 import { NavModalContent } from '../modal/NavModal'
-import { NoraTabContainer } from '../tab/NoraTabContainer'
+import { SortableNoraTabs } from '../tab/SortableNoraTabs'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
@@ -27,20 +27,16 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
       className={clsx('flex-1 h-full lg:flex-row overflow-hidden', headerPosition == 'bottom' && 'flex-col-reverse')}
     >
       <NouHeader />
-      {isWeb ? (
-        <NoraTabContainer tabs={tabs} />
+      {isWeb && tabs.length ? (
+        <SortableNoraTabs tabs={tabs} />
       ) : tabs.length ? (
         <View className="flex-1">
-          {tabs.map((tab, index) =>
-            tab.url ? (
-              <NoraTab tab={tab} index={index} key={tab.id} />
-            ) : (
-              nIf(index == activeTabIndex, <NavModalContent key={tab.id} />)
-            ),
-          )}
+          {tabs.map((tab, index) => (
+            <NoraTab tab={tab} index={index} key={tab.id} />
+          ))}
         </View>
       ) : (
-        <View className="flex-1 bg-gray-950">
+        <View className="flex-1 bg-gray-950 lg:px-20">
           <NavModalContent />
         </View>
       )}

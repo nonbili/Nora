@@ -94,7 +94,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     >
       <View className="flex-row lg:flex-col items-center gap-1">
         {nIf(
-          !isWeb && settings.showNewTabButtonInHeader,
+          isWeb || settings.showNewTabButtonInHeader,
           <MaterialButton name="add" onPress={() => tabs$.openTab('')} />,
         )}
         {nIf(

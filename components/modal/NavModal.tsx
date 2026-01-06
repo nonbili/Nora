@@ -16,13 +16,13 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 const cls = clsx('flex-row items-center gap-2 rounded-full bg-sky-50 w-40 py-2 px-3')
 
-export const NavModalContent = () => {
+export const NavModalContent: React.FC<{ index?: number }> = ({ index = 0 }) => {
   const disabledServices = useValue(settings$.disabledServicesArr)
   const bookmarks = useValue(bookmarks$.bookmarks)
   const oneHandMode = useValue(settings$.oneHandMode)
 
   const onPress = (url: string) => {
-    tabs$.updateTabUrl(url)
+    tabs$.updateTabUrl(url, index)
     ui$.assign({ navModalOpen: false })
   }
 
@@ -56,7 +56,7 @@ export const NavModalContent = () => {
           </TouchableHighlight>
         ))}
         <TouchableHighlight onPress={() => ui$.urlModalOpen.set(true)}>
-          <View className={clsx(cls, 'bg-transparent border border-indigo-200 justify-center')}>
+          <View className={clsx(cls, 'h-full bg-transparent border border-indigo-200 justify-center')}>
             <Text className="text-white">{t('buttons.openUrl')}</Text>
           </View>
         </TouchableHighlight>

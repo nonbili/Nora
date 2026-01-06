@@ -19,6 +19,7 @@ import { showToast } from '@/lib/toast'
 import { getUserAgent } from '@/lib/webview'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { parseJson } from '@/content/utils'
+import { NavModalContent } from '../modal/NavModal'
 
 const userAgent = getUserAgent()
 
@@ -136,8 +137,10 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         console.log(type, data)
         break
       case 'icon':
-        const meta = parseJson(await webview?.executeJavaScript('window.Nora.getMeta()'), {})
-        tabs$.tabs[index].assign({ ...meta })
+        const meta = parseJson(await webview?.executeJavaScript('window.Nora?.getMeta()'), {})
+        if (meta.title || meta.icon) {
+          tabs$.tabs[index].assign({ ...meta })
+        }
         break
       case 'new-tab':
         tabs$.openTab(forceHttps(data.url))
@@ -173,18 +176,25 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
             ]}
           />
         </View>
-        <NoraView
-          className="h-full"
-          ref={webviewRef}
-          partition="persist:webview"
-          useragent={userAgent}
-          allowpopups="true"
-          key={tab.id}
-        />
+        {tab.url ? (
+          <NoraView
+            className="h-full"
+            ref={webviewRef}
+            partition="persist:webview"
+            useragent={userAgent}
+            allowpopups="true"
+            key={tab.id}
+          />
+        ) : (
+          <NavModalContent index={index} />
+        )}
       </View>
     )
   }
 
+  if (!tab.url) {
+    return <NavModalContent index={index} />
+  }
   return (
     <NoraView
       ref={nativeRef}

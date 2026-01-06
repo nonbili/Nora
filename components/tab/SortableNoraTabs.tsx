@@ -32,10 +32,6 @@ const SortableItem: React.FC<{
     id: tab.id,
   })
 
-  let overOrder, activeOrder
-  if (isOver && active && over) {
-  }
-
   const style = {
     /* transform: CSS.Transform.toString(transform), */
     /* transition, */
@@ -65,7 +61,7 @@ const SortableItem: React.FC<{
   )
 }
 
-export const NoraTabContainer: React.FC<{ tabs: Tab[] }> = ({ tabs }) => {
+export const SortableNoraTabs: React.FC<{ tabs: Tab[] }> = ({ tabs }) => {
   const orders = useValue(tabs$.orders)
 
   useEffect(() => {

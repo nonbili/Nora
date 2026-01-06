@@ -32,11 +32,11 @@ export const SettingsModal = () => {
 
   return (
     <BaseModal onClose={() => ui$.settingsModalOpen.set(false)}>
-      <View className="py-6 px-4">
+      <View className="pt-6 h-full">
         <View className="items-center">
           <Segemented options={tabs} selectedIndex={tabIndex} onChange={setTabIndex} />
         </View>
-        <ScrollView className="mt-4">
+        <ScrollView className="mt-4 px-4">
           {nIf(tabIndex == 0, <SettingsModalTabSettings />)}
           {nIf(
             tabIndex == 1,
@@ -61,7 +61,7 @@ export const SettingsModal = () => {
               </View>
             </>,
           )}
-          <View className="h-20" />
+          <View className="h-10" />
         </ScrollView>
       </View>
     </BaseModal>

@@ -1,3 +1,4 @@
+import '@/lib/i18n'
 import './global.css'
 
 import { StatusBar } from 'expo-status-bar'
@@ -6,25 +7,7 @@ import { useObserveEffect } from '@legendapp/state/react'
 import { Slot } from 'expo-router'
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { settings$ } from '@/states/settings'
-import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
-import enText from '@/locales/en.json'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-/* import jaText from '@/locales/ja.json' */
-
-i18n.use(initReactI18next).init({
-  /* debug: true, */
-  fallbackLng: 'en',
-  supportedLngs: ['en'],
-  resources: {
-    en: {
-      translation: enText,
-    },
-    /* ja: {
-     *   translation: jaText,
-     * }, */
-  },
-})
 
 export default function RootLayout() {
   useObserveEffect(settings$.theme, ({ value }) => {

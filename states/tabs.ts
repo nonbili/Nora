@@ -52,6 +52,9 @@ export const tabs$ = observable<Store>({
   },
 
   updateTabUrl: (url, index) => {
+    if (!tabs$.tabs.length) {
+      return tabs$.openTab(url)
+    }
     if (index == undefined) {
       index = tabs$.activeTabIndex.get()
     }
