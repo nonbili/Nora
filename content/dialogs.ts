@@ -1,7 +1,7 @@
 let handled = false
 
 export function handleDialogs() {
-  if (handled) {
+  if (handled || document.location.host != 'www.reddit.com') {
     return
   }
   const target = document.querySelector('#xpromo-bottom-sheet')

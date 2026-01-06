@@ -3,7 +3,12 @@ import { linkedinL10nPromoted } from './services/linkedin'
 import { getService } from './services/manager'
 import { emit } from './utils'
 
+const { host } = document.location
+
 export function blockAds() {
+  if (!['www.instagram.com', 'www.reddit.com', 'x.com'].includes(host)) {
+    return
+  }
   function interceptResponse(url: string, response: string) {
     try {
       const service = getService(url)
@@ -40,32 +45,42 @@ export function hideAds(mutations: MutationRecord[]) {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes.values()) {
       const el = node as HTMLElement
-      if (el.nodeName == 'ARTICLE') {
-        if (el.querySelector('.x1fhwpqd.x132q4wb.x5n08af')) {
-          // instagram server rendered ads
-          el.style.visibility = 'hidden'
-        }
-      }
-      if (el.dataset?.trackingDurationId) {
-        const text = el.querySelector('.native-text.rslh .f5')?.textContent
-        for (const text of fbL10nSponsored) {
-          if (el.textContent?.includes(text)) {
-            // facebook server rendered ads
-            el.style.display = 'none'
-            break
+      switch (host) {
+        case 'm.facebook.com': {
+          if (el.dataset?.trackingDurationId) {
+            const text = el.querySelector('.native-text.rslh .f5')?.textContent
+            for (const text of fbL10nSponsored) {
+              if (el.textContent?.includes(text)) {
+                // facebook server rendered ads
+                el.style.display = 'none'
+                break
+              }
+            }
           }
+          break
+        }
+        case 'www.instagram.com': {
+          if (el.nodeName == 'ARTICLE') {
+            if (el.querySelector('.x1fhwpqd.x132q4wb.x5n08af')) {
+              // instagram server rendered ads
+              el.style.visibility = 'hidden'
+            }
+          }
+          break
         }
       }
+    }
 
-      if (document.location.host == 'm.facebook.com') {
+    switch (host) {
+      case 'm.facebook.com': {
         const target = document.querySelector('.fixed-container.bottom') as HTMLElement
         // facebook open app btn
         if (target?.textContent == 'Open app') {
           target.style.display = 'none'
         }
+        break
       }
-
-      if (document.location.host == 'www.linkedin.com') {
+      case 'www.linkedin.com': {
         const items = document.querySelectorAll('.feed-item')
         for (const item of items) {
           const label = (item.querySelector('span.text-color-text-low-emphasis') as HTMLElement)?.innerText
@@ -73,6 +88,7 @@ export function hideAds(mutations: MutationRecord[]) {
             ;(item as HTMLElement).style.display = 'none'
           }
         }
+        break
       }
     }
   }
