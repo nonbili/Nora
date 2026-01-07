@@ -1,24 +1,25 @@
-# Nora
+# Nora: SNS browser
 
-Facebook, Instagram, Reddit, Threads and X in a single app. No ads.
+Android and Desktop browser optimized for social network services.
 
-[<img src="https://f-droid.org/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/jp.nonbili.nora/)
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"
+Install from F-Droid, Google Play, or download APK from GitHub.
+
+[<img src="https://img.shields.io/badge/F--Droid-1976D2?style=for-the-badge&logo=f-droid"
+      alt="Get it on F-Droid"
+      height="50">](https://f-droid.org/packages/jp.nonbili.nora/)
+[<img src="https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play"
       alt="Get it on Google Play"
-      height="80">](https://play.google.com/store/apps/details?id=jp.nonbili.nora)
+      hspace="16"
+      height="50">](https://play.google.com/store/apps/details?id=jp.nonbili.nora)
+[<img src="https://img.shields.io/badge/GitHub%20Releases-100000?style=for-the-badge&logo=github"
+      alt="Get it on GitHub"
+      height="50">](https://github.com/nonbili/Nora/releases/latest)
 
-Or download the latest APK from the [Releases Section](https://github.com/nonbili/Nora/releases/latest).
-
-## Desktop version
-
-Desktop version features a deck view to easily browse multiple timelines.
-Desktop version shares the same code base with mobile version.
-Download Linux/macOS/Windows version from [Nora-Desktop](https://github.com/nonbili/Nora-Desktop/releases).
+[Nora-Desktop](https://github.com/nonbili/Nora-Desktop) features a deck view to easily browse multiple timelines. Linux, macOS, Windows versions are available.
 
 ## Features
 
+- No ads
 - Download image
 - Download fb/ig reel
 - Select text
