@@ -7,7 +7,7 @@ import { NouHeader } from '../header/NouHeader'
 import { Text, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
-import { clsx, isWeb } from '@/lib/utils'
+import { clsx, isWeb, nIf } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
@@ -193,7 +193,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   }
 
   if (!tab.url) {
-    return <NavModalContent index={index} />
+    return nIf(index == activeTabIndex, <NavModalContent index={index} />)
   }
   return (
     <NoraView

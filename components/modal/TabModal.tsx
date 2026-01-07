@@ -45,7 +45,7 @@ export const TabModal = () => {
       )}
       <ScrollView
         className="my-4 pl-4 min-h-full"
-        contentContainerClassName={clsx('min-h-full pb-4', oneHandMode && 'justify-end pt-[35vh]')}
+        contentContainerClassName={clsx('min-h-full pb-8', oneHandMode && 'justify-end pt-[35vh]')}
       >
         {tabs.map((tab, index) => (
           <View className="flex-row items-center justify-between" key={tab.id}>

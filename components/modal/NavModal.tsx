@@ -29,7 +29,7 @@ export const NavModalContent: React.FC<{ index?: number }> = ({ index = 0 }) => 
   return (
     <ScrollView
       className="p-4 bg-gray-950"
-      contentContainerClassName={clsx('pb-6 min-h-full', oneHandMode ? 'pt-[40vh] justify-end' : 'justify-center')}
+      contentContainerClassName={clsx('pb-10 min-h-full', oneHandMode ? 'pt-[40vh] justify-end' : 'justify-center')}
     >
       <View className="flex-row flex-wrap justify-center gap-x-6 gap-y-7">
         {Object.entries(services).map(([value, [label, icon]]) =>
