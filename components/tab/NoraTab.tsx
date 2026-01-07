@@ -104,7 +104,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
 
   useEffect(() => {
     const webview = nativeRef.current
-    if (webview && activeTabIndex == index) {
+    if (webview && activeTabIndex == index && tab.url) {
       ui$.webview.set(ObservableHint.opaque(webview))
       ;(async () => {
         try {
@@ -192,18 +192,18 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     )
   }
 
-  if (!tab.url) {
-    return nIf(index == activeTabIndex, <NavModalContent index={index} />)
-  }
   return (
-    <NoraView
-      ref={nativeRef}
-      className={clsx(index != activeTabIndex && 'hidden')}
-      style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
-      scriptOnStart={contentJs}
-      useragent={tab.desktopMode ? getUserAgent('linux') : userAgent}
-      onLoad={onLoad}
-      onMessage={onMessage}
-    />
+    <>
+      <NoraView
+        ref={nativeRef}
+        className={clsx(!tab.url || (index != activeTabIndex && 'hidden'))}
+        style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
+        scriptOnStart={contentJs}
+        useragent={tab.desktopMode ? getUserAgent('linux') : userAgent}
+        onLoad={onLoad}
+        onMessage={onMessage}
+      />
+      {nIf(!tab.url && index == activeTabIndex, <NavModalContent index={index} />)}
+    </>
   )
 }

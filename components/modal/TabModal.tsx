@@ -45,31 +45,9 @@ export const TabModal = () => {
       )}
       <ScrollView
         className="my-4 pl-4 min-h-full"
-        contentContainerClassName={clsx('min-h-full pb-8', oneHandMode && 'justify-end pt-[35vh]')}
+        contentContainerClassName={clsx('min-h-full pb-20', oneHandMode && 'justify-end pt-[35vh]')}
       >
-        {tabs.map((tab, index) => (
-          <View className="flex-row items-center justify-between" key={tab.id}>
-            <TouchableHighlight className="w-[80%]" onPress={() => onPress(index)}>
-              <View
-                className={clsx(
-                  'flex-1 flex-row items-center gap-2 rounded-md',
-                  'py-2 px-2 my-3',
-                  index == activeTabIndex ? 'bg-indigo-200' : 'bg-white',
-                )}
-              >
-                <ServiceIcon url={tab.url} icon={tab.icon} />
-                <Text className="text-sm" numberOfLines={1}>
-                  {tab.title || tab.url || t('tabs.new')}
-                </Text>
-              </View>
-            </TouchableHighlight>
-            <NouMenu
-              trigger="filled.MoreVert"
-              items={[{ label: t('menus.close'), handler: () => tabs$.closeTab(index) }]}
-            />
-          </View>
-        ))}
-        <View className="flex-row items-center justify-between mt-8 pr-4">
+        <View className="flex-row items-center justify-between mb-4 pr-4">
           <NouButton
             onPress={() => {
               tabs$.openTab('')
@@ -92,6 +70,28 @@ export const TabModal = () => {
             </NouButton>,
           )}
         </View>
+        {tabs.map((tab, index) => (
+          <View className="flex-row items-center justify-between" key={tab.id}>
+            <TouchableHighlight className="w-[80%]" onPress={() => onPress(index)}>
+              <View
+                className={clsx(
+                  'flex-1 flex-row items-center gap-2 rounded-md',
+                  'py-2 px-2 my-3',
+                  index == activeTabIndex ? 'bg-indigo-200' : 'bg-white',
+                )}
+              >
+                <ServiceIcon url={tab.url} icon={tab.icon} />
+                <Text className="text-sm" numberOfLines={1}>
+                  {tab.title || tab.url || t('tabs.new')}
+                </Text>
+              </View>
+            </TouchableHighlight>
+            <NouMenu
+              trigger="filled.MoreVert"
+              items={[{ label: t('menus.close'), handler: () => tabs$.closeTab(index) }]}
+            />
+          </View>
+        ))}
       </ScrollView>
     </BaseModal>
   )

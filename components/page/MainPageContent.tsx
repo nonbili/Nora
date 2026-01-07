@@ -2,7 +2,7 @@ import { NoraView } from '@/modules/nora-view'
 import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { migrateDisabledServices, settings$ } from '@/states/settings'
+import { settings$ } from '@/states/settings'
 import { NouHeader } from '../header/NouHeader'
 import { ScrollView, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
@@ -17,10 +17,6 @@ import { SortableNoraTabs } from '../tab/SortableNoraTabs'
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
   const { tabs, activeTabIndex } = useValue(tabs$)
-
-  useEffect(() => {
-    migrateDisabledServices()
-  }, [])
 
   return (
     <View

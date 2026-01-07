@@ -24,7 +24,7 @@ import { isDownloadable } from '@/content/download'
 import { t } from 'i18next'
 import { bookmarks$ } from '@/states/bookmarks'
 import { showToast } from '@/lib/toast'
-import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { Directions, Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 
 function prevTab() {
   const activeIndex = tabs$.activeTabIndex.get()
@@ -186,5 +186,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
     })
 
   const composed = Gesture.Race(flingGesture, panGesture)
-  return <GestureDetector gesture={composed}>{ret}</GestureDetector>
+  return (
+    <GestureHandlerRootView style={{ minHeight: 0 }}>
+      <GestureDetector gesture={composed}>{ret}</GestureDetector>
+    </GestureHandlerRootView>
+  )
 }

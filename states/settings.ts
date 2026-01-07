@@ -13,7 +13,6 @@ interface Store {
   showScrollButtonInHeader: boolean
   oneHandMode: boolean
 
-  disabledServices: Set<string>
   disabledServicesArr: string[]
   toggleService: (service: string) => void
 }
@@ -29,7 +28,6 @@ export const settings$ = observable<Store>({
   showScrollButtonInHeader: false,
   oneHandMode: false,
 
-  disabledServices: new Set(),
   disabledServicesArr: [],
   toggleService: (service) => {
     const index = settings$.disabledServicesArr.indexOf(service)
@@ -47,12 +45,3 @@ syncObservable(settings$, {
     plugin: ObservablePersistMMKV,
   },
 })
-
-export async function migrateDisabledServices() {
-  await when(syncState(settings$).isPersistLoaded)
-
-  if (settings$.disabledServices.size) {
-    settings$.disabledServicesArr.set([...settings$.disabledServices.get()])
-    settings$.disabledServices.clear()
-  }
-}
