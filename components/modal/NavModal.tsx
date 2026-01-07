@@ -56,8 +56,8 @@ export const NavModalContent: React.FC<{ index?: number }> = ({ index = 0 }) => 
           </TouchableHighlight>
         ))}
         <TouchableHighlight onPress={() => ui$.urlModalOpen.set(true)}>
-          <View className={clsx(cls, 'h-full bg-transparent border border-indigo-200 justify-center')}>
-            <Text className="text-white">{t('buttons.openUrl')}</Text>
+          <View className={clsx(cls, 'bg-transparent border border-indigo-200 justify-center')}>
+            <Text className="text-white h-6">{t('buttons.openUrl')}</Text>
           </View>
         </TouchableHighlight>
       </View>

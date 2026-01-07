@@ -1,0 +1,2 @@
+- swipe left/right on toolbar to change tab
+- support aligning tabs to the bottom to improve one hand use

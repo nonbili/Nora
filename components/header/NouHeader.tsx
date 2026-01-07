@@ -135,7 +135,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     },
                   },
                   {
-                    label: t('menus.pin'),
+                    label: t('menus.addBookmark'),
                     handler: addBookmark,
                   },
                   {
