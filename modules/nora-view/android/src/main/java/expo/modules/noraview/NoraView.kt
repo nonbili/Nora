@@ -146,9 +146,21 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     val url = result.getExtra()
     val activity = currentActivity
 
+    if (url == null || activity == null) {
+      return
+    }
+
+    val onCopyLink = object : MenuItem.OnMenuItemClickListener {
+      override fun onMenuItemClick(item: MenuItem): Boolean {
+        val clipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText("image", url)
+        clipboardManager.setPrimaryClip(clipData)
+        return true
+      }
+    }
+
     if (
-      result.getType() in arrayOf(WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) &&
-      url != null && activity != null
+      result.getType() in arrayOf(WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE)
     ) {
       val onDownload = object : MenuItem.OnMenuItemClickListener {
         override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -156,17 +168,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           return true
         }
       }
-      val onCopyLink = object : MenuItem.OnMenuItemClickListener {
-        override fun onMenuItemClick(item: MenuItem): Boolean {
-          val clipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-          val clipData = ClipData.newPlainText("image", url)
-          clipboardManager.setPrimaryClip(clipData)
-          return true
-        }
-      }
 
       menu.add("Save image").setOnMenuItemClickListener(onDownload)
       menu.add("Copy image link").setOnMenuItemClickListener(onCopyLink)
+    } else if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
+      menu.add("Copy link").setOnMenuItemClickListener(onCopyLink)
     }
   }
 

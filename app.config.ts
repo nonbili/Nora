@@ -89,7 +89,11 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
           image: './assets/images/splash-icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
-          backgroundColor: '#ffffff',
+          backgroundColor: '#f9fafb',
+          dark: {
+            image: './assets/images/splash-icon.png',
+            backgroundColor: '#27272a',
+          },
         },
       ],
       'expo-asset',
