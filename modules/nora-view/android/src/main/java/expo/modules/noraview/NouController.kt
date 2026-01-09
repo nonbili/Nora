@@ -26,10 +26,19 @@ typealias LogFn = (String) -> Unit
 class NouController {
   private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
   internal var settings = NoraSettings()
+  internal var i18nStrings = mutableMapOf<String, String>()
   internal var logFn: LogFn? = null
 
   fun log(msg: String) {
     logFn?.invoke(msg)
+  }
+
+  fun t(key: String): String {
+    val value = i18nStrings[key]
+    if (value != null) {
+      return value
+    }
+    return "Missed translation: $key"
   }
 
   fun setFileChooserCallback(callback: ValueCallback<Array<Uri>>) {

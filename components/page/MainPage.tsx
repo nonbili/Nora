@@ -16,12 +16,17 @@ import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { useLocales } from 'expo-localization'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next'
+import NoraViewModule from '@/modules/nora-view'
 
 export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const locales = useLocales()
 
   useEffect(() => {
     i18n.changeLanguage(locales[0].languageCode || undefined)
+    if (!isWeb) {
+      const strings = i18n.t('native', { returnObjects: true })
+      NoraViewModule.setLocaleStrings(strings)
+    }
   }, [locales[0]])
 
   return (

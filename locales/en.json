@@ -25,6 +25,14 @@
     "scroll": "Scroll to top",
     "share": "Share"
   },
+  "native": {
+    "menu_saveImage": "Save image",
+    "menu_copyImageLink": "Copy image link",
+    "menu_copyLink": "Copy link",
+    "toast_downloadStarted": "Download started, check the system notification",
+    "toast_downloadSucceeded": "Saved to the Downloads folder",
+    "toast_downloadFailed": "Failed to download"
+  },
   "settings": {
     "label": "Settings",
     "openExternalLink": "Open external link in system browser",

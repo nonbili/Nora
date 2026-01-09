@@ -169,10 +169,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         }
       }
 
-      menu.add("Save image").setOnMenuItemClickListener(onDownload)
-      menu.add("Copy image link").setOnMenuItemClickListener(onCopyLink)
+      menu.add(nouController.t("menu_saveImage")).setOnMenuItemClickListener(onDownload)
+      menu.add(nouController.t("menu_copyImageLink")).setOnMenuItemClickListener(onCopyLink)
     } else if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
-      menu.add("Copy link").setOnMenuItemClickListener(onCopyLink)
+      menu.add(nouController.t("menu_copyLink")).setOnMenuItemClickListener(onCopyLink)
     }
   }
 
@@ -390,7 +390,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
     val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     downloadManager.enqueue(request)
-    Toast.makeText(context, "Download started, check the system notification", Toast.LENGTH_LONG).show()
+    Toast.makeText(context, nouController.t("toast_downloadStarted"), Toast.LENGTH_LONG).show()
   }
 
   fun saveFile(content: String, _fileName: String, _mimeType: String?) {
@@ -423,11 +423,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           outputStream.write(Base64.getDecoder().decode(content))
         }
       }
-      Toast.makeText(context, "Saved to the Downloads folder", Toast.LENGTH_LONG).show()
+      Toast.makeText(context, nouController.t("toast_downloadSucceeded"), Toast.LENGTH_LONG).show()
     } catch (e: Exception) {
       e.printStackTrace()
       uri?.let { resolver.delete(it, null, null) }
-      Toast.makeText(context, "Failed to download", Toast.LENGTH_LONG).show()
+      Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
     }
   }
 

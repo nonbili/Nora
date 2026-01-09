@@ -8,6 +8,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import expo.modules.kotlin.functions.Coroutine
+import expo.modules.kotlin.jni.JavaScriptObject
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.records.Field
@@ -68,6 +69,12 @@ class NoraViewModule : Module() {
 
     Function("setSettings") { settings: NoraSettings ->
       nouController.settings = settings
+    }
+
+    Function("setLocaleStrings") { v: JavaScriptObject ->
+      v.getPropertyNames().forEach {
+        nouController.i18nStrings[it] = v[it]!!.getString()
+      }
     }
 
     View(NoraView::class) {
