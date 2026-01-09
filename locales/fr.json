@@ -1,0 +1,44 @@
+{
+  "about": {
+    "label": "À propos",
+    "code": "Code source",
+    "donate": "Faire un don"
+  },
+  "buttons": {
+    "closeAll": "Tout fermer"
+  },
+  "bookmarks": {
+    "label": "Marque-pages",
+    "addButton": "Ajouter un marque-page"
+  },
+  "menus": {
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "desktop": "Version de bureau",
+    "desktopOn": "Activée",
+    "desktopOff": "Désactivée",
+    "reload": "Recharger",
+    "scroll": "Aller en-haut",
+    "share": "Partager"
+  },
+  "settings": {
+    "label": "Paramètres",
+    "openExternalLink": "Ouvrir le lien externe dans le navigateur du système",
+    "hideHeader": "Masquer l'en-tête pendant le défilement",
+    "headerPosition": {
+      "label": "Position de l'en-tête",
+      "top": "Haut",
+      "bottom": "Bas"
+    },
+    "showBackButton": "Afficher le bouton retour",
+    "showScrollButton": "Afficher le bouton aller en-haut",
+    "theme": {
+      "label": "Thème",
+      "system": "Système",
+      "dark": "Sombre",
+      "light": "Clair",
+      "hint": "Redémarrer manuellement si le changement n'est pas reflété dans webview."
+    },
+    "injectCookie": "Injecter un cookie"
+  }
+}

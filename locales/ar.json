@@ -1,0 +1,55 @@
+{
+  "about": {
+    "label": "حول",
+    "code": "مفتوح المصدر",
+    "donate": "تبرع"
+  },
+  "bookmarks": {
+    "label": "الإشارات المرجعية"
+  },
+  "buttons": {
+    "cancel": "إلغاء",
+    "closeAll": "إغلاق الكل",
+    "openUrl": "فتح رابط",
+    "open": "فتح"
+  },
+  "menus": {
+    "close": "إغلاق",
+    "delete": "حذف",
+    "desktop": "موقع سطح المكتب",
+    "desktopOn": "التشغيل",
+    "desktopOff": "إيقاف",
+    "addBookmark": "إضافة إشارة مرجعية",
+    "pin": "تثبيت بصفحة",
+    "reload": "إعادة تحميل",
+    "scroll": "الانتقال إلى الأعلى",
+    "share": "مشاركة"
+  },
+  "settings": {
+    "label": "الإعدادات",
+    "openExternalLink": "فتح الرابط الخارجي في متصفح النظام",
+    "hideHeader": "شريط الأدوات عند التمرير",
+    "headerPosition": {
+      "top": "افضل",
+      "bottom": "أسفل"
+    },
+    "showNewTabButton": "إظهار زر تبويب جديد",
+    "showBackButton": "إظهار زر الرجوع",
+    "showScrollButton": "إظهار زر التمرير إلى الأعلى",
+    "oneHandMode": "وضع الاستخدام بيد واحدة",
+    "theme": {
+      "label": "الثيم",
+      "system": "النظام",
+      "dark": "الوضع الداكن",
+      "light": "الوضع الفاتح",
+      "hint": "أعد التشغيل يدوياً إذا لم يظهر التغيير في واجهة الويب (WebView)."
+    },
+    "injectCookie": "حقن ملف تعريف الارتباط"
+  },
+  "tabs": {
+    "new": "علامة تبويب جديدة"
+  },
+  "toast": {
+    "pinned": "مثبّت في صفحة علامة التبويب"
+  }
+}
