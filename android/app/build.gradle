@@ -94,11 +94,11 @@ android {
         applicationId 'jp.nonbili.nora'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 44
-        versionName "0.5.3"
+        versionCode 45
+        versionName "0.5.4"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
-        resourceConfigurations += ["en"]
+        resourceConfigurations += ["ar", "en", "fr"]
     }
     signingConfigs {
         debug {

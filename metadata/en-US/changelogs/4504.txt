@@ -1,0 +1,3 @@
+- support downloading twitter video
+- add dark mode splash screen
+- add Arabic, French translation

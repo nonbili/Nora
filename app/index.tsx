@@ -19,7 +19,7 @@ export default function HomeScreen() {
   const navigation = useNavigation()
   const uiState = useValue(ui$)
   const [scriptOnStart, setScriptOnStart] = useState('')
-  const { hasShareIntent, shareIntent } = useShareIntent()
+  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent()
   const insets = useSafeAreaInsets()
   const ref = useRef<any>(null)
   const [headerShown, setHeaderShown] = useState(true)
@@ -29,6 +29,7 @@ export default function HomeScreen() {
     const url = shareIntent.webUrl || shareIntent.text
     if (hasShareIntent && url) {
       openSharedUrl(url)
+      resetShareIntent()
     }
   }, [hasShareIntent, shareIntent])
 

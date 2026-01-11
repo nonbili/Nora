@@ -22,6 +22,7 @@ Install from F-Droid, Google Play, or download APK from GitHub.
 - No ads
 - Download image
 - Download fb/ig reel
+- Download twitter video
 - Select text
 - Zoom
 - Remove tracking url query params
