@@ -11,16 +11,19 @@ import { NoraView } from '@/modules/nora-view'
 import { tabs$ } from '@/states/tabs'
 import { delay } from 'es-toolkit'
 import { getUserAgent } from '@/lib/webview'
+import { parseJson } from '@/content/utils'
 
 const userAgent = getUserAgent()
 
 export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs }) => {
-  const downloadVideoModalOpen = useValue(ui$.downloadVideoModalOpen)
-  const onClose = () => ui$.downloadVideoModalOpen.set(false)
+  const currentUrl = useValue(ui$.downloadVideoModalUrl)
+  const onClose = () => ui$.downloadVideoModalUrl.set('')
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const nativeRef = useRef<any>(null)
   const parsingStartedRef = useRef(false)
+
+  const downloadVideoModalOpen = !!currentUrl
 
   useEffect(() => {
     if (!downloadVideoModalOpen) {
@@ -33,7 +36,6 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
 
   useEffect(() => {
     const webview = nativeRef.current
-    const currentUrl = tabs$.currentTab()?.url
     if (webview && currentUrl) {
       if (currentUrl.startsWith('https://m.facebook.com/reel/')) {
         const canonical = new URL(currentUrl)
@@ -66,9 +68,14 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
     }
   }
 
-  const onMessage = async (e: { nativeEvent: { payload: string } }) => {
-    const { type, data } = JSON.parse(e.nativeEvent.payload)
+  const onMessage = async (e: { nativeEvent: { payload: string | object } }) => {
+    const { payload } = e.nativeEvent
+    const { type, data } = typeof payload == 'string' ? JSON.parse(payload) : payload
     switch (type) {
+      case '[content]':
+      case '[kotlin]':
+        console.log(type, data)
+        break
       case 'download':
         setTitle('Downloading...')
         webview?.download(data.url, data.fileName)

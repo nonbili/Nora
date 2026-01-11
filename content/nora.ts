@@ -1,6 +1,7 @@
 import { emit, log, waitUntil } from './utils'
 import { delay, retry } from 'es-toolkit'
 import { isDownloadable } from './download'
+import { getService } from './services/manager'
 
 function getMeta(url: string) {
   const icon = document.querySelector('link[rel*=icon]')?.getAttribute('href') || 'favicon.ico'
@@ -30,6 +31,7 @@ async function getVideoUrl() {
   const { hostname, pathname } = document.location
   const slugs = pathname.split('/')
   const canDownload = isDownloadable(document.location.href)
+  log('- canDownload', canDownload, document.location.href)
   if (!canDownload) {
     return
   }
@@ -42,6 +44,13 @@ async function getVideoUrl() {
     emit('download', { url: src, fileName })
   } else if (!src || src.startsWith('blob:https://')) {
     switch (hostname) {
+      case 'm.facebook.com':
+        const url = document.querySelector('[data-video-url]')?.getAttribute('data-video-url')
+        if (url) {
+          emit('download', { url, fileName })
+          return
+        }
+        break
       case 'www.instagram.com':
         const scripts = document.scripts
         for (const script of [...scripts]) {
@@ -57,11 +66,11 @@ async function getVideoUrl() {
           }
         }
         break
-      case 'm.facebook.com':
-        const url = document.querySelector('[data-video-url]')?.getAttribute('data-video-url')
-        if (url) {
-          emit('download', { url, fileName })
-          return
+      case 'x.com':
+        const service = getService(document.location.href)
+        log('-- x.com videoUrl', service?.videoUrl)
+        if (service?.videoUrl) {
+          emit('download', { url: service.videoUrl })
         }
         break
     }

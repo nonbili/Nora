@@ -11,8 +11,8 @@ export function blockAds() {
   }
   function interceptResponse(url: string, response: string) {
     try {
-      const service = getService(url)
-      if (service) {
+      const service = getService(document.location.href)
+      if (service?.shouldIntercept(url)) {
         response = service.transformResponse(response)
       }
     } catch (e) {

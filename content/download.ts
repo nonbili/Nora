@@ -1,11 +1,19 @@
 export function isDownloadable(url: string) {
-  const { hostname, pathname } = new URL(url)
+  let hostname, pathname
+  try {
+    ;({ hostname, pathname } = new URL(url))
+  } catch (e) {
+    return false
+  }
+
   const slugs = pathname.split('/')
   switch (hostname) {
-    case 'www.instagram.com':
-      return ['reel', 'reels'].includes(slugs[1]) || slugs[2] == 'reel'
     case 'm.facebook.com':
       return ['reel', 'stories', 'watch'].includes(slugs[1])
+    case 'www.instagram.com':
+      return ['reel', 'reels'].includes(slugs[1]) || slugs[2] == 'reel'
+    case 'x.com':
+      return slugs[2] == 'status'
   }
   return false
 }

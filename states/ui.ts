@@ -12,10 +12,11 @@ interface Store {
   // modals
   bookmarkModalOpen: boolean
   cookieModalOpen: boolean
-  downloadVideoModalOpen: boolean
+  downloadVideoModalUrl: string
   navModalOpen: boolean
   settingsModalOpen: boolean
   tabModalOpen: boolean
+  toolsModalOpen: boolean
   urlModalOpen: boolean
 
   // webview
@@ -33,10 +34,11 @@ export const ui$ = observable<Store>({
   // modals
   bookmarkModalOpen: false,
   cookieModalOpen: false,
-  downloadVideoModalOpen: false,
+  downloadVideoModalUrl: '',
   navModalOpen: false,
   settingsModalOpen: false,
   tabModalOpen: false,
+  toolsModalOpen: false,
   urlModalOpen: false,
 
   // webview

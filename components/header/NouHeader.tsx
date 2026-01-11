@@ -104,7 +104,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
         {nIf(!isWeb && settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
       </View>
       <View className="flex-row lg:flex-col items-center justify-end gap-1 lg:gap-5 h-full lg:h-[100px]">
-        {nIf(canDownload, <MaterialButton name="download" onPress={() => ui$.downloadVideoModalOpen.set(true)} />)}
+        {nIf(
+          canDownload,
+          <MaterialButton name="download" onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />,
+        )}
         {nIf(
           !isWeb,
           <TouchableOpacity className="flex-row items-center p-3" onPress={() => ui$.tabModalOpen.set(true)}>
@@ -143,6 +146,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     handler: () => (currentTab ? share(currentTab.url) : {}),
                   },
                 ]),
+            { label: t('menus.tools'), handler: () => ui$.toolsModalOpen.set(true) },
             { label: t('settings.label'), handler: () => ui$.settingsModalOpen.set(true) },
           ]}
         />

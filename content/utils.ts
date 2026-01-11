@@ -7,7 +7,7 @@ export function log(...data: any[]) {
   emit('[content]', data.length > 1 ? { data: [...data] } : data[0])
 }
 
-export function parseJson(v: string | null, fallback: any) {
+export function parseJson(v: string | null, fallback: any = {}) {
   if (!v) {
     return fallback
   }

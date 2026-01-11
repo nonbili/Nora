@@ -1,12 +1,12 @@
 import { InstagramService } from './instagram'
 import { TwitterService } from './twitter'
 
-const services = [new InstagramService(), new TwitterService()]
+const services = {
+  'www.instagram': new InstagramService(),
+  'x.com': new TwitterService(),
+}
 
 export function getService(url: string) {
-  for (const service of services) {
-    if (service.shouldIntercept(url)) {
-      return service
-    }
-  }
+  const { host } = new URL(url)
+  return services[host as keyof typeof services]
 }
