@@ -1,0 +1,2 @@
+- Fix scroll to top, back press for new tab
+- Fix downloading video
