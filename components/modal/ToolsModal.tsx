@@ -1,6 +1,6 @@
 import { use$ } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BaseModal } from './BaseModal'
 import { NouText } from '../NouText'
 import { TextInput, View } from 'react-native'
@@ -9,10 +9,36 @@ import { NouButton } from '../button/NouButton'
 import { t } from 'i18next'
 import { isDownloadable } from '@/content/download'
 
+const canDownload = (url: string) => {
+  let hostname, pathname
+  try {
+    ;({ hostname, pathname } = new URL(url))
+  } catch (e) {
+    return false
+  }
+
+  if (isDownloadable(url)) {
+    return true
+  }
+
+  const slugs = pathname.split('/')
+  switch (hostname) {
+    case 'www.instagram.com':
+      return slugs[1] == 'p'
+    case 'x.com':
+      return slugs[2] == 'status'
+  }
+  return false
+}
+
 export const ToolsModal = () => {
   const toolsModalOpen = use$(ui$.toolsModalOpen)
   const [url, setUrl] = useState('')
   const onClose = () => ui$.toolsModalOpen.set(false)
+
+  useEffect(() => {
+    setUrl('')
+  }, [toolsModalOpen])
 
   const onDownload = () => {
     if (url.trim()) {
@@ -39,7 +65,7 @@ export const ToolsModal = () => {
           autoFocus
         />
         <View className="flex-row items-center justify-end mt-6">
-          <NouButton disabled={isDownloadable(url.trim())} onPress={onDownload}>
+          <NouButton disabled={!canDownload(url.trim())} onPress={onDownload}>
             Download
           </NouButton>
         </View>

@@ -30,11 +30,6 @@ async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
 async function getVideoUrl() {
   const { hostname, pathname } = document.location
   const slugs = pathname.split('/')
-  const canDownload = isDownloadable(document.location.href)
-  log('- canDownload', canDownload, document.location.href)
-  if (!canDownload) {
-    return
-  }
   const src = await waitUntil(() => document.querySelector('video')?.src)
   if (hostname == 'www.instagram.com' && !src) {
     return
@@ -68,9 +63,9 @@ async function getVideoUrl() {
         break
       case 'x.com':
         const service = getService(document.location.href)
-        log('-- x.com videoUrl', service?.videoUrl)
         if (service?.videoUrl) {
           emit('download', { url: service.videoUrl })
+          return
         }
         break
     }
