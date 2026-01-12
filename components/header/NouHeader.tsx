@@ -73,7 +73,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const scrollToTop = () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`)
 
   const addBookmark = () => {
-    if (currentTab) {
+    if (currentTab?.url) {
       bookmarks$.addBookmark({
         url: currentTab.url,
         title: currentTab.title || '',

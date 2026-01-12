@@ -117,7 +117,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         }
       })()
     }
-  }, [nativeRef, activeTabIndex, index])
+  }, [nativeRef, activeTabIndex, index, tab.url])
 
   const webview = webviewRef.current || nativeRef.current
 
