@@ -10,28 +10,26 @@ try {
   blockAds()
 
   window.Nora = initNora()
-  initObserver()
+  if (document.documentElement) {
+    emit('onload')
+    initObserver()
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      emit('onload')
+      initObserver()
+    })
+  }
   interceptClipboard()
 } catch (e) {
   console.error('NouScript: ', e)
 }
 
 async function initObserver() {
-  const target = await retry(
-    async () => {
-      if (!document.documentElement) {
-        throw 'documentElement not ready'
-      }
-      return document.documentElement
-    },
-    { retries: 50, delay: 100 },
-  )
-
   const observer = new MutationObserver((mutations) => {
     hideAds(mutations)
     handleDialogs()
   })
-  observer.observe(target, {
+  observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
   })

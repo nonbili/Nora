@@ -8,6 +8,8 @@ import { gray } from '@radix-ui/colors'
 import { NouButton } from '../button/NouButton'
 import { t } from 'i18next'
 import { isDownloadable } from '@/content/download'
+import { mainClient } from '@/desktop/src/renderer/ipc/main'
+import { isWeb } from '@/lib/utils'
 
 const canDownload = (url: string) => {
   let hostname, pathname
@@ -42,7 +44,11 @@ export const ToolsModal = () => {
 
   const onDownload = () => {
     if (url.trim()) {
-      ui$.downloadVideoModalUrl.set(url)
+      if (isWeb) {
+        mainClient.downloadVideo(url)
+      } else {
+        ui$.downloadVideoModalUrl.set(url)
+      }
     }
   }
 

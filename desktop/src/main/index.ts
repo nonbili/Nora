@@ -8,6 +8,9 @@ import { genDesktopFile } from './lib/linux'
 import { checkForUpdate } from './lib/auto-update'
 import { initMainChannel } from './ipc/main'
 import contextMenu from 'electron-context-menu'
+import { getUserAgent } from '@/lib/useragent'
+
+app.userAgentFallback = getUserAgent(process.platform)
 
 function createWindow(): void {
   // Create the browser window.

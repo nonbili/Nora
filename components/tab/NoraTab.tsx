@@ -16,12 +16,12 @@ import { share } from '@/lib/share'
 import { ServiceIcon } from '../service/Services'
 import { debounce } from 'es-toolkit'
 import { showToast } from '@/lib/toast'
-import { getUserAgent } from '@/lib/webview'
+import { getUserAgent } from '@/lib/useragent'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 
-const userAgent = getUserAgent()
+const userAgent = getUserAgent(isWeb ? window.electron.process.platform : 'android')
 
 const getRedirectTo = (str: string) => {
   try {

@@ -1,8 +1,10 @@
+import { showToast } from '@/lib/toast.js'
 import { handleDeeplink } from '../lib/deeplink.js'
 import { UI_CHANNEL } from 'main/ipc/constants.js'
 
 const interfaces = {
   handleDeeplink,
+  showToast,
 }
 
 export type UiInterface = typeof interfaces

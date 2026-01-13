@@ -1,4 +1,4 @@
-import { emit, log, waitUntil } from './utils'
+import { emit, log, parseJson, waitUntil } from './utils'
 import { delay, retry } from 'es-toolkit'
 import { isDownloadable } from './download'
 import { getService } from './services/manager'
@@ -40,9 +40,17 @@ async function getVideoUrl() {
   } else if (!src || src.startsWith('blob:https://')) {
     switch (hostname) {
       case 'm.facebook.com':
+      case 'www.facebook.com':
         const url = document.querySelector('[data-video-url]')?.getAttribute('data-video-url')
         if (url) {
           emit('download', { url, fileName })
+          return
+        }
+        const html = document.body.innerHTML
+        const matches = html.match(/\\u003CBaseURL>(https:.+?)\\u003C/)
+        if (matches) {
+          const url = matches[1].replace(/\\\//g, '/').replaceAll('\\u0025', '%').replaceAll('&amp;', '&')
+          emit('download', { url })
           return
         }
         break

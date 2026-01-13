@@ -10,7 +10,7 @@ import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
 import { tabs$ } from '@/states/tabs'
 import { delay } from 'es-toolkit'
-import { getUserAgent } from '@/lib/webview'
+import { getUserAgent } from '@/lib/useragent'
 import { parseJson } from '@/content/utils'
 
 const userAgent = getUserAgent()

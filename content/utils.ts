@@ -1,5 +1,10 @@
-export function emit(type: string, data: any) {
-  window.NoraI.onMessage(JSON.stringify({ type, data }))
+export function emit(type: string, data?: any) {
+  if (window.NoraI) {
+    window.NoraI.onMessage(JSON.stringify({ type, data }))
+  } else if (window.electron) {
+    window.electron.ipcRenderer.sendToHost(type, data)
+    window.electron.ipcRenderer.send('channel:content', { type, data })
+  }
 }
 
 export function log(...data: any[]) {

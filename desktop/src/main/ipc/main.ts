@@ -1,3 +1,4 @@
+import { openDownloadWindow } from 'main/lib/download-window.js'
 import { MAIN_CHANNEL } from './constants.js'
 import { ipcMain, session } from 'electron'
 
@@ -8,6 +9,9 @@ const interfaces = {
   fetchFeed: async (url: string) => {
     const res = await fetch(url)
     return await res.text()
+  },
+  downloadVideo: (url: string) => {
+    openDownloadWindow(url)
   },
 }
 
