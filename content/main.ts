@@ -10,7 +10,19 @@ try {
   blockAds()
 
   window.Nora = initNora()
-  initObserver()
+  // initObserver()
+  if (document.documentElement) {
+    console.log('- onload 0')
+    emit('onload')
+    initObserver()
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('- onload 1')
+      emit('onload')
+      initObserver()
+    })
+  }
+  console.log('- onload 2')
   interceptClipboard()
 } catch (e) {
   console.error('NouScript: ', e)

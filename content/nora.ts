@@ -1,4 +1,4 @@
-import { emit, log, waitUntil } from './utils'
+import { emit, log, parseJson, waitUntil } from './utils'
 import { delay, retry } from 'es-toolkit'
 import { isDownloadable } from './download'
 import { getService } from './services/manager'
@@ -28,6 +28,7 @@ async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
 }
 
 async function getVideoUrl() {
+  console.log('- getVideoUrl')
   const { hostname, pathname } = document.location
   const slugs = pathname.split('/')
   const src = await waitUntil(() => document.querySelector('video')?.src)
@@ -40,11 +41,20 @@ async function getVideoUrl() {
   } else if (!src || src.startsWith('blob:https://')) {
     switch (hostname) {
       case 'm.facebook.com':
+      case 'www.facebook.com':
         const url = document.querySelector('[data-video-url]')?.getAttribute('data-video-url')
         if (url) {
           emit('download', { url, fileName })
           return
         }
+        const matches = document.body.innerHTML.match('"browser_native_hd_url":(".*?")')
+        console.log('-- matches', matches)
+        if (matches) {
+          console.log('-- matches1', parseJson(matches?.[1]))
+          emit('download', { url: matches[1] })
+          return
+        }
+
         break
       case 'www.instagram.com':
         const scripts = document.scripts

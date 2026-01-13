@@ -8,6 +8,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     resolve: {
       alias: {
+        '@': 'nora',
         main: resolve('src/main'),
       },
     },

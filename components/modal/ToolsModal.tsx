@@ -8,6 +8,7 @@ import { gray } from '@radix-ui/colors'
 import { NouButton } from '../button/NouButton'
 import { t } from 'i18next'
 import { isDownloadable } from '@/content/download'
+import { mainClient } from '@/desktop/src/renderer/ipc/main'
 
 const canDownload = (url: string) => {
   let hostname, pathname
@@ -21,6 +22,7 @@ const canDownload = (url: string) => {
     return true
   }
 
+  return true
   const slugs = pathname.split('/')
   switch (hostname) {
     case 'www.instagram.com':
@@ -38,11 +40,15 @@ export const ToolsModal = () => {
 
   useEffect(() => {
     setUrl('')
+    /* setUrl('https://x.com/Science_TechTV/status/2010745271852937638?s=20') */
+    /* setUrl('https://www.instagram.com/reel/DSV1Fp8EgtB') */
+    /* setUrl('https://www.google.com') */
   }, [toolsModalOpen])
 
   const onDownload = () => {
     if (url.trim()) {
-      ui$.downloadVideoModalUrl.set(url)
+      /* ui$.downloadVideoModalUrl.set(url) */
+      mainClient.downloadVideo(url)
     }
   }
 
