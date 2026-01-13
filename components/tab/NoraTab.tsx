@@ -83,14 +83,15 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   )
 
   useEffect(() => {
+    console.log('- webview', webviewRef.current)
     const webview = webviewRef.current
     if (!webview) {
       return
     }
 
     webview.addEventListener('dom-ready', () => {
-      ui$.webview.set(ObservableHint.opaque(webview))
       webview.executeJavaScript(contentJs)
+      ui$.webview.set(ObservableHint.opaque(webview))
     })
     webview.addEventListener('did-navigate', (e) => {
       const { host } = new URL(e.url)

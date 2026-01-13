@@ -6,32 +6,36 @@ import { handleDialogs } from './dialogs'
 import { initNora } from './nora'
 import { interceptClipboard } from './clipboard'
 
+function onload() {
+  emit('onload')
+  initObserver()
+}
+
 try {
   blockAds()
 
   window.Nora = initNora()
-  initObserver()
+  if (document.documentElement) {
+    console.log('- onload 0')
+    onload()
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('- onload 1')
+      onload()
+    })
+  }
+  console.log('- onload 2')
   interceptClipboard()
 } catch (e) {
   console.error('NouScript: ', e)
 }
 
 async function initObserver() {
-  const target = await retry(
-    async () => {
-      if (!document.documentElement) {
-        throw 'documentElement not ready'
-      }
-      return document.documentElement
-    },
-    { retries: 50, delay: 100 },
-  )
-
   const observer = new MutationObserver((mutations) => {
     hideAds(mutations)
     handleDialogs()
   })
-  observer.observe(target, {
+  observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
   })

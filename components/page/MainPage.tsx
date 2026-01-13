@@ -39,10 +39,10 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
       <CookieModal />
       <UrlModal />
       <ToolsModal />
+      <DownloadVideoModal contentJs={contentJs} />
       {nIf(
         !isWeb,
         <>
-          <DownloadVideoModal contentJs={contentJs} />
           <TabModal />
         </>,
       )}
