@@ -27,7 +27,8 @@ const styles: Record<string, string> = {
   `,
 
   facebook: css`
-    .native-text {
+    .native-text,
+    .native-text * {
       user-select: text !important;
       pointer-events: initial !important;
     }

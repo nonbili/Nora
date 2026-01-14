@@ -74,8 +74,9 @@ export function hideAds(mutations: MutationRecord[]) {
     switch (host) {
       case 'm.facebook.com': {
         const target = document.querySelector('.fixed-container.bottom') as HTMLElement
-        // facebook open app btn
-        if (target?.textContent == 'Open app') {
+
+        if (target?.querySelectorAll('.native-text')?.length == 1) {
+          // facebook open app btn
           target.style.display = 'none'
         }
         break
