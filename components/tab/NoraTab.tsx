@@ -82,8 +82,8 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     [index],
   )
 
-  useEffect(() => {
-    const webview = webviewRef.current
+  const noraViewRef = useCallback((webview: WebviewTag) => {
+    webviewRef.current = webview
     if (!webview) {
       return
     }
@@ -100,7 +100,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
       setPageUrl(e.url)
     })
     webview.addEventListener('ipc-message', (e) => {})
-  }, [webviewRef])
+  }, [])
 
   useEffect(() => {
     const webview = nativeRef.current
@@ -176,18 +176,15 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
             ]}
           />
         </View>
-        {tab.url ? (
-          <NoraView
-            className="h-full"
-            ref={webviewRef}
-            partition="persist:webview"
-            useragent={userAgent}
-            allowpopups="true"
-            key={tab.id}
-          />
-        ) : (
-          <NavModalContent index={index} />
-        )}
+        <NoraView
+          className={clsx('h-full', !tab.url && 'hidden')}
+          ref={noraViewRef}
+          partition="persist:webview"
+          useragent={userAgent}
+          allowpopups="true"
+          key={tab.id}
+        />
+        {nIf(!tab.url, <NavModalContent index={index} />)}
       </View>
     )
   }
