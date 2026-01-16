@@ -7,7 +7,7 @@ Install from F-Droid, Google Play, or download APK from GitHub.
 [<img src="https://img.shields.io/badge/F--Droid-1976D2?style=for-the-badge&logo=f-droid"
       alt="Get it on F-Droid"
       height="50">](https://f-droid.org/packages/jp.nonbili.nora/)
-[<img src="https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play"
+[<img src="https://img.shields.io/badge/Google_Play-01875f?style=for-the-badge&logo=google-play"
       alt="Get it on Google Play"
       hspace="16"
       height="50">](https://play.google.com/store/apps/details?id=jp.nonbili.nora)
@@ -21,8 +21,7 @@ Install from F-Droid, Google Play, or download APK from GitHub.
 
 - No ads
 - Download image
-- Download fb/ig reel
-- Download twitter video
+- Download fb/ig/x video
 - Select text
 - Zoom
 - Remove tracking url query params

@@ -21,6 +21,7 @@
     <ul>
       <li>Deck view to browse multiple timelines</li>
       <li>Drag/drop to reorder decks</li>
+      <li>Download fb/ig/x video</li>
     </ul>
   </description>
 
@@ -36,12 +37,16 @@
   <launchable type="desktop-id">jp.nonbili.nora.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/nonbili/Nora-Desktop/83489c384d23dd401f895af87c4701be75011d8a/metadata/screenshots/1.png</image>
+      <image>https://raw.githubusercontent.com/nonbili/Nora-Desktop/a1b6306c718d854e54455da898b98364038820e3/metadata/screenshots/1.png</image>
+      <caption>Start page</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/nonbili/Nora-Desktop/a1b6306c718d854e54455da898b98364038820e3/metadata/screenshots/2.png</image>
       <caption>Deck view</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/nonbili/Nora-Desktop/83489c384d23dd401f895af87c4701be75011d8a/metadata/screenshots/2.png</image>
-      <caption>Supported SNS</caption>
+      <image>https://raw.githubusercontent.com/nonbili/Nora-Desktop/a1b6306c718d854e54455da898b98364038820e3/metadata/screenshots/3.png</image>
+      <caption>Download video</caption>
     </screenshot>
   </screenshots>
 
@@ -51,6 +56,13 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.1.4" date="2026-01-16">
+      <description>
+        <ul>
+          <li>Support downloading fb/ig/x video</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.3" date="2025-12-24">
       <description>
         <ul>

@@ -23,6 +23,11 @@ nsis:
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+appx:
+  artifactName: ${productName}-${version}.${ext}
+  identityName: NonbiliInc.Nora
+  publisher: CN=E9477937-876C-417D-81DD-D63DDBACDEC2
+  publisherDisplayName: Nonbili
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
@@ -30,7 +35,7 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
 dmg:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: ${productName}-${version}-${arch}.${ext}
 linux:
   target:
     - AppImage
