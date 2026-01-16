@@ -375,22 +375,26 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
 
-    val uri = Uri.parse(url)
-    val request = DownloadManager.Request(uri)
-    var name = fileName
-    if (name == null) {
-      val mimeTypeMap = MimeTypeMap.getSingleton()
-      val ext = MimeTypeMap.getFileExtensionFromUrl(url)
-      name = uri.getLastPathSegment()
-      if (ext == "" && mimeType != null) {
-        name += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
+    try {
+      val uri = Uri.parse(url)
+      val request = DownloadManager.Request(uri)
+      var name = fileName
+      if (name == null) {
+        val mimeTypeMap = MimeTypeMap.getSingleton()
+        val ext = MimeTypeMap.getFileExtensionFromUrl(url)
+        name = uri.getLastPathSegment()
+        if (ext == "" && mimeType != null) {
+          name += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
+        }
       }
+      request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
+      request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+      val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+      downloadManager.enqueue(request)
+      Toast.makeText(context, nouController.t("toast_downloadStarted"), Toast.LENGTH_LONG).show()
+    } catch (e: Exception) {
+      Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
     }
-    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
-    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-    val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-    downloadManager.enqueue(request)
-    Toast.makeText(context, nouController.t("toast_downloadStarted"), Toast.LENGTH_LONG).show()
   }
 
   fun saveFile(content: String, _fileName: String, _mimeType: String?) {
