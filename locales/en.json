@@ -60,6 +60,12 @@
     },
     "injectCookie": "Inject cookie"
   },
+  "sync": {
+    "label": "Sync",
+    "hint": "Sync bookmarks and settings across your phones and computers as a premium user.",
+    "currentPlan": "Current plan",
+    "managePlan": "Manage plan"
+  },
   "tabs": {
     "new": "New tab"
   },

@@ -13,10 +13,26 @@ import { NoraTab } from '../tab/NoraTab'
 import { NouButton } from '../button/NouButton'
 import { NavModalContent } from '../modal/NavModal'
 import { SortableNoraTabs } from '../tab/SortableNoraTabs'
+import { auth$ } from '@/states/auth'
+import { useMe } from '@/lib/hooks/useMe'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
   const { tabs, activeTabIndex } = useValue(tabs$)
+  const { userId, me } = useMe()
+
+  useEffect(() => {
+    auth$.plan.set(me?.plan)
+    let timer: number
+    if (userId && me?.plan && me.plan != 'free') {
+      /* syncSupabase()
+       * timer = setInterval(
+       *   () => syncSupabase(),
+       *   10 * 60 * 1000, // 10 minutes
+       * ) */
+    }
+    /* return () => clearInterval(timer) */
+  }, [me?.plan, userId])
 
   return (
     <View

@@ -15,10 +15,43 @@ import { ServiceManager } from '../service/Services'
 import { NouButton } from '../button/NouButton'
 import { SettingsModalTabSettings } from './SettingsModalTabSettings'
 import { t } from 'i18next'
+import { SettingsModalTabSync } from './SettingsModalTabSync'
 
 const repo = 'https://github.com/nonbili/Nora'
-const tabs = [t('settings.label'), t('about.label')]
+const tabs = [t('settings.label'), t('sync.label'), t('about.label')]
 const donateLinks = ['https://github.com/sponsors/rnons', 'https://liberapay.com/rnons', 'https://paypal.me/rnons']
+
+function renderTab(tabIndex: number) {
+  switch (tabIndex) {
+    case 0:
+      return <SettingsModalTabSettings />
+    case 1:
+      return <SettingsModalTabSync />
+    case 2:
+      return (
+        <>
+          <View className="items-center my-4">
+            <NouText className="text-lg font-medium">Nora</NouText>
+            <NouText>v{isWeb ? desktopVersion : version}</NouText>
+          </View>
+          <View className="mb-6">
+            <NouText className="font-medium mb-1">{t('about.code')}</NouText>
+            <NouLink className="text-indigo-400 text-sm" href={repo}>
+              {repo}
+            </NouLink>
+          </View>
+          <View className="mb-6">
+            <NouText className="font-medium mb-1">{t('about.donate')}</NouText>
+            {donateLinks.map((url) => (
+              <NouLink className="text-indigo-400 text-sm mb-2" href={url} key={url}>
+                {url}
+              </NouLink>
+            ))}
+          </View>
+        </>
+      )
+  }
+}
 
 export const SettingsModal = () => {
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
@@ -37,30 +70,7 @@ export const SettingsModal = () => {
           <Segemented options={tabs} selectedIndex={tabIndex} onChange={setTabIndex} />
         </View>
         <ScrollView className="mt-4 px-4">
-          {nIf(tabIndex == 0, <SettingsModalTabSettings />)}
-          {nIf(
-            tabIndex == 1,
-            <>
-              <View className="items-center my-4">
-                <NouText className="text-lg font-medium">Nora</NouText>
-                <NouText>v{isWeb ? desktopVersion : version}</NouText>
-              </View>
-              <View className="mb-6">
-                <NouText className="font-medium mb-1">{t('about.code')}</NouText>
-                <NouLink className="text-indigo-400 text-sm" href={repo}>
-                  {repo}
-                </NouLink>
-              </View>
-              <View className="mb-6">
-                <NouText className="font-medium mb-1">{t('about.donate')}</NouText>
-                {donateLinks.map((url) => (
-                  <NouLink className="text-indigo-400 text-sm mb-2" href={url} key={url}>
-                    {url}
-                  </NouLink>
-                ))}
-              </View>
-            </>,
-          )}
+          {renderTab(tabIndex)}
           <View className="h-10" />
         </ScrollView>
       </View>

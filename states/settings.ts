@@ -21,7 +21,7 @@ export const settings$ = observable<Store>({
   autoHideHeader: false,
   headerPosition: 'top',
   theme: null,
-  openExternalLinkInSystemBrowser: false,
+  openExternalLinkInSystemBrowser: true,
 
   showNewTabButtonInHeader: false,
   showBackButtonInHeader: false,

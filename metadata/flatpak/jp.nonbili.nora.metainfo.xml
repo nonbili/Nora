@@ -51,6 +51,7 @@
   </screenshots>
 
   <url type="homepage">https://github.com/nonbili/Nora-Desktop</url>
+  <url type="vcs-browser">https://github.com/nonbili/Nora</url>
   <url type="bugtracker">https://github.com/nonbili/Nora/issues</url>
 
   <content_rating type="oars-1.1" />

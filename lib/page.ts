@@ -1,5 +1,6 @@
 import { tabs$ } from '@/states/tabs'
 import { removeTrackingParams } from '@/content/clipboard'
+import { onReceiveAuthUrl } from './supabase/auth'
 export { removeTrackingParams } from '@/content/clipboard'
 
 export const homeUrls: Record<string, string> = {
@@ -21,6 +22,10 @@ export function getHomeUrl(home: string) {
 }
 
 export function openSharedUrl(url: string, replace = false) {
+  if (url.startsWith('nora:auth')) {
+    onReceiveAuthUrl(url)
+    return
+  }
   try {
     const newUrl = removeTrackingParams(url.replace('nora://', 'https://'))
     if (replace) {

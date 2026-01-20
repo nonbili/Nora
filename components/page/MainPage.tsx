@@ -18,6 +18,11 @@ import { Locale, useLocales } from 'expo-localization'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next'
 import NoraViewModule from '@/modules/nora-view'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from '@/lib/query/client'
+import { useMe } from '@/lib/hooks/useMe'
+import { auth$ } from '@/states/auth'
+import { supabase } from '@/lib/supabase/client'
 
 function expoLocaleToI18nLocale(locale: Locale): string | undefined {
   const { languageCode, languageScriptCode } = locale
@@ -38,22 +43,36 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
     }
   }, [locales[0]])
 
+  useEffect(() => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      // console.log('onAuthStateChange', event, session)
+      auth$.assign({
+        loaded: true,
+        userId: session?.user.id,
+        user: session?.user.user_metadata,
+        accessToken: session?.access_token,
+      })
+    })
+  }, [])
+
   return (
     <ContentJsContext.Provider value={contentJs}>
-      <MainPageContent contentJs={contentJs} />
-      <NavModal />
-      <SettingsModal />
-      <BookmarkModal />
-      <CookieModal />
-      <UrlModal />
-      <ToolsModal />
-      {nIf(
-        !isWeb,
-        <>
-          <DownloadVideoModal contentJs={contentJs} />
-          <TabModal />
-        </>,
-      )}
+      <QueryClientProvider client={queryClient}>
+        <MainPageContent contentJs={contentJs} />
+        <NavModal />
+        <SettingsModal />
+        <BookmarkModal />
+        <CookieModal />
+        <UrlModal />
+        <ToolsModal />
+        {nIf(
+          !isWeb,
+          <>
+            <DownloadVideoModal contentJs={contentJs} />
+            <TabModal />
+          </>,
+        )}
+      </QueryClientProvider>
     </ContentJsContext.Provider>
   )
 }
