@@ -82,6 +82,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       favicon: './assets/images/favicon.png',
     },
     plugins: [
+      './plugins/withAndroidPlugin.ts',
       'expo-router',
       [
         'expo-splash-screen',
@@ -109,12 +110,11 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       [
         'expo-localization',
         {
-          supportedLocales: ['ar', 'en', 'fr'],
+          supportedLocales: ['ar', 'en', 'fr', 'pl', 'zh-Hans'],
         },
       ],
       'expo-share-intent',
       'expo-web-browser',
-      './plugins/withAndroidPlugin.ts',
     ],
     experiments: {
       typedRoutes: true,

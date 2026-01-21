@@ -1,0 +1,3 @@
+- fb: fix text selection and hiding open app btn
+- prevent crash when downloading video
+- add Polish and Chinese translation
