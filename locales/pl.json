@@ -1,0 +1,69 @@
+{
+  "about": {
+    "label": "O aplikacji",
+    "code": "Kod źródłowy",
+    "donate": "Wesprzyj"
+  },
+  "bookmarks": {
+    "label": "Zakładki"
+  },
+  "buttons": {
+    "cancel": "Anuluj",
+    "closeAll": "Zamknij wszystkie",
+    "download": "Pobierz",
+    "openUrl": "Otwórz URL",
+    "open": "Otwórz"
+  },
+  "menus": {
+    "close": "Zamknij",
+    "delete": "Usuń",
+    "desktop": "Wersja komputerowa",
+    "desktopOn": "Włącz",
+    "desktopOff": "Wyłącz",
+    "addBookmark": "Dodaj zakładkę",
+    "pin": "Przypnij na stronie nowej karty",
+    "reload": "Odśwież",
+    "scroll": "Do góry",
+    "share": "Udostępnij",
+    "tools": "Narzędzia"
+  },
+  "modals": {
+    "downloadVideo": "Pobierz wideo"
+  },
+  "native": {
+    "menu_saveImage": "Zapisz obraz",
+    "menu_copyImageLink": "Kopiuj link obrazu",
+    "menu_copyLink": "Kopiuj link",
+    "toast_downloadStarted": "Pobieranie rozpoczęte, sprawdź powiadomienie",
+    "toast_downloadSucceeded": "Zapisano w folderze Pobrane",
+    "toast_downloadFailed": "Nie udało się pobrać"
+  },
+  "settings": {
+    "label": "Ustawienia",
+    "openExternalLink": "Otwieraj linki w przeglądarce systemowej",
+    "hideHeader": "Ukrywaj pasek przy przewijaniu",
+    "headerPosition": {
+      "label": "Pozycja paska narzędzi",
+      "top": "Góra",
+      "bottom": "Dół"
+    },
+    "showNewTabButton": "Pokazuj przycisk nowej karty",
+    "showBackButton": "Pokazuj przycisk Wstecz",
+    "showScrollButton": "Pokazuj przycisk Na górę",
+    "oneHandMode": "Tryb obsługi jedną ręką",
+    "theme": {
+      "label": "Temat",
+      "system": "Systemowy",
+      "dark": "Ciemny",
+      "light": "Jasny",
+      "hint": "Uruchom ponownie ręcznie kiedy zmiany nie są widoczne w WebView."
+    },
+    "injectCookie": "Wstrzyknij cookie"
+  },
+  "tabs": {
+    "new": "Nowa karta"
+  },
+  "toast": {
+    "pinned": "Przypięto na stronie nowej karty"
+  }
+}

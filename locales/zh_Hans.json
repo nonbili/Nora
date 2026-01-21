@@ -1,0 +1,69 @@
+{
+  "about": {
+    "label": "关于",
+    "code": "源代码",
+    "donate": "捐赠"
+  },
+  "bookmarks": {
+    "label": "书签"
+  },
+  "buttons": {
+    "cancel": "取消",
+    "closeAll": "取消全部",
+    "download": "下载",
+    "openUrl": "打开 URL",
+    "open": "打开"
+  },
+  "menus": {
+    "close": "关闭",
+    "delete": "删除",
+    "desktopOff": "关",
+    "addBookmark": "添加书签",
+    "pin": "固定到新标签页",
+    "reload": "重新加载",
+    "scroll": "返回顶部",
+    "share": "分享",
+    "tools": "工具",
+    "desktop": "桌面版网站",
+    "desktopOn": "开"
+  },
+  "modals": {
+    "downloadVideo": "下载视频"
+  },
+  "native": {
+    "menu_saveImage": "保存图片",
+    "menu_copyImageLink": "复制图片链接",
+    "menu_copyLink": "复制链接",
+    "toast_downloadStarted": "下载已开始，请查看系统消息",
+    "toast_downloadSucceeded": "保存到下载文件夹",
+    "toast_downloadFailed": "下载失败"
+  },
+  "settings": {
+    "label": "设置",
+    "openExternalLink": "在系统浏览器中打开外部链接",
+    "hideHeader": "滚动时隐藏工具栏",
+    "headerPosition": {
+      "label": "工具栏位置",
+      "top": "顶部",
+      "bottom": "底部"
+    },
+    "showNewTabButton": "显示新标签页按钮",
+    "showBackButton": "显示返回按钮",
+    "showScrollButton": "显示返回顶部按钮",
+    "oneHandMode": "单手模式",
+    "theme": {
+      "label": "主题",
+      "system": "系统",
+      "dark": "黑暗模式",
+      "light": "明亮模式",
+      "hint": "如果更改未在网页视图中反映出来，请手动重启。"
+    },
+    "injectCookie": "注入 cookie"
+  },
+  "tabs": {
+    "new": "新标签页"
+  },
+  "toast": {
+    "pinned": "已固定到新标签页"
+  }
+}

@@ -1,0 +1,3 @@
+<h2>Funkcje</h2><ul><li>Pobierz obraz</li><li>Pobierz rolkę z FB/IG</li><li>Zaznacz tekst</li><li>Powiększ</li><li>Usuń parametry śledzenia z adresu URL</li></ul>
+<h2>Obsługiwane serwisy społecznościowe</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
+<h2>Jak to działa</h2><ul><li>Obudowuje strony serwisów społecznościowych w widoku WebView na Androidzie</li><li>Wstrzykuje kod blokujący reklamy</li></ul>
