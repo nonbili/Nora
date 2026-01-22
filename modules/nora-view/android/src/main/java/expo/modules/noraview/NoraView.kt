@@ -110,8 +110,10 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
 
 fun shouldNoraOverrideUrlLoading(view: WebView, url: String): Boolean {
   val uri = Uri.parse(url)
-  if (uri.host in VIEW_HOSTS ||
-    (uri.host?.endsWith(".facebook.com") ?: false) ||
+  val host = uri.host
+  if (host in VIEW_HOSTS ||
+    host == null ||
+    (host.endsWith(".facebook.com") && host != "l.facebook.com") ||
     !nouController.settings.openExternalLinkInSystemBrowser
   ) {
     return false
