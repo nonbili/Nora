@@ -15,6 +15,7 @@ import { NavModalContent } from '../modal/NavModal'
 import { SortableNoraTabs } from '../tab/SortableNoraTabs'
 import { auth$ } from '@/states/auth'
 import { useMe } from '@/lib/hooks/useMe'
+import { syncSupabase } from '@/lib/supabase/sync'
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
@@ -23,15 +24,14 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
 
   useEffect(() => {
     auth$.plan.set(me?.plan)
-    let timer: number
     if (userId && me?.plan && me.plan != 'free') {
-      /* syncSupabase()
-       * timer = setInterval(
-       *   () => syncSupabase(),
-       *   10 * 60 * 1000, // 10 minutes
-       * ) */
+      syncSupabase()
+      const timer = setInterval(
+        () => syncSupabase(),
+        10 * 60 * 1000, // 10 minutes
+      )
+      return () => clearInterval(timer)
     }
-    /* return () => clearInterval(timer) */
   }, [me?.plan, userId])
 
   return (

@@ -9,22 +9,32 @@ export interface Bookmark {
   icon?: string
 }
 
-interface Store {
+export interface Bookmarks {
   bookmarks: Bookmark[]
+}
+
+interface Store extends Bookmarks {
+  updatedAt: number
+  syncedAt: number
 
   addBookmark: (bookmark: Bookmark) => void
   deleteBookmark: (index: number) => void
+  setSyncedTime: () => void
 }
 
 export const bookmarks$ = observable<Store>({
   bookmarks: [],
-
+  updatedAt: 1,
+  syncedAt: 0,
   addBookmark: (bookmark) => {
     bookmarks$.bookmarks.push(bookmark)
   },
 
   deleteBookmark: (index) => {
     bookmarks$.bookmarks.splice(index, 1)
+  },
+  setSyncedTime: () => {
+    bookmarks$.syncedAt.set(Date.now())
   },
 })
 

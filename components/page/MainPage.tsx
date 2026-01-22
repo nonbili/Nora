@@ -22,7 +22,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query/client'
 import { useMe } from '@/lib/hooks/useMe'
 import { auth$ } from '@/states/auth'
-import { supabase } from '@/lib/supabase/client'
+import { supabaseAuth } from '@/lib/supabase/client'
 
 function expoLocaleToI18nLocale(locale: Locale): string | undefined {
   const { languageCode, languageScriptCode } = locale
@@ -44,7 +44,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   }, [locales[0]])
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabaseAuth.onAuthStateChange((event, session) => {
       // console.log('onAuthStateChange', event, session)
       auth$.assign({
         loaded: true,
