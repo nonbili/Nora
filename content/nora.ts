@@ -58,6 +58,7 @@ async function getVideoUrl() {
         const scripts = document.scripts
         for (const script of [...scripts]) {
           const text = script.textContent
+          if (!text) continue
           const term = '"video_versions":'
           const start = text.indexOf(term)
           if (start > -1) {

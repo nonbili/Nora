@@ -2,7 +2,7 @@ import { observable, syncState, when } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 
-interface Store {
+export interface Settings {
   autoHideHeader: boolean
   headerPosition: 'top' | 'bottom'
   theme: null | 'dark' | 'light'
@@ -14,7 +14,14 @@ interface Store {
   oneHandMode: boolean
 
   disabledServicesArr: string[]
+}
+
+interface Store extends Settings {
+  updatedAt: number
+  syncedAt: number
+
   toggleService: (service: string) => void
+  setSyncedTime: () => void
 }
 
 export const settings$ = observable<Store>({
@@ -29,6 +36,8 @@ export const settings$ = observable<Store>({
   oneHandMode: false,
 
   disabledServicesArr: [],
+  updatedAt: 1,
+  syncedAt: 0,
   toggleService: (service) => {
     const index = settings$.disabledServicesArr.indexOf(service)
     if (index == -1) {
@@ -36,6 +45,9 @@ export const settings$ = observable<Store>({
     } else {
       settings$.disabledServicesArr.splice(index, 1)
     }
+  },
+  setSyncedTime: () => {
+    settings$.syncedAt.set(Date.now())
   },
 })
 

@@ -46,21 +46,20 @@ export const SettingsModalTabSync = () => {
         ) : null}
       </View>
       {user ? (
-        <View className="mt-6">
+        <View className="mt-6 flex-row justify-between items-center">
+          <View className="flex-row items-center gap-2 py-2">
+            <View className="">
+              <Image
+                style={{ width: 32, height: 32, borderRadius: 32, backgroundColor: 'lightblue' }}
+                source={user.picture}
+                contentFit="cover"
+              />
+            </View>
+            <NouText>{user.email}</NouText>
+          </View>
           <NouMenu
-            trigger={
-              <View className="flex-row items-center gap-2 py-2">
-                <View className="">
-                  <Image
-                    style={{ width: 32, height: 32, borderRadius: '100%', backgroundColor: 'lightblue' }}
-                    source={user.picture}
-                    contentFit="cover"
-                  />
-                </View>
-                <NouText>{user.email}</NouText>
-              </View>
-            }
-            items={[{ label: 'Sign out', handler: signOut }]}
+            trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
+            items={[{ label: t('menus.signOut'), handler: signOut }]}
           />
         </View>
       ) : null}
