@@ -13,6 +13,7 @@ import { NouMenu } from '../menu/NouMenu'
 import { NouSwitch } from '../switch/NouSwitch'
 import { useTranslation } from 'react-i18next'
 import { t } from 'i18next'
+import { MaterialButton } from '../button/IconButtons'
 
 const headerPositions = ['top', 'bottom'] as const
 const themes = [null, 'dark', 'light'] as const
@@ -97,7 +98,7 @@ export const SettingsModalTabSettings = () => {
             <NouText numberOfLines={1}>{bookmark.title}</NouText>
           </View>
           <NouMenu
-            trigger="filled.MoreVert"
+            trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
             items={[{ label: t('menus.delete'), handler: () => bookmarks$.deleteBookmark(index) }]}
           />
         </View>

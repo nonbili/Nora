@@ -22,7 +22,8 @@ export const UrlModal = () => {
     if (!url.trim()) {
       return
     }
-    openSharedUrl(url, true)
+    const _url = url.startsWith('http') || url.startsWith('nora') ? url : `https://${url}`
+    openSharedUrl(_url, true)
     onClose()
     ui$.settingsModalOpen.set(false)
   }
@@ -40,6 +41,7 @@ export const UrlModal = () => {
           className="border border-gray-600 rounded mb-3 text-white p-2 text-sm"
           value={url}
           onChangeText={setUrl}
+          onSubmitEditing={() => onSubmit()}
           placeholder="https://example.com"
           placeholderTextColor={gray.gray11}
           autoFocus

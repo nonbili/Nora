@@ -20,6 +20,8 @@ import { getUserAgent } from '@/lib/useragent'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
+import { t } from 'i18next'
+import { addBookmark } from '@/lib/bookmark'
 
 const userAgent = getUserAgent(isWeb ? window.electron.process.platform : 'android')
 
@@ -99,6 +101,9 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     webview.addEventListener('did-navigate-in-page', (e) => {
       setPageUrl(e.url)
     })
+    webview.addEventListener('page-favicon-updated', (e) => {
+      tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons[0] })
+    })
     webview.addEventListener('ipc-message', (e) => {})
   }, [])
 
@@ -168,11 +173,19 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
             trigger={<MaterialButton name="more-vert" />}
             items={[
               {
-                label: 'Scroll to top',
+                label: t('menus.reload'),
+                handler: () => webview?.executeJavaScript('document.location.reload()'),
+              },
+              {
+                label: t('menus.scroll'),
                 handler: () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`),
               },
-              { label: 'Share', handler: () => share(pageUrlRef.current) },
-              { label: 'Close', handler: () => tabs$.closeTab(index) },
+              {
+                label: t('menus.addBookmark'),
+                handler: () => addBookmark(tab),
+              },
+              { label: t('menus.share'), handler: () => share(pageUrlRef.current) },
+              { label: t('menus.close'), handler: () => tabs$.closeTab(index) },
             ]}
           />
         </View>

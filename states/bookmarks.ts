@@ -3,10 +3,10 @@ import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
 
-interface Bookmark {
+export interface Bookmark {
   url: string
-  title: string
-  icon: string
+  title?: string
+  icon?: string
 }
 
 interface Store {
