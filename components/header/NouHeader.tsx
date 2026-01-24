@@ -10,7 +10,7 @@ import { settings$ } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
-import { isWeb, nIf } from '@/lib/utils'
+import { isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
@@ -88,7 +88,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const ret = (
     <Root
-      className="bg-zinc-800 flex-row lg:flex-col items-center justify-between px-2 py-1 lg:px-1 lg:py-2"
+      className="bg-zinc-800 flex-row lg:h-full lg:flex-col items-center justify-between pl-2 py-1 lg:px-1 lg:py-2"
       /* @ts-expect-error */
       style={{ marginTop }}
       onLayout={onLayout}
@@ -118,7 +118,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           </TouchableOpacity>,
         )}
         <NouMenu
-          trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
+          trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
           items={[
             ...(isWeb
               ? []

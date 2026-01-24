@@ -7,7 +7,7 @@ import { NouHeader } from '../header/NouHeader'
 import { Text, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
-import { clsx, isWeb, nIf } from '@/lib/utils'
+import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
@@ -22,8 +22,6 @@ import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 import { t } from 'i18next'
 import { addBookmark } from '@/lib/bookmark'
-
-const userAgent = getUserAgent(isWeb ? window.electron.process.platform : 'android')
 
 const getRedirectTo = (str: string) => {
   try {
@@ -149,9 +147,12 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   const webview = webviewRef.current || nativeRef.current
 
   const onLoad = async (e: { nativeEvent: any }) => {
-    const { url, title } = e.nativeEvent
+    const { url, title, icon } = e.nativeEvent
     if (url) {
       setPageUrl(url)
+    }
+    if (title || icon) {
+      tabs$.tabs[index].assign({ title, icon })
     }
   }
 
@@ -215,7 +216,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
           className={clsx('h-full', !tab.url && 'hidden')}
           ref={noraViewRef}
           partition="persist:webview"
-          useragent={userAgent}
+          useragent={getUserAgent(window.electron.process.platform, true)}
           allowpopups="true"
           key={tab.id}
         />
@@ -231,7 +232,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         className={clsx(!tab.url || (index != activeTabIndex && 'hidden'))}
         style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
         scriptOnStart={contentJs}
-        useragent={tab.desktopMode ? getUserAgent('linux') : userAgent}
+        useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
         onLoad={onLoad}
         onMessage={onMessage}
       />

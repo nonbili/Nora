@@ -7,6 +7,7 @@
   "main": "expo-router/entry",
   "version": "0.5.8",
   "versionCode": 49,
+  "buildNumber": "1",
   "scripts": {
     "bundle": "bun build --target browser content/main.ts --outfile assets/scripts/main.bjs",
     "bundle:es": "esbuild --bundle content/main.ts --outfile=assets/scripts/main.bjs",
@@ -14,11 +15,10 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web",
     "lint": "expo lint"
   },
   "dependencies": {
-    "@expo/ui": "0.2.0-beta.6",
+    "@expo/ui": "0.2.0-beta.9",
     "@expo/vector-icons": "^15.0.2",
     "@legendapp/state": "^3.0.0-beta.38",
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -54,6 +54,7 @@
     "react-native-get-random-values": "^1.11.0",
     "react-native-mmkv": "^3.2.0",
     "react-native-reanimated": "~4.1.1",
+    "react-native-root-toast": "^4.0.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",

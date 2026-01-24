@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native'
 import { NouText } from '../NouText'
 import { useEffect, useRef, useState } from 'react'
-import { clsx, nIf } from '@/lib/utils'
+import { clsx, isIos, nIf } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { showToast } from '@/lib/toast'
@@ -13,7 +13,7 @@ import { delay } from 'es-toolkit'
 import { getUserAgent } from '@/lib/useragent'
 import { parseJson } from '@/content/utils'
 
-const userAgent = getUserAgent()
+const userAgent = getUserAgent(isIos ? 'ios' : 'android')
 
 export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const currentUrl = useValue(ui$.downloadVideoModalUrl)

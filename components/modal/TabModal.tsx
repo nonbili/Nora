@@ -3,7 +3,7 @@ import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
 import { ServiceIcon, services } from '../service/Services'
 import { View, Text, Pressable, ScrollView, TouchableHighlight } from 'react-native'
-import { clsx, isWeb, nIf } from '@/lib/utils'
+import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { getHomeUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
@@ -36,7 +36,7 @@ export const TabModal = () => {
         !isWeb,
         <View>
           <NouSwitch
-            className="pl-4 pr-2"
+            className="mt-1 pl-4 pr-2"
             label={<NouText className="font-medium">{t('settings.oneHandMode')}</NouText>}
             value={oneHandMode}
             onPress={() => settings$.oneHandMode.toggle()}
@@ -87,7 +87,7 @@ export const TabModal = () => {
               </View>
             </TouchableHighlight>
             <NouMenu
-              trigger="filled.MoreVert"
+              trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
               items={[{ label: t('menus.close'), handler: () => tabs$.closeTab(index) }]}
             />
           </View>
