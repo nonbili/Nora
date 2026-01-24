@@ -60,7 +60,8 @@
     "react-native-svg": "15.12.1",
     "react-native-web": "^0.21.2",
     "react-native-worklets": "0.6.1",
-    "tailwindcss": "^3"
+    "tailwindcss": "^3",
+    "xcode": "^3.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -71,5 +72,8 @@
     "eslint-config-expo": "~10.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
+  },
+  "patchedDependencies": {
+    "xcode@3.0.1": "patches/xcode@3.0.1.patch"
   }
 }
