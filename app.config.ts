@@ -1,7 +1,5 @@
-import 'ts-node/register'
-
 import { ExpoConfig } from 'expo/config'
-import { version, versionCode } from './package.json'
+import { version, versionCode, buildNumber } from './package.json'
 
 module.exports = ({ config }: { config: ExpoConfig }) => {
   return {
@@ -15,6 +13,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'jp.nonbili.nora',
+      buildNumber,
     },
     android: {
       versionCode,
