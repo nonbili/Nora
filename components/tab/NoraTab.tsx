@@ -7,7 +7,7 @@ import { NouHeader } from '../header/NouHeader'
 import { Text, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
-import { clsx, isWeb, nIf } from '@/lib/utils'
+import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
@@ -23,7 +23,7 @@ import { NavModalContent } from '../modal/NavModal'
 import { t } from 'i18next'
 import { addBookmark } from '@/lib/bookmark'
 
-const userAgent = getUserAgent(isWeb ? window.electron.process.platform : 'android')
+const userAgent = getUserAgent(isWeb ? window.electron.process.platform : isIos ? 'ios' : 'android')
 
 const getRedirectTo = (str: string) => {
   try {
@@ -31,7 +31,7 @@ const getRedirectTo = (str: string) => {
     if (url.hostname.endsWith('.threads.com')) {
       return url.searchParams.get('u') || str
     }
-  } catch (e) {}
+  } catch (e) { }
   return str
 }
 
@@ -104,32 +104,35 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     webview.addEventListener('page-favicon-updated', (e) => {
       tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons[0] })
     })
-    webview.addEventListener('ipc-message', (e) => {})
+    webview.addEventListener('ipc-message', (e) => { })
   }, [])
 
   useEffect(() => {
     const webview = nativeRef.current
     if (webview && activeTabIndex == index && tab.url) {
       ui$.webview.set(ObservableHint.opaque(webview))
-      ;(async () => {
-        try {
-          const location = await webview.executeJavaScript('document.location.href')
-          if (location == 'about:blank') {
+        ; (async () => {
+          try {
+            const location = await webview.executeJavaScript('document.location.href')
+            if (location == 'about:blank') {
+              webview.loadUrl(tab.url)
+            }
+          } catch (e) {
             webview.loadUrl(tab.url)
           }
-        } catch (e) {
-          webview.loadUrl(tab.url)
-        }
-      })()
+        })()
     }
   }, [nativeRef, activeTabIndex, index, tab.url])
 
   const webview = webviewRef.current || nativeRef.current
 
   const onLoad = async (e: { nativeEvent: any }) => {
-    const { url, title } = e.nativeEvent
+    const { url, title, icon } = e.nativeEvent
     if (url) {
       setPageUrl(url)
+    }
+    if (title || icon) {
+      tabs$.tabs[index].assign({ title, icon })
     }
   }
 
@@ -209,7 +212,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         className={clsx(!tab.url || (index != activeTabIndex && 'hidden'))}
         style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
         scriptOnStart={contentJs}
-        useragent={tab.desktopMode ? getUserAgent('linux') : userAgent}
+        useragent={getUserAgent(isWeb ? window.electron.process.platform : isIos ? 'ios' : 'android', tab.desktopMode)}
         onLoad={onLoad}
         onMessage={onMessage}
       />

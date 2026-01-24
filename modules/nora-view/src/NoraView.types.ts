@@ -1,7 +1,9 @@
 import { StyleProp } from 'react-native'
 
 export type OnLoadEventPayload = {
-  url: string
+  url?: string
+  title?: string
+  icon?: string
 }
 
 export type OnMessageEventPayload = {

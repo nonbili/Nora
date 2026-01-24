@@ -1,5 +1,3 @@
-import 'ts-node/register'
-
 import { ExpoConfig } from 'expo/config'
 import { version, versionCode } from './package.json'
 

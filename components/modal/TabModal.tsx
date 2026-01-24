@@ -3,7 +3,7 @@ import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
 import { ServiceIcon, services } from '../service/Services'
 import { View, Text, Pressable, ScrollView, TouchableHighlight } from 'react-native'
-import { clsx, isWeb, nIf } from '@/lib/utils'
+import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { getHomeUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
@@ -87,7 +87,7 @@ export const TabModal = () => {
               </View>
             </TouchableHighlight>
             <NouMenu
-              trigger="filled.MoreVert"
+              trigger={isIos ? 'ellipsis' : 'filled.MoreVertical'}
               items={[{ label: t('menus.close'), handler: () => tabs$.closeTab(index) }]}
             />
           </View>

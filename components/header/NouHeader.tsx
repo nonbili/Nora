@@ -10,7 +10,7 @@ import { settings$ } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
-import { isWeb, nIf } from '@/lib/utils'
+import { isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
@@ -38,7 +38,7 @@ function nextTab() {
   tabs$.activeTabIndex.set(newIndex)
 }
 
-export const NouHeader: React.FC<{}> = ({}) => {
+export const NouHeader: React.FC<{}> = ({ }) => {
   const uiState = useValue(ui$)
   const settings = useValue(settings$)
   const { tabs, activeTabIndex } = useValue(tabs$)
@@ -55,7 +55,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
       const { hostname, pathname } = new URL(currentTab.url)
       const slugs = pathname.split('/')
       canDownload = isDownloadable(currentTab.url)
-    } catch (e) {}
+    } catch (e) { }
   }
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -117,35 +117,35 @@ export const NouHeader: React.FC<{}> = ({}) => {
           </TouchableOpacity>,
         )}
         <NouMenu
-          trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
+          trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVertical'}
           items={[
             ...(isWeb
               ? []
               : [
-                  {
-                    label: t('menus.reload'),
-                    handler: () => webview?.executeJavaScript('document.location.reload()'),
+                {
+                  label: t('menus.reload'),
+                  handler: () => webview?.executeJavaScript('document.location.reload()'),
+                },
+                {
+                  label: t('menus.scroll'),
+                  handler: scrollToTop,
+                },
+                {
+                  label: `${t('menus.desktop')} |  ${currentTab?.desktopMode ? t('menus.desktopOn') : t('menus.desktopOff')}`,
+                  handler: () => {
+                    tabs$.tabs[activeTabIndex].desktopMode.toggle()
+                    webview?.executeJavaScript('document.location.reload()')
                   },
-                  {
-                    label: t('menus.scroll'),
-                    handler: scrollToTop,
-                  },
-                  {
-                    label: `${t('menus.desktop')} |  ${currentTab?.desktopMode ? t('menus.desktopOn') : t('menus.desktopOff')}`,
-                    handler: () => {
-                      tabs$.tabs[activeTabIndex].desktopMode.toggle()
-                      webview?.executeJavaScript('document.location.reload()')
-                    },
-                  },
-                  {
-                    label: t('menus.addBookmark'),
-                    handler: addBookmark,
-                  },
-                  {
-                    label: t('menus.share'),
-                    handler: () => (currentTab ? share(currentTab.url) : {}),
-                  },
-                ]),
+                },
+                {
+                  label: t('menus.addBookmark'),
+                  handler: addBookmark,
+                },
+                {
+                  label: t('menus.share'),
+                  handler: () => (currentTab ? share(currentTab.url) : {}),
+                },
+              ]),
             { label: t('menus.tools'), handler: () => ui$.toolsModalOpen.set(true) },
             { label: t('settings.label'), handler: () => ui$.settingsModalOpen.set(true) },
           ]}

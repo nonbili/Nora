@@ -3,12 +3,13 @@ import { NouText } from '../NouText'
 import { Image } from 'expo-image'
 import { use$ } from '@legendapp/state/react'
 import { auth$ } from '@/states/auth'
-import { isWeb, nIf } from '@/lib/utils'
+import { isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
 import { signOut } from '@/lib/supabase/auth'
 import { NouLink } from '../link/NouLink'
 import { NouMenu } from '../menu/NouMenu'
 import { capitalize } from 'es-toolkit'
 import { t } from 'i18next'
+import { MaterialButton } from '../button/IconButtons'
 
 export const SettingsModalTabSync = () => {
   const { user, plan } = use$(auth$)
@@ -58,7 +59,7 @@ export const SettingsModalTabSync = () => {
             <NouText>{user.email}</NouText>
           </View>
           <NouMenu
-            trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
+            trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVertical'}
             items={[{ label: t('menus.signOut'), handler: signOut }]}
           />
         </View>

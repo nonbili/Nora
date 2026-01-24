@@ -5,7 +5,7 @@ import { getService } from './services/manager'
 
 function getMeta(url: string) {
   const icon = document.querySelector('link[rel*=icon]')?.getAttribute('href') || 'favicon.ico'
-  return { title: document.title, icon: new URL(icon, document.location.href).href }
+  return JSON.stringify({ title: document.title, icon: new URL(icon, document.location.href).href })
 }
 
 async function blobToBase64(blob: Blob) {
