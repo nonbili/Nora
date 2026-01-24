@@ -30,7 +30,7 @@ export const settings$ = observable<Store>({
   theme: null,
   openExternalLinkInSystemBrowser: true,
 
-  showNewTabButtonInHeader: false,
+  showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,
   showScrollButtonInHeader: false,
   oneHandMode: false,

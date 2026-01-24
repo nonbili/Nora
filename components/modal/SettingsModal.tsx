@@ -5,7 +5,7 @@ import { version } from '../../package.json'
 import { version as desktopVersion } from '../../desktop/package.json'
 import { useState } from 'react'
 import { colors } from '@/lib/colors'
-import { clsx, isWeb, nIf } from '@/lib/utils'
+import { clsx, isIos, isWeb, nIf } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
@@ -26,7 +26,13 @@ function renderTab(tabIndex: number) {
     case 0:
       return <SettingsModalTabSettings />
     case 1:
-      return <SettingsModalTabSync />
+      return isIos ? (
+        <View>
+          <NouText className="text-2xl text-center mt-8">Work in progress</NouText>
+        </View>
+      ) : (
+        <SettingsModalTabSync />
+      )
     case 2:
       return (
         <>
