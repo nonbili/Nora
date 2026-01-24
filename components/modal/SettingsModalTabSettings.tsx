@@ -2,7 +2,7 @@ import { View } from 'react-native'
 import { NouButton } from '../button/NouButton'
 import { ui$ } from '@/states/ui'
 import { ServiceManager } from '../service/Services'
-import { clsx, isWeb, nIf } from '@/lib/utils'
+import { clsx, isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
 import { settings$ } from '@/states/settings'
@@ -98,7 +98,7 @@ export const SettingsModalTabSettings = () => {
             <NouText numberOfLines={1}>{bookmark.title}</NouText>
           </View>
           <NouMenu
-            trigger={isWeb ? <MaterialButton name="more-vert" /> : 'filled.MoreVert'}
+            trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
             items={[{ label: t('menus.delete'), handler: () => bookmarks$.deleteBookmark(index) }]}
           />
         </View>

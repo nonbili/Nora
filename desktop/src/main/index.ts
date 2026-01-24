@@ -10,7 +10,7 @@ import { initMainChannel } from './ipc/main'
 import contextMenu from 'electron-context-menu'
 import { getUserAgent } from '@/lib/useragent'
 
-app.userAgentFallback = getUserAgent(process.platform)
+app.userAgentFallback = getUserAgent(process.platform, true)
 
 function createWindow(): void {
   // Create the browser window.
