@@ -22,7 +22,7 @@ export const UrlModal = () => {
     if (!url.trim()) {
       return
     }
-    const _url = url.startsWith('http') || url.startsWith('nora') ? url : `https://${url}`
+    const _url = url.includes('://') ? url : `https://${url}`
     openSharedUrl(_url, true)
     onClose()
     ui$.settingsModalOpen.set(false)

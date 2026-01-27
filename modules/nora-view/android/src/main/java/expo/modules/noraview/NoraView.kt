@@ -108,6 +108,17 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
   }
 }
 
+fun redirectFacebookUrl(url: String): String? {
+  val uri = Uri.parse(url)
+  if (uri.scheme == "fb" && uri.host == "fullscreen_video") {
+    val videoId = uri.lastPathSegment
+    if (videoId != null) {
+      return "https://m.facebook.com/reel/$videoId/"
+    }
+  }
+  return null
+}
+
 fun shouldNoraOverrideUrlLoading(view: WebView, url: String): Boolean {
   val uri = Uri.parse(url)
   val host = uri.host
@@ -226,8 +237,14 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             return null
           }
 
-          override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean =
-            shouldNoraOverrideUrlLoading(view, url)
+          override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            val redirectedUrl = redirectFacebookUrl(url)
+            if (redirectedUrl != null && !pageUrl.startsWith(redirectedUrl)) {
+              load(redirectedUrl)
+              return true
+            }
+            return shouldNoraOverrideUrlLoading(view, url)
+          }
         }
 
       webChromeClient = object : WebChromeClient() {
