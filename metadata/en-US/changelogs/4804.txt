@@ -1,0 +1,2 @@
+- prevent crash
+- handle fb://fullscreen_video/:id
