@@ -30,7 +30,11 @@ export const tabs$ = observable<Store>({
   activeTabIndex: 0,
   orders: {},
 
-  currentTab: (): Tab => tabs$.tabs[tabs$.activeTabIndex.get()].get(),
+  currentTab: (): Tab | undefined => {
+    const index = tabs$.activeTabIndex.get()
+    if (index < 0 || index >= tabs$.tabs.length) return undefined
+    return tabs$.tabs[index].get()
+  },
   // currentUrl: (): string => tabs$.tabs[tabs$.activeTabIndex.get()].get()?.url,
 
   openTab: (url) => {
@@ -58,7 +62,10 @@ export const tabs$ = observable<Store>({
     if (index == undefined) {
       index = tabs$.activeTabIndex.get()
     }
-    tabs$.tabs[index].url.set(url)
+    const tab$ = tabs$.tabs[index]
+    if (tab$.get()) {
+      tab$.url.set(url)
+    }
   },
 })
 
@@ -66,5 +73,13 @@ syncObservable(tabs$, {
   persist: {
     name: 'tabs',
     plugin: ObservablePersistMMKV,
+    transform: {
+      load: (data: Store) => {
+        if (data?.tabs) {
+          data.tabs = data.tabs.filter((tab) => tab != null)
+        }
+        return data
+      },
+    },
   },
 })
