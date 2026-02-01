@@ -98,14 +98,6 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
         },
       ],
       'expo-asset',
-      [
-        'expo-build-properties',
-        {
-          android: {
-            minSdkVersion: 28,
-          },
-        },
-      ],
       'expo-font',
       [
         'expo-localization',
