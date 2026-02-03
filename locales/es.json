@@ -1,0 +1,76 @@
+{
+  "about": {
+    "label": "Acerca de",
+    "code": "Código fuente",
+    "donate": "Donar"
+  },
+  "bookmarks": {
+    "label": "Marcadores"
+  },
+  "buttons": {
+    "cancel": "Cancelar",
+    "closeAll": "Cerrar Todo",
+    "download": "Descargar",
+    "openUrl": "Abrir URL",
+    "open": "Abrir"
+  },
+  "menus": {
+    "close": "Cerrar",
+    "delete": "Eliminar",
+    "desktop": "Sitio de escritorio",
+    "desktopOn": "Encendido",
+    "desktopOff": "Apagado",
+    "addBookmark": "Añadir marcador",
+    "reload": "Recargar",
+    "share": "Compartir",
+    "tools": "Herramientas",
+    "signOut": "Cerrar sesión",
+    "scroll": "Deslizar hasta arriba",
+    "pin": "Anclar a la página de nueva pestaña"
+  },
+  "modals": {
+    "downloadVideo": "Descargar vídeo"
+  },
+  "native": {
+    "menu_saveImage": "Guardar imagen",
+    "menu_copyImageLink": "Copiar enlace de la imagen",
+    "menu_copyLink": "Copiar enlace",
+    "toast_downloadSucceeded": "Guardado en la carpeta de Descargas",
+    "toast_downloadStarted": "Descarga iniciada, checa el sistema de notificaciones",
+    "toast_downloadFailed": "Descarga fallida"
+  },
+  "settings": {
+    "label": "Ajustes",
+    "oneHandMode": "Modo de una mano",
+    "theme": {
+      "label": "Tema",
+      "system": "Sistema",
+      "dark": "Oscuro",
+      "light": "Claro",
+      "hint": "Reinicia manualmente si el cambio no se ve reflejado en el WebView."
+    },
+    "injectCookie": "Inyectar cookie",
+    "hideHeader": "Ocultar la barra de herramientas al deslizar",
+    "headerPosition": {
+      "label": "Posición de la barra de herramientas",
+      "top": "Arriba",
+      "bottom": "Abajo"
+    },
+    "openExternalLink": "Abrir enlace externo en el navegador del sistema",
+    "showNewTabButton": "Mostrar el botón de nueva pestaña",
+    "showBackButton": "Mostrar el botón de ir atrás",
+    "showScrollButton": "Mostrar el deslizamiento para ir arriba"
+  },
+  "sync": {
+    "label": "Sincronizar",
+    "currentPlan": "Plan actual",
+    "managePlan": "Administrar plan",
+    "hint": "Sincronizar los marcadores y la configuración entre tus teléfonos y computadoras como usuario premium."
+  },
+  "tabs": {
+    "new": "Nueva pestaña"
+  },
+  "toast": {
+    "pinned": "Anclado a la página de nueva pestaña"
+  }
+}

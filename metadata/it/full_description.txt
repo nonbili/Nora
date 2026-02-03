@@ -1,0 +1,3 @@
+<h2>Funzionalità</h2><ul><li>Scarica immagini</li><li>Scarica reel fb/ig</li><li>Seleziona testo</li><li>Zoom</li><li>Rimuove parametri di tracciamento dalle query degli URL</li></ul>
+<h2>SNS Supportati</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
+<h2>Come funziona</h2><ul><li>Incorpora i siti web SNS nel webview di Android</li><li>Inietta codice per bloccare gli annunci pubblicitari</li></ul>
