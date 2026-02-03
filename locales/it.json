@@ -1,0 +1,76 @@
+{
+  "about": {
+    "label": "A proposito",
+    "code": "Codice sorgente",
+    "donate": "Dona"
+  },
+  "bookmarks": {
+    "label": "Segnalibri"
+  },
+  "buttons": {
+    "cancel": "Annulla",
+    "closeAll": "Chiudi Tutto",
+    "download": "Scarica",
+    "openUrl": "Apri URL",
+    "open": "Apri"
+  },
+  "menus": {
+    "close": "Chiudi",
+    "delete": "Cancella",
+    "desktop": "Sito desktop",
+    "desktopOn": "Sì",
+    "desktopOff": "No",
+    "addBookmark": "Aggiungi segnalibro",
+    "pin": "Aggiungi alla pagina nuova scheda",
+    "reload": "Ricarica",
+    "scroll": "Torna all'inizio",
+    "share": "Condividi",
+    "signOut": "Disconnetti",
+    "tools": "Strumenti"
+  },
+  "modals": {
+    "downloadVideo": "Scarica video"
+  },
+  "native": {
+    "menu_saveImage": "Salva immagine",
+    "menu_copyImageLink": "Copia collegamento immagine",
+    "menu_copyLink": "Copia collegamento",
+    "toast_downloadStarted": "Download avviato, controlla la notifica di sistema",
+    "toast_downloadSucceeded": "Salvato nella cartella Download",
+    "toast_downloadFailed": "Download non riuscito"
+  },
+  "settings": {
+    "label": "Impostazioni",
+    "openExternalLink": "Apri collegamento esterno nel browser",
+    "hideHeader": "Nascondi toolbar quando scrolli",
+    "headerPosition": {
+      "label": "Posizione della toolbar",
+      "top": "In alto",
+      "bottom": "In basso"
+    },
+    "showNewTabButton": "Mostra pulsante nuova scheda",
+    "showBackButton": "Mostra pulsante indietro",
+    "showScrollButton": "Mostra pulsante torna all'inizio",
+    "oneHandMode": "Modalità a una mano",
+    "theme": {
+      "label": "Tema",
+      "system": "Sistema",
+      "dark": "Scuro",
+      "light": "Chiaro",
+      "hint": "Riavvia manualmente se webview non rispecchia le modifiche."
+    },
+    "injectCookie": "Inietta cookie"
+  },
+  "sync": {
+    "label": "Sincronizza",
+    "hint": "Sincronizza i segnalibri e le impostazioni su tutti i tuoi telefoni e computer come utente premium.",
+    "currentPlan": "Piano attuale",
+    "managePlan": "Gestisci piano"
+  },
+  "tabs": {
+    "new": "Nuova scheda"
+  },
+  "toast": {
+    "pinned": "Aggiunto alla pagina nuova scheda"
+  }
+}
