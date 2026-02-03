@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
 import { NouText } from '../NouText'
 import { useEffect, useRef, useState } from 'react'
 import { clsx, nIf } from '@/lib/utils'
@@ -89,10 +89,11 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   }
 
   return (
-    <BaseCenterModal onClose={onClose}>
-      <View className="py-6 px-4 h-[400px]">
+    <View className={clsx('absolute inset-0 z-10 items-center justify-center')}>
+      <Pressable className="absolute inset-0 bg-gray-600/80" onPress={onClose} />
+      <View className="rounded-lg bg-gray-950 py-6 px-4 w-screen h-[75%]">
         <NouText className="text-lg font-semibold mb-4">{title}</NouText>
-        <View className="flex-1 bg-gray-800">
+        <View className="flex-1">
           <NoraView
             ref={nativeRef}
             className="bg-white"
@@ -104,6 +105,6 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
           />
         </View>
       </View>
-    </BaseCenterModal>
+    </View>
   )
 }

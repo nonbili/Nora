@@ -35,51 +35,67 @@ async function getVideoUrl() {
     return
   }
   const fileName = slugs.filter(Boolean).at(-1) + '.mp4'
-  if (src?.startsWith('https://')) {
-    emit('download', { url: src, fileName })
-  } else if (!src || src.startsWith('blob:https://')) {
-    switch (hostname) {
-      case 'm.facebook.com':
-      case 'www.facebook.com':
-        const url = document.querySelector('[data-video-url]')?.getAttribute('data-video-url')
+  // if (src?.startsWith('https://')) {
+  //   emit('download', { url: src, fileName })
+  // } else if (!src || src.startsWith('blob:https://')) {
+  switch (hostname) {
+    case 'm.facebook.com':
+    case 'www.facebook.com':
+      const extra = document.querySelector('[data-video-url]')?.getAttribute('data-extra')
+      if (extra) {
+        const data = parseJson(extra)
+        let height = 0,
+          url
+        for (const representation of data?.dash_prefetch_representations?.representations || []) {
+          if (representation.height > height) {
+            height = representation.height
+            url = representation.base_url
+          }
+        }
         if (url) {
           emit('download', { url, fileName })
           return
         }
-        const html = document.body.innerHTML
-        const matches = html.match(/\\u003CBaseURL>(https:.+?)\\u003C/)
-        if (matches) {
-          const url = matches[1].replace(/\\\//g, '/').replaceAll('\\u0025', '%').replaceAll('&amp;', '&')
-          emit('download', { url })
+      }
+      const html = document.body.innerHTML
+      const matches = html.match(/\\u003CBaseURL>(https:.+?)\\u003C/)
+      if (matches) {
+        const url = matches[1].replace(/\\\//g, '/').replaceAll('\\u0025', '%').replaceAll('&amp;', '&')
+        emit('download', { url, fileName })
+        return
+      }
+      const url = document.querySelector('[data-video-url]')?.getAttribute('data-video-url')
+      if (url) {
+        emit('download', { url, fileName })
+        return
+      }
+      break
+    case 'www.instagram.com':
+      const scripts = document.scripts
+      for (const script of [...scripts]) {
+        const text = script.textContent
+        if (!text) continue
+        const term = '"video_versions":'
+        const start = text.indexOf(term)
+        if (start > -1) {
+          const end = text.indexOf(']', start)
+          const slice = text.slice(start + term.length, end + 1)
+          const videos = JSON.parse(slice)
+          emit('download', { url: videos[0].url, fileName })
           return
         }
-        break
-      case 'www.instagram.com':
-        const scripts = document.scripts
-        for (const script of [...scripts]) {
-          const text = script.textContent
-          if (!text) continue
-          const term = '"video_versions":'
-          const start = text.indexOf(term)
-          if (start > -1) {
-            const end = text.indexOf(']', start)
-            const slice = text.slice(start + term.length, end + 1)
-            const videos = JSON.parse(slice)
-            emit('download', { url: videos[0].url, fileName })
-            return
-          }
-        }
-        break
-      case 'x.com':
-        const service = getService(document.location.href)
-        if (service?.videoUrl) {
-          emit('download', { url: service.videoUrl })
-          return
-        }
-        break
-    }
-    emit('video-not-found', {})
+      }
+      break
+    case 'x.com':
+      const service = getService(document.location.href)
+      if (service?.videoUrl) {
+        emit('download', { url: service.videoUrl })
+        return
+      }
+      break
   }
+  emit('video-not-found', {})
+  // }
 }
 
 export function initNora() {

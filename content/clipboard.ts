@@ -1,6 +1,9 @@
 import { log } from './utils'
 
 const trackingParams = [
+  // fb
+  'referral_source',
+  'surface_type',
   // instagram & reddit
   'utm_source',
   'utm_medium',

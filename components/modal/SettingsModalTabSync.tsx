@@ -9,6 +9,7 @@ import { NouLink } from '../link/NouLink'
 import { NouMenu } from '../menu/NouMenu'
 import { capitalize } from 'es-toolkit'
 import { t } from 'i18next'
+import { MaterialButton } from '../button/IconButtons'
 
 export const SettingsModalTabSync = () => {
   const { user, plan } = use$(auth$)

@@ -45,15 +45,16 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const currentTab = useValue(tabs$.currentTab)
   const webview = ui$.webview.get()
   const marginTop = useSharedValue(0)
+  const flingStart = useSharedValue(0)
+  const panStart = useSharedValue(0)
 
-  let slugs = [],
-    hostname = '',
+  let hostname = '',
     canDownload = false
 
   if (currentTab?.url) {
     try {
-      const { hostname, pathname } = new URL(currentTab.url)
-      const slugs = pathname.split('/')
+      const url = new URL(currentTab.url)
+      hostname = url.hostname
       canDownload = isDownloadable(currentTab.url)
     } catch (e) {}
   }
@@ -130,13 +131,17 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     label: t('menus.scroll'),
                     handler: scrollToTop,
                   },
-                  {
-                    label: `${t('menus.desktop')} |  ${currentTab?.desktopMode ? t('menus.desktopOn') : t('menus.desktopOff')}`,
-                    handler: () => {
-                      tabs$.tabs[activeTabIndex].desktopMode.toggle()
-                      webview?.executeJavaScript('document.location.reload()')
-                    },
-                  },
+                  ...(hostname.endsWith('.facebook.com')
+                    ? []
+                    : [
+                        {
+                          label: `${t('menus.desktop')} |  ${currentTab?.desktopMode ? t('menus.desktopOn') : t('menus.desktopOff')}`,
+                          handler: () => {
+                            tabs$.tabs[activeTabIndex].desktopMode.toggle()
+                            webview?.executeJavaScript('document.location.reload()')
+                          },
+                        },
+                      ]),
                   {
                     label: t('menus.addBookmark'),
                     handler: addBookmark,
@@ -158,8 +163,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
     return ret
   }
 
-  const flingStart = useSharedValue(0)
-  const panStart = useSharedValue(0)
   const flingGesture = Gesture.Fling()
     .runOnJS(true)
     .direction(Directions.RIGHT | Directions.LEFT)

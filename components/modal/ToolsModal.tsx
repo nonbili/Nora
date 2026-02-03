@@ -25,6 +25,9 @@ const canDownload = (url: string) => {
 
   const slugs = pathname.split('/')
   switch (hostname) {
+    case 'm.facebook.com':
+    case 'www.facebook.com':
+      return slugs[1] == 'share'
     case 'www.instagram.com':
       return slugs[1] == 'p'
     case 'x.com':
