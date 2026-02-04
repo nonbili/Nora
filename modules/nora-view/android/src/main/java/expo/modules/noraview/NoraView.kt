@@ -192,13 +192,15 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   inner class NoraGestureListener : GestureDetector.SimpleOnGestureListener() {
+    override fun onDown(e: MotionEvent): Boolean = true
+
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
       var dy = distanceY
       if (e1 != null) {
         dy = e2.y - e1.y
       }
       emit("scroll", mapOf("dy" to dy))
-      return false
+      return true
     }
   }
 
@@ -250,7 +252,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
           override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
             log("onRenderProcessGone crash: ${detail.didCrash()}")
-            load(pageUrl)
+            view.post {
+              load(pageUrl)
+            }
             return true
           }
         }
@@ -365,9 +369,13 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           }
         }
       )
-      setOnTouchListener(object : OnTouchListener {
-        override fun onTouch(v: View, event: MotionEvent): Boolean = gestureDetector.onTouchEvent(event)
-      })
+      setOnTouchListener { v, event ->
+        gestureDetector.onTouchEvent(event)
+        if (event.action == MotionEvent.ACTION_DOWN) {
+          v.requestFocus()
+        }
+        false
+      }
     }
 
   init {
@@ -385,6 +393,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   fun load(url: String) {
+    if (url == "" || url == "about:blank") return
+    pageUrl = url
     var ua = userAgent
     if (url.startsWith("https://www.facebook.com/messages/") ||
       url.startsWith("https://www.tiktok.com")

@@ -62,15 +62,12 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   const contentJs = useContentJs()
 
   useEffect(() => {
-    if (!tab.url) {
+    if (isWeb || !tab.url) {
       return
     }
-    if (tab.url != pageUrlRef.current) {
-      const webview = webviewRef.current
+    if (tab.url !== pageUrlRef.current) {
       const native = nativeRef.current
-      if (webview) {
-        webview.src = tab.url
-      } else if (native) {
+      if (native) {
         native.loadUrl(tab.url)
       }
     }
@@ -78,6 +75,9 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
 
   const setPageUrl = useCallback(
     (url: string) => {
+      if (!url || url === 'about:blank') {
+        return
+      }
       pageUrlRef.current = url
       tabs$.updateTabUrl(url, index)
     },
@@ -111,18 +111,22 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
 
   const checkBlank = useCallback(
     async (webview: any) => {
-      if (!webview) return
-      ui$.webview.set(ObservableHint.opaque(webview))
+      if (!webview || !tab.url) return
+      if (activeTabIndex === index) {
+        ui$.webview.set(ObservableHint.opaque(webview))
+      }
       try {
         const location = await webview.executeJavaScript('document.location.href')
         if (location === 'about:blank' || !location || location === '""') {
           webview.loadUrl(tab.url)
+        } else if (!pageUrlRef.current && location) {
+          pageUrlRef.current = location.replace(/^"|"$/g, '')
         }
       } catch (e) {
         webview.loadUrl(tab.url)
       }
     },
-    [tab.url],
+    [tab.url, index, activeTabIndex],
   )
 
   useEffect(() => {
@@ -135,11 +139,11 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   const onNativeRef = useCallback(
     (ref: any) => {
       nativeRef.current = ref
-      if (ref && activeTabIndex === index && tab.url) {
+      if (ref && tab.url) {
         checkBlank(ref)
       }
     },
-    [activeTabIndex, index, tab.url, checkBlank],
+    [tab.url, checkBlank],
   )
 
   const webview = webviewRef.current || nativeRef.current
