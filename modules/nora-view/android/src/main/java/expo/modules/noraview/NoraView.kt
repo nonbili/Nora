@@ -49,6 +49,9 @@ import java.io.FileOutputStream
 import java.nio.charset.Charset
 import java.util.Base64
 import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.apache.tika.Tika
 
@@ -417,63 +420,77 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
 
-    try {
-      val uri = Uri.parse(url)
-      val request = DownloadManager.Request(uri)
-      var name = fileName
-      if (name == null) {
-        val mimeTypeMap = MimeTypeMap.getSingleton()
-        val ext = MimeTypeMap.getFileExtensionFromUrl(url)
-        name = uri.getLastPathSegment()
-        if (ext == "" && mimeType != null) {
-          name += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        val uri = Uri.parse(url)
+        val request = DownloadManager.Request(uri)
+        var name = fileName
+        if (name == null) {
+          val mimeTypeMap = MimeTypeMap.getSingleton()
+          val ext = MimeTypeMap.getFileExtensionFromUrl(url)
+          name = uri.getLastPathSegment()
+          if (ext == "" && mimeType != null) {
+            name += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
+          }
+        }
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        downloadManager.enqueue(request)
+        activity.runOnUiThread {
+          Toast.makeText(context, nouController.t("toast_downloadStarted"), Toast.LENGTH_LONG).show()
+        }
+      } catch (e: Exception) {
+        activity.runOnUiThread {
+          Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
         }
       }
-      request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
-      request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-      val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-      downloadManager.enqueue(request)
-      Toast.makeText(context, nouController.t("toast_downloadStarted"), Toast.LENGTH_LONG).show()
-    } catch (e: Exception) {
-      Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
     }
   }
 
   fun saveFile(content: String, _fileName: String, _mimeType: String?) {
-    val bytes = Base64.getDecoder().decode(content)
-    var mimeType = _mimeType
-    if (mimeType == null || mimeType == "application/octet-stream") {
-      val tika = Tika()
-      mimeType = tika.detect(bytes)
-    }
-    var fileName = _fileName
-    if (!fileName.contains(".")) {
-      val mimeTypeMap = MimeTypeMap.getSingleton()
-      fileName += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
-    }
-    val contentValues = ContentValues().apply {
-      put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-      put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-      put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+    val activity = currentActivity
+    if (activity == null) {
+      return
     }
 
-    val resolver = context.contentResolver
-    var uri: Uri? = null
-    try {
-      uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-      uri?.let {
-        resolver.openOutputStream(it)?.use { outputStream ->
-          val bytes = Base64.getDecoder().decode(content)
+    CoroutineScope(Dispatchers.IO).launch {
+      val resolver = context.contentResolver
+      var uri: Uri? = null
+      try {
+        val bytes = Base64.getDecoder().decode(content)
+        var mimeType = _mimeType
+        if (mimeType == null || mimeType == "application/octet-stream") {
           val tika = Tika()
-          val type = tika.detect(bytes)
-          outputStream.write(Base64.getDecoder().decode(content))
+          mimeType = tika.detect(bytes)
+        }
+        var fileName = _fileName
+        if (!fileName.contains(".")) {
+          val mimeTypeMap = MimeTypeMap.getSingleton()
+          fileName += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
+        }
+        val contentValues = ContentValues().apply {
+          put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+          put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+          put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+        }
+
+        uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+          resolver.openOutputStream(it)?.use { outputStream ->
+            outputStream.write(bytes)
+          }
+        }
+        activity.runOnUiThread {
+          Toast.makeText(context, nouController.t("toast_downloadSucceeded"), Toast.LENGTH_LONG).show()
+        }
+      } catch (e: Exception) {
+        e.printStackTrace()
+        uri?.let { resolver.delete(it, null, null) }
+        activity.runOnUiThread {
+          Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
         }
       }
-      Toast.makeText(context, nouController.t("toast_downloadSucceeded"), Toast.LENGTH_LONG).show()
-    } catch (e: Exception) {
-      e.printStackTrace()
-      uri?.let { resolver.delete(it, null, null) }
-      Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
     }
   }
 
