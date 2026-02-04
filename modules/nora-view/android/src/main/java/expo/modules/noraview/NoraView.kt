@@ -25,6 +25,7 @@ import android.webkit.CookieManager
 import android.webkit.DownloadListener
 import android.webkit.JsResult
 import android.webkit.MimeTypeMap
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -35,6 +36,7 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -245,6 +247,12 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             }
             return shouldNoraOverrideUrlLoading(view, url)
           }
+
+          override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+            log("onRenderProcessGone crash: ${detail.didCrash()}")
+            load(pageUrl)
+            return true
+          }
         }
 
       webChromeClient = object : WebChromeClient() {
@@ -369,6 +377,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     activity?.registerForContextMenu(webView)
 
     webView.addJavascriptInterface(NouJsInterface(context, this), "NoraI")
+
+    // some websites have `padding-bottom: env(safe-area-inset-bottom)`, this set it to 0
+    ViewCompat.setOnApplyWindowInsetsListener(webView) { _, _ ->
+      WindowInsetsCompat.CONSUMED
+    }
   }
 
   fun load(url: String) {

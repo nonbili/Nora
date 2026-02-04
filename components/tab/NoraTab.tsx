@@ -84,45 +84,63 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     [index],
   )
 
-  const noraViewRef = useCallback((webview: WebviewTag) => {
-    webviewRef.current = webview
-    if (!webview) {
-      return
-    }
+  const noraViewRef = useCallback(
+    (webview: WebviewTag) => {
+      webviewRef.current = webview
+      if (!webview) {
+        return
+      }
 
-    webview.addEventListener('dom-ready', () => {
+      webview.addEventListener('dom-ready', () => {
+        ui$.webview.set(ObservableHint.opaque(webview))
+        webview.executeJavaScript(contentJs)
+      })
+      webview.addEventListener('did-navigate', (e) => {
+        setPageUrl(e.url)
+      })
+      webview.addEventListener('did-navigate-in-page', (e) => {
+        setPageUrl(e.url)
+      })
+      webview.addEventListener('page-favicon-updated', (e) => {
+        tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons[0] })
+      })
+      webview.addEventListener('ipc-message', (e) => {})
+    },
+    [contentJs, index, setPageUrl],
+  )
+
+  const checkBlank = useCallback(
+    async (webview: any) => {
+      if (!webview) return
       ui$.webview.set(ObservableHint.opaque(webview))
-      webview.executeJavaScript(contentJs)
-    })
-    webview.addEventListener('did-navigate', (e) => {
-      const { host } = new URL(e.url)
-      setPageUrl(e.url)
-    })
-    webview.addEventListener('did-navigate-in-page', (e) => {
-      setPageUrl(e.url)
-    })
-    webview.addEventListener('page-favicon-updated', (e) => {
-      tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons[0] })
-    })
-    webview.addEventListener('ipc-message', (e) => {})
-  }, [])
+      try {
+        const location = await webview.executeJavaScript('document.location.href')
+        if (location === 'about:blank' || !location || location === '""') {
+          webview.loadUrl(tab.url)
+        }
+      } catch (e) {
+        webview.loadUrl(tab.url)
+      }
+    },
+    [tab.url],
+  )
 
   useEffect(() => {
     const webview = nativeRef.current
-    if (webview && activeTabIndex == index && tab.url) {
-      ui$.webview.set(ObservableHint.opaque(webview))
-      ;(async () => {
-        try {
-          const location = await webview.executeJavaScript('document.location.href')
-          if (location == 'about:blank') {
-            webview.loadUrl(tab.url)
-          }
-        } catch (e) {
-          webview.loadUrl(tab.url)
-        }
-      })()
+    if (webview && activeTabIndex === index && tab.url) {
+      checkBlank(webview)
     }
-  }, [nativeRef, activeTabIndex, index, tab.url])
+  }, [activeTabIndex, index, tab.url, checkBlank])
+
+  const onNativeRef = useCallback(
+    (ref: any) => {
+      nativeRef.current = ref
+      if (ref && activeTabIndex === index && tab.url) {
+        checkBlank(ref)
+      }
+    },
+    [activeTabIndex, index, tab.url, checkBlank],
+  )
 
   const webview = webviewRef.current || nativeRef.current
 
@@ -205,7 +223,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   return (
     <>
       <NoraView
-        ref={nativeRef}
+        ref={onNativeRef}
         className={clsx(!tab.url || (index != activeTabIndex && 'hidden'))}
         style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
         scriptOnStart={contentJs}

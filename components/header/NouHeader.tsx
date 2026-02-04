@@ -125,7 +125,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
               : [
                   {
                     label: t('menus.reload'),
-                    handler: () => webview?.executeJavaScript('document.location.reload()'),
+                    handler: () => webview?.loadUrl(currentTab?.url),
                   },
                   {
                     label: t('menus.scroll'),
