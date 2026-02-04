@@ -1,0 +1,4 @@
+- fb: download hd video
+- try to prevent blank page
+- try to fix keyboard now showing up
+- add Spanish, Italian translation
