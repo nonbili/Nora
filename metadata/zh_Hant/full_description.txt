@@ -1,0 +1,3 @@
+<h2>功能</h2><ul><li>下載圖片</li><li>下載 FB／IG Reel</li><li>選擇文字</li><li>縮放</li><li>移除網址的追蹤查詢參數</li></ul>
+<h2>支援的社群網路服務</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
+<h2>工作原理</h2><ul><li>將社群網路服務網站封裝在 Android WebView 中</li><li>注入程式碼以封鎖廣告</li></ul>
