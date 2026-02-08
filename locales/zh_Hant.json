@@ -1,0 +1,76 @@
+{
+  "about": {
+    "label": "關於",
+    "code": "原始碼",
+    "donate": "捐助"
+  },
+  "bookmarks": {
+    "label": "書籤"
+  },
+  "buttons": {
+    "cancel": "取消",
+    "closeAll": "關閉全部",
+    "download": "下載",
+    "openUrl": "開啟網址",
+    "open": "開啟"
+  },
+  "menus": {
+    "close": "關閉",
+    "delete": "刪除",
+    "desktop": "桌面版網站",
+    "desktopOn": "開",
+    "desktopOff": "關",
+    "addBookmark": "新增書籤",
+    "pin": "釘選至新分頁",
+    "reload": "重新載入",
+    "scroll": "回到頂部",
+    "share": "分享",
+    "signOut": "登出",
+    "tools": "工具"
+  },
+  "modals": {
+    "downloadVideo": "下載影片"
+  },
+  "native": {
+    "menu_saveImage": "儲存圖片",
+    "menu_copyImageLink": "複製圖片連結",
+    "menu_copyLink": "複製連結",
+    "toast_downloadStarted": "下載已開始，請查看系統通知",
+    "toast_downloadSucceeded": "已儲存至下載資料夾",
+    "toast_downloadFailed": "下載失敗"
+  },
+  "settings": {
+    "label": "設定",
+    "openExternalLink": "在系統瀏覽器中開啟外部連結",
+    "hideHeader": "捲動時隱藏工具列",
+    "headerPosition": {
+      "label": "工具列位置",
+      "top": "頂部",
+      "bottom": "底部"
+    },
+    "showNewTabButton": "顯示新分頁按鈕",
+    "showBackButton": "顯示返回按鈕",
+    "showScrollButton": "顯示回到頂部按鈕",
+    "oneHandMode": "單手模式",
+    "theme": {
+      "label": "主題",
+      "system": "系統",
+      "dark": "深色",
+      "light": "淺色",
+      "hint": "如果變更未在網頁檢視中反映出來，請手動重新啟動。"
+    },
+    "injectCookie": "注入 Cookie"
+  },
+  "sync": {
+    "label": "同步",
+    "hint": "高級使用者可以在手機和電腦之間同步書籤和設定。",
+    "currentPlan": "目前計劃",
+    "managePlan": "管理計劃"
+  },
+  "tabs": {
+    "new": "新分頁"
+  },
+  "toast": {
+    "pinned": "已釘選至新分頁"
+  }
+}

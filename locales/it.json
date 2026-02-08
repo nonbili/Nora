@@ -1,6 +1,6 @@
 {
   "about": {
-    "label": "A proposito",
+    "label": "Info",
     "code": "Codice sorgente",
     "donate": "Dona"
   },
@@ -35,14 +35,14 @@
     "menu_saveImage": "Salva immagine",
     "menu_copyImageLink": "Copia collegamento immagine",
     "menu_copyLink": "Copia collegamento",
-    "toast_downloadStarted": "Download avviato, controlla la notifica di sistema",
+    "toast_downloadStarted": "Download avviato, controlla le notifiche",
     "toast_downloadSucceeded": "Salvato nella cartella Download",
     "toast_downloadFailed": "Download non riuscito"
   },
   "settings": {
     "label": "Impostazioni",
-    "openExternalLink": "Apri collegamento esterno nel browser",
-    "hideHeader": "Nascondi toolbar quando scrolli",
+    "openExternalLink": "Apri collegamento esterno nel browser predefinito",
+    "hideHeader": "Nascondi toolbar durante scorrimento",
     "headerPosition": {
       "label": "Posizione della toolbar",
       "top": "In alto",
@@ -51,7 +51,7 @@
     "showNewTabButton": "Mostra pulsante nuova scheda",
     "showBackButton": "Mostra pulsante indietro",
     "showScrollButton": "Mostra pulsante torna all'inizio",
-    "oneHandMode": "Modalità a una mano",
+    "oneHandMode": "Modalità ad una mano",
     "theme": {
       "label": "Tema",
       "system": "Sistema",
