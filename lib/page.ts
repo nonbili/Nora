@@ -1,7 +1,7 @@
 import { tabs$ } from '@/states/tabs'
-import { removeTrackingParams } from '@/content/clipboard'
+import { removeTrackingParams } from './url'
 import { onReceiveAuthUrl } from './supabase/auth'
-export { removeTrackingParams } from '@/content/clipboard'
+export { removeTrackingParams } from './url'
 
 export const homeUrls: Record<string, string> = {
   bluesky: 'https://bsky.app',
@@ -21,13 +21,17 @@ export function getHomeUrl(home: string) {
   return homeUrls[home] || homeUrls.x
 }
 
+export function cleanSharedUrl(url: string) {
+  return removeTrackingParams(url.replace('nora://', 'https://'))
+}
+
 export function openSharedUrl(url: string, replace = false) {
   if (url.startsWith('nora:auth')) {
     onReceiveAuthUrl(url)
     return
   }
   try {
-    const newUrl = removeTrackingParams(url.replace('nora://', 'https://'))
+    const newUrl = cleanSharedUrl(url)
     if (replace) {
       tabs$.updateTabUrl(newUrl)
     } else {
