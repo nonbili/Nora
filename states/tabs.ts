@@ -3,6 +3,8 @@ import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
 
+import { removeTrackingParams } from '@/lib/url'
+
 export interface Tab {
   id: string
   url: string
@@ -25,6 +27,8 @@ interface Store {
   updateTabUrl: (url: string, index?: number) => void
 }
 
+let lastOpenedUrl = ''
+
 export const tabs$ = observable<Store>({
   tabs: [],
   activeTabIndex: 0,
@@ -38,6 +42,15 @@ export const tabs$ = observable<Store>({
   // currentUrl: (): string => tabs$.tabs[tabs$.activeTabIndex.get()].get()?.url,
 
   openTab: (url) => {
+    const cleaned = removeTrackingParams(url.replace('nora://', 'https://'))
+    if (cleaned && cleaned === lastOpenedUrl) {
+      return
+    }
+    lastOpenedUrl = cleaned
+    setTimeout(() => {
+      lastOpenedUrl = ''
+    }, 1000)
+
     const tab = { id: genId(), url }
     tabs$.activeTabIndex.set(tabs$.tabs.length)
     tabs$.tabs.push(tab)
