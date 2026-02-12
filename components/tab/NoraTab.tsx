@@ -215,7 +215,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         <NoraView
           className={clsx('h-full', !tab.url && 'hidden')}
           ref={noraViewRef}
-          partition="persist:webview"
+          partition={`persist:${tab.profile || 'default'}`}
           useragent={getUserAgent(window.electron.process.platform, true)}
           allowpopups="true"
           key={tab.id}
@@ -231,6 +231,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         ref={onNativeRef}
         className={clsx(!tab.url || (index != activeTabIndex && 'hidden'))}
         style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
+        profile={tab.profile || 'default'}
         scriptOnStart={contentJs}
         useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
         onLoad={onLoad}

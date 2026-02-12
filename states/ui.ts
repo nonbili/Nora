@@ -15,6 +15,9 @@ interface Store {
   cookieModalOpen: boolean
   downloadVideoModalUrl: string
   navModalOpen: boolean
+  profileModalOpen: boolean
+  editingProfileId: string | null
+  lastSelectedProfileId: string
   settingsModalOpen: boolean
   tabModalOpen: boolean
   toolsModalOpen: boolean
@@ -38,10 +41,13 @@ export const ui$ = observable<Store>({
   cookieModalOpen: false,
   downloadVideoModalUrl: '',
   navModalOpen: false,
+  profileModalOpen: false,
+  editingProfileId: null,
   settingsModalOpen: false,
   tabModalOpen: false,
   toolsModalOpen: false,
   urlModalOpen: false,
+  lastSelectedProfileId: 'default',
 
   // webview
   webview: undefined,

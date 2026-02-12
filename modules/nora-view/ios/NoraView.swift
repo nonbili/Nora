@@ -9,10 +9,36 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   var scriptOnStart: String = ""
   var userAgent: String?
   var lastTranslationY: CGFloat = 0
+  var currentProfile: String = "default"
+  
+  // MARK: - Profile Data Store
+  
+  /// Maps profile name -> UUID stored in UserDefaults for stable identifier mapping
+  private static func profileIdentifier(for profile: String) -> UUID {
+    let key = "nora_profile_uuid_\(profile)"
+    if let uuidString = UserDefaults.standard.string(forKey: key),
+       let uuid = UUID(uuidString: uuidString) {
+      return uuid
+    }
+    let uuid = UUID()
+    UserDefaults.standard.set(uuid.uuidString, forKey: key)
+    return uuid
+  }
+  
+  private static func dataStore(for profile: String) -> WKWebsiteDataStore {
+    if profile == "default" {
+      return WKWebsiteDataStore.default()
+    }
+    let identifier = profileIdentifier(for: profile)
+    return WKWebsiteDataStore(forIdentifier: identifier)
+  }
   
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
-      
+    setupWebView(profile: "default")
+  }
+    
+  private func createConfig(profile: String) -> WKWebViewConfiguration {
     let config = WKWebViewConfiguration()
     config.userContentController.add(self, name: "NoraI")
       
@@ -26,14 +52,37 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     """
     let userScript = WKUserScript(source: bridgeScript, injectionTime: .atDocumentStart, forMainFrameOnly: false)
     config.userContentController.addUserScript(userScript)
+    
+    if !scriptOnStart.isEmpty {
+      let startScript = WKUserScript(source: scriptOnStart, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+      config.userContentController.addUserScript(startScript)
+    }
       
     config.allowsInlineMediaPlayback = true
-      
-    webView = WKWebView(frame: .zero, configuration: config)
+    config.websiteDataStore = NoraView.dataStore(for: profile)
+    
+    return config
+  }
+  
+  private func setupWebView(profile: String) {
+    // Remove existing webview if present
+    if webView != nil {
+      webView.removeObserver(self, forKeyPath: "title")
+      webView.removeObserver(self, forKeyPath: "url")
+      webView.removeFromSuperview()
+    }
+    
+    let config = createConfig(profile: profile)
+    
+    webView = WKWebView(frame: bounds, configuration: config)
     webView.navigationDelegate = self
     webView.uiDelegate = self
     webView.scrollView.delegate = self
     webView.allowsBackForwardNavigationGestures = true
+    
+    if let ua = userAgent {
+      webView.customUserAgent = ua
+    }
       
     addSubview(webView)
       
@@ -56,6 +105,12 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       scriptOnStart = script
       let userScript = WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
       webView.configuration.userContentController.addUserScript(userScript)
+  }
+  
+  func setProfile(_ profile: String) {
+    if profile == currentProfile { return }
+    currentProfile = profile
+    setupWebView(profile: profile)
   }
 
   func load(url: String) {
@@ -81,16 +136,9 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
                // Emit as a dictionary with payload key to match Android structure
                onMessage([
                   "payload": [
-                      "type": "onMessage", // Usually implied? Android wraps: mapOf("payload" to payload) where payload is string.
-                      // Wait, Android: onMessage(mapOf("payload" to payload))
-                      // JS side receives event.nativeEvent.payload
-                      // The payload string ITSELF is often JSON.
+                      "type": "onMessage",
                   ]
                ])
-               
-               // Rethink: Android `noraView.onMessage(mapOf("payload" to payload))`
-               // Defines event "onMessage".
-               // The event body is `{ payload: "string" }`.
                
                onMessage([
                    "payload": payload
@@ -118,12 +166,6 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       
       let host = url.host ?? ""
       let isFacebook = host.hasSuffix(".facebook.com") && host != "l.facebook.com"
-      
-      // Check VIEW_HOSTS or basic allow logic
-      // Note: VIEW_HOSTS is defined in NoraViewModule.swift or should be shared.
-      // I'll redefine it here or access if global. It was `let VIEW_HOSTS` in NoraViewModule.swift file scope? 
-      // It was in the file scope of NoraViewModule.swift. I should explicitly import or redefine.
-      // Swift files in same module see internal globals. check if it was public/internal. global let is internal by default.
       
       let isGoogle = host.contains("google.com") || host.contains("gstatic.com") || host.contains("recaptcha.net")
       let allowedInView = VIEW_HOSTS.contains(host) || host.isEmpty || isFacebook || isGoogle || !NouController.shared.settings.openExternalLinkInSystemBrowser
@@ -186,10 +228,6 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   // MARK: - UIScrollViewDelegate
   func scrollViewDidScroll(_ scrollView: UIScrollView) {
       let translation = scrollView.panGestureRecognizer.translation(in: nil).y
-      
-      // Emit scroll event
-      // Android: emit("scroll", mapOf("dy" to dy))
-      // It passes the event payload to "onMessage" with type "scroll".
       
       emitCustomEvent(type: "scroll", data: ["dy": translation])
   }

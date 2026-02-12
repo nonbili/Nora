@@ -13,6 +13,7 @@ import { BookmarkModal } from '../modal/BookmarkModal'
 import { DownloadVideoModal } from '../modal/DownloadVideoModal'
 import { UrlModal } from '../modal/UrlModal'
 import { ToolsModal } from '../modal/ToolsModal'
+import { ProfileEditModal } from '../modal/ProfileEditModal'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { Locale, useLocales } from 'expo-localization'
 import { useTranslation } from 'react-i18next'
@@ -65,6 +66,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <CookieModal />
         <UrlModal />
         <ToolsModal />
+        <ProfileEditModal />
         {nIf(
           !isWeb,
           <>

@@ -16,6 +16,9 @@ class SettingsSyncer extends BaseSyncer<Settings> {
   }
 
   setStore({ value, updatedAt }: { value: Settings; updatedAt: number }) {
+    if (value?.profiles) {
+      value.profiles = value.profiles.filter((p) => p != null)
+    }
     settings$.assign({ ...value, updatedAt })
   }
 
