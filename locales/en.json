@@ -39,6 +39,13 @@
     "toast_downloadSucceeded": "Saved to the Downloads folder",
     "toast_downloadFailed": "Failed to download"
   },
+  "profiles": {
+    "label": "Profiles",
+    "add": "Add",
+    "edit": "Edit",
+    "save": "Save",
+    "namePlaceholder": "Profile name"
+  },
   "settings": {
     "label": "Settings",
     "openExternalLink": "Open external link in system browser",
@@ -53,6 +60,7 @@
     "showBackButton": "Show back button",
     "showScrollButton": "Show scroll to top button",
     "oneHandMode": "One hand mode",
+    "services": "Services",
     "theme": {
       "label": "Theme",
       "system": "System",

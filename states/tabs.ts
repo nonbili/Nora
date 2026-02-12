@@ -11,6 +11,7 @@ export interface Tab {
   title?: string
   icon?: string
   desktopMode?: boolean
+  profile?: string
 }
 
 interface Store {
@@ -21,7 +22,7 @@ interface Store {
   currentTab: () => Tab | undefined
   // currentUrl: () => string
 
-  openTab: (url: string) => void
+  openTab: (url: string, profile?: string) => void
   closeTab: (index: number) => void
   closeAll: () => void
   updateTabUrl: (url: string, index?: number) => void
@@ -41,7 +42,7 @@ export const tabs$ = observable<Store>({
   },
   // currentUrl: (): string => tabs$.tabs[tabs$.activeTabIndex.get()].get()?.url,
 
-  openTab: (url) => {
+  openTab: (url, profile) => {
     const cleaned = removeTrackingParams(url.replace('nora://', 'https://'))
     if (cleaned && cleaned === lastOpenedUrl) {
       return
@@ -51,7 +52,7 @@ export const tabs$ = observable<Store>({
       lastOpenedUrl = ''
     }, 1000)
 
-    const tab = { id: genId(), url }
+    const tab: Tab = { id: genId(), url, profile }
     tabs$.activeTabIndex.set(tabs$.tabs.length)
     tabs$.tabs.push(tab)
   },
