@@ -65,6 +65,7 @@ val VIEW_HOSTS = arrayOf(
   "www.linkedin.com",
   "www.instagram.com",
   "chat.reddit.com",
+  "old.reddit.com",
   "www.reddit.com",
   "www.threads.com",
   "www.tiktok.com",
@@ -213,6 +214,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       webViewClient =
         object : WebViewClient() {
           override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
+            if (nouController.settings.redirectToOldReddit && url.startsWith("https://www.reddit.com/")) {
+              load(url.replace("www.reddit.com", "old.reddit.com"))
+              return
+            }
             if (url.startsWith("https://m.facebook.com/messages/")) {
               load("https://www.facebook.com/messages/")
               return
@@ -245,6 +250,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           }
 
           override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            if (nouController.settings.redirectToOldReddit && url.startsWith("https://www.reddit.com/")) {
+              load(url.replace("www.reddit.com", "old.reddit.com"))
+              return true
+            }
             val redirectedUrl = redirectFacebookUrl(url)
             if (redirectedUrl != null && !pageUrl.startsWith(redirectedUrl)) {
               load(redirectedUrl)

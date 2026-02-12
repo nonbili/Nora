@@ -3,6 +3,9 @@ import ExpoModulesCore
 struct NoraSettings: Record {
   @Field
   var openExternalLinkInSystemBrowser: Bool = false
+
+  @Field
+  var redirectToOldReddit: Bool = false
 }
 
 class NouController {

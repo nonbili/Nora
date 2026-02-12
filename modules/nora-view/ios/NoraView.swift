@@ -106,6 +106,16 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
           return
       }
       
+      let urlString = url.absoluteString
+      
+      // Redirect to Old Reddit if setting is enabled
+      if NouController.shared.settings.redirectToOldReddit && urlString.hasPrefix("https://www.reddit.com/") {
+          let oldRedditUrl = urlString.replacingOccurrences(of: "www.reddit.com", with: "old.reddit.com")
+          decisionHandler(.cancel)
+          load(url: oldRedditUrl)
+          return
+      }
+      
       let host = url.host ?? ""
       let isFacebook = host.hasSuffix(".facebook.com") && host != "l.facebook.com"
       

@@ -42,6 +42,7 @@
   "settings": {
     "label": "Settings",
     "openExternalLink": "Open external link in system browser",
+    "redirectToOldReddit": "Redirect to Old Reddit",
     "hideHeader": "Hide toolbar on scroll",
     "headerPosition": {
       "label": "Toolbar position",

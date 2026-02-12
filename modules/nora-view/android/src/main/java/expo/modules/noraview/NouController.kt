@@ -19,6 +19,9 @@ import expo.modules.kotlin.records.Record
 class NoraSettings : Record {
   @Field
   val openExternalLinkInSystemBrowser: Boolean = false
+
+  @Field
+  val redirectToOldReddit: Boolean = false
 }
 
 typealias LogFn = (String) -> Unit

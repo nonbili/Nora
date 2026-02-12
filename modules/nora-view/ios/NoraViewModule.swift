@@ -6,6 +6,7 @@ let VIEW_HOSTS = [
     "www.linkedin.com",
     "www.instagram.com",
     "chat.reddit.com",
+    "old.reddit.com",
     "www.reddit.com",
     "www.threads.com",
     "www.tiktok.com",

@@ -58,6 +58,7 @@ export default function HomeScreen() {
   useObserveEffect(settings$, ({ value }) => {
     NoraViewModule.setSettings({
       openExternalLinkInSystemBrowser: value?.openExternalLinkInSystemBrowser,
+      redirectToOldReddit: value?.redirectToOldReddit,
     })
   })
 

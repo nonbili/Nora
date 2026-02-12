@@ -35,6 +35,12 @@ export const SettingsModalTabSettings = () => {
           />
           <NouSwitch
             className="mb-6"
+            label={<NouText className="font-medium">{t('settings.redirectToOldReddit')}</NouText>}
+            value={settings.redirectToOldReddit}
+            onPress={() => settings$.redirectToOldReddit.toggle()}
+          />
+          <NouSwitch
+            className="mb-6"
             label={<NouText className="font-medium">{t('settings.hideHeader')}</NouText>}
             value={settings.autoHideHeader}
             onPress={() => settings$.autoHideHeader.toggle()}

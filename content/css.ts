@@ -5,6 +5,7 @@ export const hostHomes: Record<string, string> = {
   'www.instagram.com': 'instagram',
   'www.linkedin.com': 'linkedin',
   'chat.reddit.com': 'reddit',
+  'old.reddit.com': 'reddit',
   'www.reddit.com': 'reddit',
   'www.threads.com': 'threads',
   'www.tiktok.com': 'tiktok',
@@ -46,10 +47,16 @@ const styles: Record<string, string> = {
   `,
 
   reddit: css`
+    .promotedlink,
+    .sitetable .rank,
     #xpromo-small-header,
     shreddit-ad-post,
     shreddit-comments-page-ad {
       display: none !important;
+    }
+
+    .sitetable .midcol {
+      width: 1rem !important;
     }
   `,
 
