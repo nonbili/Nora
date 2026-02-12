@@ -87,6 +87,10 @@ class NoraViewModule : Module() {
         view.webView.settings.setUserAgentString(ua)
       }
 
+      Prop("profile") { view: NoraView, profile: String ->
+        view.setProfile(profile)
+      }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { view: NoraView, url: String, fileName: String? ->

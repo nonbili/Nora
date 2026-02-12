@@ -37,6 +37,8 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -54,6 +56,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.apache.tika.Tika
+
 
 val BLOCK_HOSTS = arrayOf(
   "www.googletagmanager.com",
@@ -152,6 +155,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var pageUrl = ""
   private var customView: View? = null
   internal var userAgent: String? = null
+  private var profileSet = false
 
   private var gestureDetector = GestureDetectorCompat(context, NoraGestureListener())
 
@@ -423,6 +427,19 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
     webView.settings.setUserAgentString(ua)
     webView.loadUrl(url)
+  }
+
+  fun setProfile(profile: String) {
+    if (profileSet) return
+    if (profile == "default") return
+    try {
+      if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+        WebViewCompat.setProfile(webView, profile)
+      }
+    } catch (e: Exception) {
+      log("setProfile failed: ${e.message}")
+    }
+    profileSet = true
   }
 
   fun setScriptOnStart(script: String) {

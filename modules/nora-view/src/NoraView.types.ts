@@ -16,6 +16,7 @@ export type NoraViewProps = {
   ref: React.Ref<any>
   useragent: string
   partition?: string
+  profile?: string
   allowpopups?: string
   scriptOnStart?: string
   onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void

@@ -20,6 +20,7 @@ import { NouSwitch } from '../switch/NouSwitch'
 import { settings$ } from '@/states/settings'
 import { useValue } from '@legendapp/state/react'
 import { hostHomes } from '@/content/css'
+import { t } from 'i18next'
 
 export const services: Record<string, [string, ReactNode]> = {
   bluesky: ['Bluesky', <IconBluesky />],
@@ -40,6 +41,7 @@ export const ServiceManager = () => {
 
   return (
     <View className="">
+      <NouText className="font-medium mb-2">{t('settings.services')}</NouText>
       {Object.entries(services).map(([value, [label, icon]]) => (
         <NouSwitch
           className="mt-5"

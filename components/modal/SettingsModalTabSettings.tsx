@@ -2,7 +2,7 @@ import { View } from 'react-native'
 import { NouButton } from '../button/NouButton'
 import { ui$ } from '@/states/ui'
 import { ServiceManager } from '../service/Services'
-import { clsx, isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
+import { isWeb, isIos, nIf } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
 import { settings$ } from '@/states/settings'
@@ -11,9 +11,10 @@ import { bookmarks$ } from '@/states/bookmarks'
 import { Image } from 'expo-image'
 import { NouMenu } from '../menu/NouMenu'
 import { NouSwitch } from '../switch/NouSwitch'
-import { useTranslation } from 'react-i18next'
 import { t } from 'i18next'
 import { MaterialButton } from '../button/IconButtons'
+
+import { ProfileManager } from '../profile/ProfileManager'
 
 const headerPositions = ['top', 'bottom'] as const
 const themes = [null, 'dark', 'light'] as const
@@ -94,6 +95,8 @@ export const SettingsModalTabSettings = () => {
           </NouButton>
         </View>,
       )}
+
+      <ProfileManager />
 
       <ServiceManager />
       {nIf(bookmarks.length, <NouText className="mt-5 mb-1 font-medium">{t('bookmarks.label')}</NouText>)}

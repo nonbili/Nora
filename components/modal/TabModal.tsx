@@ -18,6 +18,7 @@ import { NouText } from '../NouText'
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
   const disabledServices = useValue(settings$.disabledServicesArr)
+  const profiles = useValue(settings$.profiles)
   const oneHandMode = useValue(settings$.oneHandMode)
   const { tabs, activeTabIndex } = useValue(tabs$)
 
@@ -28,6 +29,11 @@ export const TabModal = () => {
 
   const openNavModal = () => {
     ui$.assign({ navModalOpen: true, tabModalOpen: false })
+  }
+
+  const getProfileColor = (profileId?: string) => {
+    const profile = (profiles || []).find((p) => p?.id === (profileId || 'default'))
+    return profile?.color || profiles?.[0]?.color || '#6366f1'
   }
 
   return (
@@ -79,6 +85,7 @@ export const TabModal = () => {
                   'py-2 px-2 my-3',
                   index == activeTabIndex ? 'bg-indigo-200' : 'bg-white',
                 )}
+                style={{ borderLeftWidth: 5, borderLeftColor: getProfileColor(tab.profile) }}
               >
                 <ServiceIcon url={tab.url} icon={tab.icon} />
                 <Text className="text-sm" numberOfLines={1}>

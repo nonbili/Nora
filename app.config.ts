@@ -81,6 +81,14 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       favicon: './assets/images/favicon.png',
     },
     plugins: [
+      [
+        'expo-build-properties',
+        {
+          ios: {
+            deploymentTarget: '17.0',
+          },
+        },
+      ],
       './plugins/withAndroidPlugin.ts',
       'expo-router',
       [
@@ -101,17 +109,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       [
         'expo-localization',
         {
-          supportedLocales: [
-            'ar',
-            'el',
-            'en',
-            'es',
-            'fr',
-            'it',
-            'pl',
-            'zh-Hans',
-            'zh-Hant',
-          ],
+          supportedLocales: ['ar', 'el', 'en', 'es', 'fr', 'it', 'pl', 'zh-Hans', 'zh-Hant'],
         },
       ],
       'expo-share-intent',
