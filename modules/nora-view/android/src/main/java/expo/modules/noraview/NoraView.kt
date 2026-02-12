@@ -390,8 +390,14 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     webView.addJavascriptInterface(NouJsInterface(context, this), "NoraI")
 
     // some websites have `padding-bottom: env(safe-area-inset-bottom)`, this set it to 0
-    ViewCompat.setOnApplyWindowInsetsListener(webView) { _, _ ->
-      WindowInsetsCompat.CONSUMED
+    // but we need to preserve the IME inset so the WebView resizes when the keyboard opens
+    ViewCompat.setOnApplyWindowInsetsListener(webView) { v, insets ->
+      val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+      val newInsets = WindowInsetsCompat.Builder()
+        .setInsets(WindowInsetsCompat.Type.ime(), imeInsets)
+        .build()
+      ViewCompat.onApplyWindowInsets(v, newInsets)
+      newInsets
     }
   }
 
