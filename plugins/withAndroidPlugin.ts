@@ -7,15 +7,16 @@ const withAndroidSigningConfig: ConfigPlugin = (config) => {
     config.modResults.contents = config.modResults.contents
       .replace(
         'android {',
-        `ext.abiCodes = [x86:1, x86_64:2, 'armeabi-v7a':3, 'arm64-v8a': 4]
+        `ext.abiCodes = [x86_64:2, 'armeabi-v7a':3, 'arm64-v8a': 4]
 
 android {`,
       )
       .replace('zh-Hans', 'b+zh+Hans')
-      .replace(
-        /buildTypes \{([\s\S]*?)release \{([\s\S]*?)signingConfig signingConfigs\.debug/,
-        `buildTypes {$1release {`,
-      )
+      .replace('zh-Hant', 'b+zh+Hant')
+      // .replace(
+      //   /buildTypes \{([\s\S]*?)release \{([\s\S]*?)signingConfig signingConfigs\.debug/,
+      //   `buildTypes {$1release {`,
+      // )
       .replace(
         /androidResources \{([\s\S]*?)}/,
         `androidResources {$1}
