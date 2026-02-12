@@ -1,0 +1,4 @@
+- prevent duplicate tabs when receiving shared link
+- prevent keyboard blocking text input
+- support redirecting to old.reddit.com
+- add Greek and Chinese Traditional translation
