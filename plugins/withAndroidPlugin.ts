@@ -13,10 +13,10 @@ android {`,
       )
       .replace('zh-Hans', 'b+zh+Hans')
       .replace('zh-Hant', 'b+zh+Hant')
-      // .replace(
-      //   /buildTypes \{([\s\S]*?)release \{([\s\S]*?)signingConfig signingConfigs\.debug/,
-      //   `buildTypes {$1release {`,
-      // )
+      .replace(
+        /buildTypes \{([\s\S]*?)release \{([\s\S]*?)signingConfig signingConfigs\.debug/,
+        `buildTypes {$1release {`,
+      )
       .replace(
         /androidResources \{([\s\S]*?)}/,
         `androidResources {$1}
