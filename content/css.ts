@@ -37,7 +37,8 @@ const styles: Record<string, string> = {
 
   instagram: css`
     /* Open in app */
-    ._acc8._abpk {
+    ._acc8._abpk,
+    ._acc8._ag6v {
       display: none !important;
     }
     /* blocking div */

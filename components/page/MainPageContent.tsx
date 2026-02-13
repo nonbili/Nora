@@ -35,9 +35,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
   }, [me?.plan, userId])
 
   return (
-    <View
-      className={clsx('flex-1 h-full lg:flex-row overflow-hidden', headerPosition == 'bottom' && 'flex-col-reverse')}
-    >
+    <View className={clsx('flex-1 h-full overflow-hidden', headerPosition == 'bottom' && 'flex-col-reverse')}>
       <NouHeader />
       {isWeb && tabs.length ? (
         <SortableNoraTabs tabs={tabs} />

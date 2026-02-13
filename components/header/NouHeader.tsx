@@ -88,12 +88,12 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const ret = (
     <Root
-      className="bg-zinc-800 flex-row lg:h-full lg:flex-col items-center justify-between pl-2 py-1 lg:px-1 lg:py-2"
+      className="bg-zinc-800 flex-row items-center justify-between pl-2 py-1"
       /* @ts-expect-error */
       style={{ marginTop }}
       onLayout={onLayout}
     >
-      <View className="flex-row lg:flex-col items-center gap-1">
+      <View className="flex-row items-center gap-1">
         {nIf(
           isWeb || settings.showNewTabButtonInHeader,
           <MaterialButton name="add" onPress={() => tabs$.openTab('')} />,
@@ -104,7 +104,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         )}
         {nIf(!isWeb && settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
       </View>
-      <View className="flex-row lg:flex-col items-center justify-end gap-1 lg:gap-5 h-full lg:h-[100px]">
+      <View className="flex-row items-center justify-end gap-1 h-full">
         {nIf(
           canDownload,
           <MaterialButton name="download" onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />,
