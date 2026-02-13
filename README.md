@@ -24,7 +24,7 @@ Install from F-Droid, Google Play, or download APK from GitHub.
 ## Features
 
 - No ads
-- Multiple profiles with independant cookie storage
+- Multiple profiles with independent cookie storage
 - Download image
 - Download fb/ig/x video
 - Select text

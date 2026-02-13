@@ -23,6 +23,9 @@ export const NouSwitch: React.FC<{
           web: {
             activeThumbColor: '#6366f1',
           },
+          ios: {
+            style: { transform: [{ scale: 0.8 }] },
+          },
         })}
       />
     </View>

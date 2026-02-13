@@ -49,13 +49,6 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
 
   const webview = nativeRef.current
 
-  useEffect(() => {
-    if (url && !parsingStartedRef.current) {
-      parsingStartedRef.current = true
-      webview?.executeJavaScript('window.Nora.getVideoUrl()')
-    }
-  }, [url])
-
   if (!downloadVideoModalOpen) {
     return null
   }
@@ -75,6 +68,12 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
       case '[content]':
       case '[kotlin]':
         console.log(type, data)
+        break
+      case 'onload':
+        if (url && !parsingStartedRef.current) {
+          parsingStartedRef.current = true
+          webview?.executeJavaScript('window.Nora.getVideoUrl()')
+        }
         break
       case 'download':
         setTitle('Downloading...')

@@ -17,7 +17,7 @@ export const BaseModal: React.FC<{ className?: string; children: ReactNode; onCl
       <Pressable className="absolute inset-0 bg-gray-600/50" onPress={onClose} />
       <KeyboardAvoidingView
         behavior={isIos ? 'padding' : undefined}
-        className="bg-gray-950 absolute top-0 left-0 bottom-0 w-[30rem] lg:w-[40rem] max-w-[80vw]"
+        className="bg-gray-950 absolute top-0 left-0 bottom-0 w-[30rem] max-w-[80vw]"
       >
         {inner}
       </KeyboardAvoidingView>
