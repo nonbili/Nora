@@ -19,11 +19,40 @@ let VIEW_HOSTS = [
     "x.com"
 ]
 
+let TRACKING_PARAMS: Set<String> = [
+  "utm_source",
+  "utm_medium",
+  "utm_name",
+  "utm_term",
+  "utm_content",
+  "igsh",
+  "xmt"
+]
+
 public class NoraViewModule: Module {
+  private var clipText = ""
+
   public func definition() -> ModuleDefinition {
     Name("NoraView")
 
     Events("log")
+
+    OnStartObserving {
+      NotificationCenter.default.addObserver(
+        self,
+        selector: #selector(self.onPasteboardChanged),
+        name: UIPasteboard.changedNotification,
+        object: nil
+      )
+    }
+
+    OnStopObserving {
+      NotificationCenter.default.removeObserver(
+        self,
+        name: UIPasteboard.changedNotification,
+        object: nil
+      )
+    }
 
     Function("setSettings") { (settings: NoraSettings) in
       NouController.shared.settings = settings
@@ -36,8 +65,6 @@ public class NoraViewModule: Module {
         }
       }
     }
-      
-    // TODO: Implement clipboard listener if needed matching Android's removeTrackingParams
 
     View(NoraView.self) {
       Prop("scriptOnStart") { (view: NoraView, script: String) in
@@ -87,6 +114,49 @@ public class NoraViewModule: Module {
         view.saveFile(content: content, fileName: fileName, mimeType: mimeType)
       }
     }
+  }
+
+  @objc
+  private func onPasteboardChanged() {
+    guard let text = UIPasteboard.general.string, !text.isEmpty else {
+      return
+    }
+    if clipText == text {
+      return
+    }
+
+    guard let url = URL(string: text), let host = url.host else {
+      return
+    }
+
+    if VIEW_HOSTS.contains(host) {
+      let cleanUrl = removeTrackingParams(urlStr: text)
+      if cleanUrl != text {
+        clipText = cleanUrl
+        UIPasteboard.general.string = cleanUrl
+      }
+    }
+  }
+
+  private func removeTrackingParams(urlStr: String) -> String {
+    guard let url = URL(string: urlStr),
+          var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+      return urlStr
+    }
+
+    guard let queryItems = components.queryItems else {
+      return urlStr
+    }
+
+    let filteredQueryItems = queryItems.filter { !TRACKING_PARAMS.contains($0.name) }
+
+    if filteredQueryItems.count == queryItems.count {
+      return urlStr
+    }
+
+    components.queryItems = filteredQueryItems.isEmpty ? nil : filteredQueryItems
+
+    return components.url?.absoluteString ?? urlStr
   }
     
   func log(_ msg: String) {
