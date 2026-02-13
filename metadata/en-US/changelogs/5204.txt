@@ -1,0 +1,1 @@
+- support multiple profiles with independant cookie storage
