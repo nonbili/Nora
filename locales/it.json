@@ -59,7 +59,9 @@
       "light": "Chiaro",
       "hint": "Riavvia manualmente se webview non rispecchia le modifiche."
     },
-    "injectCookie": "Inietta cookie"
+    "injectCookie": "Inietta cookie",
+    "redirectToOldReddit": "Reindirizza su Old Reddit",
+    "services": "Servizi"
   },
   "sync": {
     "label": "Sincronizza",
@@ -72,5 +74,12 @@
   },
   "toast": {
     "pinned": "Aggiunto alla pagina nuova scheda"
+  },
+  "profiles": {
+    "label": "Profili",
+    "add": "Aggiungi",
+    "edit": "Modifica",
+    "save": "Salva",
+    "namePlaceholder": "Nome profilo"
   }
 }
