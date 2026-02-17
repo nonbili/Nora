@@ -84,6 +84,9 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       [
         'expo-build-properties',
         {
+          android: {
+            usesCleartextTraffic: true,
+          },
           ios: {
             deploymentTarget: '17.0',
           },

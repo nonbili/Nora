@@ -2,7 +2,7 @@ import { View } from 'react-native'
 import { NouButton } from '../button/NouButton'
 import { ui$ } from '@/states/ui'
 import { ServiceManager } from '../service/Services'
-import { isWeb, isIos, nIf } from '@/lib/utils'
+import { isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
 import { settings$ } from '@/states/settings'
@@ -40,6 +40,15 @@ export const SettingsModalTabSettings = () => {
             value={settings.redirectToOldReddit}
             onPress={() => settings$.redirectToOldReddit.toggle()}
           />
+          {nIf(
+            isAndroid,
+            <NouSwitch
+              className="mb-6"
+              label={<NouText className="font-medium">{t('settings.allowHttpWebsite')}</NouText>}
+              value={settings.allowHttpWebsite}
+              onPress={() => settings$.allowHttpWebsite.toggle()}
+            />,
+          )}
           <NouSwitch
             className="mb-6"
             label={<NouText className="font-medium">{t('settings.hideHeader')}</NouText>}

@@ -22,6 +22,9 @@ class NoraSettings : Record {
 
   @Field
   val redirectToOldReddit: Boolean = false
+
+  @Field
+  val allowHttpWebsite: Boolean = false
 }
 
 typealias LogFn = (String) -> Unit

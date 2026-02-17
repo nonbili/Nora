@@ -37,7 +37,9 @@
     "menu_copyLink": "Copy link",
     "toast_downloadStarted": "Download started, check the system notification",
     "toast_downloadSucceeded": "Saved to the Downloads folder",
-    "toast_downloadFailed": "Failed to download"
+    "toast_downloadFailed": "Failed to download",
+    "httpBlocked_title": "HTTP website blocked",
+    "httpBlocked_body": "This website uses an insecure HTTP connection. To allow loading HTTP websites, enable \"Allow HTTP websites\" in Settings."
   },
   "profiles": {
     "label": "Profiles",
@@ -50,6 +52,7 @@
     "label": "Settings",
     "openExternalLink": "Open external link in system browser",
     "redirectToOldReddit": "Redirect to Old Reddit",
+    "allowHttpWebsite": "Allow HTTP websites",
     "hideHeader": "Hide toolbar on scroll",
     "headerPosition": {
       "label": "Toolbar position",

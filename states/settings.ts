@@ -16,6 +16,7 @@ export interface Settings {
   theme: null | 'dark' | 'light'
   openExternalLinkInSystemBrowser: boolean
   redirectToOldReddit: boolean
+  allowHttpWebsite: boolean
 
   showNewTabButtonInHeader: boolean
   showBackButtonInHeader: boolean
@@ -43,6 +44,7 @@ export const settings$ = observable<Store>({
   theme: null,
   openExternalLinkInSystemBrowser: true,
   redirectToOldReddit: false,
+  allowHttpWebsite: false,
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,

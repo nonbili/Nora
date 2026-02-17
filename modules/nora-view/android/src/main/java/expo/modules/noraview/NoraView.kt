@@ -250,10 +250,17 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             if (request.url.host in BLOCK_HOSTS) {
               return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
             }
+            if (request.url.scheme == "http" && !nouController.settings.allowHttpWebsite) {
+              return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
+            }
             return null
           }
 
           override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            if (url.startsWith("http://") && !nouController.settings.allowHttpWebsite) {
+              showHttpBlockedPage(url)
+              return true
+            }
             if (nouController.settings.redirectToOldReddit && url.startsWith("https://www.reddit.com/")) {
               load(url.replace("www.reddit.com", "old.reddit.com"))
               return true
@@ -416,6 +423,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   fun load(url: String) {
     if (url == "" || url == "about:blank") return
+    if (url.startsWith("http://") && !nouController.settings.allowHttpWebsite) {
+      showHttpBlockedPage(url)
+      return
+    }
     pageUrl = url
     var ua = userAgent
     if (url.startsWith("https://www.facebook.com/messages/") ||
@@ -427,6 +438,30 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
     webView.settings.setUserAgentString(ua)
     webView.loadUrl(url)
+  }
+
+  private fun showHttpBlockedPage(url: String) {
+    val title = nouController.t("httpBlocked_title")
+    val body = nouController.t("httpBlocked_body")
+    val html = """
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <style>
+          body { font-family: sans-serif; padding: 32px 24px; margin: 0; background: #18181b; color: #e4e4e7; }
+          h2 { color: #f4f4f5; margin-bottom: 12px; }
+          p { line-height: 1.6; color: #a1a1aa; }
+          .url { word-break: break-all; background: #27272a; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #71717a; margin: 16px 0; }
+        </style>
+      </head>
+      <body>
+        <h2>$title</h2>
+        <div class="url">$url</div>
+        <p>$body</p>
+      </body>
+      </html>
+    """.trimIndent()
+    webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null)
   }
 
   fun setProfile(profile: String) {

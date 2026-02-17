@@ -59,6 +59,7 @@ export default function HomeScreen() {
     NoraViewModule.setSettings({
       openExternalLinkInSystemBrowser: value?.openExternalLinkInSystemBrowser,
       redirectToOldReddit: value?.redirectToOldReddit,
+      allowHttpWebsite: value?.allowHttpWebsite,
     })
   })
 
