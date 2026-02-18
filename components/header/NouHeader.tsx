@@ -10,12 +10,12 @@ import { settings$ } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
-import { isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
+import { isWeb, isIos, isAndroid, nIf, clsx } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
-import Animated, { useSharedValue, withTiming } from 'react-native-reanimated'
+import type { SharedValue } from 'react-native-reanimated'
 import { EncodingType, StorageAccessFramework } from 'expo-file-system/legacy'
 import { File, writeAsStringAsync, Directory } from 'expo-file-system'
 import NoraViewModule from '@/modules/nora-view'
@@ -44,9 +44,26 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const { tabs, activeTabIndex } = useValue(tabs$)
   const currentTab = useValue(tabs$.currentTab)
   const webview = ui$.webview.get()
-  const marginTop = useSharedValue(0)
-  const flingStart = useSharedValue(0)
-  const panStart = useSharedValue(0)
+  const { AnimatedView, useSharedValueSafe, withTimingSafe } = (() => {
+    if (isWeb) {
+      return {
+        AnimatedView: View,
+        useSharedValueSafe: (initial: number) => ({ value: initial }) as SharedValue<number>,
+        withTimingSafe: (value: number) => value,
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Reanimated = require('react-native-reanimated')
+    return {
+      AnimatedView: Reanimated.default?.View ?? Reanimated.View ?? Reanimated.default,
+      useSharedValueSafe: Reanimated.useSharedValue as (initial: number) => SharedValue<number>,
+      withTimingSafe: Reanimated.withTiming as (value: number) => number,
+    }
+  })()
+  const [marginTopWeb, setMarginTopWeb] = useState(0)
+  const marginTop = useSharedValueSafe(0)
+  const flingStart = useSharedValueSafe(0)
+  const panStart = useSharedValueSafe(0)
 
   let hostname = '',
     canDownload = false
@@ -68,8 +85,13 @@ export const NouHeader: React.FC<{}> = ({}) => {
   }
 
   useEffect(() => {
-    marginTop.value = withTiming(settings.autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0)
-  }, [settings.autoHideHeader, uiState.headerHeight, uiState.headerShown])
+    const next = settings.autoHideHeader && !uiState.headerShown ? -uiState.headerHeight : 0
+    if (isWeb) {
+      setMarginTopWeb(next)
+    } else {
+      marginTop.value = withTimingSafe(next)
+    }
+  }, [settings.autoHideHeader, uiState.headerHeight, uiState.headerShown, marginTop, withTimingSafe, isWeb])
 
   const scrollToTop = () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`)
 
@@ -84,13 +106,12 @@ export const NouHeader: React.FC<{}> = ({}) => {
     }
   }
 
-  const Root = isWeb ? View : Animated.View
+  const Root = AnimatedView
 
   const ret = (
     <Root
-      className="bg-zinc-800 flex-row items-center justify-between pl-2 py-1"
-      /* @ts-expect-error */
-      style={{ marginTop }}
+      className={clsx('bg-zinc-800 flex-row items-center justify-between pl-2 py-1', isWeb && 'lg:flex-col lg:pl-0')}
+      style={{ marginTop: isWeb ? marginTopWeb : marginTop }}
       onLayout={onLayout}
     >
       <View className="flex-row items-center gap-1">
@@ -104,7 +125,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         )}
         {nIf(!isWeb && settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
       </View>
-      <View className="flex-row items-center justify-end gap-1 h-full">
+      <View className={'flex-row items-center justify-end gap-1'}>
         {nIf(
           canDownload,
           <MaterialButton name="download" onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />,
@@ -151,6 +172,14 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     handler: () => (currentTab ? share(currentTab.url) : {}),
                   },
                 ]),
+            ...(isWeb
+              ? [
+                  {
+                    label: t('buttons.closeAll'),
+                    handler: () => tabs$.closeAll(),
+                  },
+                ]
+              : []),
             { label: t('menus.tools'), handler: () => ui$.toolsModalOpen.set(true) },
             { label: t('settings.label'), handler: () => ui$.settingsModalOpen.set(true) },
           ]}

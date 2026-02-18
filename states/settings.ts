@@ -10,6 +10,18 @@ export interface Profile {
   isDefault?: boolean
 }
 
+const DEFAULT_PROFILE_ID = 'default'
+const DEFAULT_PROFILE: Profile = { id: DEFAULT_PROFILE_ID, name: 'Default', color: '#6366f1', isDefault: true }
+
+const ensureProfiles = (profiles?: Array<Profile | null | undefined>) => {
+  const sanitized = (profiles || []).filter((p): p is Profile => p != null)
+  const defaultProfile = sanitized.find((p) => p.id === DEFAULT_PROFILE_ID)
+  if (!defaultProfile) {
+    return [DEFAULT_PROFILE, ...sanitized]
+  }
+  return sanitized
+}
+
 export interface Settings {
   autoHideHeader: boolean
   headerPosition: 'top' | 'bottom'
@@ -52,7 +64,7 @@ export const settings$ = observable<Store>({
   oneHandMode: false,
 
   disabledServicesArr: [],
-  profiles: [{ id: 'default', name: 'Default', color: '#6366f1', isDefault: true }],
+  profiles: [DEFAULT_PROFILE],
   updatedAt: 1,
   syncedAt: 0,
   toggleService: (service) => {
@@ -92,14 +104,7 @@ syncObservable(settings$, {
     transform: {
       load: (data: Store) => {
         if (data) {
-          if (!data.profiles) {
-            data.profiles = [{ id: 'default', name: 'Default', color: '#6366f1', isDefault: true }]
-          } else {
-            data.profiles = data.profiles.filter((p) => p != null)
-            if (!data.profiles.find((p) => p.id === 'default')) {
-              data.profiles.unshift({ id: 'default', name: 'Default', color: '#6366f1', isDefault: true })
-            }
-          }
+          data.profiles = ensureProfiles(data.profiles)
         }
         return data
       },

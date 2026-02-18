@@ -14,11 +14,11 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { t } from 'i18next'
 import { NouSwitch } from '../switch/NouSwitch'
 import { NouText } from '../NouText'
+import { getProfileColor } from '@/lib/profile'
 
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
   const disabledServices = useValue(settings$.disabledServicesArr)
-  const profiles = useValue(settings$.profiles)
   const oneHandMode = useValue(settings$.oneHandMode)
   const { tabs, activeTabIndex } = useValue(tabs$)
 
@@ -29,11 +29,6 @@ export const TabModal = () => {
 
   const openNavModal = () => {
     ui$.assign({ navModalOpen: true, tabModalOpen: false })
-  }
-
-  const getProfileColor = (profileId?: string) => {
-    const profile = (profiles || []).find((p) => p?.id === (profileId || 'default'))
-    return profile?.color || profiles?.[0]?.color || '#6366f1'
   }
 
   return (

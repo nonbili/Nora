@@ -18,6 +18,7 @@ export type NoraViewProps = {
   partition?: string
   profile?: string
   allowpopups?: string
+  src?: string
   scriptOnStart?: string
   onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
   onMessage?: (event: { nativeEvent: OnMessageEventPayload }) => void

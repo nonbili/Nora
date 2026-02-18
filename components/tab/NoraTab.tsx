@@ -22,6 +22,7 @@ import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 import { t } from 'i18next'
 import { addBookmark } from '@/lib/bookmark'
+import { getProfileColor } from '@/lib/profile'
 
 const getRedirectTo = (str: string) => {
   try {
@@ -57,15 +58,20 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   const webviewRef = useRef<WebviewTag>(null)
   const { tabs, activeTabIndex } = useValue(tabs$)
   const pageUrlRef = useRef('')
+  const [canGoBack, setCanGoBack] = useState(false)
   const contentJs = useContentJs()
+  const profileColor = getProfileColor(tab.profile)
 
   useEffect(() => {
-    if (isWeb || !tab.url) {
+    if (!tab.url) {
       return
     }
     if (tab.url !== pageUrlRef.current) {
+      const webview = webviewRef.current
       const native = nativeRef.current
-      if (native) {
+      if (webview) {
+        webview.src = tab.url
+      } else if (native) {
         native.loadUrl(tab.url)
       }
     }
@@ -92,15 +98,18 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
       webview.addEventListener('dom-ready', () => {
         ui$.webview.set(ObservableHint.opaque(webview))
         webview.executeJavaScript(contentJs)
+        setCanGoBack(webview.canGoBack())
       })
       webview.addEventListener('did-navigate', (e) => {
         setPageUrl(e.url)
+        setCanGoBack(webview.canGoBack())
       })
       webview.addEventListener('did-navigate-in-page', (e) => {
         setPageUrl(e.url)
+        setCanGoBack(webview.canGoBack())
       })
       webview.addEventListener('page-favicon-updated', (e) => {
-        tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons[0] })
+        tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons.at(-1) })
       })
       webview.addEventListener('ipc-message', (e) => {})
     },
@@ -145,6 +154,16 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   )
 
   const webview = webviewRef.current || nativeRef.current
+  const goBack = () => webview?.goBack?.()
+  const reloadPage = () => {
+    if (!webview) return
+    if (typeof webview.reload === 'function') {
+      webview.reload()
+    } else {
+      webview.executeJavaScript('document.location.reload()')
+    }
+  }
+  const toolbarButtonStyle = { padding: 4, height: 28 }
 
   const onLoad = async (e: { nativeEvent: any }) => {
     const { url, title, icon } = e.nativeEvent
@@ -190,14 +209,20 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   if (isWeb) {
     return (
       <View className="w-[25rem] shrink-0">
-        <View className="flex-row items-center justify-between bg-zinc-800 pl-2">
-          <ServiceIcon url={tab.url} />
+        <View
+          className="flex-row items-center justify-between bg-zinc-800 pl-2"
+          style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36, alignItems: 'center' }}
+        >
+          <View className="flex-row items-center gap-1">
+            <ServiceIcon url={tab.url} icon={tab.icon} />
+            {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} />)}
+          </View>
           <NouMenu
-            trigger={<MaterialButton name="more-vert" />}
+            trigger={<MaterialButton name="more-vert" style={toolbarButtonStyle} />}
             items={[
               {
                 label: t('menus.reload'),
-                handler: () => webview?.executeJavaScript('document.location.reload()'),
+                handler: reloadPage,
               },
               {
                 label: t('menus.scroll'),

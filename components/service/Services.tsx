@@ -14,7 +14,7 @@ import {
 } from '../icons/Icons'
 import { Image } from 'expo-image'
 import { Text, TouchableHighlight, View } from 'react-native'
-import { clsx } from '@/lib/utils'
+import { clsx, isWeb } from '@/lib/utils'
 import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { settings$ } from '@/states/settings'
@@ -62,7 +62,8 @@ export const ServiceManager = () => {
 
 export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, icon }) => {
   if (icon) {
-    return <Image source={icon} style={{ height: 24, width: 24 }} />
+    const height = isWeb ? 20 : 24
+    return <Image source={icon} style={{ height, width: height }} />
   }
   let home: any
   try {
