@@ -1,0 +1,2 @@
+- support opening http website
+- bsky: add left/right button to browse all images
