@@ -1,5 +1,6 @@
 import { blockAds, hideAds } from './ad'
 import { injectCSS } from './css'
+import { injectScript } from './script'
 import { debounce, retry } from 'es-toolkit'
 import { emit } from './utils'
 import { handleDialogs } from './dialogs'
@@ -35,6 +36,7 @@ async function initObserver() {
   })
 
   injectCSS()
+  injectScript()
 
   const viewport = document.querySelector('meta[name=viewport]')
   if (viewport) {
