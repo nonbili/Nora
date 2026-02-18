@@ -80,6 +80,10 @@ public class NoraViewModule: Module {
         view.setProfile(profile)
       }
 
+      Prop("inspectable") { (view: NoraView, inspectable: Bool) in
+        view.setInspectable(inspectable)
+      }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { (view: NoraView, url: String, fileName: String?) in

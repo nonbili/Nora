@@ -17,6 +17,7 @@ export type NoraViewProps = {
   useragent: string
   partition?: string
   profile?: string
+  inspectable?: boolean
   allowpopups?: string
   src?: string
   scriptOnStart?: string

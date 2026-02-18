@@ -36,21 +36,6 @@ export const SettingsModalTabSettings = () => {
           />
           <NouSwitch
             className="mb-6"
-            label={<NouText className="font-medium">{t('settings.redirectToOldReddit')}</NouText>}
-            value={settings.redirectToOldReddit}
-            onPress={() => settings$.redirectToOldReddit.toggle()}
-          />
-          {nIf(
-            isAndroid,
-            <NouSwitch
-              className="mb-6"
-              label={<NouText className="font-medium">{t('settings.allowHttpWebsite')}</NouText>}
-              value={settings.allowHttpWebsite}
-              onPress={() => settings$.allowHttpWebsite.toggle()}
-            />,
-          )}
-          <NouSwitch
-            className="mb-6"
             label={<NouText className="font-medium">{t('settings.hideHeader')}</NouText>}
             value={settings.autoHideHeader}
             onPress={() => settings$.autoHideHeader.toggle()}
@@ -81,6 +66,28 @@ export const SettingsModalTabSettings = () => {
             label={<NouText className="font-medium">{t('settings.showScrollButton')}</NouText>}
             value={settings.showScrollButtonInHeader}
             onPress={() => settings$.showScrollButtonInHeader.toggle()}
+          />
+
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">{t('settings.redirectToOldReddit')}</NouText>}
+            value={settings.redirectToOldReddit}
+            onPress={() => settings$.redirectToOldReddit.toggle()}
+          />
+          {nIf(
+            isAndroid,
+            <NouSwitch
+              className="mb-6"
+              label={<NouText className="font-medium">{t('settings.allowHttpWebsite')}</NouText>}
+              value={settings.allowHttpWebsite}
+              onPress={() => settings$.allowHttpWebsite.toggle()}
+            />,
+          )}
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">{t('settings.inspectable')}</NouText>}
+            value={settings.inspectable}
+            onPress={() => settings$.inspectable.toggle()}
           />
 
           <View className="items-center flex-row justify-between">

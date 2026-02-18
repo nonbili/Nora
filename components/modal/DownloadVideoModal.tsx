@@ -9,6 +9,7 @@ import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
 import { tabs$ } from '@/states/tabs'
+import { settings$ } from '@/states/settings'
 import { delay } from 'es-toolkit'
 import { getUserAgent } from '@/lib/useragent'
 import { parseJson } from '@/content/utils'
@@ -17,6 +18,7 @@ const userAgent = getUserAgent(isIos ? 'ios' : 'android')
 
 export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const currentUrl = useValue(ui$.downloadVideoModalUrl)
+  const inspectable = useValue(settings$.inspectable)
   const onClose = () => ui$.downloadVideoModalUrl.set('')
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
@@ -101,6 +103,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
             useragent={userAgent}
             onLoad={onLoad}
             onMessage={onMessage}
+            inspectable={inspectable}
           />
         </View>
       </View>

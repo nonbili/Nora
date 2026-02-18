@@ -53,6 +53,7 @@ const onScroll = (dy: number) => {
 
 export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
+  const inspectable = useValue(settings$.inspectable)
   const uiState = useValue(ui$)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
@@ -242,6 +243,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
           ref={noraViewRef}
           partition={`persist:${tab.profile || 'default'}`}
           useragent={getUserAgent(window.electron.process.platform, true)}
+          inspectable={inspectable}
           allowpopups="true"
           key={tab.id}
         />
@@ -261,6 +263,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
         onLoad={onLoad}
         onMessage={onMessage}
+        inspectable={inspectable}
       />
       {nIf(!tab.url && index == activeTabIndex, <NavModalContent index={index} />)}
     </>

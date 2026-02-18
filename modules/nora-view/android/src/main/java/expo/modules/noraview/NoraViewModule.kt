@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
+import android.webkit.WebView
 import android.widget.Toast
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.jni.JavaScriptObject
@@ -89,6 +90,10 @@ class NoraViewModule : Module() {
 
       Prop("profile") { view: NoraView, profile: String ->
         view.setProfile(profile)
+      }
+
+      Prop("inspectable") { _: NoraView, inspectable: Boolean ->
+        WebView.setWebContentsDebuggingEnabled(inspectable)
       }
 
       Events("onLoad", "onMessage")

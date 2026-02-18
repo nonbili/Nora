@@ -29,6 +29,7 @@ export interface Settings {
   openExternalLinkInSystemBrowser: boolean
   redirectToOldReddit: boolean
   allowHttpWebsite: boolean
+  inspectable: boolean
 
   showNewTabButtonInHeader: boolean
   showBackButtonInHeader: boolean
@@ -57,6 +58,7 @@ export const settings$ = observable<Store>({
   openExternalLinkInSystemBrowser: true,
   redirectToOldReddit: false,
   allowHttpWebsite: false,
+  inspectable: false,
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,

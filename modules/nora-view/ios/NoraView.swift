@@ -79,11 +79,6 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     let config = createConfig(profile: profile)
 
     webView = WKWebView(frame: bounds, configuration: config)
-    #if DEBUG
-    if #available(iOS 16.4, *) {
-      webView.isInspectable = true
-    }
-    #endif
     webView.navigationDelegate = self
     webView.uiDelegate = self
     webView.scrollView.delegate = self
@@ -108,6 +103,12 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   override func layoutSubviews() {
     super.layoutSubviews()
     webView.frame = bounds
+  }
+
+  func setInspectable(_ inspectable: Bool) {
+    if #available(iOS 16.4, *) {
+      webView.isInspectable = inspectable
+    }
   }
 
   func setScriptOnStart(_ script: String) {
