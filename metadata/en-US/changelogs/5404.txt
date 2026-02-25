@@ -1,0 +1,3 @@
+- one tab per site
+- treat host of bookmarks and active tabs as internal link
+- bsky: fix gallery view
