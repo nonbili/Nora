@@ -67,6 +67,12 @@ export const SettingsModalTabSettings = () => {
             value={settings.showScrollButtonInHeader}
             onPress={() => settings$.showScrollButtonInHeader.toggle()}
           />
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">{t('settings.oneTabPerSite')}</NouText>}
+            value={settings.oneTabPerSite}
+            onPress={() => settings$.oneTabPerSite.toggle()}
+          />
 
           <NouSwitch
             className="mb-6"

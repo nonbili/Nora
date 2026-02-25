@@ -35,6 +35,7 @@ export interface Settings {
   showBackButtonInHeader: boolean
   showScrollButtonInHeader: boolean
   oneHandMode: boolean
+  oneTabPerSite: boolean
 
   disabledServicesArr: string[]
   profiles: Profile[]
@@ -64,6 +65,7 @@ export const settings$ = observable<Store>({
   showBackButtonInHeader: false,
   showScrollButtonInHeader: false,
   oneHandMode: false,
+  oneTabPerSite: false,
 
   disabledServicesArr: [],
   profiles: [DEFAULT_PROFILE],

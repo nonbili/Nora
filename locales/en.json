@@ -64,6 +64,7 @@
     "showBackButton": "Show back button",
     "showScrollButton": "Show scroll to top button",
     "oneHandMode": "One hand mode",
+    "oneTabPerSite": "One tab per site when opening shared link",
     "services": "Services",
     "theme": {
       "label": "Theme",

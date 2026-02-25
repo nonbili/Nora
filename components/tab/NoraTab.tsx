@@ -35,7 +35,11 @@ const getRedirectTo = (str: string) => {
 }
 
 const forceHttps = (str: string) => {
-  return getRedirectTo(str).replace('http://', 'https://')
+  const url = getRedirectTo(str)
+  if (settings$.allowHttpWebsite.get()) {
+    return url
+  }
+  return url.replace('http://', 'https://')
 }
 
 const onScroll = (dy: number) => {

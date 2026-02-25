@@ -3,6 +3,7 @@ import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
 import { ui$ } from './ui'
+import { settings$ } from './settings'
 
 import { removeTrackingParams } from '@/lib/url'
 
@@ -53,9 +54,34 @@ export const tabs$ = observable<Store>({
       lastOpenedUrl = ''
     }, 1000)
 
+    if (settings$.oneTabPerSite.get()) {
+      try {
+        const newUrl = new URL(url)
+        if (newUrl.hostname) {
+          const tabs = tabs$.tabs.get()
+          const existingTabIndex = tabs.findIndex((t) => {
+            try {
+              const tabUrl = new URL(t.url)
+              return tabUrl.hostname === newUrl.hostname
+            } catch (e) {
+              return false
+            }
+          })
+
+          if (existingTabIndex !== -1) {
+            tabs$.activeTabIndex.set(existingTabIndex)
+            tabs$.tabs[existingTabIndex].url.set(url)
+            return
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
     const tab: Tab = { id: genId(), url, profile: profile || ui$.lastSelectedProfileId.get() }
-    tabs$.activeTabIndex.set(tabs$.tabs.length)
     tabs$.tabs.push(tab)
+    tabs$.activeTabIndex.set(tabs$.tabs.length - 1)
   },
 
   closeTab: (index) => {
