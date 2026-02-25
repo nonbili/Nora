@@ -63,7 +63,7 @@ function runBlueskyScript() {
       btn.dataset._noraBound = '1'
       btn.onclick = (e) => {
         e.stopPropagation()
-        target.click()
+          ; (target as HTMLElement).click()
         if (key == 'prev') {
           index--
         } else {
@@ -72,7 +72,9 @@ function runBlueskyScript() {
         const img = imgs[index]
         if (img) {
           img.scrollIntoView()
-          img.click()
+          setTimeout(() => {
+            img.click()
+          })
         }
       }
     }
