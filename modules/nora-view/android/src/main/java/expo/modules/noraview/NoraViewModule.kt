@@ -34,8 +34,11 @@ class NoraViewModule : Module() {
 
   private val listener = ClipboardManager.OnPrimaryClipChangedListener {
     clipboardManager?.primaryClip?.let { clip ->
+      if (clip.itemCount == 0) {
+        return@let
+      }
       val item = clip.getItemAt(0)
-      val text = item.text.toString()
+      val text = item.text?.toString() ?: return@let
       if (clipText == text) {
         return@let
       }
