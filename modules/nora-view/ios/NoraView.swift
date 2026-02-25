@@ -172,7 +172,15 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       let isFacebook = host.hasSuffix(".facebook.com") && host != "l.facebook.com"
 
       let isGoogle = host.contains("google.com") || host.contains("gstatic.com") || host.contains("recaptcha.net")
-      let allowedInView = VIEW_HOSTS.contains(host) || host.isEmpty || isFacebook || isGoogle || !NouController.shared.settings.openExternalLinkInSystemBrowser
+      let dynamicInternalHosts = Set(NouController.shared.settings.internalHosts.map { $0.lowercased() })
+      let isDynamicInternalHost = dynamicInternalHosts.contains(host.lowercased())
+      let allowedInView =
+        VIEW_HOSTS.contains(host) ||
+        isDynamicInternalHost ||
+        host.isEmpty ||
+        isFacebook ||
+        isGoogle ||
+        !NouController.shared.settings.openExternalLinkInSystemBrowser
 
       let isMainFrame = navigationAction.targetFrame?.isMainFrame ?? true
 

@@ -25,6 +25,9 @@ class NoraSettings : Record {
 
   @Field
   val allowHttpWebsite: Boolean = false
+
+  @Field
+  val internalHosts: List<String> = emptyList()
 }
 
 typealias LogFn = (String) -> Unit

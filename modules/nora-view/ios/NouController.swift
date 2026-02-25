@@ -6,6 +6,9 @@ struct NoraSettings: Record {
 
   @Field
   var redirectToOldReddit: Bool = false
+
+  @Field
+  var internalHosts: [String] = []
 }
 
 class NouController {

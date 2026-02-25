@@ -131,7 +131,10 @@ fun redirectFacebookUrl(url: String): String? {
 fun shouldNoraOverrideUrlLoading(view: WebView, url: String): Boolean {
   val uri = Uri.parse(url)
   val host = uri.host
+  val normalizedHost = host?.lowercase()
+  val dynamicInternalHosts = nouController.settings.internalHosts.map { it.lowercase() }.toSet()
   if (host in VIEW_HOSTS ||
+    (normalizedHost != null && normalizedHost in dynamicInternalHosts) ||
     host == null ||
     (host.endsWith(".facebook.com") && host != "l.facebook.com") ||
     !nouController.settings.openExternalLinkInSystemBrowser
