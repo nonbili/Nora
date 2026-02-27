@@ -5,8 +5,8 @@
   "name": "nora",
   "private": true,
   "main": "expo-router/entry",
-  "version": "0.6.2",
-  "versionCode": 54,
+  "version": "0.6.3",
+  "versionCode": 55,
   "buildNumber": "3",
   "scripts": {
     "bundle": "bun build --target browser content/main.ts --outfile assets/scripts/main.bjs",

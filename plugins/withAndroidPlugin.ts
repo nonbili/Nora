@@ -1,4 +1,4 @@
-import type { ConfigPlugin } from '@expo/config-plugins'
+import { ConfigPlugin } from '@expo/config-plugins'
 import { withAppBuildGradle } from '@expo/config-plugins/build/plugins/android-plugins.js'
 
 const withAndroidSigningConfig: ConfigPlugin = (config) => {
