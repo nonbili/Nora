@@ -56,6 +56,7 @@ Install from F-Droid, Google Play, or download APK from GitHub.
 ## Development
 
 ```
+rm yarn.lock
 bun link
 bun install
 bun dev
