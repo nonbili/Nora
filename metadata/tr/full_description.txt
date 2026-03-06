@@ -1,0 +1,3 @@
+<h2>Özellikler</h2><ul><li>Çoklu oturumlar için bağımsız çerez depolama</li><li>Görsel indirme</li><li>Facebook ve Instagram hikayelerini indirme</li><li>Metin seçme</li><li>Yakınlaştırma</li><li>İzleme URL'lerinden sorgu parametrelerini kaldırma</li></ul>
+<h2>Desteklenen SNS'ler</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
+<h2>Nasıl Çalışıyor</h2><ul><li>SNS web sitelerini Android Webview'in içine sarar</li><li>Reklamları engellemek için kod ekler</li></ul>

@@ -1,0 +1,90 @@
+{
+  "about": {
+    "label": "Hakkında",
+    "code": "Kaynak kodu",
+    "donate": "Bağış yap"
+  },
+  "bookmarks": {
+    "label": "Yer imleri"
+  },
+  "buttons": {
+    "cancel": "İptal et",
+    "closeAll": "Hepsini kapat",
+    "download": "İndir",
+    "openUrl": "URL aç",
+    "open": "Aç"
+  },
+  "menus": {
+    "close": "Kapat",
+    "delete": "Sil",
+    "desktop": "Masaüstü görünümü",
+    "desktopOn": "Açık",
+    "desktopOff": "Kapalı",
+    "addBookmark": "Yer imi ekle",
+    "pin": "Yeni sekme sayfasına sabitle",
+    "reload": "Yeniden yükle",
+    "scroll": "En üste kaydır",
+    "share": "Paylaş",
+    "signOut": "Çıkış yap",
+    "tools": "Araçlar"
+  },
+  "modals": {
+    "downloadVideo": "Video indir"
+  },
+  "native": {
+    "menu_saveImage": "Görseli kaydet",
+    "menu_copyImageLink": "Görsel bağlantısını kopyala",
+    "menu_copyLink": "Bağlantıyı kopyala",
+    "toast_downloadStarted": "İndirme başladı, sistem bildirimlerini kontrol edin",
+    "toast_downloadSucceeded": "İndirilenler klasörüne kaydedildi",
+    "toast_downloadFailed": "İndirme başarısız oldu",
+    "httpBlocked_title": "HTTP internet sitesi engellendi",
+    "httpBlocked_body": "Bu web sitesi güvenli olmayan bir HTTP bağlantısı kullanmaktadır. HTTP web sitelerinin yüklenmesine izin vermek için Ayarlar'daki \"HTTP web sitelerine izin ver\" seçeneğini etkinleştirin."
+  },
+  "profiles": {
+    "label": "Profiller",
+    "add": "Ekle",
+    "edit": "Düzenle",
+    "save": "Kaydet",
+    "namePlaceholder": "Profil adı"
+  },
+  "settings": {
+    "label": "Ayarlar",
+    "openExternalLink": "Sistem tarayıcısında harici bağlantıyı aç",
+    "redirectToOldReddit": "Old Reddit'e yönlendir",
+    "allowHttpWebsite": "HTTP web sitelerine izin ver",
+    "inspectable": "Web görünümünü denetlenebilir kılın",
+    "hideHeader": "Kaydırma sırasında araç çubuğunu gizle",
+    "headerPosition": {
+      "label": "Araç çubuğu konumu",
+      "top": "Üstte",
+      "bottom": "Altta"
+    },
+    "showNewTabButton": "Yeni sekme düğmesini göster",
+    "showBackButton": "Geri dön düğmesini göster",
+    "showScrollButton": "En üste kaydır düğmesini göster",
+    "oneHandMode": "Tek elle kullanım modu",
+    "oneTabPerSite": "Paylaşılan bağlantıyı açarken site başına bir sekme",
+    "services": "Hizmetler",
+    "theme": {
+      "label": "Tema",
+      "system": "Sistem",
+      "dark": "Karanlık",
+      "light": "Aydınlık",
+      "hint": "Yaptığınız değişiklik web görünümünde yansıtılmıyorsa manuel olarak yeniden başlatın."
+    },
+    "injectCookie": "Çerez ekle"
+  },
+  "sync": {
+    "label": "Senkronize et",
+    "hint": "Premium kullanıcı olarak telefonlarınız ve bilgisayarlarınız arasında yer imlerini ve ayarları senkronize edin.",
+    "currentPlan": "Mevcut plan",
+    "managePlan": "Planı yönet"
+  },
+  "tabs": {
+    "new": "Yeni sekme"
+  },
+  "toast": {
+    "pinned": "Yeni sekme sayfasına sabitlendi"
+  }
+}
