@@ -37,7 +37,9 @@
     "menu_copyLink": "Copia collegamento",
     "toast_downloadStarted": "Download avviato, controlla le notifiche",
     "toast_downloadSucceeded": "Salvato nella cartella Download",
-    "toast_downloadFailed": "Download non riuscito"
+    "toast_downloadFailed": "Download non riuscito",
+    "httpBlocked_title": "Sito web HTTP bloccato",
+    "httpBlocked_body": "Questo sito web utilizza una connessione HTTP non sicura. Per consentire il caricamento dei siti web HTTP, abilita l'opzione \"Consenti siti web HTTP\" nelle Impostazioni."
   },
   "settings": {
     "label": "Impostazioni",
@@ -61,7 +63,10 @@
     },
     "injectCookie": "Inietta cookie",
     "redirectToOldReddit": "Reindirizza su Old Reddit",
-    "services": "Servizi"
+    "services": "Servizi",
+    "allowHttpWebsite": "Consenti siti web HTTP",
+    "inspectable": "Rendere WebView ispezionabile",
+    "oneTabPerSite": "Apri collegamento in scheda separata"
   },
   "sync": {
     "label": "Sincronizza",
