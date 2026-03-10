@@ -16,9 +16,13 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       supportsTablet: true,
       bundleIdentifier: 'jp.nonbili.nora',
       buildNumber,
+      infoPlist: {
+        NSMicrophoneUsageDescription: 'Allow $(PRODUCT_NAME) to use the microphone.',
+      },
     },
     android: {
       versionCode,
+      permissions: ['RECORD_AUDIO', 'MODIFY_AUDIO_SETTINGS'],
       adaptiveIcon: {
         foregroundImage: './assets/images/adaptive-icon.png',
         monochromeImage: './assets/images/monochrome-icon.png',

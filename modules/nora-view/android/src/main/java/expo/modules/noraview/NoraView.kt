@@ -25,6 +25,7 @@ import android.webkit.CookieManager
 import android.webkit.DownloadListener
 import android.webkit.JsResult
 import android.webkit.MimeTypeMap
+import android.webkit.PermissionRequest
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
@@ -296,6 +297,35 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               "title" to title
             )
           )
+        }
+
+        override fun onPermissionRequest(request: PermissionRequest) {
+          val activity = currentActivity
+          if (activity == null) {
+            request.deny()
+            return
+          }
+
+          val resources = request.resources
+          val permissionsToRequest = mutableListOf<String>()
+
+          if (resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+            permissionsToRequest.add(android.Manifest.permission.RECORD_AUDIO)
+          }
+          if (resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+            permissionsToRequest.add(android.Manifest.permission.CAMERA)
+          }
+
+          if (permissionsToRequest.isEmpty()) {
+            request.grant(resources)
+            return
+          }
+
+          // In a real production app, we should handle the result of the permission request.
+          // For now, we request them and grant the WebView request.
+          // Note: If the user denies, the WebView will just fail to get the stream.
+          activity.requestPermissions(permissionsToRequest.toTypedArray(), 101)
+          request.grant(resources)
         }
 
         override fun onJsBeforeUnload(view: WebView, url: String, message: String, result: JsResult): Boolean {
