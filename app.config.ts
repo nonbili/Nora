@@ -118,7 +118,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       [
         'expo-localization',
         {
-          supportedLocales: ['ar', 'el', 'en', 'es', 'fr', 'it', 'pl', 'zh-Hans', 'zh-Hant'],
+          supportedLocales: ['ar', 'el', 'en', 'es', 'fr', 'it', 'pl', 'tr', 'zh-Hans', 'zh-Hant'],
         },
       ],
       ['expo-share-intent', { iosAppGroupIdentifier: 'group.g.jp.nonbili.nora' }],
