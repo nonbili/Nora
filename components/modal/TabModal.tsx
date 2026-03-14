@@ -1,15 +1,13 @@
 import { ui$ } from '@/states/ui'
 import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
-import { ServiceIcon, services } from '../service/Services'
-import { View, Text, Pressable, ScrollView, TouchableHighlight } from 'react-native'
+import { ServiceIcon } from '../service/Services'
+import { View, Text, ScrollView, TouchableHighlight } from 'react-native'
 import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
-import { getHomeUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { NouMenu } from '../menu/NouMenu'
 import { NouButton } from '../button/NouButton'
-import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { t } from 'i18next'
 import { NouSwitch } from '../switch/NouSwitch'
@@ -18,21 +16,20 @@ import { getProfileColor } from '@/lib/profile'
 
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
-  const disabledServices = useValue(settings$.disabledServicesArr)
   const oneHandMode = useValue(settings$.oneHandMode)
   const { tabs, activeTabIndex } = useValue(tabs$)
+
+  if (!tabModalOpen) {
+    return null
+  }
 
   const onPress = (index: number) => {
     tabs$.activeTabIndex.set(index)
     ui$.assign({ tabModalOpen: false })
   }
 
-  const openNavModal = () => {
-    ui$.assign({ navModalOpen: true, tabModalOpen: false })
-  }
-
   return (
-    <BaseModal className={tabModalOpen ? 'block' : 'hidden'} onClose={() => ui$.tabModalOpen.set(false)}>
+    <BaseModal onClose={() => ui$.tabModalOpen.set(false)}>
       {nIf(
         !isWeb,
         <View>
@@ -78,7 +75,7 @@ export const TabModal = () => {
                 className={clsx(
                   'flex-1 flex-row items-center gap-2 rounded-md',
                   'py-2 px-2 my-3',
-                  index == activeTabIndex ? 'bg-indigo-200' : 'bg-white',
+                  index === activeTabIndex ? 'bg-indigo-200' : 'bg-white',
                 )}
                 style={{ borderLeftWidth: 5, borderLeftColor: getProfileColor(tab.profile) }}
               >

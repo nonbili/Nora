@@ -3,16 +3,13 @@ import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
 import { services } from '../service/Services'
 import { View, Text, Pressable, ScrollView, TouchableHighlight } from 'react-native'
-import { clsx, isWeb, nIf } from '@/lib/utils'
+import { clsx, nIf } from '@/lib/utils'
 import { getHomeUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
-import { NouButton } from '../button/NouButton'
-import { MaterialButton } from '../button/IconButtons'
 import { bookmarks$ } from '@/states/bookmarks'
 import { Image } from 'expo-image'
 import { t } from 'i18next'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 const cls = 'flex-row items-center gap-2 rounded-full bg-sky-50 w-40 py-2 px-3 overflow-hidden'
 
@@ -105,8 +102,12 @@ export const NavModalContent: React.FC<{ index?: number }> = ({ index = 0 }) => 
 export const NavModal = () => {
   const navModalOpen = useValue(ui$.navModalOpen)
 
+  if (!navModalOpen) {
+    return null
+  }
+
   return (
-    <BaseModal className={navModalOpen ? 'block' : 'hidden'} onClose={() => ui$.navModalOpen.set(false)}>
+    <BaseModal onClose={() => ui$.navModalOpen.set(false)}>
       <NavModalContent />
     </BaseModal>
   )

@@ -1,21 +1,17 @@
 import { NoraView } from '@/modules/nora-view'
-import { useValue, useObserve, useObserveEffect } from '@legendapp/state/react'
+import { useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { settings$ } from '@/states/settings'
-import { NouHeader } from '../header/NouHeader'
-import { Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
 import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
-import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
 import { MaterialButton } from '../button/IconButtons'
 import { share } from '@/lib/share'
 import { ServiceIcon } from '../service/Services'
-import { debounce } from 'es-toolkit'
-import { showToast } from '@/lib/toast'
 import { getUserAgent } from '@/lib/useragent'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { parseJson } from '@/content/utils'
@@ -30,7 +26,7 @@ const getRedirectTo = (str: string) => {
     if (url.hostname.endsWith('.threads.com')) {
       return url.searchParams.get('u') || str
     }
-  } catch (e) {}
+  } catch {}
   return str
 }
 
@@ -58,14 +54,14 @@ const onScroll = (dy: number) => {
 export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const inspectable = useValue(settings$.inspectable)
-  const uiState = useValue(ui$)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
-  const { tabs, activeTabIndex } = useValue(tabs$)
+  const { activeTabIndex } = useValue(tabs$)
   const pageUrlRef = useRef('')
   const [canGoBack, setCanGoBack] = useState(false)
   const contentJs = useContentJs()
   const profileColor = getProfileColor(tab.profile)
+  const isActive = activeTabIndex === index
 
   useEffect(() => {
     if (!tab.url) {
@@ -121,41 +117,55 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     [contentJs, index, setPageUrl],
   )
 
-  const checkBlank = useCallback(
-    async (webview: any) => {
-      if (!webview || !tab.url) return
-      if (activeTabIndex === index) {
+  const setActiveNativeWebview = useCallback(
+    (webview: any) => {
+      if (webview && isActive) {
         ui$.webview.set(ObservableHint.opaque(webview))
       }
+    },
+    [isActive],
+  )
+
+  const syncNativePage = useCallback(
+    async (webview: any) => {
+      if (!webview || !tab.url) return
+      setActiveNativeWebview(webview)
       try {
         const location = await webview.executeJavaScript('document.location.href')
-        if (location === 'about:blank' || !location || location === '""') {
+        const currentLocation = typeof location === 'string' ? location.replace(/^"|"$/g, '') : ''
+        if (!currentLocation || currentLocation === 'about:blank') {
           webview.loadUrl(tab.url)
-        } else if (!pageUrlRef.current && location) {
-          pageUrlRef.current = location.replace(/^"|"$/g, '')
+        } else if (!pageUrlRef.current) {
+          pageUrlRef.current = currentLocation
         }
-      } catch (e) {
-        webview.loadUrl(tab.url)
+      } catch {
+        if (!pageUrlRef.current) {
+          webview.loadUrl(tab.url)
+        }
       }
     },
-    [tab.url, index, activeTabIndex],
+    [tab.url, setActiveNativeWebview],
   )
 
   useEffect(() => {
     const webview = nativeRef.current
-    if (webview && activeTabIndex === index && tab.url) {
-      checkBlank(webview)
+    if (!webview) {
+      return
     }
-  }, [activeTabIndex, index, tab.url, checkBlank])
+    setActiveNativeWebview(webview)
+    if (!pageUrlRef.current && tab.url) {
+      syncNativePage(webview)
+    }
+  }, [tab.url, setActiveNativeWebview, syncNativePage])
 
   const onNativeRef = useCallback(
     (ref: any) => {
       nativeRef.current = ref
       if (ref && tab.url) {
-        checkBlank(ref)
+        syncNativePage(ref)
       }
     },
-    [tab.url, checkBlank],
+    [tab.url, syncNativePage],
   )
 
   const webview = webviewRef.current || nativeRef.current
@@ -257,11 +267,14 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   }
 
   return (
-    <>
+    <View
+      pointerEvents={isActive ? 'auto' : 'none'}
+      style={[StyleSheet.absoluteFillObject, { opacity: isActive ? 1 : 0, zIndex: isActive ? 1 : 0 }]}
+    >
       <NoraView
         ref={onNativeRef}
-        className={clsx(!tab.url || (index != activeTabIndex && 'hidden'))}
-        style={{ flex: 1, display: index == activeTabIndex ? 'flex' : 'none' }}
+        className={clsx(!tab.url && 'hidden')}
+        style={StyleSheet.absoluteFillObject}
         profile={tab.profile || 'default'}
         scriptOnStart={contentJs}
         useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
@@ -269,7 +282,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         onMessage={onMessage}
         inspectable={inspectable}
       />
-      {nIf(!tab.url && index == activeTabIndex, <NavModalContent index={index} />)}
-    </>
+      {nIf(!tab.url && isActive, <NavModalContent index={index} />)}
+    </View>
   )
 }
