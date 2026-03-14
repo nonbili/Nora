@@ -33,6 +33,7 @@ export interface Settings {
 
   showNewTabButtonInHeader: boolean
   showBackButtonInHeader: boolean
+  showForwardButtonInHeader: boolean
   showScrollButtonInHeader: boolean
   oneHandMode: boolean
   oneTabPerSite: boolean
@@ -63,6 +64,7 @@ export const settings$ = observable<Store>({
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,
+  showForwardButtonInHeader: false,
   showScrollButtonInHeader: false,
   oneHandMode: false,
   oneTabPerSite: false,

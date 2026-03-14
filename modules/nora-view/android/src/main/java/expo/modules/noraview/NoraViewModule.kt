@@ -119,6 +119,13 @@ class NoraViewModule : Module() {
         }
       }
 
+      AsyncFunction("goForward") { view: NoraView ->
+        val webView = view.webView
+        if (webView.canGoForward()) {
+          webView.goForward()
+        }
+      }
+
       AsyncFunction("loadUrl") { view: NoraView, url: String -> view.load(url) }
 
       AsyncFunction("saveFile") { view: NoraView, fileName: String, mimeType: String, content: String ->

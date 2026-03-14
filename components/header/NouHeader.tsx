@@ -94,6 +94,13 @@ export const NouHeader: React.FC<{}> = ({}) => {
   }, [settings.autoHideHeader, uiState.headerHeight, uiState.headerShown, marginTop, withTimingSafe, isWeb])
 
   const scrollToTop = () => webview?.executeJavaScript(`window.scrollTo(0, 0, {behavior: 'smooth'})`)
+  const goForward = () => {
+    if (typeof webview?.goForward === 'function') {
+      webview.goForward()
+      return
+    }
+    webview?.executeJavaScript?.('history.forward()')
+  }
 
   const addBookmark = () => {
     if (currentTab?.url) {
@@ -122,6 +129,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
         {nIf(
           !isWeb && settings.showBackButtonInHeader,
           <MaterialButton name="arrow-back" onPress={() => webview?.goBack()} />,
+        )}
+        {nIf(
+          !isWeb && settings.showForwardButtonInHeader,
+          <MaterialButton name="arrow-forward" onPress={goForward} />,
         )}
         {nIf(!isWeb && settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
       </View>

@@ -63,6 +63,12 @@ export const SettingsModalTabSettings = () => {
           />
           <NouSwitch
             className="mb-6"
+            label={<NouText className="font-medium">{t('settings.showForwardButton')}</NouText>}
+            value={settings.showForwardButtonInHeader}
+            onPress={() => settings$.showForwardButtonInHeader.toggle()}
+          />
+          <NouSwitch
+            className="mb-6"
             label={<NouText className="font-medium">{t('settings.showScrollButton')}</NouText>}
             value={settings.showScrollButtonInHeader}
             onPress={() => settings$.showScrollButtonInHeader.toggle()}

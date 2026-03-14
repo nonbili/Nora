@@ -110,6 +110,12 @@ public class NoraViewModule: Module {
         }
       }
 
+      AsyncFunction("goForward") { (view: NoraView) in
+        if view.webView.canGoForward {
+          view.webView.goForward()
+        }
+      }
+
       AsyncFunction("loadUrl") { (view: NoraView, url: String) in
         view.load(url: url)
       }

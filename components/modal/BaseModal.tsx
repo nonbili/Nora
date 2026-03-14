@@ -1,13 +1,14 @@
 import { clsx, isIos, isWeb } from '@/lib/utils'
 import { ReactNode } from 'react'
 import { KeyboardAvoidingView, Modal, Pressable, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const BaseModal: React.FC<{ className?: string; children: ReactNode; onClose: () => void }> = ({
   className,
   children,
   onClose,
 }) => {
+  const insets = useSafeAreaInsets()
   const inner = isWeb ? children : <SafeAreaView className="max-h-full">{children}</SafeAreaView>
 
   if (!isWeb) {
@@ -18,6 +19,7 @@ export const BaseModal: React.FC<{ className?: string; children: ReactNode; onCl
           <KeyboardAvoidingView
             behavior={isIos ? 'padding' : undefined}
             className="bg-gray-950 absolute top-0 left-0 bottom-0 w-[30rem] max-w-[80vw]"
+            style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
           >
             {inner}
           </KeyboardAvoidingView>
