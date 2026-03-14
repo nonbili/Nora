@@ -51,6 +51,7 @@ const styles: Record<string, string> = {
     .promotedlink,
     .sitetable .rank,
     #xpromo-small-header,
+    li:has(ad-event-tracker),
     shreddit-ad-post,
     shreddit-comments-page-ad {
       display: none !important;
@@ -63,7 +64,9 @@ const styles: Record<string, string> = {
 
   threads: css`
     /* Open in app */
-    .x6s0dn4.x78zum5.xdt5ytf.x1mk1bxn.xaw7rza.xvc5jky {
+    .x6s0dn4.x78zum5.xdt5ytf.x1mk1bxn.xaw7rza.xvc5jky,
+    /* Suggested for you */
+    .x16xn7b0.xwib8y2 {
       display: none !important;
     }
   `,

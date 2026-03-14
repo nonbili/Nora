@@ -63,21 +63,6 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   const profileColor = getProfileColor(tab.profile)
   const isActive = activeTabIndex === index
 
-  useEffect(() => {
-    if (!tab.url) {
-      return
-    }
-    if (tab.url !== pageUrlRef.current) {
-      const webview = webviewRef.current
-      const native = nativeRef.current
-      if (webview) {
-        webview.src = tab.url
-      } else if (native) {
-        native.loadUrl(tab.url)
-      }
-    }
-  }, [tab.url])
-
   const setPageUrl = useCallback(
     (url: string) => {
       if (!url || url === 'about:blank') {
@@ -119,33 +104,49 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
 
   const setActiveNativeWebview = useCallback(
     (webview: any) => {
-      if (webview && isActive) {
+      if (webview && nativeRef.current === webview && isActive) {
         ui$.webview.set(ObservableHint.opaque(webview))
       }
     },
     [isActive],
   )
 
-  const syncNativePage = useCallback(
-    async (webview: any) => {
-      if (!webview || !tab.url) return
-      setActiveNativeWebview(webview)
-      try {
-        const location = await webview.executeJavaScript('document.location.href')
-        const currentLocation = typeof location === 'string' ? location.replace(/^"|"$/g, '') : ''
-        if (!currentLocation || currentLocation === 'about:blank') {
-          webview.loadUrl(tab.url)
-        } else if (!pageUrlRef.current) {
-          pageUrlRef.current = currentLocation
-        }
-      } catch {
-        if (!pageUrlRef.current) {
-          webview.loadUrl(tab.url)
-        }
+  const clearActiveNativeWebview = useCallback((webview: any) => {
+    if (ui$.webview.get() === webview) {
+      ui$.webview.set(undefined)
+    }
+  }, [])
+
+  useEffect(() => {
+    const webview = webviewRef.current
+    if (webview && tab.url && tab.url !== pageUrlRef.current) {
+      webview.src = tab.url
+      return
+    }
+
+    if (!tab.url) {
+      return
+    }
+
+    const native = nativeRef.current
+    if (!native || tab.url === pageUrlRef.current) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      if (nativeRef.current !== native || tab.url === pageUrlRef.current) {
+        return
       }
-    },
-    [tab.url, setActiveNativeWebview],
-  )
+      void Promise.resolve(native.loadUrl(tab.url)).catch((error) => {
+        if (nativeRef.current !== native) {
+          return
+        }
+        console.warn('[NoraTab] loadUrl failed', error)
+      })
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [tab.url])
 
   useEffect(() => {
     const webview = nativeRef.current
@@ -153,19 +154,26 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
       return
     }
     setActiveNativeWebview(webview)
-    if (!pageUrlRef.current && tab.url) {
-      syncNativePage(webview)
+  }, [setActiveNativeWebview])
+
+  useEffect(() => {
+    return () => {
+      clearActiveNativeWebview(nativeRef.current)
+      nativeRef.current = null
     }
-  }, [tab.url, setActiveNativeWebview, syncNativePage])
+  }, [clearActiveNativeWebview])
 
   const onNativeRef = useCallback(
     (ref: any) => {
+      const prevRef = nativeRef.current
       nativeRef.current = ref
-      if (ref && tab.url) {
-        syncNativePage(ref)
+      if (!ref) {
+        clearActiveNativeWebview(prevRef)
+        return
       }
+      setActiveNativeWebview(ref)
     },
-    [tab.url, syncNativePage],
+    [clearActiveNativeWebview, setActiveNativeWebview],
   )
 
   const webview = webviewRef.current || nativeRef.current
