@@ -1,0 +1,3 @@
+- fix 3-dot menu
+- fix ads on reddit
+- add optional forward button
