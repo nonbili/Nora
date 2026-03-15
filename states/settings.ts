@@ -1,4 +1,4 @@
-import { observable, syncState, when } from '@legendapp/state'
+import { observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
@@ -13,7 +13,7 @@ export interface Profile {
 const DEFAULT_PROFILE_ID = 'default'
 const DEFAULT_PROFILE: Profile = { id: DEFAULT_PROFILE_ID, name: 'Default', color: '#6366f1', isDefault: true }
 
-const ensureProfiles = (profiles?: Array<Profile | null | undefined>) => {
+const ensureProfiles = (profiles?: (Profile | null | undefined)[]) => {
   const sanitized = (profiles || []).filter((p): p is Profile => p != null)
   const defaultProfile = sanitized.find((p) => p.id === DEFAULT_PROFILE_ID)
   if (!defaultProfile) {
@@ -43,11 +43,7 @@ export interface Settings {
 }
 
 interface Store extends Settings {
-  updatedAt: number
-  syncedAt: number
-
   toggleService: (service: string) => void
-  setSyncedTime: () => void
   addProfile: (name: string, color: string) => void
   updateProfile: (id: string, name: string, color: string) => void
   deleteProfile: (id: string) => void
@@ -71,18 +67,13 @@ export const settings$ = observable<Store>({
 
   disabledServicesArr: [],
   profiles: [DEFAULT_PROFILE],
-  updatedAt: 1,
-  syncedAt: 0,
   toggleService: (service) => {
     const index = settings$.disabledServicesArr.indexOf(service)
-    if (index == -1) {
+    if (index === -1) {
       settings$.disabledServicesArr.push(service)
     } else {
       settings$.disabledServicesArr.splice(index, 1)
     }
-  },
-  setSyncedTime: () => {
-    settings$.syncedAt.set(Date.now())
   },
   addProfile: (name, color) => {
     settings$.profiles.push({ id: genId(), name, color })

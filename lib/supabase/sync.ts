@@ -1,54 +1,72 @@
-import { ui$ } from '@/states/ui'
-import { settings$ } from '@/states/settings'
+import { auth$ } from '@/states/auth'
 import { bookmarks$ } from '@/states/bookmarks'
-import { settingsSyncer } from './sync/settings'
+import { createLogger } from '@/lib/log'
+import { settings$ } from '@/states/settings'
 import { bookmarksSyncer } from './sync/bookmarks'
+import { settingsSyncer } from './sync/settings'
 
-const oneDay = 24 * 3600 * 1000
+const logger = createLogger('sync', { devOnly: true })
+
+const canSync = () => {
+  const { userId, plan } = auth$.get()
+  return Boolean(userId && plan && plan !== 'free')
+}
+
+const getSettingsSnapshot = (value: any = settings$.get()) => {
+  const { toggleService, addProfile, updateProfile, deleteProfile, ...data } = value
+  return data
+}
+
+const getBookmarksSnapshot = (value: any = bookmarks$.get()) => {
+  const { addBookmark, deleteBookmark, ...data } = value
+  return data
+}
+
 export async function syncSupabase() {
-  const fullSyncedAt = ui$.fullSyncedAt.get()
-  const fullSync = !fullSyncedAt || Date.now() - fullSyncedAt.valueOf() > oneDay
-  await Promise.all([settingsSyncer.sync(true), bookmarksSyncer.sync(true)])
-  if (fullSync) {
-    ui$.fullSyncedAt.set(new Date())
+  if (!canSync()) {
+    logger.log('skipped syncSupabase because sync is disabled')
+    return
   }
+
+  logger.log('starting syncSupabase')
+  await Promise.all([settingsSyncer.syncNow(), bookmarksSyncer.syncNow()])
+  logger.log('completed syncSupabase')
 }
 
 settings$.onChange(({ value, getPrevious }) => {
-  if (!ui$.fullSyncedAt.get()) return
+  if (settingsSyncer.isApplyingRemote()) {
+    return
+  }
+
   const prev = getPrevious()
-  if (!prev) return
+  if (!prev) {
+    return
+  }
 
-  const { updatedAt, syncedAt, toggleService, setSyncedTime, ...data } = value
-  const { updatedAt: pUpdatedAt, syncedAt: pSyncedAt, toggleService: pTS, setSyncedTime: pSST, ...pData } = prev
-
-  if (JSON.stringify(data) !== JSON.stringify(pData)) {
-    if (updatedAt === pUpdatedAt) {
-      settings$.updatedAt.set(Date.now())
+  if (JSON.stringify(getSettingsSnapshot(value)) !== JSON.stringify(getSettingsSnapshot(prev))) {
+    logger.log('detected local settings change')
+    settingsSyncer.markDirty()
+    if (canSync()) {
+      settingsSyncer.scheduleSync()
     }
-    settingsSyncer.sync()
   }
 })
 
 bookmarks$.onChange(({ value, getPrevious }) => {
-  if (!ui$.fullSyncedAt.get()) return
+  if (bookmarksSyncer.isApplyingRemote()) {
+    return
+  }
+
   const prev = getPrevious()
-  if (!prev) return
+  if (!prev) {
+    return
+  }
 
-  const { updatedAt, syncedAt, addBookmark, deleteBookmark, setSyncedTime, ...data } = value
-  const {
-    updatedAt: pUpdatedAt,
-    syncedAt: pSyncedAt,
-    addBookmark: pAB,
-    deleteBookmark: pDB,
-    setSyncedTime: pSST,
-    ...pData
-  } = prev
-
-  if (JSON.stringify(data) !== JSON.stringify(pData)) {
-    if (updatedAt === pUpdatedAt) {
-      bookmarks$.updatedAt.set(Date.now())
+  if (JSON.stringify(getBookmarksSnapshot(value)) !== JSON.stringify(getBookmarksSnapshot(prev))) {
+    logger.log('detected local bookmarks change')
+    bookmarksSyncer.markDirty()
+    if (canSync()) {
+      bookmarksSyncer.scheduleSync()
     }
-    bookmarksSyncer.sync()
   }
 })

@@ -1,26 +1,33 @@
 import { syncState, when } from '@legendapp/state'
 import { Bookmarks, bookmarks$ } from '@/states/bookmarks'
+import { ResourceSyncMeta, syncMeta$ } from '@/states/sync-meta'
 import { BaseSyncer } from './base'
 
 class BookmarksSyncer extends BaseSyncer<Bookmarks> {
   NAME = 'bookmarks'
   TABLE_NAME = 'bookmarks'
-  COLUMNS = 'json,updated_at'
-  SYNC_STATE_FIELD = 'bookmarks_updated_at'
+  pushWhenRemoteMissing = false
 
   isPersistLoaded = () => when(syncState(bookmarks$).isPersistLoaded)
 
-  getStore() {
-    const { updatedAt, syncedAt, addBookmark, deleteBookmark, setSyncedTime, ...value } = bookmarks$.get()
-    return { value, updatedAt, syncedAt }
+  getValue() {
+    return bookmarks$.get()
   }
 
-  setStore({ value, updatedAt }: { value: Bookmarks; updatedAt: number }) {
-    bookmarks$.assign({ ...value, updatedAt })
+  setValue(value: Bookmarks) {
+    bookmarks$.assign(value)
   }
 
-  setSyncedTime() {
-    bookmarks$.setSyncedTime()
+  hasMeaningfulLocalValue(value: Bookmarks) {
+    return value.bookmarks.length > 0
+  }
+
+  getMeta() {
+    return syncMeta$.bookmarks.get()
+  }
+
+  setMeta(meta: Partial<ResourceSyncMeta<Bookmarks>>) {
+    syncMeta$.bookmarks.assign(meta)
   }
 }
 

@@ -1,10 +1,8 @@
 import { observable } from '@legendapp/state'
-import { settings$ } from './settings'
 
 interface Store {
   url: string
   title: string
-  fullSyncedAt: Date | undefined
 
   // header
   headerHeight: number
@@ -30,7 +28,6 @@ interface Store {
 export const ui$ = observable<Store>({
   url: '',
   title: '',
-  fullSyncedAt: undefined,
 
   // header
   headerHeight: 0,
