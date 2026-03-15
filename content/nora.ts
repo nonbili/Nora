@@ -3,6 +3,14 @@ import { delay, retry } from 'es-toolkit'
 import { isDownloadable } from './download'
 import { getService } from './services/manager'
 
+export const noraSettingsEvent = 'nora:settings'
+
+const defaultSettings = {
+  videoEdgeLongPressTo2x: false,
+}
+
+let settings = { ...defaultSettings }
+
 function getMeta(url: string) {
   const icon = document.querySelector('link[rel*=icon]')?.getAttribute('href') || 'favicon.ico'
   return JSON.stringify({ title: document.title, icon: new URL(icon, document.location.href).href })
@@ -98,10 +106,22 @@ async function getVideoUrl() {
   // }
 }
 
+function getSettings() {
+  return settings
+}
+
+function setSettings(next: Partial<typeof defaultSettings> = {}) {
+  settings = { ...settings, ...next }
+  window.dispatchEvent(new CustomEvent(noraSettingsEvent, { detail: settings }))
+  return settings
+}
+
 export function initNora() {
   return {
     getMeta,
     downloadBlob,
     getVideoUrl,
+    getSettings,
+    setSettings,
   }
 }

@@ -54,6 +54,7 @@ const onScroll = (dy: number) => {
 export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const inspectable = useValue(settings$.inspectable)
+  const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
   const { activeTabIndex } = useValue(tabs$)
@@ -74,6 +75,19 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     [index],
   )
 
+  const applyContentSettings = useCallback(
+    (target?: WebviewTag | any | null) => {
+      const webview = target || webviewRef.current || nativeRef.current
+      if (!webview?.executeJavaScript) {
+        return
+      }
+
+      const script = `window.Nora?.setSettings?.(${JSON.stringify({ videoEdgeLongPressTo2x })})`
+      void Promise.resolve(webview.executeJavaScript(script)).catch(() => {})
+    },
+    [videoEdgeLongPressTo2x],
+  )
+
   const noraViewRef = useCallback(
     (webview: WebviewTag) => {
       webviewRef.current = webview
@@ -83,7 +97,9 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
 
       webview.addEventListener('dom-ready', () => {
         ui$.webview.set(ObservableHint.opaque(webview))
-        webview.executeJavaScript(contentJs)
+        void Promise.resolve(webview.executeJavaScript(contentJs))
+          .catch(() => {})
+          .finally(() => applyContentSettings(webview))
         setCanGoBack(webview.canGoBack())
       })
       webview.addEventListener('did-navigate', (e) => {
@@ -99,7 +115,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
       })
       webview.addEventListener('ipc-message', (e) => {})
     },
-    [contentJs, index, setPageUrl],
+    [applyContentSettings, contentJs, index, setPageUrl],
   )
 
   const setActiveNativeWebview = useCallback(
@@ -157,6 +173,10 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   }, [setActiveNativeWebview])
 
   useEffect(() => {
+    applyContentSettings()
+  }, [applyContentSettings])
+
+  useEffect(() => {
     return () => {
       clearActiveNativeWebview(nativeRef.current)
       nativeRef.current = null
@@ -196,6 +216,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
     if (title || icon) {
       tabs$.tabs[index].assign({ title, icon })
     }
+    applyContentSettings()
   }
 
   const onMessage = async (e: { nativeEvent: { payload: string | object } }) => {

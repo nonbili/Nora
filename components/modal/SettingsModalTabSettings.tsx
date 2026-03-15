@@ -101,6 +101,12 @@ export const SettingsModalTabSettings = () => {
             value={settings.inspectable}
             onPress={() => settings$.inspectable.toggle()}
           />
+          <NouSwitch
+            className="mb-6"
+            label={<NouText className="font-medium">{t('settings.videoEdgeLongPressTo2x')}</NouText>}
+            value={settings.videoEdgeLongPressTo2x}
+            onPress={() => settings$.videoEdgeLongPressTo2x.toggle()}
+          />
 
           <View className="items-center flex-row justify-between">
             <NouText className="font-medium">{t('settings.theme.label')}</NouText>

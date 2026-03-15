@@ -30,6 +30,7 @@ export interface Settings {
   redirectToOldReddit: boolean
   allowHttpWebsite: boolean
   inspectable: boolean
+  videoEdgeLongPressTo2x: boolean
 
   showNewTabButtonInHeader: boolean
   showBackButtonInHeader: boolean
@@ -49,6 +50,20 @@ interface Store extends Settings {
   deleteProfile: (id: string) => void
 }
 
+export const normalizeSettings = <T extends Partial<Settings> | undefined>(data: T) => {
+  if (!data) {
+    return data
+  }
+
+  if ('profiles' in data) {
+    data.profiles = ensureProfiles(data.profiles)
+  }
+  if (typeof data.videoEdgeLongPressTo2x !== 'boolean') {
+    data.videoEdgeLongPressTo2x = true
+  }
+  return data
+}
+
 export const settings$ = observable<Store>({
   autoHideHeader: false,
   headerPosition: 'top',
@@ -57,6 +72,7 @@ export const settings$ = observable<Store>({
   redirectToOldReddit: false,
   allowHttpWebsite: false,
   inspectable: false,
+  videoEdgeLongPressTo2x: true,
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,
@@ -100,10 +116,7 @@ syncObservable(settings$, {
     plugin: ObservablePersistMMKV,
     transform: {
       load: (data: Store) => {
-        if (data) {
-          data.profiles = ensureProfiles(data.profiles)
-        }
-        return data
+        return normalizeSettings(data)
       },
     },
   },

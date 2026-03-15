@@ -5,7 +5,7 @@ import { version, versionCode, buildNumber } from './package.json'
 
 module.exports = ({ config }: { config: ExpoConfig }) => {
   return {
-    name: 'Nora',
+    name: 'Nora-dev',
     slug: 'nora',
     version,
     icon: './assets/images/icon.png',
@@ -14,7 +14,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'jp.nonbili.nora',
+      bundleIdentifier: 'jp.nonbili.nora_dev',
       buildNumber,
       infoPlist: {
         NSMicrophoneUsageDescription: 'Allow $(PRODUCT_NAME) to use the microphone.',
@@ -30,7 +30,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
-      package: 'jp.nonbili.nora',
+      package: 'jp.nonbili.nora_dev',
       intentFilters: [
         {
           autoVerify: false,
@@ -121,7 +121,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
           supportedLocales: ['ar', 'el', 'en', 'es', 'fr', 'it', 'pl', 'tr', 'zh-Hans', 'zh-Hant'],
         },
       ],
-      ['expo-share-intent', { iosAppGroupIdentifier: 'group.g.jp.nonbili.nora' }],
+      ['expo-share-intent', { iosAppGroupIdentifier: 'group.g.jp.nonbili.nora_dev' }],
       'expo-web-browser',
     ],
     experiments: {

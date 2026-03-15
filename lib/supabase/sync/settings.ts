@@ -1,5 +1,5 @@
 import { syncState, when } from '@legendapp/state'
-import { Settings, settings$ } from '@/states/settings'
+import { normalizeSettings, Settings, settings$ } from '@/states/settings'
 import { ResourceSyncMeta, syncMeta$ } from '@/states/sync-meta'
 import { BaseSyncer } from './base'
 
@@ -15,10 +15,7 @@ class SettingsSyncer extends BaseSyncer<Settings> {
   }
 
   setValue(value: Settings) {
-    if (value.profiles) {
-      value.profiles = value.profiles.filter((profile) => profile != null)
-    }
-    settings$.assign(value)
+    settings$.assign(normalizeSettings(value))
   }
 
   hasMeaningfulLocalValue() {

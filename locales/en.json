@@ -54,6 +54,7 @@
     "redirectToOldReddit": "Redirect to Old Reddit",
     "allowHttpWebsite": "Allow HTTP websites",
     "inspectable": "Make webview inspectable",
+    "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
     "hideHeader": "Hide toolbar on scroll",
     "headerPosition": {
       "label": "Toolbar position",
