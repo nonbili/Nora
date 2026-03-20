@@ -13,23 +13,45 @@ import { t } from 'i18next'
 
 const cls = 'flex-row items-center gap-2 rounded-full bg-sky-50 w-40 py-2 px-3 overflow-hidden'
 
-export const NavModalContent: React.FC<{ index?: number }> = ({ index = 0 }) => {
+interface NavModalContentProps {
+  index?: number
+  onOpenUrl?: (url: string, profileId: string) => void
+  onSelectProfile?: (profileId: string) => void
+  profileId?: string
+  showOpenUrl?: boolean
+}
+
+export const NavModalContent: React.FC<NavModalContentProps> = ({
+  index = 0,
+  onOpenUrl,
+  onSelectProfile,
+  profileId,
+  showOpenUrl = true,
+}) => {
   const disabledServices = useValue(settings$.disabledServicesArr)
   const profiles = useValue(settings$.profiles)
   const bookmarks = useValue(bookmarks$.bookmarks)
   const oneHandMode = useValue(settings$.oneHandMode)
   const currentTab = useValue(tabs$.tabs[index])
-  const selectedProfile = currentTab?.profile || 'default'
+  const selectedProfile = profileId || currentTab?.profile || 'default'
 
   const onPress = (url: string) => {
-    tabs$.updateTabUrl(url, index)
+    if (onOpenUrl) {
+      onOpenUrl(url, selectedProfile)
+    } else {
+      tabs$.updateTabUrl(url, index)
+    }
     ui$.assign({ navModalOpen: false })
   }
 
   const selectProfile = (profileId: string) => {
-    const tab$ = tabs$.tabs[index]
-    if (tab$.get()) {
-      tab$.profile.set(profileId)
+    if (onSelectProfile) {
+      onSelectProfile(profileId)
+    } else {
+      const tab$ = tabs$.tabs[index]
+      if (tab$.get()) {
+        tab$.profile.set(profileId)
+      }
     }
     ui$.lastSelectedProfileId.set(profileId)
   }
@@ -88,11 +110,13 @@ export const NavModalContent: React.FC<{ index?: number }> = ({ index = 0 }) => 
               </View>
             </TouchableHighlight>
           ))}
-          <TouchableHighlight onPress={() => ui$.urlModalOpen.set(true)}>
-            <View className={clsx(cls, 'bg-transparent border border-indigo-200 justify-center')}>
-              <Text className="text-white h-6 leading-6">{t('buttons.openUrl')}</Text>
-            </View>
-          </TouchableHighlight>
+          {showOpenUrl ? (
+            <TouchableHighlight onPress={() => ui$.urlModalOpen.set(true)}>
+              <View className={clsx(cls, 'bg-transparent border border-indigo-200 justify-center')}>
+                <Text className="text-white h-6 leading-6">{t('buttons.openUrl')}</Text>
+              </View>
+            </TouchableHighlight>
+          ) : null}
         </View>
       </ScrollView>
     </View>

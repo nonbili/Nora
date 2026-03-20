@@ -1,7 +1,7 @@
 import { NoraView } from '@/modules/nora-view'
 import { useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { settings$ } from '@/states/settings'
 import { StyleSheet, View } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
@@ -10,6 +10,7 @@ import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouMenu } from '../menu/NouMenu'
 import { MaterialButton } from '../button/IconButtons'
+import { NouText } from '../NouText'
 import { share } from '@/lib/share'
 import { ServiceIcon } from '../service/Services'
 import { getUserAgent } from '@/lib/useragent'
@@ -60,7 +61,14 @@ const parseWebviewMeta = (value?: string | null) => {
   return parsed
 }
 
-export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) => {
+const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
+
+export const NoraTab: React.FC<{
+  tab: Tab
+  index: number
+  desktopVariant?: 'deck' | 'saved-view'
+  slotSwitcher?: ReactNode
+}> = ({ tab, index, desktopVariant = 'deck', slotSwitcher }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const inspectable = useValue(settings$.inspectable)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
@@ -101,7 +109,9 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
       }
 
       webview.addEventListener('dom-ready', () => {
-        ui$.webview.set(ObservableHint.opaque(webview))
+        if (isActive || !ui$.webview.get()) {
+          ui$.webview.set(ObservableHint.opaque(webview))
+        }
         void executeWebviewJavaScript(webview, contentJs)
           .catch(() => {})
           .finally(() => applyContentSettings(webview))
@@ -178,6 +188,13 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
   }, [setActiveNativeWebview])
 
   useEffect(() => {
+    if (!isWeb || !isActive || !webviewRef.current) {
+      return
+    }
+    ui$.webview.set(ObservableHint.opaque(webviewRef.current))
+  }, [isActive])
+
+  useEffect(() => {
     applyContentSettings()
   }, [applyContentSettings])
 
@@ -234,7 +251,9 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
         break
       case 'icon': {
         const currentWebview = webviewRef.current || nativeRef.current
-        const meta = parseWebviewMeta(await executeWebviewJavaScript(currentWebview, 'window.Nora?.getMeta()'))
+        const meta = parseWebviewMeta(
+          (await executeWebviewJavaScript(currentWebview, 'window.Nora?.getMeta()')) as string | null | undefined,
+        )
         if (meta.title || meta.icon) {
           tabs$.tabs[index].assign({ ...meta })
         }
@@ -259,14 +278,26 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
 
   if (isWeb) {
     return (
-      <View className="w-[25rem] shrink-0">
+      <View
+        className={clsx('flex h-full min-h-0 min-w-0 flex-col', desktopVariant === 'deck' ? 'w-[25rem] shrink-0' : 'w-full')}
+      >
         <View
-          className="flex-row items-center justify-between bg-zinc-800 pl-2"
-          style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36, alignItems: 'center' }}
+          className="flex-row items-center justify-between gap-2 bg-zinc-800 pl-2 pr-1"
+          style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
         >
-          <View className="flex-row items-center gap-1">
+          <View className="flex-row items-center gap-2 shrink-0">
             <ServiceIcon url={tab.url} icon={tab.icon} />
             {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} />)}
+          </View>
+          <View className="flex-1 min-w-0 flex-row items-center justify-center">
+            {slotSwitcher || (
+              <NouText
+                className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center px-2"
+                numberOfLines={1}
+              >
+                {getTabLabel(tab)}
+              </NouText>
+            )}
           </View>
           <NouMenu
             trigger={<MaterialButton name="more-vert" style={toolbarButtonStyle} />}
@@ -291,7 +322,7 @@ export const NoraTab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) =
           />
         </View>
         <NoraView
-          className={clsx('h-full', !tab.url && 'hidden')}
+          className={clsx('flex-1', !tab.url && 'hidden')}
           ref={noraViewRef}
           partition={`persist:${tab.profile || 'default'}`}
           useragent={getUserAgent(window.electron.process.platform, true)}

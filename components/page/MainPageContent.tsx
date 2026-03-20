@@ -8,7 +8,7 @@ import { clsx, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { NoraTab } from '../tab/NoraTab'
 import { NavModalContent } from '../modal/NavModal'
-import { SortableNoraTabs } from '../tab/SortableNoraTabs'
+import { DesktopWorkspace } from '../tab/DesktopWorkspace'
 import { auth$ } from '@/states/auth'
 import { useMe } from '@/lib/hooks/useMe'
 import { syncSupabase } from '@/lib/supabase/sync'
@@ -48,7 +48,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     >
       <NouHeader />
       {isWeb && tabs.length ? (
-        <SortableNoraTabs tabs={tabs} />
+        <DesktopWorkspace />
       ) : tabs.length ? (
         <View className="flex-1">
           {tabs.map((tab, index) => (

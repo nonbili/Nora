@@ -24,6 +24,7 @@ import { bookmarks$ } from '@/states/bookmarks'
 import { showToast } from '@/lib/toast'
 import { Directions, Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { SavedViewsPicker } from '../view/SavedViewsPicker'
 
 function prevTab() {
   const activeIndex = tabs$.activeTabIndex.get()
@@ -132,27 +133,35 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const ret = (
     <Root
-      className={clsx('bg-zinc-800 flex-row items-center justify-between pl-2 py-1', isWeb && 'lg:flex-col lg:pl-0')}
+      className={clsx(
+        'bg-zinc-800 flex-row items-center justify-between pl-2 py-1',
+        isWeb && 'lg:w-[52px] lg:flex-col lg:items-center lg:justify-start lg:gap-4 lg:px-0 lg:py-4',
+      )}
       style={{ marginTop: isWeb ? marginTopWeb : marginTop }}
       onLayout={onLayout}
     >
-      <View className="flex-row items-center gap-1">
-        {nIf(
-          isWeb || settings.showNewTabButtonInHeader,
-          <MaterialButton name="add" onPress={() => tabs$.openTab('')} />,
+      {nIf(
+        !isWeb,
+        <View className="flex-row items-center gap-1">
+          {nIf(settings.showNewTabButtonInHeader, <MaterialButton name="add" onPress={() => tabs$.openTab('')} />)}
+          {nIf(settings.showBackButtonInHeader, <MaterialButton name="arrow-back" onPress={() => webview?.goBack()} />)}
+          {nIf(settings.showForwardButtonInHeader, <MaterialButton name="arrow-forward" onPress={goForward} />)}
+          {nIf(settings.showReloadButtonInHeader, <MaterialButton name="refresh" onPress={reloadPage} />)}
+          {nIf(settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
+        </View>,
+      )}
+      {nIf(
+        isWeb,
+        <View className="min-w-0 lg:w-full lg:flex-none">
+          <SavedViewsPicker />
+        </View>,
+      )}
+      <View
+        className={clsx(
+          'flex-row items-center justify-end gap-1',
+          isWeb && 'lg:mt-auto lg:w-full lg:flex-col lg:items-center lg:justify-start',
         )}
-        {nIf(
-          !isWeb && settings.showBackButtonInHeader,
-          <MaterialButton name="arrow-back" onPress={() => webview?.goBack()} />,
-        )}
-        {nIf(
-          !isWeb && settings.showForwardButtonInHeader,
-          <MaterialButton name="arrow-forward" onPress={goForward} />,
-        )}
-        {nIf(!isWeb && settings.showReloadButtonInHeader, <MaterialButton name="refresh" onPress={reloadPage} />)}
-        {nIf(!isWeb && settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" onPress={scrollToTop} />)}
-      </View>
-      <View className={'flex-row items-center justify-end gap-1'}>
+      >
         {nIf(
           canDownload,
           <MaterialButton name="download" onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />,
