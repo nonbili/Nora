@@ -1,4 +1,4 @@
-# ![Nora SNS browser icon](assets/images/splash-icon_32.webp) Nora: SNS browser
+# <img src="desktop/icon.png" align="top" height="44"> Nora: SNS browser
 
 Android, iOS and Desktop browser optimized for social network services.
 
