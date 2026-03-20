@@ -25,7 +25,8 @@
     "share": "分享",
     "tools": "工具",
     "desktop": "桌面版网站",
-    "desktopOn": "开"
+    "desktopOn": "开",
+    "signOut": "登出"
   },
   "modals": {
     "downloadVideo": "下载视频"
@@ -36,7 +37,9 @@
     "menu_copyLink": "复制链接",
     "toast_downloadStarted": "下载已开始，请查看系统消息",
     "toast_downloadSucceeded": "保存到下载文件夹",
-    "toast_downloadFailed": "下载失败"
+    "toast_downloadFailed": "下载失败",
+    "httpBlocked_title": "HTTP 网站被屏蔽",
+    "httpBlocked_body": "本网站使用不安全的HTTP连接。要允许加载HTTP网站，请在“设置”中启用“允许HTTP网站”。"
   },
   "settings": {
     "label": "设置",
@@ -58,12 +61,31 @@
       "light": "明亮模式",
       "hint": "如果更改未在网页视图中反映出来，请手动重启。"
     },
-    "injectCookie": "注入 cookie"
+    "injectCookie": "注入 cookie",
+    "redirectToOldReddit": "重定向到旧版 Reddit",
+    "allowHttpWebsite": "允许 HTTP 网站",
+    "inspectable": "使 webview 可检查",
+    "showForwardButton": "显示前进按钮",
+    "oneTabPerSite": "打开被分享的链接时，同一网站只能打开一个标签页",
+    "services": "预置网站"
   },
   "tabs": {
     "new": "新标签页"
   },
   "toast": {
     "pinned": "已固定到新标签页"
+  },
+  "profiles": {
+    "label": "用户档案",
+    "add": "添加",
+    "edit": "编辑",
+    "save": "保存",
+    "namePlaceholder": "档案名称"
+  },
+  "sync": {
+    "label": "同步",
+    "hint": "高级用户可在手机和电脑之间同步书签和设置。",
+    "currentPlan": "当前计划",
+    "managePlan": "管理计划"
   }
 }

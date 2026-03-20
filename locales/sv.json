@@ -1,0 +1,91 @@
+{
+  "about": {
+    "label": "om",
+    "code": "källkod",
+    "donate": "Donera"
+  },
+  "bookmarks": {
+    "label": "Bokmärken"
+  },
+  "buttons": {
+    "cancel": "Avbryt",
+    "closeAll": "stäng allt",
+    "download": "ladda ned",
+    "openUrl": "Öppna URL",
+    "open": "Öppna"
+  },
+  "menus": {
+    "close": "Stäng",
+    "delete": "Radera",
+    "desktop": "Skrivbordsversion",
+    "desktopOn": "På",
+    "desktopOff": "Av",
+    "addBookmark": "Lägg till bokmärke",
+    "pin": "Fäst på ny fliksida",
+    "reload": "Ladda om",
+    "scroll": "Scrolla till toppen",
+    "share": "Dela",
+    "signOut": "Logga ut",
+    "tools": "Verktyg"
+  },
+  "modals": {
+    "downloadVideo": "Ladda ned Video"
+  },
+  "native": {
+    "menu_saveImage": "Spara bild",
+    "menu_copyImageLink": "Kopiera bildlänk",
+    "menu_copyLink": "Kopiera länk",
+    "toast_downloadStarted": "Nedladdning startad, kontrollera systemaviseringen",
+    "toast_downloadSucceeded": "Sparad i mappen Hämtade filer",
+    "toast_downloadFailed": "Nedladdning misslyckades",
+    "httpBlocked_title": "HTT- adress blockerad",
+    "httpBlocked_body": "Den här webbplatsen använder en osäker HTTP‑anslutning. För att tillåta inläsning av HTTP‑webbplatser, aktivera ”Tillåt HTTP‑webbplatser” i Inställningar."
+  },
+  "profiles": {
+    "label": "Profiler",
+    "add": "Lägg till",
+    "edit": "Redigera",
+    "save": "Spara",
+    "namePlaceholder": "Profilnamn"
+  },
+  "settings": {
+    "label": "Inställningar",
+    "openExternalLink": "Öppna extern länk i systemets webbläsare",
+    "redirectToOldReddit": "Omdirigera till Old Reddit",
+    "allowHttpWebsite": "Tillåt HTTP-websidor",
+    "inspectable": "Gör webbvyn inspekterbar",
+    "hideHeader": "Göm verktygsraden vid scrollning",
+    "headerPosition": {
+      "label": "Verktygsradens position",
+      "top": "Toppen",
+      "bottom": "Nederst"
+    },
+    "showNewTabButton": "Visa knappen för ny flik",
+    "showBackButton": "Visa bakåt-knappen",
+    "showForwardButton": "Visa framåt-knappen",
+    "showScrollButton": "Visa knappen för att scrolla till toppen",
+    "oneHandMode": "Enhands-läge",
+    "oneTabPerSite": "En flik per webbplats när delad länk öppnas",
+    "services": "Tjänster",
+    "theme": {
+      "label": "Tema",
+      "system": "System",
+      "dark": "Mörkt",
+      "light": "Ljust",
+      "hint": "Starta om manuellt om ändringen inte syns i webbvyn."
+    },
+    "injectCookie": "Lägg till kakor"
+  },
+  "sync": {
+    "label": "Synkronisera",
+    "hint": "Synkronisera bokmärken och inställningar mellan dina telefoner och datorer som premiumanvändare.",
+    "currentPlan": "Nuvarande plan",
+    "managePlan": "Hantera plan"
+  },
+  "tabs": {
+    "new": "Ny flik"
+  },
+  "toast": {
+    "pinned": "Fäst på sidan Ny flik"
+  }
+}
