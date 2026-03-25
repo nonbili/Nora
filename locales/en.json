@@ -82,10 +82,20 @@
     "label": "Settings",
     "openExternalLink": "Open external link in system browser",
     "redirectToOldReddit": "Redirect to Old Reddit",
+    "hideXHomeTimelineTabs": "Hide \"For you | Following\" tabs",
     "allowHttpWebsite": "Allow HTTP websites",
     "inspectable": "Make webview inspectable",
     "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
     "hideHeader": "Hide toolbar on scroll",
+    "siteSections": {
+      "x": "X",
+      "reddit": "Reddit"
+    },
+    "xHomeTimeline": {
+      "label": "Default home timeline",
+      "forYou": "For you",
+      "following": "Following"
+    },
     "sections": {
       "experience": "Experience",
       "accounts": "Accounts & Data",

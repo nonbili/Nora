@@ -18,6 +18,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 import { ProfileManager } from '../profile/ProfileManager'
 import { BlocklistSection } from '../blocklist/BlocklistSection'
+import { xHomeTimelineValues } from '@/lib/settings/twitter'
 
 const headerPositions = ['top', 'bottom'] as const
 const themes = [null, 'dark', 'light'] as const
@@ -26,9 +27,14 @@ const surfaceCls = 'overflow-hidden rounded-[24px] border border-zinc-800 bg-zin
 const rowCls = 'px-4 py-4'
 const rowBorderCls = 'border-b border-zinc-800'
 const iconWrapCls = 'h-10 w-10 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950'
+const xTimelineLabels: Record<(typeof xHomeTimelineValues)[number], string> = {
+  'for-you': 'settings.xHomeTimeline.forYou',
+  following: 'settings.xHomeTimeline.following',
+}
 
 export const SettingsBrowsingContent: React.FC = () => {
   const settings = useValue(settings$)
+  const xTimelineIndex = xHomeTimelineValues.indexOf(settings.xDefaultHomeTimeline)
 
   return (
     <View className="pb-4">
@@ -57,6 +63,38 @@ export const SettingsBrowsingContent: React.FC = () => {
                 onPress={() => settings$.videoEdgeLongPressTo2x.toggle()}
               />
             </View>
+          </View>
+        </>
+      ) : null}
+
+      <View className={clsx(!isWeb && 'mt-10')}>
+        <NouText className={subheaderCls}>{t('settings.siteSections.x')}</NouText>
+        <View className={surfaceCls}>
+          <View className={clsx(rowCls, rowBorderCls)}>
+            <NouText className="font-medium">{t('settings.xHomeTimeline.label')}</NouText>
+            <View className="mt-3 items-end">
+              <Segemented
+                options={xHomeTimelineValues.map((value) => t(xTimelineLabels[value]))}
+                selectedIndex={Math.max(0, xTimelineIndex)}
+                size={1}
+                onChange={(index) => settings$.xDefaultHomeTimeline.set(xHomeTimelineValues[index])}
+              />
+            </View>
+          </View>
+          <View className={rowCls}>
+            <NouSwitch
+              label={<NouText className="font-medium">{t('settings.hideXHomeTimelineTabs')}</NouText>}
+              value={settings.hideXHomeTimelineTabs}
+              onPress={() => settings$.hideXHomeTimelineTabs.toggle()}
+            />
+          </View>
+        </View>
+      </View>
+
+      {!isWeb ? (
+        <View className="mt-10">
+          <NouText className={subheaderCls}>{t('settings.siteSections.reddit')}</NouText>
+          <View className={surfaceCls}>
             <View className={rowCls}>
               <NouSwitch
                 label={<NouText className="font-medium">{t('settings.redirectToOldReddit')}</NouText>}
@@ -65,10 +103,10 @@ export const SettingsBrowsingContent: React.FC = () => {
               />
             </View>
           </View>
-        </>
+        </View>
       ) : null}
 
-      <View className={clsx(!isWeb && 'mt-10')}>
+      <View className="mt-10">
         <NouText className={subheaderCls}>{t('blocklist.label')}</NouText>
         <View className={surfaceCls}>
           <View className={rowCls}>

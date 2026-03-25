@@ -9,6 +9,8 @@ export const noraUserStylesEvent = 'nora:user-styles'
 
 const defaultSettings = {
   videoEdgeLongPressTo2x: false,
+  xDefaultHomeTimeline: 'for-you',
+  hideXHomeTimelineTabs: false,
 }
 
 let settings = { ...defaultSettings }

@@ -1,5 +1,6 @@
 import { hostHomes } from './css'
 import { noraSettingsEvent } from './nora'
+import { runXHomeTabsController } from './services/twitter/home-tabs'
 
 function runVideoLongPressScript() {
   const root = window as Window & typeof globalThis & { __noraVideoEdgeLongPressInit?: boolean }
@@ -379,6 +380,9 @@ export function injectScript() {
   switch (key) {
     case 'bluesky':
       runBlueskyScript()
+      break
+    case 'x':
+      runXHomeTabsController()
       break
   }
 }

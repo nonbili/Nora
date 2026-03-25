@@ -2,6 +2,7 @@ import { observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
+import { normalizeXHomeTimeline, type XHomeTimeline } from '@/lib/settings/twitter'
 
 export interface Profile {
   id: string
@@ -28,6 +29,8 @@ export interface Settings {
   theme: null | 'dark' | 'light'
   openExternalLinkInSystemBrowser: boolean
   redirectToOldReddit: boolean
+  xDefaultHomeTimeline: XHomeTimeline
+  hideXHomeTimelineTabs: boolean
   allowHttpWebsite: boolean
   inspectable: boolean
   videoEdgeLongPressTo2x: boolean
@@ -64,6 +67,10 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.videoEdgeLongPressTo2x !== 'boolean') {
     data.videoEdgeLongPressTo2x = true
   }
+  data.xDefaultHomeTimeline = normalizeXHomeTimeline(data.xDefaultHomeTimeline)
+  if (typeof data.hideXHomeTimelineTabs !== 'boolean') {
+    data.hideXHomeTimelineTabs = false
+  }
   if (typeof data.showReloadButtonInHeader !== 'boolean') {
     data.showReloadButtonInHeader = false
   }
@@ -79,6 +86,8 @@ export const settings$ = observable<Store>({
   theme: null,
   openExternalLinkInSystemBrowser: false,
   redirectToOldReddit: false,
+  xDefaultHomeTimeline: 'for-you',
+  hideXHomeTimelineTabs: false,
   allowHttpWebsite: false,
   inspectable: false,
   videoEdgeLongPressTo2x: true,
