@@ -2,7 +2,8 @@
   "about": {
     "label": "Hakkında",
     "code": "Kaynak kodu",
-    "donate": "Bağış yap"
+    "donate": "Bağış yap",
+    "hint": "Sürüm bilgileri, kaynak kodu ve destek bağlantıları."
   },
   "bookmarks": {
     "label": "Yer imleri"
@@ -12,7 +13,10 @@
     "closeAll": "Hepsini kapat",
     "download": "İndir",
     "openUrl": "URL aç",
-    "open": "Aç"
+    "open": "Aç",
+    "save": "Kaydet",
+    "confirm": "Onayla",
+    "continue": "Devam et"
   },
   "menus": {
     "close": "Kapat",
@@ -73,18 +77,140 @@
       "light": "Aydınlık",
       "hint": "Yaptığınız değişiklik web görünümünde yansıtılmıyorsa manuel olarak yeniden başlatın."
     },
-    "injectCookie": "Çerez ekle"
+    "injectCookie": "Çerez yükle",
+    "videoEdgeLongPressTo2x": "Kenara uzun basarak 2x hızda oynat",
+    "sections": {
+      "experience": "Deneysel",
+      "accounts": "Hesaplar ve veriler",
+      "advanced": "Gelişmiş",
+      "about": "Hakkında"
+    },
+    "pages": {
+      "browsing": "Gezinme",
+      "appearance": "Görünüm",
+      "profiles": "Profiller ve Oturumlar",
+      "bookmarks": "Yer imleri"
+    },
+    "browsing": {
+      "descriptionNative": "Sekmeler, site yönetimi, engellenenler listesi ayarları ve gelişmiş web görünümü ayarları.",
+      "descriptionWeb": "Ağ engelleme ve gelişmiş gezinme denetimleri.",
+      "features": "Özellikler"
+    },
+    "appearance": {
+      "description": "Tema artı araç çubuğunun düzeni, konumu ve düğmelerin görünürlüğü.",
+      "theme": "Tema",
+      "toolbar": "Araç çubuğu",
+      "deckTabWidth": "Deck sekmesi genişliği",
+      "deckTabWidthHint": "Mevcut: {{value}}px"
+    },
+    "profiles": {
+      "description": "Bağımsız çerezler ve gezinme durumu için çoklu hesaplar.",
+      "injectCookie": "Çerez ekle",
+      "injectCookieHint": "Bir oturumu manuel olarak geri yüklemek için başka bir tarayıcıdan bir çerez başlığı yapıştırın."
+    },
+    "bookmarks": {
+      "description": "Yerleşik hizmetleri ve sabitlenmiş web sitelerini yönetin.",
+      "builtin": "Yerleşik Hizmetler",
+      "saved": "Kaydedilmiş Yer imleri",
+      "empty": "Henüz yer imi yok."
+    },
+    "userStyles": {
+      "label": "Kullanıcı Stilleri",
+      "hint": "Yerleşik CSS ayarlamalarını etkinleştirin/devre dışı bırakın ve kendi sunucu tabanlı stillerinizi ekleyin.",
+      "copyCss": "CSS'yi kopyala",
+      "cssCopied": "CSS kopyalandı",
+      "copyFailed": "CSS kopyalanamadı",
+      "importCss": "CSS'yi içe aktar",
+      "importFailed": "CSS içe aktarılamadı",
+      "add": "Stil ekle",
+      "addTitle": "Özel stil ekle",
+      "editTitle": "Özel stili düzenle",
+      "deleteConfirm": "Bu özel stili silmek istediğinizden emin misiniz?",
+      "nameLabel": "İsim",
+      "namePlaceholder": "Stil adı",
+      "hostGlobs": {
+        "label": "Barındırılan glob'lar",
+        "placeholder": "*.reddit.com, x.com (virgülle ayrılmış)"
+      },
+      "validation": {
+        "hostGlobs": "En az bir geçerli ana bilgisayar kuralı ekleyin",
+        "css": "Kaydetmeden önce CSS ekle"
+      },
+      "builtin": {
+        "label": "Yerleşik Stiller",
+        "hideRedditGame": {
+          "label": "Reddit'teki oyun gönderilerini gizle"
+        },
+        "hideXBottomNav": {
+          "label": "Kaydırma sırasında alt gezinme çubuğunu gizle"
+        }
+      },
+      "custom": {
+        "label": "Özel Stiller",
+        "empty": "Henüz özel stil yok. Eşleşen ana bilgisayarlara kendi CSS'inizi eklemek için bir tane ekleyin."
+      }
+    },
+    "showForwardButton": "İleriye git düğmesini göster",
+    "showReloadButton": "Yeniden yükle düğmesini göster"
   },
   "sync": {
     "label": "Senkronize et",
-    "hint": "Premium kullanıcı olarak telefonlarınız ve bilgisayarlarınız arasında yer imlerini ve ayarları senkronize edin.",
+    "hint": "Cihazlar arası yer imleri ve ayar senkronizasyonu.",
     "currentPlan": "Mevcut plan",
-    "managePlan": "Planı yönet"
+    "managePlan": "Planı yönet",
+    "buy": "iPhone üzerinden abone olun",
+    "restore": "Satın alımları geri yükle",
+    "manageIos": "App Store'da yönet",
+    "purchaseTitle": "Aboneliği bağla",
+    "purchaseConfirm": "Bu abonelik {{email}} adresine bağlanacak ve bu Nora hesabına giriş yaptığınız her yerde senkronizasyon özelliği etkinleştirilecektir.",
+    "priceLoading": "App Store fiyatı yükleniyor...",
+    "activeViaIos": "App Store üzerinden kullanılabilir",
+    "freePlan": "Ücretsiz",
+    "purchasePending": "Satın alım işlemi onay bekliyor.",
+    "restoreConflict": "Bu App Store aboneliği zaten {{email}} adresine bağlı.",
+    "signOutSwitch": "Oturumu kapat ve hesap değiştir",
+    "signedInAs": "{{email}} olarak giriş yapıldı",
+    "productUnavailable": "App Store'daki ürün henüz kullanıma sunulmamıştır.",
+    "expiresAt": "Otomatik yenilenir veya süresi dolar: {{value}}"
   },
   "tabs": {
-    "new": "Yeni sekme"
+    "new": "Yeni sekme",
+    "recentlyClosed": "Kısa süre önce kapatılanlar",
+    "noRecentlyClosed": "Son kapatılan sekme yok"
   },
   "toast": {
-    "pinned": "Yeni sekme sayfasına sabitlendi"
+    "pinned": "Yeni sekme sayfasına sabitlendi",
+    "blocklistUpdated": "Engellenenler listesi güncellendi"
+  },
+  "changelog": {
+    "label": "Değişiklik günlüğü",
+    "hint": "Github'taki son sürümler ve düzeltmeler.",
+    "loading": "Sürüm notları yükleniyor...",
+    "error": "Sürüm notları yüklenemedi.",
+    "retry": "Yeniden dene",
+    "empty": "Sürüm notları bulunamadı.",
+    "current": "Mevcut",
+    "noNotes": "Bu sürüm için sürüm notları yayımlanmamıştır."
+  },
+  "common": {
+    "about": "Hakkında",
+    "edit": "Düzenle",
+    "off": "Kapalı",
+    "on": "Açık",
+    "save": "Kaydet",
+    "theme": "Tema",
+    "reset": "Sıfırla"
+  },
+  "blocklist": {
+    "label": "Ağ engelleme listesi",
+    "description": "EasyList ve EasyPrivacy sunucu kurallarıyla reklamları ve izleyicileri engelleyin.",
+    "enable": "Ağ engelleme listesini etkinleştir",
+    "statusFetching": "Engellenenler listesi getiriliyor",
+    "lastUpdated": "Son güncelleme: {{value}}",
+    "refreshNow": "Engelleme listesini güncelle"
+  },
+  "views": {
+    "rename": "Görünümü yeniden adlandır",
+    "namePlaceholder": "Görünüm adı"
   }
 }

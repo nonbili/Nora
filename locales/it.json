@@ -2,7 +2,8 @@
   "about": {
     "label": "Info",
     "code": "Codice sorgente",
-    "donate": "Dona"
+    "donate": "Dona",
+    "hint": "Info versione, codice sorgente e link assistenza."
   },
   "bookmarks": {
     "label": "Segnalibri"
@@ -52,7 +53,7 @@
     },
     "showNewTabButton": "Mostra pulsante nuova scheda",
     "showBackButton": "Mostra pulsante indietro",
-    "showScrollButton": "Mostra pulsante torna all'inizio",
+    "showScrollButton": "Mostra pulsante Torna all'inizio",
     "oneHandMode": "Modalità ad una mano",
     "theme": {
       "label": "Tema",
@@ -66,11 +67,14 @@
     "services": "Servizi",
     "allowHttpWebsite": "Consenti siti web HTTP",
     "inspectable": "Rendere WebView ispezionabile",
-    "oneTabPerSite": "Apri collegamento in scheda separata"
+    "oneTabPerSite": "Apri collegamento in scheda separata",
+    "videoEdgeLongPressTo2x": "Premi a lungo sul bordo per riprodurre a 2x",
+    "showForwardButton": "Mostra pulsante Avanti",
+    "showReloadButton": "Mostra pulsante Ricarica"
   },
   "sync": {
     "label": "Sincronizza",
-    "hint": "Sincronizza i segnalibri e le impostazioni su tutti i tuoi telefoni e computer come utente premium.",
+    "hint": "Sincronizzazione di segnalibri ed impostazioni su tutti i dispositivi.",
     "currentPlan": "Piano attuale",
     "managePlan": "Gestisci piano"
   },
@@ -78,7 +82,8 @@
     "new": "Nuova scheda"
   },
   "toast": {
-    "pinned": "Aggiunto alla pagina nuova scheda"
+    "pinned": "Aggiunto alla pagina nuova scheda",
+    "blocklistUpdated": "Lista di blocco aggiornata"
   },
   "profiles": {
     "label": "Profili",
@@ -86,5 +91,17 @@
     "edit": "Modifica",
     "save": "Salva",
     "namePlaceholder": "Nome profilo"
+  },
+  "blocklist": {
+    "label": "Lista di blocco di rete",
+    "description": "Blocca gli annunci e i tracker con le regole host di EasyList e EasyPrivacy.",
+    "enable": "Abilita lista di blocchi di rete",
+    "statusActive": "Attiva",
+    "statusInactive": "Scaricata, disattivata",
+    "statusFetching": "Recupero della lista di blocco",
+    "statusNotDownloaded": "Non scaricata",
+    "statusError": "Scaricata, ma ultimo aggiornamento fallito",
+    "lastUpdated": "Ultimo aggiornamento: {{value}}",
+    "refreshNow": "Aggiorna lista di blocco"
   }
 }
