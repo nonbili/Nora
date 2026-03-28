@@ -1,6 +1,95 @@
 import ExpoModulesCore
 import WebKit
 
+private func extractFacebookProfileID(_ url: URL?) -> String? {
+  guard let url else {
+    return nil
+  }
+  let host = url.host?.lowercased() ?? ""
+  guard host.hasSuffix("facebook.com") else {
+    return nil
+  }
+  if url.path == "/profile.php",
+     let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+     let id = components.queryItems?.first(where: { $0.name == "id" })?.value,
+     !id.isEmpty {
+    return id
+  }
+  return nil
+}
+
+private func normalizeMessengerURL(_ url: URL, currentURL: URL? = nil, depth: Int = 0) -> String? {
+  if depth > 3 {
+    return nil
+  }
+  let scheme = url.scheme?.lowercased() ?? ""
+  let host = url.host?.lowercased() ?? ""
+  let currentProfileID = extractFacebookProfileID(currentURL)
+
+  if (scheme == "https" || scheme == "http") && (host == "www.messenger.com" || host == "messenger.com") {
+    var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+    let path = url.path.isEmpty ? "/" : url.path
+    components?.scheme = "https"
+    components?.host = "www.facebook.com"
+    components?.path = path == "/" ? "/messages/" : "/messages\(path)"
+    return components?.url?.absoluteString
+  }
+
+  if (scheme == "https" || scheme == "http") && (host == "m.me" || host == "www.m.me") {
+    let segments = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
+    if segments.isEmpty {
+      return "https://www.facebook.com/messages/"
+    }
+    return "https://www.facebook.com/messages/t/\(segments.joined(separator: "/"))"
+  }
+
+  if scheme == "fb-messenger" {
+    let segments = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
+    if (host == "user-thread" || host == "user"), let target = currentProfileID ?? segments.last {
+      return "https://www.facebook.com/messages/t/\(target)"
+    }
+    return "https://www.facebook.com/messages/"
+  }
+
+  if let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+    let queryKeys = Set(["u", "url", "href", "link", "target_url", "redirect_uri", "browser_fallback_url"])
+    for item in components.queryItems ?? [] {
+      guard queryKeys.contains(item.name), let value = item.value, !value.isEmpty else {
+        continue
+      }
+      if let nested = URL(string: value), let normalized = normalizeMessengerURL(nested, currentURL: currentURL, depth: depth + 1) {
+        return normalized
+      }
+      if value.hasPrefix("https://www.facebook.com/messages/") || value.hasPrefix("https://m.facebook.com/messages/") {
+        return value
+      }
+    }
+  }
+
+  return nil
+}
+
+private func traceFacebookNavigation(_ stage: String, currentURL: String, targetURL: String, normalizedURL: String? = nil) {
+  let values = [currentURL, targetURL]
+  let shouldLog = values.contains { $0.contains("facebook.com") || $0.contains("messenger.com") } ||
+    targetURL.hasPrefix("fb-messenger:") ||
+    targetURL.hasPrefix("intent:")
+  guard shouldLog else {
+    return
+  }
+  let suffix = normalizedURL.map { ", normalized=\($0)" } ?? ""
+  NouController.shared.log("[fb-nav] \(stage) current=\(currentURL) target=\(targetURL)\(suffix)")
+}
+
+private func shouldOpenMessengerInNewTab(currentURL: String, normalizedURL: String?) -> Bool {
+  guard let normalizedURL, normalizedURL.hasPrefix("https://www.facebook.com/messages/") else {
+    return false
+  }
+  return currentURL.hasPrefix("https://m.facebook.com/") &&
+    !currentURL.hasPrefix("https://m.facebook.com/messages/") &&
+    !currentURL.hasPrefix("https://www.facebook.com/messages/")
+}
+
 class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIGestureRecognizerDelegate {
   let onLoad = EventDispatcher()
   let onMessage = EventDispatcher()
@@ -171,6 +260,12 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
   func load(url: String) {
       guard let u = URL(string: url) else { return }
+      if let normalized = normalizeMessengerURL(u, currentURL: webView.url), normalized != url {
+          traceFacebookNavigation("load", currentURL: webView.url?.absoluteString ?? "", targetURL: url, normalizedURL: normalized)
+          load(url: normalized)
+          return
+      }
+      traceFacebookNavigation("load", currentURL: webView.url?.absoluteString ?? "", targetURL: url)
       var request = URLRequest(url: u)
       webView.load(request)
   }
@@ -206,6 +301,19 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       }
 
       let urlString = url.absoluteString
+      let currentURL = webView.url?.absoluteString ?? ""
+      let normalizedMessengerURL = normalizeMessengerURL(url, currentURL: webView.url)
+      traceFacebookNavigation("policy", currentURL: currentURL, targetURL: urlString, normalizedURL: normalizedMessengerURL)
+      if let normalized = normalizedMessengerURL, normalized != urlString {
+          decisionHandler(.cancel)
+          if shouldOpenMessengerInNewTab(currentURL: currentURL, normalizedURL: normalized) {
+              traceFacebookNavigation("policy-new-tab", currentURL: currentURL, targetURL: urlString, normalizedURL: normalized)
+              emitCustomEvent(type: "new-tab", data: ["url": normalized])
+              return
+          }
+          load(url: normalized)
+          return
+      }
       let scheme = url.scheme?.lowercased() ?? ""
       let isInternalScheme = INTERNAL_SCHEMES.contains(scheme)
 

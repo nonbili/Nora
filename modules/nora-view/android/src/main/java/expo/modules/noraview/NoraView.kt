@@ -142,6 +142,116 @@ fun shouldRedirectFacebookToMobile(currentUrl: String, targetUrl: String): Boole
   return true
 }
 
+fun extractFacebookProfileId(url: String?): String? {
+  if (url.isNullOrBlank()) {
+    return null
+  }
+  return try {
+    val uri = Uri.parse(url)
+    val host = uri.host?.lowercase()
+    if (host?.endsWith("facebook.com") != true) {
+      return null
+    }
+    if (uri.encodedPath == "/profile.php") {
+      return uri.getQueryParameter("id")?.takeIf { it.isNotBlank() }
+    }
+    null
+  } catch (_: Exception) {
+    null
+  }
+}
+
+fun normalizeMessengerUrl(url: String, currentUrl: String? = null, depth: Int = 0): String? {
+  if (depth > 3) {
+    return null
+  }
+  val uri = Uri.parse(url)
+  val scheme = uri.scheme?.lowercase()
+  val host = uri.host?.lowercase()
+  val currentProfileId = extractFacebookProfileId(currentUrl)
+
+  if ((scheme == "https" || scheme == "http") && (host == "www.messenger.com" || host == "messenger.com")) {
+    val path = uri.encodedPath ?: "/"
+    val normalizedPath = if (path == "/" || path.isEmpty()) "/messages/" else "/messages$path"
+    val query = uri.encodedQuery?.let { "?$it" } ?: ""
+    val fragment = uri.encodedFragment?.let { "#$it" } ?: ""
+    return "https://www.facebook.com$normalizedPath$query$fragment"
+  }
+
+  if ((scheme == "https" || scheme == "http") && (host == "m.me" || host == "www.m.me")) {
+    val segments = uri.pathSegments.filter { it.isNotBlank() }
+    if (segments.isEmpty()) {
+      return "https://www.facebook.com/messages/"
+    }
+    val target = segments.joinToString("/")
+    return "https://www.facebook.com/messages/t/$target"
+  }
+
+  if (scheme == "fb-messenger") {
+    val target = currentProfileId ?: uri.pathSegments.lastOrNull()?.takeIf { it.isNotBlank() }
+    if ((uri.host == "user-thread" || uri.host == "user") && target != null) {
+      return "https://www.facebook.com/messages/t/$target"
+    }
+    return "https://www.facebook.com/messages/"
+  }
+
+  if (scheme == "intent") {
+    try {
+      val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+      val intentData = intent.data
+      val intentScheme = intentData?.scheme?.lowercase()
+      val intentHost = intentData?.host?.lowercase()
+      val intentTarget = currentProfileId ?: intentData?.pathSegments?.lastOrNull()?.takeIf { it.isNotBlank() }
+      if (intentScheme == "fb-messenger") {
+        if ((intentHost == "user-thread" || intentHost == "user") && intentTarget != null) {
+          return "https://www.facebook.com/messages/t/$intentTarget"
+        }
+        return "https://www.facebook.com/messages/"
+      }
+      val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+      if (!fallbackUrl.isNullOrEmpty()) {
+        return normalizeMessengerUrl(fallbackUrl, currentUrl, depth + 1) ?: fallbackUrl
+      }
+    } catch (_: Exception) {
+    }
+  }
+
+  val queryKeys = listOf("u", "url", "href", "link", "target_url", "redirect_uri", "browser_fallback_url")
+  for (key in queryKeys) {
+    val value = uri.getQueryParameter(key)?.takeIf { it.isNotBlank() } ?: continue
+    val normalized = normalizeMessengerUrl(value, currentUrl, depth + 1)
+    if (normalized != null) {
+      return normalized
+    }
+    if (isMessengerUrl(value)) {
+      return value
+    }
+  }
+
+  return null
+}
+
+fun traceFacebookNavigation(stage: String, currentUrl: String, targetUrl: String, normalizedUrl: String? = null) {
+  if (
+    currentUrl.contains("facebook.com") ||
+    currentUrl.contains("messenger.com") ||
+    targetUrl.contains("facebook.com") ||
+    targetUrl.contains("messenger.com") ||
+    targetUrl.startsWith("fb-messenger:") ||
+    targetUrl.startsWith("intent:")
+  ) {
+    val suffix = normalizedUrl?.let { ", normalized=$it" } ?: ""
+    nouController.log("[fb-nav] $stage current=$currentUrl target=$targetUrl$suffix")
+  }
+}
+
+fun shouldOpenMessengerInNewTab(currentUrl: String, normalizedUrl: String?): Boolean {
+  if (normalizedUrl == null || !normalizedUrl.startsWith("https://www.facebook.com/messages/")) {
+    return false
+  }
+  return currentUrl.startsWith("https://m.facebook.com/") && !isMessengerUrl(currentUrl)
+}
+
 val INTERNAL_SCHEMES = setOf("about", "blob", "data", "file", "http", "https", "javascript", "nora")
 
 fun shouldNoraOverrideUrlLoading(view: WebView, url: String): Boolean {
@@ -407,6 +517,17 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           }
 
           override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            val normalizedMessengerUrl = normalizeMessengerUrl(url, pageUrl)
+            traceFacebookNavigation("override", pageUrl, url, normalizedMessengerUrl)
+            if (normalizedMessengerUrl != null && normalizedMessengerUrl != url) {
+              if (shouldOpenMessengerInNewTab(pageUrl, normalizedMessengerUrl)) {
+                traceFacebookNavigation("override-new-tab", pageUrl, url, normalizedMessengerUrl)
+                emit("new-tab", mapOf("url" to normalizedMessengerUrl))
+                return true
+              }
+              load(normalizedMessengerUrl)
+              return true
+            }
             if (url.startsWith("http://") && !nouController.settings.allowHttpWebsite) {
               showHttpBlockedPage(url)
               return true
@@ -417,10 +538,12 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             }
             val redirectedUrl = redirectFacebookUrl(url)
             if (redirectedUrl != null && !pageUrl.startsWith(redirectedUrl)) {
+              traceFacebookNavigation("redirect-facebook", pageUrl, url, redirectedUrl)
               load(redirectedUrl)
               return true
             }
             if (shouldRedirectFacebookToMobile(pageUrl, url)) {
+              traceFacebookNavigation("redirect-mobile", pageUrl, url, url.replace("www", "m"))
               load(url.replace("www", "m"))
               return true
             }
@@ -539,6 +662,13 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           val newWebView = WebView(view.getContext())
           newWebView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+              val normalizedMessengerUrl = normalizeMessengerUrl(url, pageUrl)
+              traceFacebookNavigation("create-window", pageUrl, url, normalizedMessengerUrl)
+              if (normalizedMessengerUrl != null && normalizedMessengerUrl != url) {
+                log("new-tab: $normalizedMessengerUrl")
+                emit("new-tab", mapOf("url" to normalizedMessengerUrl))
+                return true
+              }
               val ret = shouldNoraOverrideUrlLoading(view, url)
               if (ret) {
                 return true
@@ -619,6 +749,12 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   fun load(url: String) {
     if (url == "" || url == "about:blank") return
+    val normalizedMessengerUrl = normalizeMessengerUrl(url, pageUrl)
+    traceFacebookNavigation("load", pageUrl, url, normalizedMessengerUrl)
+    if (normalizedMessengerUrl != null && normalizedMessengerUrl != url) {
+      load(normalizedMessengerUrl)
+      return
+    }
     if (handleExternalAppUrl(context, url)) {
       return
     }
