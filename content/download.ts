@@ -14,12 +14,24 @@ function getFacebookVideoId(slugs: string[], searchParams: URLSearchParams) {
   }
 }
 
+function isTikTokDownloadPath(slugs: string[]) {
+  return slugs[2] === 'video' && /^\d+$/.test(slugs[3] || '')
+}
+
 function isFacebookDownloadPath(slugs: string[], searchParams: URLSearchParams) {
   return Boolean(getFacebookVideoId(slugs, searchParams) || slugs[1] === 'stories')
 }
 
 function decodeFacebookUrl(url: string) {
   return url.replace(/\\\//g, '/').replaceAll('\\u0025', '%').replaceAll('&amp;', '&')
+}
+
+function decodeEscapedUrl(url: string) {
+  return url
+    .replace(/\\u0026/gi, '&')
+    .replace(/\\u002F/gi, '/')
+    .replace(/\\\//g, '/')
+    .replaceAll('&amp;', '&')
 }
 
 type FacebookUrlCandidate = {
@@ -30,6 +42,90 @@ type FacebookUrlCandidate = {
 export type FacebookDownloadInfo = {
   hdVideoOnlyUrl?: string
   standardWithAudioUrl?: string
+}
+
+type TikTokUrlCandidate = {
+  score: number
+  url: string
+}
+
+function addTikTokCandidate(candidates: TikTokUrlCandidate[], url: string | null | undefined, score: number) {
+  if (!url?.startsWith('https://')) {
+    return
+  }
+  candidates.push({ url, score })
+}
+
+function collectTikTokUrlValue(candidates: TikTokUrlCandidate[], value: unknown, score: number) {
+  if (typeof value === 'string') {
+    addTikTokCandidate(candidates, value, score)
+    return
+  }
+  if (!value || typeof value !== 'object') {
+    return
+  }
+
+  const record = value as Record<string, unknown>
+  const urlList = record.urlList
+  if (Array.isArray(urlList)) {
+    for (const entry of urlList) {
+      addTikTokCandidate(candidates, typeof entry === 'string' ? entry : undefined, score)
+    }
+  }
+
+  addTikTokCandidate(candidates, typeof record.src === 'string' ? record.src : undefined, score)
+  addTikTokCandidate(candidates, typeof record.url === 'string' ? record.url : undefined, score)
+}
+
+function collectTikTokStructuredCandidates(value: unknown, candidates: TikTokUrlCandidate[]) {
+  if (!value || typeof value !== 'object') {
+    return
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectTikTokStructuredCandidates(item, candidates)
+    }
+    return
+  }
+
+  const record = value as Record<string, unknown>
+  collectTikTokUrlValue(candidates, record.playAddr, 540)
+  collectTikTokUrlValue(candidates, record.downloadAddr, 520)
+  collectTikTokUrlValue(candidates, record.download, 500)
+  collectTikTokUrlValue(candidates, record.play, 480)
+
+  for (const child of Object.values(record)) {
+    collectTikTokStructuredCandidates(child, candidates)
+  }
+}
+
+export function getTikTokDownloadUrl(scriptSources: string[] = []) {
+  const candidates: TikTokUrlCandidate[] = []
+
+  for (const source of scriptSources) {
+    const trimmed = source.trim()
+    if (!trimmed) {
+      continue
+    }
+
+    try {
+      collectTikTokStructuredCandidates(JSON.parse(trimmed), candidates)
+    } catch (e) {}
+
+    const patterns: Array<[RegExp, number]> = [
+      [/"playAddr":"((?:https?:)?[^"]+)"/g, 540],
+      [/"downloadAddr":"((?:https?:)?[^"]+)"/g, 520],
+      [/"urlList":\["((?:https?:)?[^"]+)"/g, 500],
+    ]
+    for (const [pattern, score] of patterns) {
+      for (const match of source.matchAll(pattern)) {
+        addTikTokCandidate(candidates, decodeEscapedUrl(match[1]), score)
+      }
+    }
+  }
+
+  return candidates.sort((a, b) => b.score - a.score)[0]?.url
 }
 
 function addFacebookCandidate(candidates: FacebookUrlCandidate[], url: string | null | undefined, score: number) {
@@ -151,6 +247,8 @@ export function isDownloadable(url: string) {
       return isFacebookDownloadPath(slugs, searchParams)
     case 'www.instagram.com':
       return ['reel', 'reels'].includes(slugs[1]) || slugs[2] == 'reel'
+    case 'www.tiktok.com':
+      return isTikTokDownloadPath(slugs)
   }
   return false
 }
@@ -171,6 +269,8 @@ export function isDirectlyDownloadable(url: string) {
       return slugs[1] === 'reel'
     case 'www.instagram.com':
       return ['reel', 'reels'].includes(slugs[1]) || slugs[2] == 'reel'
+    case 'www.tiktok.com':
+      return isTikTokDownloadPath(slugs)
   }
   return false
 }

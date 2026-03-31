@@ -1,5 +1,6 @@
 import path from 'path'
-import { BrowserWindow, ipcMain, IpcMainEvent, session, WebPreferences } from 'electron'
+import fs from 'fs/promises'
+import { app, BrowserWindow, ipcMain, IpcMainEvent, session, WebPreferences } from 'electron'
 import { is } from '@electron-toolkit/utils'
 import contentJs from '@/assets/scripts/main.bjs?raw'
 import { uiClient } from 'main/ipc/ui'
@@ -58,6 +59,7 @@ export async function openDownloadWindow(url: string) {
     case 'm.facebook.com':
     case 'www.facebook.com':
     case 'www.instagram.com':
+    case 'www.tiktok.com':
       webPreferences.preload = path.join(__dirname, '../preload/index.js')
       break
     case 'x.com':
@@ -80,6 +82,17 @@ export async function openDownloadWindow(url: string) {
   win.loadURL(url)
   const ses = session.defaultSession
 
+  const saveFile = async (content: string, fileName?: string) => {
+    const name = fileName || 'download'
+    const outputPath = path.join(app.getPath('downloads'), name)
+    await fs.writeFile(outputPath, Buffer.from(content, 'base64'))
+    uiClient.showToast(`Download finished: ${outputPath}`)
+    if (win) {
+      win.close()
+      win = undefined
+    }
+  }
+
   const onMessage = (e: IpcMainEvent, payload: { type: string; data: any }) => {
     if (is.dev) {
       console.log('onMessage', payload)
@@ -89,6 +102,11 @@ export async function openDownloadWindow(url: string) {
       case 'download':
         download(data.url)
         break
+      case 'save-file':
+        void saveFile(data.content, data.fileName).catch(() => {
+          uiClient.showToast('Download failed')
+        })
+        break
     }
   }
 
@@ -96,6 +114,7 @@ export async function openDownloadWindow(url: string) {
     case 'm.facebook.com':
     case 'www.facebook.com':
     case 'www.instagram.com':
+    case 'www.tiktok.com':
       ipcMain.addListener('channel:content', onMessage)
       win.webContents.executeJavaScript(contentJs)
       win.webContents.executeJavaScript('window.Nora.getVideoUrl()')

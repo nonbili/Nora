@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'bun:test'
-import { getFacebookDownloadInfo, isDirectlyDownloadable, isDownloadable, normalizeDownloadUrl } from './download'
+import { getFacebookDownloadInfo, getTikTokDownloadUrl, isDirectlyDownloadable, isDownloadable, normalizeDownloadUrl } from './download'
 
 describe('isDownloadable', () => {
   for (const [url, expected] of [
     ['https://www.facebook.com/reel/404248063485974', true],
     ['https://m.facebook.com/RTLplay/videos/la-france-a-un-incroyable-talent-nouveau-sur-plug-rtl-rtlplay/404248063485974/', true],
+    ['https://www.tiktok.com/@nora/video/7490557630970389780', true],
   ] as const) {
     it(`${url} => ${expected}`, () => {
       expect(isDownloadable(url)).toBe(expected)
@@ -16,6 +17,7 @@ describe('isDirectlyDownloadable', () => {
   for (const [url, expected] of [
     ['https://www.facebook.com/reel/404248063485974', true],
     ['https://m.facebook.com/RTLplay/videos/la-france-a-un-incroyable-talent-nouveau-sur-plug-rtl-rtlplay/404248063485974/', false],
+    ['https://www.tiktok.com/@nora/video/7490557630970389780', true],
   ] as const) {
     it(`${url} => ${expected}`, () => {
       expect(isDirectlyDownloadable(url)).toBe(expected)
@@ -110,5 +112,38 @@ describe('getFacebookDownloadInfo', () => {
       hdVideoOnlyUrl: 'https://cdn.example.com/hd-video-only.mp4',
       standardWithAudioUrl: 'https://cdn.example.com/sd-with-audio.mp4',
     })
+  })
+})
+
+describe('getTikTokDownloadUrl', () => {
+  it('prefers playAddr over downloadAddr from structured json', () => {
+    expect(
+      getTikTokDownloadUrl([
+        JSON.stringify({
+          __DEFAULT_SCOPE__: {
+            webapp: {
+              videoDetail: {
+                itemInfo: {
+                  itemStruct: {
+                    video: {
+                      playAddr: 'https://v16.tiktokcdn.com/play.mp4',
+                      downloadAddr: 'https://v16.tiktokcdn.com/download.mp4',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ]),
+    ).toBe('https://v16.tiktokcdn.com/play.mp4')
+  })
+
+  it('extracts escaped urls from inline script text', () => {
+    expect(
+      getTikTokDownloadUrl([
+        '<script>window.__UNIVERSAL_DATA_FOR_REHYDRATION__={"video":{"downloadAddr":"https:\\/\\/v16.tiktokcdn.com\\/escaped.mp4?foo=1\\u0026bar=2"}};</script>',
+      ]),
+    ).toBe('https://v16.tiktokcdn.com/escaped.mp4?foo=1&bar=2')
   })
 })

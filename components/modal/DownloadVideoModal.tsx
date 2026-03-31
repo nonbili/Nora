@@ -103,6 +103,12 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         await delay(500)
         onClose()
         break
+      case 'save-file':
+        setTitle('Downloading...')
+        nativeRef.current?.saveFile(data.content, data.fileName, data.mimeType || 'video/mp4')
+        await delay(500)
+        onClose()
+        break
       case 'download-options':
         setFileName(data.fileName || '')
         setDownloadOptions(data.options || [])

@@ -1,5 +1,5 @@
 import { emit, waitUntil } from './utils'
-import { getFacebookDownloadInfo, isDownloadable } from './download'
+import { getFacebookDownloadInfo, getTikTokDownloadUrl } from './download'
 import { getService } from './services/manager'
 import { createDefaultUserStylesSnapshot, type UserStylesSnapshot } from '../lib/user-styles'
 import { getBase64Payload } from '../lib/base64'
@@ -43,7 +43,10 @@ async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
 async function getVideoUrl() {
   const { hostname, pathname } = document.location
   const slugs = pathname.split('/')
-  const src = await waitUntil(() => document.querySelector('video')?.src)
+  const src = await waitUntil(() => {
+    const video = document.querySelector('video')
+    return video?.currentSrc || video?.src
+  })
   if (hostname == 'www.instagram.com' && !src) {
     return
   }
@@ -110,6 +113,21 @@ async function getVideoUrl() {
       const service = getService(document.location.href)
       if (service?.videoUrl) {
         emit('download', { url: service.videoUrl })
+        return
+      }
+      break
+    case 'www.tiktok.com':
+      if (src?.startsWith('https://')) {
+        await downloadBlob(src, fileName, 'video/mp4')
+        return
+      }
+      const scriptSources = [
+        ...[...document.scripts].map((script) => script.textContent || ''),
+        ...[...document.querySelectorAll('script[type="application/json"]')].map((script) => script.textContent || ''),
+      ].filter(Boolean)
+      const tiktokUrl = getTikTokDownloadUrl(scriptSources)
+      if (tiktokUrl) {
+        await downloadBlob(tiktokUrl, fileName, 'video/mp4')
         return
       }
       break

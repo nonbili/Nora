@@ -64,7 +64,7 @@ export const ToolsModal = () => {
     <BaseModal onClose={onClose}>
       <View className="p-5">
         <NouText className="text-lg font-semibold mb-4">{t('modals.downloadVideo')}</NouText>
-        <NouText className="mb-4 text-sm text-gray-200">Support Facebook, Instagram and X</NouText>
+        <NouText className="mb-4 text-sm text-gray-200">Support Facebook, Instagram, TikTok and X</NouText>
         <NouText className="mb-1 font-semibold text-gray-300">URL</NouText>
         <TextInput
           className="border border-gray-600 rounded mb-3 text-white p-2 text-sm"
