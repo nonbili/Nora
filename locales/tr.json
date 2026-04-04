@@ -30,7 +30,8 @@
     "scroll": "En üste kaydır",
     "share": "Paylaş",
     "signOut": "Çıkış yap",
-    "tools": "Araçlar"
+    "tools": "Araçlar",
+    "editUrl": "Sekme URL'sini düzenle"
   },
   "modals": {
     "downloadVideo": "Video indir"
@@ -43,7 +44,9 @@
     "toast_downloadSucceeded": "İndirilenler klasörüne kaydedildi",
     "toast_downloadFailed": "İndirme başarısız oldu",
     "httpBlocked_title": "HTTP internet sitesi engellendi",
-    "httpBlocked_body": "Bu web sitesi güvenli olmayan bir HTTP bağlantısı kullanmaktadır. HTTP web sitelerinin yüklenmesine izin vermek için Ayarlar'daki \"HTTP web sitelerine izin ver\" seçeneğini etkinleştirin."
+    "httpBlocked_body": "Bu web sitesi güvenli olmayan bir HTTP bağlantısı kullanmaktadır. HTTP web sitelerinin yüklenmesine izin vermek için Ayarlar'daki \"HTTP web sitelerine izin ver\" seçeneğini etkinleştirin.",
+    "menu_openInNewTab": "Yeni sekmede aç",
+    "menu_openImageInNewTab": "Görseli yeni sekmede aç"
   },
   "profiles": {
     "label": "Profiller",
@@ -57,8 +60,8 @@
     "openExternalLink": "Sistem tarayıcısında harici bağlantıyı aç",
     "redirectToOldReddit": "Old Reddit'e yönlendir",
     "allowHttpWebsite": "HTTP web sitelerine izin ver",
-    "inspectable": "Web görünümünü denetlenebilir kılın",
-    "hideHeader": "Kaydırma sırasında araç çubuğunu gizle",
+    "inspectable": "Web görünümünü incelenebilir yap",
+    "hideHeader": "Kaydırma yönüne göre araç çubuğunu gizle veya göster",
     "headerPosition": {
       "label": "Araç çubuğu konumu",
       "top": "Üstte",
@@ -69,54 +72,61 @@
     "showScrollButton": "En üste kaydır düğmesini göster",
     "oneHandMode": "Tek elle kullanım modu",
     "oneTabPerSite": "Paylaşılan bağlantıyı açarken site başına bir sekme",
-    "services": "Hizmetler",
+    "services": {
+      "title": "Yerleşik Hizmetler",
+      "description": "Yerleşik hizmetleri yönetin."
+    },
     "theme": {
       "label": "Tema",
       "system": "Sistem",
       "dark": "Karanlık",
       "light": "Aydınlık",
-      "hint": "Yaptığınız değişiklik web görünümünde yansıtılmıyorsa manuel olarak yeniden başlatın."
+      "hint": "Uygulamanın ve web görünümün temasıdır. Sayfa hemen güncellenmezse sekmeyi yeniden yükleyin."
     },
     "injectCookie": "Çerez yükle",
     "videoEdgeLongPressTo2x": "Kenara uzun basarak 2x hızda oynat",
     "sections": {
       "experience": "Deneysel",
-      "accounts": "Hesaplar ve veriler",
+      "accounts": "Hesaplar ve Veriler",
       "advanced": "Gelişmiş",
-      "about": "Hakkında"
+      "about": "Hakkında",
+      "general": "Genel",
+      "bookmarksSearch": "Yer imleri ve Arama"
     },
     "pages": {
-      "browsing": "Gezinme",
+      "browsing": "Tercihler",
       "appearance": "Görünüm",
       "profiles": "Profiller ve Oturumlar",
-      "bookmarks": "Yer imleri"
+      "bookmarks": "Yer imleri",
+      "search": "Ara",
+      "services": "Uygulamalar"
     },
     "browsing": {
-      "descriptionNative": "Sekmeler, site yönetimi, engellenenler listesi ayarları ve gelişmiş web görünümü ayarları.",
-      "descriptionWeb": "Ağ engelleme ve gelişmiş gezinme denetimleri.",
+      "descriptionNative": "Özellik kontrolleri.",
+      "descriptionWeb": "Ağ engelleme ve gelişmiş gezinme ayarları.",
       "features": "Özellikler"
     },
     "appearance": {
-      "description": "Tema artı araç çubuğunun düzeni, konumu ve düğmelerin görünürlüğü.",
+      "description": "Tema ve araç çubuğu ayarları.",
       "theme": "Tema",
       "toolbar": "Araç çubuğu",
-      "deckTabWidth": "Deck sekmesi genişliği",
+      "deckTabWidth": "Sekme genişliği",
       "deckTabWidthHint": "Mevcut: {{value}}px"
     },
     "profiles": {
-      "description": "Bağımsız çerezler ve gezinme durumu için çoklu hesaplar.",
+      "description": "Her hesap için ayrı çerez ve tarama durumu.",
       "injectCookie": "Çerez ekle",
       "injectCookieHint": "Bir oturumu manuel olarak geri yüklemek için başka bir tarayıcıdan bir çerez başlığı yapıştırın."
     },
     "bookmarks": {
-      "description": "Yerleşik hizmetleri ve sabitlenmiş web sitelerini yönetin.",
+      "description": "Sabitlenmiş web sitelerini yönet.",
       "builtin": "Yerleşik Hizmetler",
       "saved": "Kaydedilmiş Yer imleri",
       "empty": "Henüz yer imi yok."
     },
     "userStyles": {
       "label": "Kullanıcı Stilleri",
-      "hint": "Yerleşik CSS ayarlamalarını etkinleştirin/devre dışı bırakın ve kendi sunucu tabanlı stillerinizi ekleyin.",
+      "hint": "Yerleşik CSS ayarlamalarını açıp kapatın ve kendi site bazlı stillerinizi ekleyin.",
       "copyCss": "CSS'yi kopyala",
       "cssCopied": "CSS kopyalandı",
       "copyFailed": "CSS kopyalanamadı",
@@ -126,39 +136,82 @@
       "addTitle": "Özel stil ekle",
       "editTitle": "Özel stili düzenle",
       "deleteConfirm": "Bu özel stili silmek istediğinizden emin misiniz?",
-      "nameLabel": "İsim",
+      "nameLabel": "Ad",
       "namePlaceholder": "Stil adı",
       "hostGlobs": {
-        "label": "Barındırılan glob'lar",
+        "label": "Mevcut siteler",
         "placeholder": "*.reddit.com, x.com (virgülle ayrılmış)"
       },
       "validation": {
-        "hostGlobs": "En az bir geçerli ana bilgisayar kuralı ekleyin",
+        "hostGlobs": "En az bir geçerli site deseni ekleyin",
         "css": "Kaydetmeden önce CSS ekle"
       },
       "builtin": {
         "label": "Yerleşik Stiller",
         "hideRedditGame": {
-          "label": "Reddit'teki oyun gönderilerini gizle"
+          "label": "Reddit oyun paylaşımlarını gizle"
         },
         "hideXBottomNav": {
-          "label": "Kaydırma sırasında alt gezinme çubuğunu gizle"
+          "label": "X (Twitter) alt gezinme çubuğunu kaydırırken gizle"
+        },
+        "hideXHomeTabs": {
+          "label": "X (Twitter) ana sayfa sekmelerini gizle"
+        },
+        "compactTiktokLayout": {
+          "label": "Kompakt Tiktok düzenini kullan"
         }
       },
       "custom": {
         "label": "Özel Stiller",
-        "empty": "Henüz özel stil yok. Eşleşen ana bilgisayarlara kendi CSS'inizi eklemek için bir tane ekleyin."
-      }
+        "empty": "Henüz özel stil yok. Eşleşen sitelere kendi CSS’inizi eklemek için bir tane oluşturun."
+      },
+      "customHint": "Herhangi bir web sitesini CSS ile özelleştirin."
     },
     "showForwardButton": "İleriye git düğmesini göster",
-    "showReloadButton": "Yeniden yükle düğmesini göster"
+    "showReloadButton": "Yeniden yükle düğmesini göster",
+    "xHomeTimeline": {
+      "label": "Varsayılan ana akış",
+      "forYou": "Senin için",
+      "following": "Takip Edilenler"
+    },
+    "search": {
+      "description": "Arama motorlarını yönet.",
+      "builtin": "Yerleşik Arama Sağlayıcıları",
+      "builtinHint": "Yeni sekme arama menüsünde gösterilmesini istediğiniz sağlayıcıları etkinleştirin.",
+      "custom": "Özel Arama Sağlayıcıları",
+      "empty": "Henüz özel arama sağlayıcısı yok.",
+      "urlHint": "Doğrudan URL girişi için her zaman kullanılabilir.",
+      "addTitle": "Özel Arama Ekle",
+      "editTitle": "Özel Aramayı Düzenle",
+      "addAction": "Arama Ekle",
+      "templateHint": "Sorgunun ekleneceği yere `%s` kullanın.",
+      "fields": {
+        "name": "Ad",
+        "namePlaceholder": "Örnek Arama",
+        "template": "Arama URL Şablonu",
+        "templatePlaceholder": "https://ornek.com/search?q=%s"
+      },
+      "validation": {
+        "name": "Bir arama motoru ekleyin",
+        "template": "`%s` içeren geçerli bir http(s) şablon URL'si kullanın",
+        "duplicateName": "Bu isimde bir özel arama sağlayıcısı zaten mevcut"
+      },
+      "deleteConfirm": "Bu özel aramayı silmek istediğinizden emin misiniz?"
+    },
+    "doubleBackToExitApp": "Uygulamadan çıkmak için geri tuşuna iki kez basın",
+    "hideToolbarWhenScrolled": "Sayfa en üstte değilken araç çubuğunu gizle",
+    "language": {
+      "label": "Dil",
+      "system": "Sistem",
+      "hint": "Bir dil seçin veya sistem dilini kullanın."
+    }
   },
   "sync": {
     "label": "Senkronize et",
-    "hint": "Cihazlar arası yer imleri ve ayar senkronizasyonu.",
+    "hint": "Yer imleri ve ayarlar tüm cihazlar arasında senkronize edilir.",
     "currentPlan": "Mevcut plan",
     "managePlan": "Planı yönet",
-    "buy": "iPhone üzerinden abone olun",
+    "buy": "App Store üzerinden abone olun",
     "restore": "Satın alımları geri yükle",
     "manageIos": "App Store'da yönet",
     "purchaseTitle": "Aboneliği bağla",
@@ -171,7 +224,11 @@
     "signOutSwitch": "Oturumu kapat ve hesap değiştir",
     "signedInAs": "{{email}} olarak giriş yapıldı",
     "productUnavailable": "App Store'daki ürün henüz kullanıma sunulmamıştır.",
-    "expiresAt": "Otomatik yenilenir veya süresi dolar: {{value}}"
+    "expiresAt": "Otomatik yenilenir veya süresi dolar: {{value}}",
+    "upgradeHint": "Yer imlerinizi ve ayarlarınızı tüm cihazlarınızda senkronize etmek için yükseltin.",
+    "legalNotice": "Abonelikler iptal edilmedikçe otomatik olarak yenilenir. Abone olarak, Kullanım Koşulları (EULA) ve Gizlilik Politikasını kabul etmiş olursunuz.",
+    "termsOfUse": "Kullanım Koşulları (EULA)",
+    "privacyPolicy": "Gizlilik Politikası"
   },
   "tabs": {
     "new": "Yeni sekme",
@@ -180,7 +237,8 @@
   },
   "toast": {
     "pinned": "Yeni sekme sayfasına sabitlendi",
-    "blocklistUpdated": "Engellenenler listesi güncellendi"
+    "blocklistUpdated": "Engelleme listesi güncellendi",
+    "pressBackAgainToExit": "Çıkmak için geri tuşuna tekrar basın"
   },
   "changelog": {
     "label": "Değişiklik günlüğü",
@@ -205,12 +263,18 @@
     "label": "Ağ engelleme listesi",
     "description": "EasyList ve EasyPrivacy sunucu kurallarıyla reklamları ve izleyicileri engelleyin.",
     "enable": "Ağ engelleme listesini etkinleştir",
-    "statusFetching": "Engellenenler listesi getiriliyor",
-    "lastUpdated": "Son güncelleme: {{value}}",
+    "statusFetching": "Engelleme listesi alınıyor",
+    "lastUpdated": "En son güncellendi: {{value}}",
     "refreshNow": "Engelleme listesini güncelle"
   },
   "views": {
     "rename": "Görünümü yeniden adlandır",
     "namePlaceholder": "Görünüm adı"
+  },
+  "newTab": {
+    "search": {
+      "urlPlaceholder": "Bir URL girin",
+      "searchPlaceholder": "İnternette ara"
+    }
   }
 }

@@ -13,7 +13,10 @@
     "closeAll": "Chiudi Tutto",
     "download": "Scarica",
     "openUrl": "Apri URL",
-    "open": "Apri"
+    "open": "Apri",
+    "confirm": "Conferma",
+    "continue": "Continua",
+    "save": "Salva"
   },
   "menus": {
     "close": "Chiudi",
@@ -27,7 +30,8 @@
     "scroll": "Torna all'inizio",
     "share": "Condividi",
     "signOut": "Disconnetti",
-    "tools": "Strumenti"
+    "tools": "Strumenti",
+    "editUrl": "Modifica URL della scheda"
   },
   "modals": {
     "downloadVideo": "Scarica video"
@@ -40,7 +44,9 @@
     "toast_downloadSucceeded": "Salvato nella cartella Download",
     "toast_downloadFailed": "Download non riuscito",
     "httpBlocked_title": "Sito web HTTP bloccato",
-    "httpBlocked_body": "Questo sito web utilizza una connessione HTTP non sicura. Per consentire il caricamento dei siti web HTTP, abilita l'opzione \"Consenti siti web HTTP\" nelle Impostazioni."
+    "httpBlocked_body": "Questo sito web utilizza una connessione HTTP non sicura. Per consentire il caricamento dei siti web HTTP, abilita l'opzione \"Consenti siti web HTTP\" nelle Impostazioni.",
+    "menu_openInNewTab": "Apri in nuova scheda",
+    "menu_openImageInNewTab": "Apri immagine in nuova scheda"
   },
   "settings": {
     "label": "Impostazioni",
@@ -56,11 +62,11 @@
     "showScrollButton": "Mostra pulsante Torna all'inizio",
     "oneHandMode": "Modalità ad una mano",
     "theme": {
-      "label": "Tema",
+      "label": "Tema WebView",
       "system": "Sistema",
       "dark": "Scuro",
       "light": "Chiaro",
-      "hint": "Riavvia manualmente se webview non rispecchia le modifiche."
+      "hint": "Controlla tema del sito web, non l'interfaccia utente dell'app. Riavviare manualmente se la modifica non viene rispecchiata in WebView."
     },
     "injectCookie": "Inietta cookie",
     "redirectToOldReddit": "Reindirizza su Old Reddit",
@@ -70,16 +76,143 @@
     "oneTabPerSite": "Apri collegamento in scheda separata",
     "videoEdgeLongPressTo2x": "Premi a lungo sul bordo per riprodurre a 2x",
     "showForwardButton": "Mostra pulsante Avanti",
-    "showReloadButton": "Mostra pulsante Ricarica"
+    "showReloadButton": "Mostra pulsante Ricarica",
+    "xHomeTimeline": {
+      "label": "Cronologia iniziale predefinita",
+      "forYou": "Per te",
+      "following": "Seguiti"
+    },
+    "sections": {
+      "experience": "Esperienza",
+      "accounts": "Account e Dati",
+      "advanced": "Avanzato",
+      "about": "Informazioni"
+    },
+    "pages": {
+      "browsing": "Navigazione",
+      "appearance": "Aspetto",
+      "profiles": "Profili e Sessioni",
+      "bookmarks": "Segnalibri",
+      "search": "Cerca"
+    },
+    "browsing": {
+      "descriptionNative": "Schede, gestione sito, controlli lista blocchi e impostazioni avanzate WebView.",
+      "descriptionWeb": "Blocco di rete e controlli avanzati navigazione.",
+      "features": "Caratteristiche"
+    },
+    "appearance": {
+      "description": "Tema e layout barra degli strumenti, posizionamento, visibilità pulsanti.",
+      "theme": "Tema WebView",
+      "toolbar": "Barra degli strumenti",
+      "deckTabWidth": "Larghezza gruppo scheda",
+      "deckTabWidthHint": "Attuale: {{value}}px"
+    },
+    "profiles": {
+      "description": "Account multipli con cookie e dati di navigazione separati.",
+      "injectCookie": "Inietta Cookie",
+      "injectCookieHint": "Incolla un Cookie header da un altro browser per ripristinare manualmente una sessione."
+    },
+    "bookmarks": {
+      "description": "Gestisci i servizi integrati e i siti web aggiunti ai preferiti.",
+      "builtin": "Servizi Integrati",
+      "saved": "Segnalibri Salvati",
+      "empty": "Non ci sono ancora segnalibri."
+    },
+    "search": {
+      "description": "Scegli fornitori di ricerca per la nuova scheda e aggiungine di personalizzati.",
+      "builtin": "Fornitori di Ricerca Integrati",
+      "builtinHint": "Seleziona i fornitori che desideri visualizzare nel menu di ricerca della nuova scheda.",
+      "custom": "Fornitori di Ricerca Personalizzati",
+      "empty": "Non ci sono ancora fornitori di ricerca personalizzati.",
+      "urlHint": "Sempre disponibile per l'inserimento diretto dell'URL.",
+      "addTitle": "Aggiungi Ricerca Personalizzata",
+      "editTitle": "Moifica Ricerca Personalizzata",
+      "addAction": "Aggiungi Ricerca",
+      "templateHint": "Inserisci `%s` nel punto in cui deve essere inserita la query.",
+      "fields": {
+        "name": "Nome",
+        "namePlaceholder": "Ricerca di Esempio",
+        "template": "Modello URL di Ricerca",
+        "templatePlaceholder": "https://example.com/search?q=%s"
+      },
+      "validation": {
+        "name": "Aggiungi nome di un fornitore di ricerca",
+        "template": "Utilizza un valido modello di URL http(s) contenente `%s`",
+        "duplicateName": "Esiste già un fornitore di ricerca personalizzato con questo nome"
+      },
+      "deleteConfirm": "Sei sicuro di voler eliminare questa ricerca personalizzata?"
+    },
+    "userStyles": {
+      "label": "Stili Utente",
+      "hint": "Attiva le modifiche CSS integrate e aggiungi i tuoi stili specifici per l'host.",
+      "copyCss": "Copia CSS",
+      "cssCopied": "CSS copiato",
+      "copyFailed": "Impossibile copiare il CSS",
+      "importCss": "Importa CSS",
+      "importFailed": "Impossibile importare il CSS",
+      "add": "Aggiungi stile",
+      "addTitle": "Aggiungi stile personalizzato",
+      "editTitle": "Modifica stile personalizzato",
+      "deleteConfirm": "Sei sicuro di voler eliminare questo stile personalizzato?",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Nome stile",
+      "hostGlobs": {
+        "placeholder": "*.reddit.com, x.com (separati da virgola)",
+        "label": "Glob di Host"
+      },
+      "validation": {
+        "hostGlobs": "Aggiungi almeno un valido glob di host",
+        "css": "Aggiungi CSS prima di salvare"
+      },
+      "builtin": {
+        "label": "Stili Integrati",
+        "hideRedditGame": {
+          "label": "Nascondi post di Giochi su Reddit"
+        },
+        "hideXBottomNav": {
+          "label": "Nascondi barra navigazione inferiore di X durante scorrimento"
+        },
+        "hideXHomeTabs": {
+          "label": "Nascondi schede cronologia dalla home di X"
+        },
+        "compactTiktokLayout": {
+          "label": "Usa layout compatto di TikTok"
+        }
+      },
+      "custom": {
+        "label": "Stili Personalizzati",
+        "empty": "Non ci sono ancora stili personalizzati. Aggiungine uno per inserire il tuo CSS sugli host corrispondenti."
+      }
+    }
   },
   "sync": {
     "label": "Sincronizza",
-    "hint": "Sincronizzazione di segnalibri ed impostazioni su tutti i dispositivi.",
+    "hint": "I segnalibri e le impostazioni vengono sincronizzati su tutti i dispositivi.",
     "currentPlan": "Piano attuale",
-    "managePlan": "Gestisci piano"
+    "managePlan": "Gestisci piano",
+    "upgradeHint": "Esegui l'aggiornamento per sincronizzare i segnalibri e le impostazioni su tutti i dispositivi.",
+    "buy": "Iscriviti tramite l'App Store",
+    "restore": "Ripristina gli acquisti",
+    "manageIos": "Gestisci su App Store",
+    "purchaseTitle": "Attiva un abbonamento",
+    "purchaseConfirm": "Questo abbonamento sarà associato all'indirizzo {{email}} e sbloccherà la sincronizzazione ovunque accedi a questo account Nora.",
+    "priceLoading": "Caricamento prezzo App Store...",
+    "activeViaIos": "Attiva tramite App Store",
+    "freePlan": "Gratuito",
+    "purchasePending": "Acquisto in attesa di approvazione.",
+    "restoreConflict": "Questo abbonamento sull'App Store è già associato all'indirizzo {{email}}.",
+    "signOutSwitch": "Esci e cambia account",
+    "signedInAs": "Hai effettuato l'accesso con {{email}}",
+    "productUnavailable": "Il prodotto sull'App Store non è ancora disponibile.",
+    "expiresAt": "Rinnovo o scadenza: {{value}}",
+    "legalNotice": "Gli abbonamenti si rinnovano automaticamente, salvo disdetta. Effettuando l'abbonamento, l'utente accetta i Termini di utilizzo (EULA) e l'Informativa sulla privacy.",
+    "termsOfUse": "Condizioni d'Uso (EULA)",
+    "privacyPolicy": "Informativa sulla privacy"
   },
   "tabs": {
-    "new": "Nuova scheda"
+    "new": "Nuova scheda",
+    "recentlyClosed": "Chiuse di recente",
+    "noRecentlyClosed": "Nessuna scheda chiusa di recente"
   },
   "toast": {
     "pinned": "Aggiunto alla pagina nuova scheda",
@@ -93,9 +226,9 @@
     "namePlaceholder": "Nome profilo"
   },
   "blocklist": {
-    "label": "Lista di blocco di rete",
+    "label": "Lista di blocco",
     "description": "Blocca gli annunci e i tracker con le regole host di EasyList e EasyPrivacy.",
-    "enable": "Abilita lista di blocchi di rete",
+    "enable": "Abilita lista di blocco",
     "statusActive": "Attiva",
     "statusInactive": "Scaricata, disattivata",
     "statusFetching": "Recupero della lista di blocco",
@@ -103,5 +236,34 @@
     "statusError": "Scaricata, ma ultimo aggiornamento fallito",
     "lastUpdated": "Ultimo aggiornamento: {{value}}",
     "refreshNow": "Aggiorna lista di blocco"
+  },
+  "changelog": {
+    "label": "Registro delle modifiche",
+    "hint": "Ultimi aggiornamenti e correzioni da GitHub.",
+    "loading": "Caricamento delle note di rilascio...",
+    "error": "Impossibile caricare le note di rilascio.",
+    "retry": "Riprova",
+    "empty": "Non sono state trovate note di rilascio.",
+    "current": "Attuale",
+    "noNotes": "Per questa versione non sono state fornite note di rilascio."
+  },
+  "common": {
+    "about": "Informazioni",
+    "edit": "Modifica",
+    "off": "No",
+    "on": "Sì",
+    "reset": "Reimposta",
+    "save": "Salva",
+    "theme": "Tema"
+  },
+  "newTab": {
+    "search": {
+      "urlPlaceholder": "Inserisci un URL",
+      "searchPlaceholder": "Cerca sul web"
+    }
+  },
+  "views": {
+    "rename": "Rinomina vista",
+    "namePlaceholder": "Visualizza nome"
   }
 }
