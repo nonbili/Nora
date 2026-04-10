@@ -1,0 +1,45 @@
+{
+  "name": "nora-desktop2",
+  "productName": "Nora",
+  "version": "0.1.8",
+  "description": "Facebook, Instagram, Reddit, Threads and X in a single app",
+  "main": "src/main/index.ts",
+  "author": "Nonbili Inc.",
+  "homepage": "https://github.com/nonbili/Nora",
+  "scripts": {
+    "preinstall": "touch ../node_modules/nora",
+    "format": "prettier --write .",
+    "lint": "eslint --cache .",
+    "typecheck": "tsc --noEmit",
+    "start": "vite build && electrobun dev",
+    "dev": "concurrently \"bun run dev:renderer\" \"bun run dev:app\"",
+    "dev:app": "electrobun dev --watch",
+    "dev:renderer": "vite --port 5173",
+    "dev:hmr": "bun run dev",
+    "hmr": "bun run dev:renderer",
+    "build": "vite build && electrobun build",
+    "build:win": "vite build && electrobun build --platform=win",
+    "build:mac": "vite build && electrobun build --platform=mac",
+    "build:linux": "vite build && electrobun build --platform=linux"
+  },
+  "dependencies": {
+    "electrobun": "^1.16.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@radix-ui/themes": "^3.2.1",
+    "@types/node": "^24.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^9.1.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "nora": "link:nora",
+    "react-hot-toast": "^2.5.2",
+    "vite": "^7.0.6",
+    "vite-plugin-react-native-web": "^2.5.0"
+  }
+}

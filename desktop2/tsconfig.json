@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"types": ["bun"],
+		"strict": true,
+		"jsx": "react-jsx",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["../*"],
+			"@renderer/*": ["./src/renderer/*"],
+			"main/*": ["./src/main/*"]
+		}
+	},
+	"include": ["src/**/*", "../*.d.ts", "electrobun.config.ts", "vite.config.ts"]
+}

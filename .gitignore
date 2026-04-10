@@ -38,3 +38,4 @@ modules/*/android/build/
 *-env.d.ts
 
 desktop/out
+desktop2/build

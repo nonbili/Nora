@@ -329,6 +329,19 @@ export const NoraTab: React.FC<{
   }, [isActive, refreshCanGoBack])
 
   useEffect(() => {
+    if (!isWeb) {
+      return
+    }
+
+    const webview = webviewRef.current as any
+    if (!webview || typeof webview.toggleHidden !== 'function') {
+      return
+    }
+
+    webview.toggleHidden(!isActive || !tab.url)
+  }, [isActive, tab.url, viewInstanceKey])
+
+  useEffect(() => {
     if (!isActive) {
       return
     }
@@ -341,6 +354,11 @@ export const NoraTab: React.FC<{
 
   useEffect(() => {
     return () => {
+      const webview = webviewRef.current as any
+      if (webview && typeof webview.toggleHidden === 'function') {
+        webview.toggleHidden(true)
+      }
+
       const native = nativeRef.current
       clearActiveNativeWebview(native)
       if (isActive && ui$.webview.get() === native) {
