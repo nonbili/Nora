@@ -51,7 +51,7 @@
   "settings": {
     "label": "Impostazioni",
     "openExternalLink": "Apri collegamento esterno nel browser predefinito",
-    "hideHeader": "Nascondi toolbar durante scorrimento",
+    "hideHeader": "Nascondi o mostra barra strumenti in base a direzione di scorrimento",
     "headerPosition": {
       "label": "Posizione della toolbar",
       "top": "In alto",
@@ -62,15 +62,18 @@
     "showScrollButton": "Mostra pulsante Torna all'inizio",
     "oneHandMode": "Modalità ad una mano",
     "theme": {
-      "label": "Tema WebView",
+      "label": "Tema",
       "system": "Sistema",
       "dark": "Scuro",
       "light": "Chiaro",
-      "hint": "Controlla tema del sito web, non l'interfaccia utente dell'app. Riavviare manualmente se la modifica non viene rispecchiata in WebView."
+      "hint": "Tema dell'app e della WebView. Se una pagina non si aggiorna immediatamente, ricaricare la scheda."
     },
     "injectCookie": "Inietta cookie",
     "redirectToOldReddit": "Reindirizza su Old Reddit",
-    "services": "Servizi",
+    "services": {
+      "title": "Servizi integrati",
+      "description": "Gestisci servizi integrati."
+    },
     "allowHttpWebsite": "Consenti siti web HTTP",
     "inspectable": "Rendere WebView ispezionabile",
     "oneTabPerSite": "Apri collegamento in scheda separata",
@@ -86,23 +89,26 @@
       "experience": "Esperienza",
       "accounts": "Account e Dati",
       "advanced": "Avanzato",
-      "about": "Informazioni"
+      "about": "Informazioni",
+      "general": "Generale",
+      "bookmarksSearch": "Segnalibri e Ricerca"
     },
     "pages": {
-      "browsing": "Navigazione",
+      "browsing": "Preferenze",
       "appearance": "Aspetto",
       "profiles": "Profili e Sessioni",
       "bookmarks": "Segnalibri",
-      "search": "Cerca"
+      "search": "Cerca",
+      "services": "Servizi"
     },
     "browsing": {
-      "descriptionNative": "Schede, gestione sito, controlli lista blocchi e impostazioni avanzate WebView.",
+      "descriptionNative": "Attivazione/disattivazione funzionalità.",
       "descriptionWeb": "Blocco di rete e controlli avanzati navigazione.",
       "features": "Caratteristiche"
     },
     "appearance": {
-      "description": "Tema e layout barra degli strumenti, posizionamento, visibilità pulsanti.",
-      "theme": "Tema WebView",
+      "description": "Impostazioni tema e barra strumenti.",
+      "theme": "Tema",
       "toolbar": "Barra degli strumenti",
       "deckTabWidth": "Larghezza gruppo scheda",
       "deckTabWidthHint": "Attuale: {{value}}px"
@@ -113,13 +119,13 @@
       "injectCookieHint": "Incolla un Cookie header da un altro browser per ripristinare manualmente una sessione."
     },
     "bookmarks": {
-      "description": "Gestisci i servizi integrati e i siti web aggiunti ai preferiti.",
+      "description": "Gestisci i siti web aggiunti ai preferiti.",
       "builtin": "Servizi Integrati",
       "saved": "Segnalibri Salvati",
       "empty": "Non ci sono ancora segnalibri."
     },
     "search": {
-      "description": "Scegli fornitori di ricerca per la nuova scheda e aggiungine di personalizzati.",
+      "description": "Gestisci i motori di ricerca.",
       "builtin": "Fornitori di Ricerca Integrati",
       "builtinHint": "Seleziona i fornitori che desideri visualizzare nel menu di ricerca della nuova scheda.",
       "custom": "Fornitori di Ricerca Personalizzati",
@@ -182,7 +188,15 @@
       "custom": {
         "label": "Stili Personalizzati",
         "empty": "Non ci sono ancora stili personalizzati. Aggiungine uno per inserire il tuo CSS sugli host corrispondenti."
-      }
+      },
+      "customHint": "Personalizza qualsiasi sito web con CSS."
+    },
+    "doubleBackToExitApp": "Doppio tocco indietro per uscire dall'app",
+    "hideToolbarWhenScrolled": "Nascondi barra strumenti quando la pagina non è in primo piano",
+    "language": {
+      "label": "Lingua",
+      "system": "Sistema",
+      "hint": "Scegli una lingua oppure utilizza la lingua di sistema."
     }
   },
   "sync": {
@@ -216,7 +230,8 @@
   },
   "toast": {
     "pinned": "Aggiunto alla pagina nuova scheda",
-    "blocklistUpdated": "Lista di blocco aggiornata"
+    "blocklistUpdated": "Lista di blocco aggiornata",
+    "pressBackAgainToExit": "Premi nuovamente il tasto Indietro per uscire"
   },
   "profiles": {
     "label": "Profili",
