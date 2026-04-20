@@ -127,18 +127,6 @@ export async function openDownloadWindow(url: string) {
     win.webContents.openDevTools()
   }
 
-  ses.on('will-download', (event, downloadItem) => {
-    const name = downloadItem.getFilename()
-    downloadItem.on('done', (event, state) => {
-      const path = downloadItem.getSavePath()
-      if (state === 'completed') {
-        uiClient.showToast(`Download finished: ${path}`)
-      } else {
-        uiClient.showToast(`Download failed: ${path}`)
-      }
-    })
-  })
-
   win.on('closed', () => {
     ipcMain.removeListener('channel:content', onMessage)
   })

@@ -1,4 +1,5 @@
-import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, screen, session } from 'electron'
+import { attachDownloadHandler } from './lib/download'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -56,18 +57,37 @@ function createWindow(): void {
     webPreferences.preload = join(__dirname, '../preload/index.js')
   })
 
+  const saveImageAppend = (
+    _defaults: unknown,
+    params: Electron.ContextMenuParams,
+    target: Electron.BrowserWindow | Electron.WebContents,
+  ): Electron.MenuItemConstructorOptions[] => [
+    {
+      label: 'Save Image As…',
+      visible: params.mediaType === 'image',
+      click: () => {
+        const wc =
+          (target as Electron.BrowserWindow).webContents ?? (target as Electron.WebContents)
+        wc.downloadURL(params.srcURL)
+      },
+    },
+  ]
+
   const contextMenuOptions = {
-    showCopyImage: false,
+    showCopyImage: true,
+    showSaveImageAs: false,
     showLearnSpelling: false,
     showLookUpSelection: false,
     showSearchWithGoogle: false,
     showSelectAll: false,
+    append: saveImageAppend,
   }
-  // @ts-expect-error ?
-  contextMenu.default({ ...contextMenuOptions, window: mainWindow.webContents })
+  attachDownloadHandler(mainWindow.webContents.session)
+  contextMenu.default({ ...contextMenuOptions, window: mainWindow })
   mainWindow.webContents.on('did-attach-webview', (e, wc) => {
-    // @ts-expect-error ?
-    contextMenu.default({ ...contextMenuOptions, window: wc })
+    attachDownloadHandler(wc.session)
+    // @ts-expect-error electron-context-menu accepts a webContents-shaped wrapper
+    contextMenu.default({ ...contextMenuOptions, window: { webContents: wc } })
     wc.setWindowOpenHandler((details) => {
       let url = details.url
       const { host, pathname, searchParams } = new URL(url)
@@ -90,6 +110,8 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
   initMainChannel()
+
+  attachDownloadHandler(session.defaultSession)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
