@@ -9,7 +9,7 @@ import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
 import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
-import { NouMenu } from '../menu/NouMenu'
+import { NouContextMenu } from '../menu/NouContextMenu'
 import { MaterialButton } from '../button/IconButtons'
 import { NouText } from '../NouText'
 import { share } from '@/lib/share'
@@ -471,85 +471,93 @@ export const NoraTab: React.FC<{
         className={clsx('flex h-full min-h-0 min-w-0 flex-col', desktopVariant === 'deck' ? 'shrink-0' : 'w-full')}
         style={desktopVariant === 'deck' ? { width: deckTabWidth } : undefined}
       >
-        <View
-          className={clsx(
-            'flex-row items-center justify-between gap-2 pl-2 pr-1',
-            isActive
-              ? 'bg-indigo-100 dark:bg-indigo-400/30 dark:border-b dark:border-b-indigo-300/50'
-              : 'bg-zinc-100 dark:bg-zinc-800',
-          )}
-          style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
+        <NouContextMenu
+          items={[
+            {
+              label: t('menus.reload'),
+              icon: <MaterialIcons name="refresh" size={18} color={menuIconColor} />,
+              handler: reloadPage,
+            },
+            {
+              label: t('menus.editUrl'),
+              icon: <MaterialIcons name="edit" size={18} color={menuIconColor} />,
+              handler: editTabUrl,
+            },
+            ...(canDuplicate
+              ? [
+                  {
+                    label: t('menus.duplicate'),
+                    icon: <MaterialIcons name="content-copy" size={18} color={menuIconColor} />,
+                    handler: () => tabs$.duplicateTab(tab.id),
+                  },
+                ]
+              : []),
+            {
+              label: t('menus.scroll'),
+              icon: <MaterialIcons name="vertical-align-top" size={18} color={menuIconColor} />,
+              handler: () => {
+                void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
+              },
+            },
+            {
+              label: t('menus.addBookmark'),
+              icon: <MaterialIcons name="bookmark-add" size={18} color={menuIconColor} />,
+              handler: () => addBookmark(tab),
+            },
+            {
+              label: t('menus.share'),
+              icon: <MaterialIcons name="share" size={18} color={menuIconColor} />,
+              handler: () => share(pageUrlRef.current),
+            },
+            {
+              label: t('menus.close'),
+              icon: <MaterialIcons name="close" size={18} color={menuIconColor} />,
+              handler: () => tabs$.closeTab(index),
+            },
+            {
+              label: t('buttons.closeAll'),
+              icon: <MaterialIcons name="tab-unselected" size={18} color={menuIconColor} />,
+              handler: () => tabs$.closeAll(),
+            },
+          ]}
         >
-          <View className="flex-row items-center gap-2 shrink-0">
-            {slotSwitcher || desktopVariant === 'deck' ? null : <ServiceIcon url={tab.url} icon={tab.icon} />}
-            {nIf(tab.isLoading, <ActivityIndicator size="small" color="#a1a1aa" />)}
-            {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} />)}
-          </View>
-          <View className="flex-1 min-w-0 flex-row items-center justify-center">
-            {slotSwitcher || (
-              <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
-                <View className="shrink-0">
-                  <ServiceIcon url={tab.url} icon={tab.icon} />
-                </View>
-                <NouText
-                  className={clsx(
-                    'min-w-0 flex-1 text-[11px] font-bold tracking-wider text-center',
-                    isActive ? 'text-zinc-600 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400',
-                  )}
-                  numberOfLines={1}
-                >
-                  {getTabLabel(tab)}
-                </NouText>
-              </View>
+          <View
+            className={clsx(
+              'flex-row items-center justify-between gap-2 pl-2 pr-1',
+              isActive
+                ? 'bg-indigo-100 dark:bg-indigo-400/30 dark:border-b dark:border-b-indigo-300/50'
+                : 'bg-zinc-100 dark:bg-zinc-800',
             )}
+            style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
+          >
+            <View className="flex-row items-center gap-2 shrink-0">
+              {slotSwitcher || desktopVariant === 'deck' ? null : <ServiceIcon url={tab.url} icon={tab.icon} />}
+              {nIf(tab.isLoading, <ActivityIndicator size="small" color="#a1a1aa" />)}
+              {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} />)}
+            </View>
+            <View className="flex-1 min-w-0 flex-row items-center justify-center">
+              {slotSwitcher || (
+                <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
+                  <View className="shrink-0">
+                    <ServiceIcon url={tab.url} icon={tab.icon} />
+                  </View>
+                  <NouText
+                    className={clsx(
+                      'min-w-0 flex-1 text-[11px] font-bold tracking-wider text-center',
+                      isActive ? 'text-zinc-600 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400',
+                    )}
+                    numberOfLines={1}
+                  >
+                    {getTabLabel(tab)}
+                  </NouText>
+                </View>
+              )}
+            </View>
+            <View className="rounded hover:bg-zinc-300/70 dark:hover:bg-zinc-700/70">
+              <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
+            </View>
           </View>
-          <NouMenu
-            trigger={<MaterialButton name="more-vert" style={toolbarButtonStyle} />}
-            items={[
-              {
-                label: t('menus.reload'),
-                icon: <MaterialIcons name="refresh" size={18} color={menuIconColor} />,
-                handler: reloadPage,
-              },
-              {
-                label: t('menus.editUrl'),
-                icon: <MaterialIcons name="edit" size={18} color={menuIconColor} />,
-                handler: editTabUrl,
-              },
-              ...(canDuplicate
-                ? [
-                    {
-                      label: t('menus.duplicate'),
-                      icon: <MaterialIcons name="content-copy" size={18} color={menuIconColor} />,
-                      handler: () => tabs$.duplicateTab(tab.id),
-                    },
-                  ]
-                : []),
-              {
-                label: t('menus.scroll'),
-                icon: <MaterialIcons name="vertical-align-top" size={18} color={menuIconColor} />,
-                handler: () => {
-                  void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
-                },
-              },
-              {
-                label: t('menus.addBookmark'),
-                icon: <MaterialIcons name="bookmark-add" size={18} color={menuIconColor} />,
-                handler: () => addBookmark(tab),
-              },
-              {
-                label: t('menus.share'),
-                icon: <MaterialIcons name="share" size={18} color={menuIconColor} />,
-                handler: () => share(pageUrlRef.current),
-              },
-              {
-                label: t('menus.close'),
-                icon: <MaterialIcons name="close" size={18} color={menuIconColor} />,
-                handler: () => tabs$.closeTab(index),
-              },
-            ]}
-          />
-        </View>
+        </NouContextMenu>
         <NoraView
           className={clsx('flex-1', !tab.url && 'hidden')}
           ref={noraViewRef}

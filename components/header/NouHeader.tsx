@@ -289,16 +289,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     handler: () => (currentTab ? share(currentTab.url) : {}),
                   },
                 ]),
-            ...(isWeb
-              ? [
-                  {
-                    label: t('buttons.closeAll'),
-                    icon: <MaterialIcons name="tab-unselected" size={18} color={headerControlColor} />,
-                    systemImage: 'xmark.square',
-                    handler: () => tabs$.closeAll(),
-                  },
-                ]
-              : []),
             {
               label: t('menus.tools'),
               icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
