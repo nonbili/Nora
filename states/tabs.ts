@@ -43,6 +43,7 @@ interface Store {
   // currentUrl: () => string
 
   openTab: (url: string, options?: OpenTabOptions) => string | undefined
+  duplicateTab: (tabId: string) => string | undefined
   closeTab: (index: number) => void
   closeAll: () => void
   deleteProfileData: (profileId: string) => void
@@ -319,6 +320,56 @@ export const tabs$: Observable<Store> = observable<Store>({
     }
 
     tabs$.recentlyClosedTabs.set(nextRecentlyClosedTabs)
+  },
+
+  duplicateTab: (tabId) => {
+    const tabs = tabs$.tabs.get()
+    const source = tabs.find((tab) => tab.id === tabId)
+    if (!source) {
+      return undefined
+    }
+
+    const duplicated: Tab = {
+      ...source,
+      id: genId(),
+      isLoading: Boolean(source.url),
+    }
+    tabs$.tabs.push(duplicated)
+
+    const orders = tabs$.orders.get()
+    const sourceOrder = orders[tabId]
+    if (typeof sourceOrder === 'number') {
+      const nextOrders: Record<string, number> = {}
+      Object.entries(orders).forEach(([id, order]) => {
+        nextOrders[id] = order > sourceOrder ? order + 1 : order
+      })
+      nextOrders[duplicated.id] = sourceOrder + 1
+      tabs$.orders.set(nextOrders)
+    }
+
+    const activeViewId = savedViews$.activeViewId.get()
+    if (activeViewId && activeViewId !== DECK_VIEW_ID) {
+      const viewIndex = savedViews$.savedViews.get().findIndex((view) => view?.id === activeViewId)
+      if (viewIndex !== -1) {
+        const view$ = savedViews$.savedViews[viewIndex]
+        const layout = view$.layout.get()
+        const slotTabIds = view$.slotTabIds.get()
+        const sourceSlotIndex = slotTabIds.findIndex((slotTabId) => slotTabId === tabId)
+        if (sourceSlotIndex !== -1) {
+          if (layout === 'split-view') {
+            view$.slotTabIds.splice(sourceSlotIndex + 1, 0, duplicated.id)
+          } else {
+            const emptySlotIndex = slotTabIds.findIndex((slotTabId) => !slotTabId)
+            if (emptySlotIndex !== -1) {
+              view$.slotTabIds[emptySlotIndex].set(duplicated.id)
+            }
+          }
+        }
+      }
+    }
+
+    tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
+    return duplicated.id
   },
 
   reopenClosedTab: (tabId) => {

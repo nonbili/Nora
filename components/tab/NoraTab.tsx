@@ -26,6 +26,7 @@ import { getProfileViewKey } from '@/lib/profile-view'
 import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { colors } from '@/lib/colors'
+import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
 
 const getRedirectTo = (str: string) => {
   try {
@@ -458,6 +459,11 @@ export const NoraTab: React.FC<{
   }
 
   const deckTabWidth = useValue(settings$.deckTabWidth)
+  const activeViewId = useValue(savedViews$.activeViewId)
+  const savedViews = useValue(savedViews$.savedViews)
+  const activeViewLayout =
+    activeViewId === DECK_VIEW_ID ? 'deck' : savedViews.find((view) => view.id === activeViewId)?.layout
+  const canDuplicate = activeViewLayout !== 'grid-4'
 
   if (isWeb) {
     return (
@@ -510,6 +516,15 @@ export const NoraTab: React.FC<{
                 icon: <MaterialIcons name="edit" size={18} color={menuIconColor} />,
                 handler: editTabUrl,
               },
+              ...(canDuplicate
+                ? [
+                    {
+                      label: t('menus.duplicate'),
+                      icon: <MaterialIcons name="content-copy" size={18} color={menuIconColor} />,
+                      handler: () => tabs$.duplicateTab(tab.id),
+                    },
+                  ]
+                : []),
               {
                 label: t('menus.scroll'),
                 icon: <MaterialIcons name="vertical-align-top" size={18} color={menuIconColor} />,

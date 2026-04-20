@@ -62,6 +62,7 @@
     "close": "Close",
     "delete": "Delete",
     "desktop": "Desktop site",
+    "duplicate": "Duplicate tab",
     "addBookmark": "Add bookmark",
     "editUrl": "Edit tab URL",
     "reload": "Reload",
