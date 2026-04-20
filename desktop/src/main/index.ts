@@ -86,6 +86,9 @@ function createWindow(): void {
   contextMenu.default({ ...contextMenuOptions, window: mainWindow })
   mainWindow.webContents.on('did-attach-webview', (e, wc) => {
     attachDownloadHandler(wc.session)
+    wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
+      callback(permission === 'notifications')
+    })
     // @ts-expect-error electron-context-menu accepts a webContents-shaped wrapper
     contextMenu.default({ ...contextMenuOptions, window: { webContents: wc } })
     wc.setWindowOpenHandler((details) => {
