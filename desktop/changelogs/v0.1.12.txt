@@ -1,0 +1,4 @@
+- Support downloading images via context menu
+- Show close button on each tab
+- Support duplicating a tab
+- Support web notifications

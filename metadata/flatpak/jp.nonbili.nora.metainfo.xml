@@ -59,6 +59,16 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.1.12" date="2026-04-21">
+      <description>
+        <ul>
+          <li>Support downloading images via context menu</li>
+          <li>Show close button on each tab</li>
+          <li>Support duplicating a tab</li>
+          <li>Support web notifications</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.11" date="2026-04-11">
       <description>
         <ul>
