@@ -5,6 +5,7 @@ import { useObserveEffect } from '@legendapp/state/react'
 import { useEffect } from 'react'
 import { initUiChannel } from './ipc/ui'
 import { handleShortcuts } from './lib/shortcuts'
+import { HoverLinkBar } from './components/HoverLinkBar'
 
 function App(): React.JSX.Element {
   useEffect(() => {
@@ -16,6 +17,7 @@ function App(): React.JSX.Element {
   return (
     <>
       <MainPage contentJs={contentJs} />
+      <HoverLinkBar />
       <Toaster position="bottom-right" />
     </>
   )

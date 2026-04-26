@@ -271,6 +271,9 @@ export const NoraTab: React.FC<{
         }
       })
       webview.addEventListener('ipc-message', (e) => {})
+      webview.addEventListener('update-target-url', (e) => {
+        ui$.hoverLinkUrl.set(e.url || '')
+      })
     },
     [applyContentState, contentJs, index, refreshCanGoBack, setPageUrl],
   )

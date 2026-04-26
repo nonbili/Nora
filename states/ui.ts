@@ -30,6 +30,7 @@ interface Store {
   // webview
   activeCanGoBack: boolean
   webview: any
+  hoverLinkUrl: string
 }
 
 export const ui$ = observable<Store>({
@@ -62,4 +63,5 @@ export const ui$ = observable<Store>({
   // webview
   activeCanGoBack: false,
   webview: undefined,
+  hoverLinkUrl: '',
 })
