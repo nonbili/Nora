@@ -69,7 +69,8 @@
     "scroll": "Scroll to top",
     "share": "Share",
     "signOut": "Sign out",
-    "tools": "Tools"
+    "tools": "Tools",
+    "viewInSplitView": "View in split view"
   },
   "modals": {
     "downloadVideo": "Download video"

@@ -210,6 +210,7 @@ export const savedViews$: Observable<Store> = observable<Store>({
     }
 
     const closedTabIdSet = new Set(tabIds)
+    const viewIdsToDelete: string[] = []
     for (const savedView$ of savedViews$.savedViews) {
       const layout = savedView$.layout.get()
       const slotTabIds = savedView$.slotTabIds.get()
@@ -230,6 +231,14 @@ export const savedViews$: Observable<Store> = observable<Store>({
       if (changed) {
         savedView$.slotTabIds.set(nextSlotTabIds)
       }
+
+      if (layout === 'split-view' && nextSlotTabIds.every((tabId) => !tabId)) {
+        viewIdsToDelete.push(savedView$.id.get())
+      }
+    }
+
+    for (const viewId of viewIdsToDelete) {
+      savedViews$.deleteView(viewId)
     }
   },
 })

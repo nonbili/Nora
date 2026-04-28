@@ -26,7 +26,7 @@ import { getProfileViewKey } from '@/lib/profile-view'
 import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { colors } from '@/lib/colors'
-import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
+import { DECK_VIEW_ID, createDesktopSavedView, savedViews$ } from '@/states/saved-views'
 
 const getRedirectTo = (str: string) => {
   try {
@@ -496,6 +496,14 @@ export const NoraTab: React.FC<{
                   },
                 ]
               : []),
+            {
+              label: t('menus.viewInSplitView'),
+              icon: <MaterialIcons name="vertical-split" size={18} color={menuIconColor} />,
+              handler: () => {
+                createDesktopSavedView('split-view', [tab.id])
+                tabs$.setActiveTabById(tab.id, 'system')
+              },
+            },
             {
               label: t('menus.scroll'),
               icon: <MaterialIcons name="vertical-align-top" size={18} color={menuIconColor} />,
