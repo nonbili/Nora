@@ -17,6 +17,8 @@ export const hostHomes: Record<string, string> = {
   'x.com': 'x',
 }
 
+const injectedStyleId = '_nora_injected_css'
+
 const css = (raw: ArrayLike<string>, ...values: any[]) => String.raw({ raw }, ...values)
 
 const styles: Record<string, (settings: any) => string> = {
@@ -118,7 +120,7 @@ export const getInjectedCss = (host: string, settings: any, userStyles: any) => 
 }
 
 export function injectCSS() {
-  const style = document.createElement('style')
+  const style = document.querySelector<HTMLStyleElement>(`#${injectedStyleId}`) || document.createElement('style')
   const { host } = document.location
 
   const update = () => {
@@ -128,9 +130,10 @@ export function injectCSS() {
     style.textContent = content
   }
 
+  style.id = injectedStyleId
   style.type = 'text/css'
   update()
-  document.head.appendChild(style)
+  ;(document.head || document.documentElement).appendChild(style)
   window.addEventListener(noraSettingsEvent, () => update())
   window.addEventListener(noraUserStylesEvent, () => update())
 }

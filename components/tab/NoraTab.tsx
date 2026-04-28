@@ -1,6 +1,6 @@
 import { NoraView } from '@/modules/nora-view'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { useValue } from '@legendapp/state/react'
+import { useObserveEffect, useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { settings$ } from '@/states/settings'
@@ -156,7 +156,6 @@ export const NoraTab: React.FC<{
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
   const xDefaultHomeTimeline = useValue(settings$.xDefaultHomeTimeline)
   const theme = useValue(settings$.theme)
-  const userStyles = useValue(userStyles$)
   const colorScheme = useColorScheme()
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
@@ -215,11 +214,11 @@ export const NoraTab: React.FC<{
         videoEdgeLongPressTo2x,
         xDefaultHomeTimeline,
       })})`
-      const userStylesScript = `window.Nora?.setUserStyles?.(${JSON.stringify(getUserStylesSnapshot(userStyles))})`
+      const userStylesScript = `window.Nora?.setUserStyles?.(${JSON.stringify(getUserStylesSnapshot())})`
       void executeWebviewJavaScriptQuietly(webview, settingsScript)
       void executeWebviewJavaScriptQuietly(webview, userStylesScript)
     },
-    [userStyles, videoEdgeLongPressTo2x, xDefaultHomeTimeline],
+    [videoEdgeLongPressTo2x, xDefaultHomeTimeline],
   )
 
   const noraViewRef = useCallback(
@@ -356,6 +355,8 @@ export const NoraTab: React.FC<{
   useEffect(() => {
     applyContentState()
   }, [applyContentState])
+
+  useObserveEffect(userStyles$, () => applyContentState())
 
   useEffect(() => {
     return () => {

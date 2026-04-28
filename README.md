@@ -2,7 +2,7 @@
 
 Android, iOS and Desktop browser optimized for social network services.
 
-Install from F-Droid, Google Play, or download APK from GitHub.
+Install from App Store, Google Play, F-Droid, or download APK from GitHub.
 
 [<img src="https://img.shields.io/badge/App_Store-0D96F6?style=for-the-badge&logo=app-store&logoColor=white"
       alt="Get it on App Store"
