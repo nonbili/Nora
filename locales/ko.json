@@ -1,0 +1,284 @@
+{
+  "about": {
+    "label": "정보",
+    "code": "소스 코드",
+    "donate": "기부하기",
+    "hint": "버전 정보, 소스 코드 및 지원 링크입니다."
+  },
+  "changelog": {
+    "label": "변경 사항",
+    "hint": "GitHub의 최근 릴리스 및 수정 사항입니다.",
+    "loading": "릴리스 노트 불러오는 중...",
+    "error": "릴리스 노트를 불러오지 못했습니다.",
+    "retry": "재시도",
+    "empty": "릴리스 노트를 찾을 수 없습니다.",
+    "current": "현재 버전",
+    "noNotes": "이 버전에 제공된 릴리스 노트가 없습니다."
+  },
+  "common": {
+    "about": "정보",
+    "edit": "편집",
+    "off": "끄기",
+    "on": "켜기",
+    "reset": "초기화",
+    "save": "저장",
+    "theme": "테마"
+  },
+  "views": {
+    "rename": "뷰 이름 변경",
+    "namePlaceholder": "뷰 이름",
+    "desktop": {
+      "blankTab": "빈 탭",
+      "newBlankTab": "새 빈 탭",
+      "newSplitView": "새 분할 뷰",
+      "newGridView": "새 그리드 뷰",
+      "chooseTabToAdd": "{{layout}}에 추가할 탭 선택",
+      "createBlankTabInSlot": "이 슬롯에 새 빈 탭 생성",
+      "layout": {
+        "split": "분할 뷰",
+        "grid": "그리드 뷰",
+        "gridFour": "4분할 그리드"
+      }
+    }
+  },
+  "blocklist": {
+    "label": "네트워크 차단 목록",
+    "description": "EasyList 및 EasyPrivacy 호스트 규칙을 사용하여 광고와 트래커를 차단합니다.",
+    "enable": "네트워크 차단 목록 활성화",
+    "statusFetching": "차단 목록 가져오는 중",
+    "lastUpdated": "최근 업데이트: {{value}}",
+    "refreshNow": "차단 목록 업데이트"
+  },
+  "buttons": {
+    "cancel": "취소",
+    "closeAll": "모두 닫기",
+    "confirm": "확인",
+    "continue": "계속",
+    "openUrl": "URL 열기",
+    "open": "열기",
+    "save": "저장"
+  },
+  "menus": {
+    "close": "닫기",
+    "delete": "삭제",
+    "desktop": "데스크톱 사이트",
+    "addBookmark": "북마크 추가",
+    "editUrl": "탭 URL 편집",
+    "reload": "새로고침",
+    "scroll": "맨 위로 스크롤",
+    "share": "공유",
+    "signOut": "로그아웃",
+    "tools": "도구"
+  },
+  "modals": {
+    "downloadVideo": "동영상 다운로드"
+  },
+  "native": {
+    "menu_saveImage": "이미지 저장",
+    "menu_copyImageLink": "이미지 링크 복사",
+    "menu_copyLink": "링크 복사",
+    "menu_openInNewTab": "새 탭에서 열기",
+    "menu_openImageInNewTab": "새 탭에서 이미지 열기",
+    "toast_downloadStarted": "다운로드 시작됨, 시스템 알림을 확인하세요",
+    "toast_downloadSucceeded": "다운로드 폴더에 저장되었습니다",
+    "toast_downloadFailed": "다운로드 실패",
+    "httpBlocked_title": "HTTP 웹사이트 차단됨",
+    "httpBlocked_body": "이 웹사이트는 안전하지 않은 HTTP 연결을 사용합니다. HTTP 웹사이트 로드를 허용하려면 설정에서 \"HTTP 웹사이트 허용\"을 활성화하세요."
+  },
+  "profiles": {
+    "label": "프로필",
+    "add": "추가",
+    "edit": "편집",
+    "save": "저장",
+    "namePlaceholder": "프로필 이름"
+  },
+  "settings": {
+    "label": "설정",
+    "openExternalLink": "외부 링크를 시스템 브라우저로 열기",
+    "redirectToOldReddit": "이전 버전 Reddit으로 리다이렉트",
+    "allowHttpWebsite": "HTTP 웹사이트 허용",
+    "inspectable": "웹뷰 검사 가능하도록 설정",
+    "videoEdgeLongPressTo2x": "가장자리 길게 눌러 2배속 재생",
+    "doubleBackToExitApp": "뒤로 가기 버튼을 두 번 눌러 앱 종료",
+    "hideHeader": "스크롤 방향에 따라 툴바 숨기기/표시",
+    "hideToolbarWhenScrolled": "페이지 최상단이 아닐 때 툴바 숨기기",
+    "xHomeTimeline": {
+      "label": "기본 홈 타임라인",
+      "forYou": "추천",
+      "following": "팔로잉"
+    },
+    "sections": {
+      "general": "일반",
+      "accounts": "계정 및 데이터",
+      "bookmarksSearch": "북마크 및 검색",
+      "advanced": "고급",
+      "about": "정보"
+    },
+    "pages": {
+      "browsing": "환경설정",
+      "appearance": "모양",
+      "services": "서비스",
+      "profiles": "프로필 및 세션",
+      "bookmarks": "북마크",
+      "search": "검색"
+    },
+    "browsing": {
+      "descriptionNative": "기능 토글 설정.",
+      "descriptionWeb": "네트워크 차단 및 고급 브라우징 제어.",
+      "features": "기능"
+    },
+    "appearance": {
+      "description": "테마 및 툴바 설정.",
+      "theme": "테마",
+      "toolbar": "툴바",
+      "deckTabWidth": "데크 탭 너비",
+      "deckTabWidthHint": "현재: {{value}}px"
+    },
+    "profiles": {
+      "description": "쿠키와 브라우징 상태가 분리된 여러 계정을 사용합니다.",
+      "injectCookie": "쿠키 주입",
+      "injectCookieHint": "세션을 수동으로 복구하려면 다른 브라우저의 Cookie 헤더를 붙여넣으세요."
+    },
+    "bookmarks": {
+      "description": "고정된 웹사이트를 관리합니다.",
+      "saved": "저장된 북마크",
+      "empty": "저장된 북마크가 없습니다."
+    },
+    "services": {
+      "title": "내장 서비스",
+      "description": "내장 서비스를 관리합니다."
+    },
+    "search": {
+      "description": "검색 엔진 관리.",
+      "builtin": "기본 검색 엔진",
+      "builtinHint": "새 탭 검색 메뉴에 표시할 검색 엔진을 켜주세요.",
+      "custom": "사용자 지정 검색 엔진",
+      "empty": "추가된 사용자 지정 검색 엔진이 없습니다.",
+      "urlHint": "직접 URL 입력 시 항상 사용 가능합니다.",
+      "addTitle": "사용자 지정 검색 추가",
+      "editTitle": "사용자 지정 검색 편집",
+      "addAction": "검색 추가",
+      "templateHint": "검색어가 들어갈 자리에 `%s`를 사용하세요.",
+      "fields": {
+        "name": "이름",
+        "namePlaceholder": "검색 엔진 이름 예시",
+        "template": "검색 URL 템플릿",
+        "templatePlaceholder": "[https://example.com/search?q=%s](https://example.com/search?q=%s)"
+      },
+      "validation": {
+        "name": "검색 엔진 이름을 추가하세요",
+        "template": "`%s`를 포함한 올바른 http(s) 템플릿 URL을 사용하세요",
+        "duplicateName": "같은 이름의 검색 엔진이 이미 존재합니다"
+      },
+      "deleteConfirm": "이 사용자 지정 검색을 삭제하시겠습니까?"
+    },
+    "userStyles": {
+      "label": "사용자 스타일",
+      "hint": "내장 CSS 수정을 활성화하거나 호스트 기반의 고유 스타일을 추가합니다.",
+      "customHint": "CSS로 웹사이트를 자유롭게 꾸며보세요.",
+      "copyCss": "CSS 복사",
+      "cssCopied": "CSS 복사됨",
+      "copyFailed": "CSS 복사 실패",
+      "importCss": "CSS 가져오기",
+      "importFailed": "CSS 가져오기 실패",
+      "add": "스타일 추가",
+      "addTitle": "사용자 지정 스타일 추가",
+      "editTitle": "사용자 지정 스타일 편집",
+      "deleteConfirm": "이 사용자 지정 스타일을 삭제하시겠습니까?",
+      "nameLabel": "이름",
+      "namePlaceholder": "스타일 이름",
+      "hostGlobs": {
+        "label": "호스트 글로브 (Host globs)",
+        "placeholder": "*.reddit.com, x.com (쉼표로 구분)"
+      },
+      "validation": {
+        "hostGlobs": "하나 이상의 올바른 호스트 글로브를 추가하세요",
+        "css": "저장하기 전에 CSS를 추가하세요"
+      },
+      "builtin": {
+        "label": "내장 스타일",
+        "hideRedditGame": {
+          "label": "Reddit 게임 게시물 숨기기"
+        },
+        "compactTiktokLayout": {
+          "label": "TikTok 압축 레이아웃 사용"
+        },
+        "hideXBottomNav": {
+          "label": "스크롤 시 X 하단 네비게이션 바 숨기기"
+        },
+        "hideXHomeTabs": {
+          "label": "X 홈 타임라인 탭 숨기기"
+        }
+      },
+      "custom": {
+        "label": "사용자 지정 스타일",
+        "empty": "사용자 지정 스타일이 없습니다. 매칭되는 호스트에 적용할 CSS를 추가해 보세요."
+      }
+    },
+    "headerPosition": {
+      "label": "툴바 위치",
+      "top": "상단",
+      "bottom": "하단"
+    },
+    "showNewTabButton": "새 탭 버튼 표시",
+    "showBackButton": "뒤로 가기 버튼 표시",
+    "showForwardButton": "앞으로 가기 버튼 표시",
+    "showReloadButton": "새로고침 버튼 표시",
+    "showScrollButton": "맨 위로 스크롤 버튼 표시",
+    "oneHandMode": "한 손 모드",
+    "oneTabPerSite": "공유 링크를 열 때 사이트당 하나의 탭만 사용",
+    "theme": {
+      "label": "테마",
+      "system": "시스템 설정",
+      "dark": "다크",
+      "light": "라이트",
+      "hint": "앱 및 웹뷰 테마입니다. 페이지가 즉시 업데이트되지 않으면 탭을 새로고침하세요."
+    },
+    "language": {
+      "label": "언어",
+      "system": "시스템 설정",
+      "hint": "언어를 직접 선택하거나 시스템 언어를 따릅니다."
+    },
+    "injectCookie": "쿠키 주입"
+  },
+  "sync": {
+    "label": "동기화",
+    "hint": "여러 기기 간에 북마크와 설정을 동기화합니다.",
+    "upgradeHint": "여러 기기 간에 북마크와 설정을 동기화하려면 업그레이드하세요.",
+    "currentPlan": "현재 플랜",
+    "managePlan": "플랜 관리",
+    "buy": "App Store에서 구독",
+    "restore": "구매 복원",
+    "manageIos": "App Store에서 관리",
+    "purchaseTitle": "구독 연결",
+    "purchaseConfirm": "이 구독은 {{email}} 계정에 연결되며, Nora 계정으로 로그인하는 모든 곳에서 동기화 기능을 사용할 수 있습니다.",
+    "priceLoading": "App Store 가격 불러오는 중...",
+    "activeViaIos": "App Store를 통해 활성화됨",
+    "freePlan": "무료",
+    "purchasePending": "승인 대기 중인 구매입니다.",
+    "restoreConflict": "이 App Store 구독은 이미 {{email}} 계정에 연결되어 있습니다.",
+    "signOutSwitch": "로그아웃 후 계정 전환",
+    "signedInAs": "{{email}}(으)로 로그인됨",
+    "productUnavailable": "현재 App Store 상품을 이용할 수 없습니다.",
+    "expiresAt": "갱신 또는 만료일: {{value}}",
+    "legalNotice": "구독은 취소하지 않는 한 자동으로 갱신됩니다. 구독 시 이용 약관(EULA) 및 개인정보 처리방침에 동의하는 것으로 간주됩니다.",
+    "termsOfUse": "이용 약관 (EULA)",
+    "privacyPolicy": "개인정보 처리방침"
+  },
+  "tabs": {
+    "new": "새 탭",
+    "recentlyClosed": "최근에 닫은 탭",
+    "noRecentlyClosed": "최근에 닫은 탭이 없습니다"
+  },
+  "newTab": {
+    "search": {
+      "urlPlaceholder": "URL 입력",
+      "searchPlaceholder": "웹 검색"
+    }
+  },
+  "toast": {
+    "pinned": "새 탭 페이지에 고정됨",
+    "blocklistUpdated": "차단 목록 업데이트됨",
+    "pressBackAgainToExit": "한 번 더 누르면 종료됩니다"
+  }
+}

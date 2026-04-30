@@ -1,0 +1,193 @@
+{
+  "about": {
+    "label": "Par lietotni",
+    "donate": "Ziedot",
+    "code": "Pirmkods",
+    "hint": "Versijas informācija, pirmkods un atbalsta saites."
+  },
+  "changelog": {
+    "label": "Izmaiņu žurnāls",
+    "retry": "Mēģināt vēlreiz",
+    "current": "Pašreizējais"
+  },
+  "common": {
+    "edit": "Rediģēt",
+    "off": "Izslēgts",
+    "on": "Ieslēgts",
+    "reset": "Atiestatīt",
+    "save": "Saglabāt",
+    "theme": "Motīvs",
+    "about": "Par lietotni"
+  },
+  "buttons": {
+    "cancel": "Atcelt",
+    "confirm": "Apstiprināt",
+    "continue": "Turpināt",
+    "open": "Atvērt",
+    "save": "Saglabāt",
+    "closeAll": "Aizvērt visu",
+    "openUrl": "Atvērt URL"
+  },
+  "menus": {
+    "close": "Aizvērt",
+    "delete": "Dzēst",
+    "reload": "Pārlādēt",
+    "share": "Kopīgot",
+    "tools": "Rīki",
+    "addBookmark": "Pievienot grāmatzīmi",
+    "signOut": "Iziet",
+    "editUrl": "Rediģēt cilnes URL",
+    "scroll": "Ritināt uz pašu augšgalu"
+  },
+  "profiles": {
+    "label": "Profili",
+    "add": "Pievienot",
+    "edit": "Rediģēt",
+    "save": "Saglabāt",
+    "namePlaceholder": "Profila nosaukums"
+  },
+  "settings": {
+    "label": "Iestatījumi",
+    "xHomeTimeline": {
+      "following": "Seko",
+      "forYou": "Jums"
+    },
+    "sections": {
+      "general": "Vispārīgie",
+      "advanced": "Papildus",
+      "about": "Par lietotni",
+      "accounts": "Konti un dati",
+      "bookmarksSearch": "Grāmatzīmes un meklēšana"
+    },
+    "pages": {
+      "browsing": "Iestatījumi",
+      "appearance": "Izskats",
+      "services": "Pakalpojumi",
+      "bookmarks": "Grāmatzīmes",
+      "search": "Meklēt",
+      "profiles": "Profili un sesijas"
+    },
+    "appearance": {
+      "theme": "Motīvs",
+      "toolbar": "Rīkjosla",
+      "deckTabWidthHint": "Pašreizējā: {{value}} pikseļi",
+      "description": "Motīva un rīkjoslas iestatījumi."
+    },
+    "search": {
+      "fields": {
+        "name": "Nosaukums",
+        "templatePlaceholder": "https://piemers.lv/meklet?q=%s"
+      },
+      "addAction": "Pievienot meklētāju",
+      "description": "Pārvalda meklēšanas pakalpojumu sniedzējus."
+    },
+    "userStyles": {
+      "nameLabel": "Nosaukums",
+      "copyCss": "Kopēt CSS",
+      "cssCopied": "CSS nokopēts",
+      "importCss": "Ievietot CSS",
+      "builtin": {
+        "hideRedditGame": {
+          "label": "Paslēpt Reddit spēļu ierakstus"
+        },
+        "compactTiktokLayout": {
+          "label": "Izmantot kompakto TikTok izkārtojumu"
+        },
+        "hideXBottomNav": {
+          "label": "Paslēpt X (Twitter) apakšējo navigācijas joslu, kad ritina"
+        },
+        "hideXHomeTabs": {
+          "label": "Paslēpt X (Twitter) sākuma ierakstu hronikas cilnes"
+        }
+      }
+    },
+    "headerPosition": {
+      "top": "Augšgalā",
+      "bottom": "Apakšgalā"
+    },
+    "theme": {
+      "label": "Motīvs",
+      "system": "Sistēmas",
+      "dark": "Tumšs",
+      "light": "Gaišs"
+    },
+    "language": {
+      "label": "Valoda",
+      "system": "Sistēmas"
+    },
+    "profiles": {
+      "injectCookie": "Injicēt sīkdatni"
+    },
+    "bookmarks": {
+      "saved": "Saglabātās grāmatzīmes",
+      "empty": "Vēl nav nevienas grāmatzīmes.",
+      "description": "Pārvalda piespraustās vietnes."
+    },
+    "services": {
+      "title": "Iebūvētie pakalpojumi",
+      "description": "Pārvalda iebūvētos pakalpojumus."
+    },
+    "injectCookie": "Injicēt sīkdatni",
+    "allowHttpWebsite": "Atļaut HTTP savienojumus",
+    "showNewTabButton": "Rādīt jaunas cilnes pogu",
+    "showBackButton": "Rādīt atpakaļ pogu",
+    "showReloadButton": "Rādīt pārlādēt pogu",
+    "showScrollButton": "Rādīt ritināt uz pašu augšgalu pogu"
+  },
+  "sync": {
+    "freePlan": "Bezmaksas",
+    "currentPlan": "Pašreizējais plāns",
+    "managePlan": "Pārvaldīt plānu",
+    "privacyPolicy": "Konfidencialitātes politika",
+    "termsOfUse": "Lietošanas noteikumi (EULA)"
+  },
+  "views": {
+    "desktop": {
+      "blankTab": "Tukša cilne",
+      "layout": {
+        "gridFour": "4-cilņu režģis",
+        "split": "dalītais skats",
+        "grid": "režģa skats"
+      },
+      "newBlankTab": "Jauna tukša cilne",
+      "newSplitView": "Jauns dalītais skats",
+      "newGridView": "Jauns režģa skats",
+      "chooseTabToAdd": "Atlasiet cilni, ko pievienot {{layout}}"
+    },
+    "rename": "Pārdēvēt skatu",
+    "namePlaceholder": "Skata nosaukums"
+  },
+  "blocklist": {
+    "refreshNow": "Atjaunināt bloķēšanas sarakstu",
+    "label": "Tīkla bloķēšanas saraksts",
+    "statusFetching": "Iegūst bloķēšanas sarakstu",
+    "lastUpdated": "Atjaunināts: {{value}}"
+  },
+  "modals": {
+    "downloadVideo": "Lejupielādēt video"
+  },
+  "native": {
+    "menu_saveImage": "Saglabāt attēlu",
+    "menu_copyLink": "Kopēt saiti",
+    "menu_copyImageLink": "Kopēt attēla saiti",
+    "toast_downloadFailed": "Neizdevās lejupielādēt",
+    "menu_openInNewTab": "Atvērt jaunā cilnē",
+    "menu_openImageInNewTab": "Atvērt attēlu jaunā cilnē",
+    "toast_downloadStarted": "Lejupielāde uzsākta, pārbaudiet sistēmas paziņojumu",
+    "toast_downloadSucceeded": "Saglabāts Lejupielādes mapē",
+    "httpBlocked_body": "Šī vietne izmanto nedrošu HTTP savienojumu. Lai atļautu HTTP vietņu ielādi, iespējojiet iestatījumos \"Atļaut HTTP savienojumus\"."
+  },
+  "tabs": {
+    "new": "Jauna cilne",
+    "recentlyClosed": "Nesen aizvērtās",
+    "noRecentlyClosed": "Nav neviena nesen aizvērta cilne"
+  },
+  "toast": {
+    "blocklistUpdated": "Bloķēšanas saraksts atjaunināts"
+  },
+  "newTab": {
+    "search": {
+      "urlPlaceholder": "Ievadiet URL"
+    }
+  }
+}

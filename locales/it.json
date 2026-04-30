@@ -279,6 +279,19 @@
   },
   "views": {
     "rename": "Rinomina vista",
-    "namePlaceholder": "Visualizza nome"
+    "namePlaceholder": "Visualizza nome",
+    "desktop": {
+      "blankTab": "Scheda vuota",
+      "newBlankTab": "Nuova scheda vuota",
+      "newSplitView": "Nuova visualizzazione divisa",
+      "newGridView": "Nuova visualizzazione a griglia",
+      "chooseTabToAdd": "Scegli una scheda da aggiungere a {{layout}}",
+      "createBlankTabInSlot": "Crea una nuova scheda vuota in questo slot",
+      "layout": {
+        "split": "visualizzazione divisa",
+        "grid": "visualizzazione a griglia",
+        "gridFour": "griglia a 4 schede"
+      }
+    }
   }
 }

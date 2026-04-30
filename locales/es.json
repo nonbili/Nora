@@ -2,7 +2,8 @@
   "about": {
     "label": "Acerca de",
     "code": "Código fuente",
-    "donate": "Donar"
+    "donate": "Donar",
+    "hint": "Información de la versión, código fuente y enlaces de soporte."
   },
   "bookmarks": {
     "label": "Marcadores"
@@ -72,5 +73,40 @@
   },
   "toast": {
     "pinned": "Anclado a la página de nueva pestaña"
+  },
+  "changelog": {
+    "label": "Registro de cambios",
+    "hint": "Versiones y correcciones recientes de GitHub.",
+    "loading": "Cargando notas de versión...",
+    "error": "Fallo al cargar las notas de versión.",
+    "retry": "Reintentar",
+    "empty": "No se encontraron notas de la versión.",
+    "current": "Actual",
+    "noNotes": "No se proporcionaron notas de la versión para esta versión."
+  },
+  "common": {
+    "about": "Sobre",
+    "edit": "Editar",
+    "off": "Desactivado",
+    "on": "Activado",
+    "reset": "Reiniciar",
+    "save": "Guardar",
+    "theme": "Tema"
+  },
+  "views": {
+    "rename": "Renombrar vista",
+    "namePlaceholder": "Nombre de vista",
+    "desktop": {
+      "blankTab": "Pestaña en blanco",
+      "newBlankTab": "Nueva pestaña en blanco",
+      "newSplitView": "Nueva vista dividida",
+      "newGridView": "Nueva vista de cuadrícula",
+      "chooseTabToAdd": "Elige una pestaña para añadir a {{layout}",
+      "createBlankTabInSlot": "Crear una nueva pestaña en blanco en esta ranura",
+      "layout": {
+        "split": "vista dividida",
+        "grid": "vista de cuadrícula"
+      }
+    }
   }
 }
