@@ -1,0 +1,3 @@
+- Apply user styles without reloading
+- Hide ads on X search page
+- Support Korean and Latvian
