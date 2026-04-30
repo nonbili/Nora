@@ -99,6 +99,9 @@ const styles: Record<string, (settings: any) => string> = {
   `,
 
   x: (settings) => css`
+    /* Ads on search page */
+    [data-testid="eventHero"],
+    [data-testid="cellInnerDiv"]:has(.css-175oi2r.r-xoduu5.r-1awozwy.r-18u37iz),
     /* Subscribe */
     a[href="/i/premium_sign_up"],
     /* Upgrade */
