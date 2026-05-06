@@ -31,7 +31,9 @@
     "share": "Condividi",
     "signOut": "Disconnetti",
     "tools": "Strumenti",
-    "editUrl": "Modifica URL della scheda"
+    "editUrl": "Modifica URL della scheda",
+    "duplicate": "Scheda duplicata",
+    "viewInSplitView": "Visualizza in modalità schermo diviso"
   },
   "modals": {
     "downloadVideo": "Scarica video"
@@ -283,12 +285,12 @@
     "desktop": {
       "blankTab": "Scheda vuota",
       "newBlankTab": "Nuova scheda vuota",
-      "newSplitView": "Nuova visualizzazione divisa",
+      "newSplitView": "Nuova visualizzazione schermo diviso",
       "newGridView": "Nuova visualizzazione a griglia",
       "chooseTabToAdd": "Scegli una scheda da aggiungere a {{layout}}",
       "createBlankTabInSlot": "Crea una nuova scheda vuota in questo slot",
       "layout": {
-        "split": "visualizzazione divisa",
+        "split": "visualizzazione schermo diviso",
         "grid": "visualizzazione a griglia",
         "gridFour": "griglia a 4 schede"
       }
