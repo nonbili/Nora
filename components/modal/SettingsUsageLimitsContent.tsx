@@ -6,6 +6,9 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { NouText } from '../NouText'
 import { NouButton } from '../button/NouButton'
 import { NouSwitch } from '../switch/NouSwitch'
+import { NouMenu } from '../menu/NouMenu'
+import { MaterialButton } from '../button/IconButtons'
+import { isIos, isWeb } from '@/lib/utils'
 import { BaseCenterModal } from './BaseCenterModal'
 import { settingsUi, SettingsSurface } from './SettingsPrimitives'
 import {
@@ -22,15 +25,8 @@ const subheaderCls = settingsUi.subheaderCls
 const surfaceCls = settingsUi.surfaceCls
 const rowCls = settingsUi.rowCls
 const rowBorderCls = settingsUi.rowBorderCls
+const iconWrapCls = settingsUi.iconWrapCls
 const textInputCls = settingsUi.textInputCls
-
-const describeScope = (scope: UsageLimitScope): string => {
-  if (scope.kind === 'all') return t('usageLimits.scope.all')
-  if (!scope.services.length) return t('usageLimits.scope.none')
-  return scope.services
-    .map((id) => services[id]?.[0] || id)
-    .join(', ')
-}
 
 type LimitDraft = {
   id: string | null
@@ -65,6 +61,12 @@ const draftFromLimit = (limit: UsageLimit): LimitDraft => {
     hours: String(hours),
     minutes: String(minutes),
   }
+}
+
+const getLimitState = (used: number, dailyMinutes: number) => {
+  if (used >= dailyMinutes) return 'locked'
+  if (used / Math.max(1, dailyMinutes) >= 0.8) return 'near'
+  return 'ok'
 }
 
 const PinSection: React.FC = () => {
@@ -124,33 +126,46 @@ const PinSection: React.FC = () => {
     <>
       <View>
         <NouText className={subheaderCls}>{t('usageLimits.pin.label')}</NouText>
-        <SettingsSurface>
-        <View className={rowCls}>
-          <View className="flex-row items-center justify-between gap-3">
-            <View className="flex-1">
-              <NouText className="font-medium">
-                {pin ? t('usageLimits.pin.set') : t('usageLimits.pin.notSet')}
-              </NouText>
-              <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                {t('usageLimits.pin.hint')}
-              </NouText>
-            </View>
-            {pin ? (
-              <View className="flex-row gap-2">
-                <NouButton size="1" variant="outline" onPress={() => setOpen('change')}>
-                  {t('usageLimits.pin.change')}
-                </NouButton>
-                <NouButton size="1" variant="outline" onPress={() => setOpen('remove')}>
-                  {t('usageLimits.pin.remove')}
-                </NouButton>
+        <SettingsSurface className={pin ? 'border-emerald-300 dark:border-emerald-900/80' : ''}>
+          <View className="px-4 py-4">
+            <View className="flex-row items-start justify-between gap-3">
+              <View className="flex-row flex-1 items-start gap-3">
+                <View
+                  className={[
+                    iconWrapCls,
+                    pin
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900'
+                      : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900',
+                  ].join(' ')}
+                >
+                  <MaterialIcons name={pin ? 'lock' : 'lock-open'} size={20} color={pin ? '#059669' : '#d97706'} />
+                </View>
+                <View className="flex-1">
+                  <View className="flex-row flex-wrap items-center gap-2">
+                    <NouText className="font-semibold">
+                      {pin ? t('usageLimits.pin.set') : t('usageLimits.pin.notSet')}
+                    </NouText>
+                  </View>
+                  <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
+                    {t('usageLimits.pin.hint')}
+                  </NouText>
+                </View>
               </View>
-            ) : (
-              <NouButton size="1" onPress={() => setOpen('set')}>
-                {t('usageLimits.pin.setAction')}
-              </NouButton>
-            )}
+              {pin ? (
+                <NouMenu
+                  trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
+                  items={[
+                    { label: t('usageLimits.pin.change'), handler: () => setOpen('change') },
+                    { label: t('usageLimits.pin.remove'), handler: () => setOpen('remove') },
+                  ]}
+                />
+              ) : (
+                <NouButton size="1" onPress={() => setOpen('set')}>
+                  {t('usageLimits.pin.setAction')}
+                </NouButton>
+              )}
+            </View>
           </View>
-        </View>
         </SettingsSurface>
       </View>
 
@@ -401,6 +416,39 @@ const PinPrompt: React.FC<{ onClose: () => void; onConfirm: () => void; title: s
   )
 }
 
+const ScopeBadges: React.FC<{ scope: UsageLimitScope }> = ({ scope }) => {
+  if (scope.kind === 'all') {
+    return (
+      <View className="mt-2 flex-row flex-wrap gap-1.5">
+        <View className="rounded-full bg-indigo-100 dark:bg-indigo-500/15 px-2.5 py-1">
+          <NouText className="text-xs font-medium text-indigo-700 dark:text-indigo-300">
+            {t('usageLimits.scope.all')}
+          </NouText>
+        </View>
+      </View>
+    )
+  }
+  if (!scope.services.length) {
+    return (
+      <NouText className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        {t('usageLimits.scope.none')}
+      </NouText>
+    )
+  }
+  return (
+    <View className="mt-2 flex-row flex-wrap gap-1.5">
+      {scope.services.map((id) => {
+        const name = services[id]?.[0] || id
+        return (
+          <View key={id} className="rounded-full bg-zinc-200 dark:bg-zinc-800 px-2.5 py-1">
+            <NouText className="text-xs font-medium text-zinc-700 dark:text-zinc-200">{name}</NouText>
+          </View>
+        )
+      })}
+    </View>
+  )
+}
+
 export const SettingsUsageLimitsContent: React.FC = () => {
   const limits = useValue(usageLimits$.limits)
   const pin = useValue(usageLimits$.pin)
@@ -492,39 +540,76 @@ export const SettingsUsageLimitsContent: React.FC = () => {
         </View>
         <SettingsSurface>
           {!limits.length ? (
-            <NouText className="px-4 py-4 text-sm text-zinc-600 dark:text-gray-500">
-              {t('usageLimits.empty')}
-            </NouText>
+            <View className="items-center px-5 py-8">
+              <View className="mb-3 h-12 w-12 items-center justify-center rounded-2xl bg-zinc-200 dark:bg-zinc-800">
+                <MaterialIcons name="timer" size={24} color="#71717a" />
+              </View>
+              <NouText className="font-semibold">{t('usageLimits.empty')}</NouText>
+              <NouText className="mt-1 text-center text-sm leading-5 text-zinc-600 dark:text-zinc-400">
+                {t('usageLimits.emptyHint')}
+              </NouText>
+              <NouButton className="mt-4" size="1" onPress={openAdd}>
+                {t('usageLimits.editor.add')}
+              </NouButton>
+            </View>
           ) : null}
           {limits.map((limit, index) => {
             if (!limit) return null
             const used = getLimitUsageToday(limit.id)
+            const ratio = Math.max(0, Math.min(1, used / Math.max(1, limit.dailyMinutes)))
+            const state = getLimitState(used, limit.dailyMinutes)
+            const isOver = state === 'locked'
+            const isNear = state === 'near'
             return (
               <View
                 key={limit.id}
                 className={['px-4 py-4', index !== limits.length - 1 && rowBorderCls].filter(Boolean).join(' ')}
               >
-                <View className="flex-row items-center justify-between gap-3">
-                  <View className="flex-1">
-                    <NouText className="font-medium">{limit.name}</NouText>
-                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={2}>
-                      {describeScope(limit.scope)}
-                    </NouText>
-                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                      {t('usageLimits.usageLine', {
-                        used: formatMinutes(used),
-                        limit: formatMinutes(limit.dailyMinutes),
-                      })}
-                    </NouText>
+                <View className="flex-row items-start justify-between gap-3">
+                  <View className="flex-row flex-1 items-start gap-3">
+                    <View
+                      className={[
+                        'h-10 w-10 items-center justify-center rounded-2xl border',
+                        isOver
+                          ? 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30'
+                          : isNear
+                          ? 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30'
+                          : 'border-zinc-300 bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-950',
+                      ].join(' ')}
+                    >
+                      <MaterialIcons
+                        name={isOver ? 'lock' : isNear ? 'timelapse' : 'timer'}
+                        size={19}
+                        color={isOver ? '#dc2626' : isNear ? '#d97706' : '#6366f1'}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <View className="flex-row flex-wrap items-center gap-2">
+                        <NouText className="font-semibold">{limit.name}</NouText>
+                      </View>
+                      <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                        {t('usageLimits.usageLine', {
+                          used: formatMinutes(used),
+                          limit: formatMinutes(limit.dailyMinutes),
+                        })}
+                      </NouText>
+                      <ScopeBadges scope={limit.scope} />
+                    </View>
                   </View>
+                  <NouMenu
+                    trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
+                    items={[
+                      { label: t('common.edit'), handler: () => openEdit(limit) },
+                      { label: t('menus.delete'), handler: () => requestDelete(limit.id) },
+                    ]}
+                  />
                 </View>
-                <View className="mt-3 flex-row flex-wrap justify-end gap-2">
-                  <NouButton size="1" variant="outline" onPress={() => openEdit(limit)}>
-                    {t('common.edit')}
-                  </NouButton>
-                  <NouButton size="1" variant="outline" onPress={() => requestDelete(limit.id)}>
-                    {t('menus.delete')}
-                  </NouButton>
+
+                <View className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                  <View
+                    className={isOver ? 'h-full bg-red-500' : isNear ? 'h-full bg-amber-500' : 'h-full bg-indigo-500'}
+                    style={{ width: `${ratio * 100}%` }}
+                  />
                 </View>
               </View>
             )

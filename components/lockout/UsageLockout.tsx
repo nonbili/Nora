@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { TextInput, View } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import { t } from 'i18next'
@@ -19,35 +19,39 @@ export const UsageLockout: React.FC = () => {
   const tabs = useValue(tabs$.tabs)
   const activeIndex = useValue(tabs$.activeTabIndex)
   const limits = useValue(usageLimits$.limits)
-  const usage = useValue(usageLimits$.usage)
-  const bypassed = useValue(usageLimits$.bypassed)
+  useValue(usageLimits$.usage)
+  useValue(usageLimits$.bypassed)
   const pin = useValue(usageLimits$.pin)
 
   const activeTab = tabs[activeIndex]
   const service = resolveServiceFromUrl(activeTab?.url)
 
-  const trippedLimit = useMemo(() => {
-    if (!service) return null
+  const trippedLimits: NonNullable<(typeof limits)[number]>[] = []
+  if (service) {
     for (const limit of limits) {
       if (!limit) continue
       if (!limitMatchesService(limit, service)) continue
       if (isLimitBypassedToday(limit.id)) continue
       const used = getLimitUsageToday(limit.id)
-      if (used >= limit.dailyMinutes) return limit
+      if (used >= limit.dailyMinutes) {
+        trippedLimits.push(limit)
+      }
     }
-    return null
-  }, [limits, service, usage, bypassed])
+  }
 
   const [entered, setEntered] = useState('')
   const [error, setError] = useState(false)
 
+  const trippedLimit = trippedLimits[0]
   if (!trippedLimit) return null
 
   const used = getLimitUsageToday(trippedLimit.id)
   const onUnlock = () => {
     if (!pin) return
     if (entered === pin) {
-      usageLimits$.bypassToday(trippedLimit.id)
+      for (const limit of trippedLimits) {
+        usageLimits$.bypassToday(limit.id)
+      }
       setEntered('')
       setError(false)
     } else {
@@ -81,6 +85,7 @@ export const UsageLockout: React.FC = () => {
               placeholderTextColor="#71717a"
               autoCapitalize="none"
               autoCorrect={false}
+              returnKeyType="done"
               secureTextEntry
               value={entered}
               onChangeText={(v) => {

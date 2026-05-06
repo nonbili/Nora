@@ -11,7 +11,7 @@ import { settings$ } from '@/states/settings'
 
 function RootLayoutContent() {
   useObserveEffect(settings$.theme, ({ value }) => {
-    Appearance.setColorScheme(value)
+    Appearance.setColorScheme(value ?? 'unspecified')
   })
 
   const insets = useSafeAreaInsets()

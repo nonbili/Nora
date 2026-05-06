@@ -50,19 +50,22 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     >
       <NouHeader />
       {isWeb && tabs.length ? (
-        <DesktopWorkspace />
+        <View className="relative flex-1">
+          <DesktopWorkspace />
+          <UsageLockout />
+        </View>
       ) : tabs.length ? (
-        <View className="flex-1">
+        <View className="relative flex-1">
           {tabs.map((tab, index) => (
             <NoraTab tab={tab} index={index} key={tab.id || index} />
           ))}
+          <UsageLockout />
         </View>
       ) : (
         <View className="flex-1 bg-zinc-100 dark:bg-zinc-950 lg:px-20">
           <NavModalContent />
         </View>
       )}
-      <UsageLockout />
     </View>
   )
 }

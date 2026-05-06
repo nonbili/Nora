@@ -291,6 +291,7 @@
     "description": "Set daily time limits for selected services or the whole app.",
     "limits": "Limits",
     "empty": "No usage limits yet.",
+    "emptyHint": "Add a limit to start tracking daily browsing time.",
     "usageLine": "Today: {{used}} of {{limit}}",
     "deleteConfirm": "Delete this usage limit?",
     "scope": {

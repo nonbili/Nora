@@ -132,6 +132,9 @@ syncObservable(usageLimits$, {
   },
 })
 
+// Bypass is session-scoped: clear any stale bypasses persisted from a previous session.
+usageLimits$.bypassed.set({})
+
 export const limitMatchesService = (limit: UsageLimit, service: string | null): boolean => {
   if (limit.scope.kind === 'all') return service !== null
   if (!service) return false
