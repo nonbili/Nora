@@ -40,6 +40,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import androidx.core.view.WindowCompat
@@ -95,6 +96,13 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
       setSupportMultipleWindows(true)
     }
     CookieManager.getInstance().setAcceptCookie(true)
+    CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+
+    // Suppress X-Requested-With (otherwise WebView sends the package name, which Google
+    // uses to block OAuth as `disallowed_useragent`).
+    if (WebViewFeature.isFeatureSupported(WebViewFeature.REQUESTED_WITH_HEADER_ALLOW_LIST)) {
+      WebSettingsCompat.setRequestedWithHeaderOriginAllowList(settings, emptySet())
+    }
 
     // https://stackoverflow.com/a/64564676
     setFocusable(true)
@@ -143,6 +151,37 @@ fun shouldRedirectFacebookToMobile(currentUrl: String, targetUrl: String): Boole
 }
 
 val INTERNAL_SCHEMES = setOf("about", "blob", "data", "file", "http", "https", "javascript", "nora")
+
+// Hosts where Google runs WebView-detection for OAuth.
+val GOOGLE_AUTH_HOSTS = setOf("accounts.google.com", "accounts.youtube.com")
+val GOOGLE_AUTH_ORIGIN_RULES = GOOGLE_AUTH_HOSTS.map { "https://$it" }.toSet()
+
+fun isGoogleOAuthPopupUrl(url: String): Boolean {
+  val host = Uri.parse(url).host?.lowercase() ?: return false
+  return host in GOOGLE_AUTH_HOSTS
+}
+
+// Masks WebView-only fingerprints that Google's sign-in checks.
+val OAUTH_SHIM_SCRIPT = """
+  (function() {
+    try {
+      Object.defineProperty(navigator, 'webdriver', { get: function() { return undefined; }, configurable: true });
+    } catch (e) {}
+    try {
+      if (!window.chrome) { window.chrome = {}; }
+      if (!window.chrome.runtime) { window.chrome.runtime = {}; }
+      if (!window.chrome.app) { window.chrome.app = { isInstalled: false }; }
+      if (!window.chrome.csi) { window.chrome.csi = function() { return {}; }; }
+      if (!window.chrome.loadTimes) { window.chrome.loadTimes = function() { return {}; }; }
+    } catch (e) {}
+  })();
+""".trimIndent()
+
+fun installGoogleOAuthShim(webView: WebView) {
+  if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+    WebViewCompat.addDocumentStartJavaScript(webView, OAUTH_SHIM_SCRIPT, GOOGLE_AUTH_ORIGIN_RULES)
+  }
+}
 
 fun shouldNoraOverrideUrlLoading(view: WebView, url: String): Boolean {
   val uri = Uri.parse(url)
@@ -261,6 +300,62 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var contextMenuImageUrl: String? = null
   internal var userAgent: String? = null
   private var profileSet = false
+  private var profileName = "default"
+
+  private var popupContainer: FrameLayout? = null
+  private var popupWebView: WebView? = null
+
+  private fun showPopup(popup: WebView) {
+    dismissPopup()
+
+    val container = FrameLayout(context).apply {
+      setBackgroundColor(0xFF000000.toInt())
+    }
+    container.addView(
+      popup,
+      FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.MATCH_PARENT,
+        FrameLayout.LayoutParams.MATCH_PARENT
+      )
+    )
+
+    val density = resources.displayMetrics.density
+    val pad = (8 * density).toInt()
+    val closeBtn = android.widget.TextView(context).apply {
+      text = "X"
+      textSize = 18f
+      setTextColor(0xFFFFFFFF.toInt())
+      setBackgroundColor(0x99000000.toInt())
+      gravity = android.view.Gravity.CENTER
+      setPadding(pad, pad, pad, pad)
+      setOnClickListener { dismissPopup() }
+    }
+    val btnSize = (40 * density).toInt()
+    val margin = (8 * density).toInt()
+    val btnLp = FrameLayout.LayoutParams(
+      btnSize,
+      btnSize,
+      android.view.Gravity.TOP or android.view.Gravity.END
+    ).apply {
+      topMargin = margin
+      rightMargin = margin
+    }
+    container.addView(closeBtn, btnLp)
+
+    addView(
+      container,
+      LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    )
+    popupContainer = container
+    popupWebView = popup
+  }
+
+  private fun dismissPopup() {
+    popupContainer?.let { removeView(it) }
+    popupWebView?.destroy()
+    popupContainer = null
+    popupWebView = null
+  }
 
   private var gestureDetector = GestureDetectorCompat(context, NoraGestureListener())
 
@@ -401,6 +496,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
           override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             pageUrl = url
+            if (Uri.parse(url).host in GOOGLE_AUTH_HOSTS) {
+              evaluateJavascript(OAUTH_SHIM_SCRIPT, null)
+            }
             evaluateJavascript(scriptOnStart, null)
           }
 
@@ -544,20 +642,60 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           isUserGesture: Boolean,
           resultMsg: android.os.Message
         ): Boolean {
-          val newWebView = WebView(view.getContext())
+          val newWebView = NouWebView(view.getContext())
+          if (profileName != "default" && WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+            try {
+              WebViewCompat.setProfile(newWebView, profileName)
+            } catch (e: Exception) {
+              log("set popup profile failed: ${e.message}")
+            }
+          }
+          installGoogleOAuthShim(newWebView)
+          newWebView.settings.userAgentString = view.settings.userAgentString
+          var decided = false
+
           newWebView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-              val ret = shouldNoraOverrideUrlLoading(view, url)
-              if (ret) {
-                return true
+            override fun onPageStarted(popup: WebView, url: String, favicon: Bitmap?) {
+              if (Uri.parse(url).host in GOOGLE_AUTH_HOSTS) {
+                popup.evaluateJavascript(OAUTH_SHIM_SCRIPT, null)
               }
-              log("new-tab: $url")
-              emit("new-tab", mapOf("url" to url))
-              return true
+              if (decided) return
+              // about:blank is a transient placeholder; JS will navigate the popup
+              // via window.opener. Attach as overlay so it stays alive, but defer the
+              // commit until a real URL appears.
+              if (url == "about:blank" || url.startsWith("about:")) {
+                if (popupWebView !== popup) showPopup(popup)
+                return
+              }
+              decided = true
+              if (isGoogleOAuthPopupUrl(url)) {
+                if (popupWebView !== popup) showPopup(popup)
+              } else {
+                popup.stopLoading()
+                if (popupWebView === popup) dismissPopup() else popup.post { popup.destroy() }
+                log("new-tab: $url")
+                emit("new-tab", mapOf("url" to url))
+              }
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-              return shouldOverrideUrlLoading(view, request.url.toString())
+            override fun shouldOverrideUrlLoading(popup: WebView, url: String): Boolean {
+              if (!decided) {
+                // Pre-first-load redirect; defer the new-tab decision to onPageStarted.
+                return shouldNoraOverrideUrlLoading(popup, url)
+              }
+              return shouldNoraOverrideUrlLoading(popup, url)
+            }
+
+            override fun shouldOverrideUrlLoading(popup: WebView, request: WebResourceRequest): Boolean {
+              return shouldOverrideUrlLoading(popup, request.url.toString())
+            }
+          }
+
+          newWebView.webChromeClient = object : WebChromeClient() {
+            override fun onCloseWindow(window: WebView) {
+              if (popupWebView === window) {
+                dismissPopup()
+              }
             }
           }
 
@@ -612,6 +750,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     activity?.registerForContextMenu(webView)
 
     webView.addJavascriptInterface(NouJsInterface(context, this), "NoraI")
+    installGoogleOAuthShim(webView)
 
     // some websites have `padding-bottom: env(safe-area-inset-bottom)`, this set it to 0
     // but we need to preserve the IME inset so the WebView resizes when the keyboard opens
@@ -672,6 +811,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   fun setProfile(profile: String) {
+    profileName = profile
     if (profileSet) return
     if (profile == "default") return
     try {
