@@ -45,7 +45,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
     },
     android: {
       versionCode,
-      permissions: ['RECORD_AUDIO', 'MODIFY_AUDIO_SETTINGS'],
+      permissions: ['RECORD_AUDIO', 'MODIFY_AUDIO_SETTINGS', 'POST_NOTIFICATIONS'],
       adaptiveIcon: {
         foregroundImage: './assets/images/adaptive-icon.png',
         monochromeImage: './assets/images/monochrome-icon.png',
@@ -113,6 +113,8 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       ],
       ['expo-share-intent', { iosAppGroupIdentifier: 'group.g.jp.nonbili.nora' }],
       'expo-web-browser',
+      'expo-notifications',
+      'expo-background-task',
     ],
     experiments: {
       typedRoutes: true,

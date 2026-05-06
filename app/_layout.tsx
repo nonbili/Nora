@@ -1,4 +1,5 @@
 import '@/lib/i18n'
+import '@/lib/mention-notifications'
 import './global.css'
 
 import { StatusBar } from 'expo-status-bar'

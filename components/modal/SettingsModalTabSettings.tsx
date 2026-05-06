@@ -26,6 +26,7 @@ import {
 } from '@/lib/search'
 import { SearchProviderIcon } from '../service/SearchProviderIcon'
 import { showToast } from '@/lib/toast'
+import { enableMentionNotifications, disableMentionNotifications } from '@/lib/mention-notifications'
 import { BaseCenterModal } from './BaseCenterModal'
 import { builtinUserStyleDefinitions } from '@/lib/user-styles'
 import { userStyles$ } from '@/states/user-styles'
@@ -120,6 +121,40 @@ export const SettingsBrowsingContent: React.FC = () => {
           </SettingsSurface>
         </>
       ) : null}
+
+      {nIf(
+        isAndroid,
+        <View className="mt-10">
+          <NouText className={subheaderCls}>{t('settings.sections.notifications')}</NouText>
+          <SettingsSurface>
+            <SettingsRow isLast>
+              <NouSwitch
+                label={
+                  <View>
+                    <NouText className="font-medium">{t('settings.mentionNotifications')}</NouText>
+                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">x.com only</NouText>
+                  </View>
+                }
+                value={settings.mentionNotificationsEnabled}
+                onPress={async () => {
+                  const next = !settings.mentionNotificationsEnabled
+                  if (next) {
+                    const r = await enableMentionNotifications()
+                    if (!r.ok) {
+                      showToast(r.reason || 'Failed to enable')
+                      return
+                    }
+                    settings$.mentionNotificationsEnabled.set(true)
+                  } else {
+                    await disableMentionNotifications()
+                    settings$.mentionNotificationsEnabled.set(false)
+                  }
+                }}
+              />
+            </SettingsRow>
+          </SettingsSurface>
+        </View>,
+      )}
 
       <View className="mt-10">
         <NouText className={subheaderCls}>{t('blocklist.label')}</NouText>

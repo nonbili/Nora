@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
+import android.webkit.CookieManager
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.webkit.ProfileStore
@@ -106,6 +107,22 @@ class NoraViewModule : Module() {
         profileStore.deleteProfile(profile)
       } catch (e: Exception) {
         log("clearProfileData failed: ${e.message}")
+      }
+    }
+
+    AsyncFunction("getCookies") { url: String, profile: String? ->
+      try {
+        val manager = if (profile != null && profile != "default" &&
+          WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+          ProfileStore.getInstance().getProfile(profile)?.cookieManager
+            ?: CookieManager.getInstance()
+        } else {
+          CookieManager.getInstance()
+        }
+        manager.getCookie(url) ?: ""
+      } catch (e: Exception) {
+        log("getCookies failed: ${e.message}")
+        ""
       }
     }
 

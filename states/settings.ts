@@ -46,6 +46,7 @@ export interface Settings {
   inspectable: boolean
   videoEdgeLongPressTo2x: boolean
   doubleBackToExitApp: boolean
+  mentionNotificationsEnabled: boolean
 
   showNewTabButtonInHeader: boolean
   showBackButtonInHeader: boolean
@@ -105,6 +106,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.doubleBackToExitApp !== 'boolean') {
     data.doubleBackToExitApp = false
   }
+  if (typeof data.mentionNotificationsEnabled !== 'boolean') {
+    data.mentionNotificationsEnabled = false
+  }
   data.xDefaultHomeTimeline = normalizeXHomeTimeline(data.xDefaultHomeTimeline)
   if (typeof data.hideXHomeTimelineTabs !== 'boolean') {
     data.hideXHomeTimelineTabs = false
@@ -135,6 +139,7 @@ export const settings$: Observable<Store> = observable<Store>({
   inspectable: false,
   videoEdgeLongPressTo2x: true,
   doubleBackToExitApp: false,
+  mentionNotificationsEnabled: false,
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,

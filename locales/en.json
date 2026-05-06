@@ -109,10 +109,12 @@
       "forYou": "For you",
       "following": "Following"
     },
+    "mentionNotifications": "Mentions & DM notifications",
     "sections": {
       "general": "General",
       "accounts": "Accounts & Data",
       "bookmarksSearch": "Bookmarks & Search",
+      "notifications": "Notifications",
       "advanced": "Advanced",
       "about": "About"
     },

@@ -22,8 +22,6 @@ export const UsageLockout: React.FC = () => {
   const usage = useValue(usageLimits$.usage)
   const bypassed = useValue(usageLimits$.bypassed)
   const pin = useValue(usageLimits$.pin)
-  void usage
-  void bypassed
 
   const activeTab = tabs[activeIndex]
   const service = resolveServiceFromUrl(activeTab?.url)
@@ -38,7 +36,7 @@ export const UsageLockout: React.FC = () => {
       if (used >= limit.dailyMinutes) return limit
     }
     return null
-  }, [limits, service])
+  }, [limits, service, usage, bypassed])
 
   const [entered, setEntered] = useState('')
   const [error, setError] = useState(false)

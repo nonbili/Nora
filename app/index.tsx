@@ -6,6 +6,7 @@ import { Asset } from 'expo-asset'
 import { settings$ } from '@/states/settings'
 import { useShareIntent } from 'expo-share-intent'
 import { useLinkingURL } from 'expo-linking'
+import * as Notifications from 'expo-notifications'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
 import NoraViewModule from '@/modules/nora-view'
@@ -76,6 +77,18 @@ export default function HomeScreen() {
       openSharedUrl(linkingUrl)
     }
   }, [linkingUrl])
+
+  useEffect(() => {
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      const url = response?.notification?.request?.content?.data?.url
+      if (typeof url === 'string') openSharedUrl(url)
+    })
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const url = response?.notification?.request?.content?.data?.url
+      if (typeof url === 'string') openSharedUrl(url)
+    })
+    return () => sub.remove()
+  }, [])
 
   useEffect(() => {
     ;(async () => {
