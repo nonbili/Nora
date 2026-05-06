@@ -1,0 +1,3 @@
+- Support usage limits and password unlock
+- Experimental x.com notification polling
+- Experimental Google OAuth login support
