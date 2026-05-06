@@ -33,6 +33,21 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     "nora_profile_uuid_\(profile)"
   }
 
+  static func getCookies(profile: String, host: String, completion: @escaping (String) -> Void) {
+    let store = dataStore(for: profile).httpCookieStore
+    store.getAllCookies { cookies in
+      let lowerHost = host.lowercased()
+      let parts = cookies
+        .filter { c in
+          let domain = c.domain.lowercased()
+          let normalized = domain.hasPrefix(".") ? String(domain.dropFirst()) : domain
+          return lowerHost == normalized || lowerHost.hasSuffix("." + normalized)
+        }
+        .map { "\($0.name)=\($0.value)" }
+      completion(parts.joined(separator: "; "))
+    }
+  }
+
   private static func dataStore(for profile: String) -> WKWebsiteDataStore {
     if profile == "default" {
       return WKWebsiteDataStore.default()

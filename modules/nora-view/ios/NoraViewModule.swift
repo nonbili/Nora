@@ -93,6 +93,16 @@ public class NoraViewModule: Module {
       NoraView.clearProfileData(profile, promise: promise)
     }
 
+    AsyncFunction("getCookies") { (url: String, profile: String?, promise: Promise) in
+      guard let parsed = URL(string: url), let host = parsed.host else {
+        promise.resolve("")
+        return
+      }
+      NoraView.getCookies(profile: profile ?? "default", host: host) { value in
+        promise.resolve(value)
+      }
+    }
+
     AsyncFunction("openExternalUrl") { (url: String) -> Bool in
       guard let target = URL(string: url) else {
         return false

@@ -110,6 +110,7 @@
       "following": "Following"
     },
     "mentionNotifications": "Mentions & DM notifications",
+    "mentionNotificationsHint": "Due to OS background limits, delivery may be delayed and is not guaranteed.",
     "sections": {
       "general": "General",
       "accounts": "Accounts & Data",

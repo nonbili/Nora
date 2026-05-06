@@ -123,7 +123,7 @@ export const SettingsBrowsingContent: React.FC = () => {
       ) : null}
 
       {nIf(
-        isAndroid,
+        !isWeb,
         <View className="mt-10">
           <NouText className={subheaderCls}>{t('settings.sections.notifications')}</NouText>
           <SettingsSurface>
@@ -153,6 +153,9 @@ export const SettingsBrowsingContent: React.FC = () => {
               />
             </SettingsRow>
           </SettingsSurface>
+          <NouText className="mt-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
+            {t('settings.mentionNotificationsHint')}
+          </NouText>
         </View>,
       )}
 

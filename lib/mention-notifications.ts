@@ -1,8 +1,10 @@
+import { AppState } from 'react-native'
 import NoraViewModule from '@/modules/nora-view'
 import * as Notifications from 'expo-notifications'
 import * as TaskManager from 'expo-task-manager'
 import * as BackgroundTask from 'expo-background-task'
 import { MMKV } from 'react-native-mmkv'
+import { settings$ } from '@/states/settings'
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -16,7 +18,9 @@ Notifications.setNotificationHandler({
 
 const storage = new MMKV({ id: 'mention-notifications' })
 const SEEN_KEY = 'seenIds'
+const LAST_POLL_KEY = 'lastPollMs'
 const MAX_SEEN = 200
+const FOREGROUND_POLL_MIN_AGE_MS = 60 * 60 * 1000
 
 export const POLL_TASK = 'nora.mentionNotifications.poll'
 
@@ -192,6 +196,7 @@ const seedSeen = async () => {
 }
 
 export const runPollAndNotify = async (): Promise<number> => {
+  storage.set(LAST_POLL_KEY, Date.now())
   const r = await pollAll()
   if (!r.loggedIn) return 0
   const seen = loadSeenIds()
@@ -216,6 +221,14 @@ export const runPollAndNotify = async (): Promise<number> => {
   saveSeenIds(seen)
   return fired
 }
+
+AppState.addEventListener('change', (state) => {
+  if (state !== 'active') return
+  if (!settings$.mentionNotificationsEnabled.get()) return
+  const last = storage.getNumber(LAST_POLL_KEY) || 0
+  if (Date.now() - last < FOREGROUND_POLL_MIN_AGE_MS) return
+  runPollAndNotify().catch((e) => console.warn('foreground poll failed', e))
+})
 
 if (!TaskManager.isTaskDefined(POLL_TASK)) {
   TaskManager.defineTask(POLL_TASK, async () => {
