@@ -282,5 +282,57 @@
     "pinned": "Pinned to new tab page",
     "blocklistUpdated": "Blocklist updated",
     "pressBackAgainToExit": "Press back again to exit"
+  },
+  "usageLimits": {
+    "label": "Usage limits",
+    "description": "Set daily time limits for selected services or the whole app.",
+    "limits": "Limits",
+    "empty": "No usage limits yet.",
+    "usageLine": "Today: {{used}} of {{limit}}",
+    "deleteConfirm": "Delete this usage limit?",
+    "scope": {
+      "all": "Whole app",
+      "none": "No services selected"
+    },
+    "editor": {
+      "addTitle": "Add usage limit",
+      "editTitle": "Edit usage limit",
+      "name": "Name",
+      "namePlaceholder": "e.g. Social media",
+      "defaultName": "Limit",
+      "dailyLimit": "Daily limit",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "scope": "Apply to",
+      "add": "Add",
+      "errorMinutes": "Set a daily limit of at least 1 minute",
+      "errorScope": "Select at least one service or apply to the whole app"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "A PIN is required to manage limits and to unlock when a limit is reached. Resets at local midnight.",
+      "set": "PIN is set",
+      "notSet": "No PIN set",
+      "setAction": "Set PIN",
+      "change": "Change",
+      "remove": "Remove",
+      "currentPlaceholder": "Current PIN",
+      "newPlaceholder": "New PIN",
+      "confirmPlaceholder": "Confirm new PIN",
+      "errorEmpty": "PIN cannot be empty",
+      "errorMismatch": "PINs do not match",
+      "errorIncorrect": "Incorrect PIN",
+      "requiredFirst": "Set a PIN first",
+      "confirmEdit": "Enter PIN to edit",
+      "confirmDelete": "Enter PIN to delete"
+    },
+    "lockout": {
+      "title": "Time's up for today",
+      "body": "You've used {{used}} of your {{limit}} daily limit for {{name}}.",
+      "pinPlaceholder": "Enter PIN to unlock",
+      "pinIncorrect": "Incorrect PIN",
+      "unlock": "Unlock for today",
+      "noPinHint": "Set a PIN in Settings → Usage limits to unlock early."
+    }
   }
 }

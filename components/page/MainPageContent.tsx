@@ -12,12 +12,15 @@ import { DesktopWorkspace } from '../tab/DesktopWorkspace'
 import { auth$ } from '@/states/auth'
 import { useMe } from '@/lib/hooks/useMe'
 import { syncSupabase } from '@/lib/supabase/sync'
+import { useUsageTracker } from '@/lib/hooks/useUsageTracker'
+import { UsageLockout } from '../lockout/UsageLockout'
 const logger = createLogger('sync')
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
   const { tabs } = useValue(tabs$)
   const { userId, me } = useMe()
+  useUsageTracker()
 
   useEffect(() => {
     const runSync = () => {
@@ -59,6 +62,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
           <NavModalContent />
         </View>
       )}
+      <UsageLockout />
     </View>
   )
 }

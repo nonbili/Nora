@@ -25,6 +25,7 @@ import { capitalize } from 'es-toolkit'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { supportsRuntimeBlocklist } from '@/lib/blocklist'
 import { SettingsChangelogContent } from './SettingsModalTabChangelog'
+import { SettingsUsageLimitsContent } from './SettingsUsageLimitsContent'
 import { queryClient } from '@/lib/query/client'
 import { getReleaseFeedQuery } from '@/lib/query/changelog'
 import { settingsUi, SettingsSection, SettingsSurface } from './SettingsPrimitives'
@@ -35,7 +36,7 @@ const donateLinks = [
   { label: 'Liberapay', detail: 'liberapay.com/rnons', url: 'https://liberapay.com/rnons' },
   { label: 'PayPal', detail: 'paypal.me/rnons', url: 'https://paypal.me/rnons' },
 ]
-type SettingsPage = 'home' | 'browsing' | 'styles' | 'appearance' | 'services' | 'profiles' | 'bookmarks' | 'search' | 'sync' | 'about' | 'changelog'
+type SettingsPage = 'home' | 'browsing' | 'styles' | 'appearance' | 'services' | 'profiles' | 'bookmarks' | 'search' | 'sync' | 'about' | 'changelog' | 'usageLimits'
 
 import { colors } from '@/lib/colors'
 
@@ -241,6 +242,7 @@ export const SettingsModal = () => {
     sync: t('sync.label'),
     about: t('common.about'),
     changelog: t('changelog.label'),
+    usageLimits: t('usageLimits.label'),
   }
 
   const renderPage = () => {
@@ -275,6 +277,12 @@ export const SettingsModal = () => {
                 description={t('settings.userStyles.customHint')}
                 icon="brush"
                 onPress={() => pushPage('styles')}
+              />
+              <SettingsNavRow
+                title={t('usageLimits.label')}
+                description={t('usageLimits.description')}
+                icon="hourglass-empty"
+                onPress={() => pushPage('usageLimits')}
                 isLast
               />
             </SettingsSurface>
@@ -350,6 +358,7 @@ export const SettingsModal = () => {
     if (currentPage === 'bookmarks') return <SettingsBookmarksContent />
     if (currentPage === 'search') return <SettingsSearchContent />
     if (currentPage === 'changelog') return <SettingsChangelogContent />
+    if (currentPage === 'usageLimits') return <SettingsUsageLimitsContent />
 
     if (currentPage === 'sync' && showSync) {
       return <SettingsModalTabSync />
