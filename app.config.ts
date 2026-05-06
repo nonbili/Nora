@@ -51,7 +51,6 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
         monochromeImage: './assets/images/monochrome-icon.png',
         backgroundColor: '#ffffff',
       },
-      edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: 'jp.nonbili.nora',
       intentFilters,
@@ -90,6 +89,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       ],
       'expo-asset',
       'expo-font',
+      'expo-image',
       [
         'expo-localization',
         {
