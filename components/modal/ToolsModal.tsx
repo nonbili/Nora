@@ -49,13 +49,14 @@ export const ToolsModal = () => {
 
   const onDownload = () => {
     const normalizedUrl = normalizeDownloadUrl(url.trim())
-    if (normalizedUrl) {
-      if (isWeb) {
-        mainClient.downloadVideo(normalizedUrl)
-      } else {
-        ui$.downloadVideoModalUrl.set(normalizedUrl)
-      }
+    if (!normalizedUrl) {
+      return
     }
+    if (isWeb) {
+      mainClient.downloadVideo(normalizedUrl)
+      return
+    }
+    ui$.downloadVideoModalUrl.set(normalizedUrl)
   }
 
   if (!toolsModalOpen) {
@@ -63,7 +64,7 @@ export const ToolsModal = () => {
   }
 
   return (
-    <BaseModal onClose={onClose}>
+    <BaseModal onClose={onClose} useNativeModal={false}>
       <View className="p-5">
         <NouText className="text-lg font-semibold mb-4">{t('modals.downloadVideo')}</NouText>
         <NouText className="mb-4 text-sm text-zinc-600 dark:text-gray-200">Support Facebook, Instagram, TikTok and X</NouText>

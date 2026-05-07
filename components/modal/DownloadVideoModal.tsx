@@ -1,18 +1,14 @@
-import { Modal, Pressable, Text, View } from 'react-native'
+import { Modal, Pressable, View } from 'react-native'
 import { NouText } from '../NouText'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { clsx, isIos, nIf } from '@/lib/utils'
+import { clsx, isIos } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
-import { showToast } from '@/lib/toast'
-import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
-import { tabs$ } from '@/states/tabs'
 import { settings$ } from '@/states/settings'
 import { delay } from 'es-toolkit'
 import { getUserAgent } from '@/lib/useragent'
-import { parseJson } from '@/content/utils'
 import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { normalizeDownloadUrl } from '@/content/download'
 
@@ -24,6 +20,13 @@ type DownloadOption = {
   url: string
 }
 
+type DownloadWebview = {
+  loadUrl: (url: string) => Promise<unknown> | unknown
+  download: (url: string, fileName?: string) => Promise<unknown> | unknown
+  saveFile: (content: string, fileName: string, mimeType?: string) => Promise<unknown> | unknown
+  executeJavaScript?: (script: string) => Promise<unknown> | unknown
+}
+
 export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const currentUrl = useValue(ui$.downloadVideoModalUrl)
   const inspectable = useValue(settings$.inspectable)
@@ -32,13 +35,41 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   const [title, setTitle] = useState('')
   const [downloadOptions, setDownloadOptions] = useState<DownloadOption[]>([])
   const [fileName, setFileName] = useState('')
-  const nativeRef = useRef<any>(null)
+  const nativeRef = useRef<DownloadWebview | null>(null)
   const parsingStartedRef = useRef(false)
+  const loadRequestRef = useRef(0)
 
   const downloadVideoModalOpen = !!currentUrl
 
+  const loadDownloadUrl = useCallback(
+    (webview: DownloadWebview, targetUrl: string) => {
+      const url = normalizeDownloadUrl(targetUrl)
+      if (!url) {
+        return
+      }
+
+      const requestId = ++loadRequestRef.current
+      const timer = setTimeout(() => {
+        if (nativeRef.current !== webview || loadRequestRef.current !== requestId || !ui$.downloadVideoModalUrl.peek()) {
+          return
+        }
+
+        void Promise.resolve(webview.loadUrl(url)).catch((error) => {
+          if (nativeRef.current !== webview) {
+            return
+          }
+          console.warn('[DownloadVideoModal] loadUrl failed', error)
+        })
+      }, 0)
+
+      return () => clearTimeout(timer)
+    },
+    [],
+  )
+
   useEffect(() => {
     if (!downloadVideoModalOpen) {
+      loadRequestRef.current += 1
       nativeRef.current = null
       setTitle('Loading...')
       setUrl('')
@@ -51,18 +82,18 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   useEffect(() => {
     const webview = nativeRef.current
     if (webview && currentUrl) {
-      webview.loadUrl(normalizeDownloadUrl(currentUrl))
+      return loadDownloadUrl(webview, currentUrl)
     }
-  }, [currentUrl, downloadVideoModalOpen])
+  }, [currentUrl, downloadVideoModalOpen, loadDownloadUrl])
 
   const setWebviewRef = useCallback(
-    (webview: any) => {
+    (webview: DownloadWebview | null) => {
       nativeRef.current = webview
       if (webview && currentUrl) {
-        webview.loadUrl(normalizeDownloadUrl(currentUrl))
+        loadDownloadUrl(webview, currentUrl)
       }
     },
-    [currentUrl],
+    [currentUrl, loadDownloadUrl],
   )
 
   if (!downloadVideoModalOpen) {
