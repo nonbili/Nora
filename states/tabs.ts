@@ -27,7 +27,11 @@ export interface Tab {
   desktopMode?: boolean
   profile?: string
   backToNewTab?: boolean
+  history?: string[]
+  historyIndex?: number
 }
+
+export const MAX_TAB_HISTORY = 50
 
 export interface ClosedTab extends Tab {
   closedAt: number
@@ -431,7 +435,12 @@ export const tabs$: Observable<Store> = observable<Store>({
     const webview = ui$.webview.get()
     const canGoBack = ui$.activeCanGoBack.get()
     if (canGoBack) {
-      webview?.goBack?.()
+      const customGoBack = ui$.activeGoBack.get() as (() => void) | undefined
+      if (customGoBack) {
+        customGoBack()
+      } else {
+        webview?.goBack?.()
+      }
       return true
     }
 
@@ -494,6 +503,16 @@ syncObservable(tabs$, {
               }
               tab.isLoading = false
               tab.backToNewTab = Boolean(tab.backToNewTab || !tab.url)
+              if (Array.isArray(tab.history)) {
+                const cleaned = tab.history.filter((u): u is string => typeof u === 'string' && u.length > 0)
+                tab.history = cleaned.slice(-MAX_TAB_HISTORY)
+                if (typeof tab.historyIndex !== 'number' || tab.historyIndex < 0 || tab.historyIndex >= tab.history.length) {
+                  tab.historyIndex = tab.history.length - 1
+                }
+              } else {
+                tab.history = undefined
+                tab.historyIndex = undefined
+              }
               seenIds.add(tab.id)
               return tab
             })

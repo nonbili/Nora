@@ -8,7 +8,7 @@ import { ActivityIndicator, Appearance, StyleSheet, View, useColorScheme } from 
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
 import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
-import { Tab, tabs$ } from '@/states/tabs'
+import { MAX_TAB_HISTORY, Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { MaterialButton } from '../button/IconButtons'
 import { NouText } from '../NouText'
@@ -161,7 +161,10 @@ export const NoraTab: React.FC<{
   const webviewRef = useRef<WebviewTag>(null)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const pageUrlRef = useRef('')
+  const pendingHistoryNavRef = useRef<string | null>(null)
   const [canGoBack, setCanGoBack] = useState(false)
+  const tabHistoryIndex = tab.historyIndex ?? -1
+  const jsHistoryCanGoBack = !isWeb && tabHistoryIndex > 0
   const contentJs = useContentJs()
   const profileColor = getProfileColor(tab.profile)
   const isActive = activeTabIndex === index
@@ -170,6 +173,16 @@ export const NoraTab: React.FC<{
   const viewInstanceKey = `${viewKey}:${tab.url ? 'page' : 'blank'}`
   const refreshCanGoBack = useCallback(
     async (target?: any) => {
+      if (!isWeb) {
+        const idx = tabs$.tabs[index].historyIndex.peek() ?? -1
+        const next = idx > 0
+        setCanGoBack(next)
+        if (isActive) {
+          ui$.activeCanGoBack.set(next)
+        }
+        return
+      }
+
       const webview = target || webviewRef.current || nativeRef.current
       if (!webview || typeof webview.canGoBack !== 'function') {
         return
@@ -190,7 +203,7 @@ export const NoraTab: React.FC<{
         ui$.activeCanGoBack.set(nextCanGoBack)
       }
     },
-    [isActive],
+    [isActive, index],
   )
 
   const setPageUrl = useCallback(
@@ -346,6 +359,13 @@ export const NoraTab: React.FC<{
   }, [isActive, refreshCanGoBack])
 
   useEffect(() => {
+    if (isWeb) {
+      return
+    }
+    setCanGoBack(jsHistoryCanGoBack)
+  }, [jsHistoryCanGoBack])
+
+  useEffect(() => {
     if (!isActive) {
       return
     }
@@ -382,7 +402,46 @@ export const NoraTab: React.FC<{
   )
 
   const webview = webviewRef.current || nativeRef.current
-  const goBack = () => webview?.goBack?.()
+  const navigateHistoryStep = useCallback(
+    (delta: -1 | 1) => {
+      const native = nativeRef.current
+      const tab$ = tabs$.tabs[index]
+      const history = tab$.history.peek() ?? []
+      const idx = tab$.historyIndex.peek() ?? -1
+      const nextIdx = idx + delta
+      if (nextIdx < 0 || nextIdx >= history.length || !history[nextIdx]) {
+        return
+      }
+      const target = history[nextIdx]
+      pendingHistoryNavRef.current = target
+      tab$.historyIndex.set(nextIdx)
+      if (native?.loadUrl) {
+        void Promise.resolve(native.loadUrl(target)).catch((error) => {
+          console.warn('[NoraTab] history navigation loadUrl failed', error)
+        })
+      }
+    },
+    [index],
+  )
+  const goBackMobile = useCallback(() => navigateHistoryStep(-1), [navigateHistoryStep])
+  const goForwardMobile = useCallback(() => navigateHistoryStep(1), [navigateHistoryStep])
+  const goBack = isWeb ? () => webview?.goBack?.() : goBackMobile
+
+  useEffect(() => {
+    if (isWeb || !isActive) {
+      return
+    }
+    ui$.activeGoBack.set(goBackMobile)
+    ui$.activeGoForward.set(goForwardMobile)
+    return () => {
+      if (ui$.activeGoBack.peek() === goBackMobile) {
+        ui$.activeGoBack.set(undefined)
+      }
+      if (ui$.activeGoForward.peek() === goForwardMobile) {
+        ui$.activeGoForward.set(undefined)
+      }
+    }
+  }, [goBackMobile, goForwardMobile, isActive])
   const editTabUrl = () => {
     ui$.assign({
       urlModalOpen: true,
@@ -400,12 +459,41 @@ export const NoraTab: React.FC<{
   }
   const toolbarButtonStyle = { padding: 4, height: 28 }
 
+  const recordHistoryNavigation = useCallback(
+    (url: string) => {
+      const tab$ = tabs$.tabs[index]
+      if (!tab$.peek()) return
+      if (pendingHistoryNavRef.current === url) {
+        pendingHistoryNavRef.current = null
+        return
+      }
+      const history = tab$.history.peek() ?? []
+      const idx = tab$.historyIndex.peek() ?? -1
+      if (history[idx] === url) return
+      if (history[idx + 1] === url) {
+        tab$.historyIndex.set(idx + 1)
+        return
+      }
+      if (idx > 0 && history[idx - 1] === url) {
+        tab$.historyIndex.set(idx - 1)
+        return
+      }
+      const next = [...history.slice(0, idx + 1), url].slice(-MAX_TAB_HISTORY)
+      tab$.history.set(next)
+      tab$.historyIndex.set(next.length - 1)
+    },
+    [index],
+  )
+
   const onLoad = async (e: { nativeEvent: any }) => {
     const { url, title, icon, canGoBack: nextCanGoBack } = e.nativeEvent
     const hasLoadedUrl = typeof url === 'string' && url !== '' && url !== 'about:blank'
     if (hasLoadedUrl) {
       tabs$.setTabLoading(false, index)
       setPageUrl(url)
+      if (!isWeb) {
+        recordHistoryNavigation(url)
+      }
     }
     if (typeof title === 'string' || typeof icon === 'string') {
       const nextMeta: Partial<Pick<Tab, 'title' | 'icon'>> = {}
@@ -417,7 +505,7 @@ export const NoraTab: React.FC<{
       }
       tabs$.tabs[index].assign(nextMeta)
     }
-    if (typeof nextCanGoBack === 'boolean') {
+    if (typeof nextCanGoBack === 'boolean' && isWeb) {
       setCanGoBack(nextCanGoBack)
       if (isActive) {
         ui$.activeCanGoBack.set(nextCanGoBack)

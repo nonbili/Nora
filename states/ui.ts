@@ -29,6 +29,8 @@ interface Store {
 
   // webview
   activeCanGoBack: boolean
+  activeGoBack: (() => void) | undefined
+  activeGoForward: (() => void) | undefined
   webview: any
   hoverLinkUrl: string
 }
@@ -62,6 +64,8 @@ export const ui$ = observable<Store>({
 
   // webview
   activeCanGoBack: false,
+  activeGoBack: undefined,
+  activeGoForward: undefined,
   webview: undefined,
   hoverLinkUrl: '',
 })

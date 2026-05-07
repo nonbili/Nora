@@ -117,6 +117,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
     webview.loadUrl?.(currentTab?.url)
   }
   const goForward = () => {
+    const customGoForward = ui$.activeGoForward.get() as (() => void) | undefined
+    if (customGoForward) {
+      customGoForward()
+      return
+    }
     if (typeof webview?.goForward === 'function') {
       webview.goForward()
       return
