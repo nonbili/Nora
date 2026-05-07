@@ -1,4 +1,4 @@
-import { AppState } from 'react-native'
+import { AppState, Platform } from 'react-native'
 import NoraViewModule from '@/modules/nora-view'
 import * as Notifications from 'expo-notifications'
 import * as TaskManager from 'expo-task-manager'
@@ -18,14 +18,20 @@ Notifications.setNotificationHandler({
 const storage = new MMKV({ id: 'mention-notifications' })
 const SEEN_KEY = 'seenIds'
 const LAST_POLL_KEY = 'lastPollMs'
+const LAST_BACKGROUND_POLL_KEY = 'lastBackgroundPollMs'
 const MAX_SEEN = 200
-const FOREGROUND_POLL_MIN_AGE_MS = 60 * 60 * 1000
+const FOREGROUND_POLL_MIN_AGE_MS = 5 * 60 * 1000
+const FOREGROUND_POLL_INTERVAL_MS = 5 * 60 * 1000
+const FOREGROUND_POLL_BACKGROUND_GRACE_MS = 60 * 60 * 1000
+const BACKGROUND_POLL_MIN_INTERVAL_MINUTES = 15
+const NOTIFICATION_CHANNEL_ID = 'mentions'
 
 export const POLL_TASK = 'nora.mentionNotifications.poll'
 
 export interface PollItem {
   source: string
   kind: 'mention' | 'dm'
+  profileId?: string
   id: string
   url: string
   title: string
@@ -76,7 +82,7 @@ const xHeaders = (cookieHeader: string, csrf: string) => ({
     'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
 })
 
-const fetchXMentions = async (headers: Record<string, string>): Promise<PollItem[]> => {
+const fetchXMentions = async (headers: Record<string, string>, profileId: string): Promise<PollItem[]> => {
   const url =
     'https://x.com/i/api/2/notifications/mentions.json?include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&skip_status=1&cards_platform=Web-12&include_cards=1&include_ext_alt_text=true&include_quote_count=true&include_reply_count=1&tweet_mode=extended&include_ext_views=true&include_entities=true&include_user_entities=true&count=20&ext=mediaStats%2ChighlightedLabel'
   const res = await fetch(url, { headers })
@@ -91,6 +97,7 @@ const fetchXMentions = async (headers: Record<string, string>): Promise<PollItem
     items.push({
       source: 'x',
       kind: 'mention',
+      profileId,
       id,
       url: `https://x.com/${author?.screen_name || 'i'}/status/${id}`,
       title: `Mention from ${author?.name || author?.screen_name || 'x.com'}`,
@@ -101,7 +108,7 @@ const fetchXMentions = async (headers: Record<string, string>): Promise<PollItem
   return items
 }
 
-const fetchXDms = async (headers: Record<string, string>): Promise<PollItem[]> => {
+const fetchXDms = async (headers: Record<string, string>, profileId: string): Promise<PollItem[]> => {
   const url =
     'https://x.com/i/api/1.1/dm/inbox_initial_state.json?nsfw_filtering_enabled=false&filter_low_quality=true&include_quality=all&include_profile_interstitial_type=1&include_blocking=1&include_blocked_by=1&include_followed_by=1&include_want_retweets=1&include_mute_edge=1&include_can_dm=1&include_can_media_tag=1&include_ext_is_blue_verified=1&skip_status=1&dm_secret_conversations_enabled=false&krs_registration_enabled=true&cards_platform=Web-12&include_cards=1&include_ext_alt_text=true&include_quote_count=true&include_reply_count=1&tweet_mode=extended&include_ext_views=true&dm_users=true&include_groups=true&include_inbox_timelines=true&include_ext_media_color=true&supports_reactions=true&ext=mediaColor%2CaltText%2CmediaStats%2ChighlightedLabel%2CvoiceInfo'
   const res = await fetch(url, { headers })
@@ -117,6 +124,7 @@ const fetchXDms = async (headers: Record<string, string>): Promise<PollItem[]> =
     items.push({
       source: 'x',
       kind: 'dm',
+      profileId,
       id: String(m.id),
       url: `https://x.com/messages/${m.conversation_id}`,
       title: `DM from ${sender?.name || sender?.screen_name || 'x.com'}`,
@@ -127,30 +135,66 @@ const fetchXDms = async (headers: Record<string, string>): Promise<PollItem[]> =
   return items
 }
 
-const pollX = async (): Promise<PollResult> => {
+const getXPollProfiles = () =>
+  Array.from(
+    new Set(
+      settings$.profiles
+        .get()
+        .map((p) => p?.id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  )
+
+const pollXProfile = async (profileId: string): Promise<PollResult> => {
   const result: PollResult = { loggedIn: false, items: [], errors: [] }
   let cookieHeader = ''
   try {
-    cookieHeader = await NoraViewModule.getCookies('https://x.com', null)
+    cookieHeader = await NoraViewModule.getCookies('https://x.com', profileId)
   } catch (e: any) {
-    result.errors.push(`x getCookies: ${e?.message || e}`)
+    result.errors.push(`x ${profileId} getCookies: ${e?.message || e}`)
     return result
   }
   const cookies = parseCookieHeader(cookieHeader)
   if (!cookies.ct0 || !cookies.auth_token) return result
   result.loggedIn = true
   const headers = xHeaders(cookieHeader, cookies.ct0)
-  const [mentions, dms] = await Promise.allSettled([fetchXMentions(headers), fetchXDms(headers)])
+  const [mentions, dms] = await Promise.allSettled([fetchXMentions(headers, profileId), fetchXDms(headers, profileId)])
   if (mentions.status === 'fulfilled') result.items.push(...mentions.value)
-  else result.errors.push(`x mentions: ${mentions.reason?.message || mentions.reason}`)
+  else result.errors.push(`x ${profileId} mentions: ${mentions.reason?.message || mentions.reason}`)
   if (dms.status === 'fulfilled') result.items.push(...dms.value)
-  else result.errors.push(`x dms: ${dms.reason?.message || dms.reason}`)
+  else result.errors.push(`x ${profileId} dms: ${dms.reason?.message || dms.reason}`)
   return result
+}
+
+const pollX = async (): Promise<PollResult> => {
+  const merged: PollResult = { loggedIn: false, items: [], errors: [] }
+  const profiles = getXPollProfiles()
+  const results = await Promise.allSettled(profiles.map((profileId) => pollXProfile(profileId)))
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      merged.loggedIn = merged.loggedIn || r.value.loggedIn
+      merged.items.push(...r.value.items)
+      merged.errors.push(...r.value.errors)
+    } else {
+      merged.errors.push(`x ${profiles[i]}: ${r.reason?.message || r.reason}`)
+    }
+  })
+  return merged
 }
 
 // --- registry & runtime -----------------------------------------------------
 
 const pollers: ServicePoller[] = [{ id: 'x', poll: pollX }]
+
+const ensureNotificationChannel = async () => {
+  if (Platform.OS !== 'android') return
+  await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL_ID, {
+    name: 'Mentions and DMs',
+    importance: Notifications.AndroidImportance.HIGH,
+    vibrationPattern: [0, 250, 250, 250],
+    sound: 'default',
+  })
+}
 
 export const pollAll = async (): Promise<PollResult> => {
   const merged: PollResult = { loggedIn: false, items: [], errors: [] }
@@ -184,20 +228,20 @@ const saveSeenIds = (ids: Set<string>) => {
   storage.set(SEEN_KEY, JSON.stringify(trimmed))
 }
 
-const itemKey = (i: PollItem) => `${i.source}:${i.kind}:${i.id}`
+const itemKey = (i: PollItem) => `${i.source}:${i.profileId || 'default'}:${i.kind}:${i.id}`
 
-const seedSeen = async () => {
+export const runPollAndNotify = async (source: 'foreground' | 'background' | 'manual' = 'manual'): Promise<number> => {
+  const now = Date.now()
+  storage.set(LAST_POLL_KEY, now)
+  if (source === 'background') {
+    storage.set(LAST_BACKGROUND_POLL_KEY, now)
+  }
   const r = await pollAll()
-  if (!r.loggedIn) return
-  const seen = loadSeenIds()
-  for (const item of r.items) seen.add(itemKey(item))
-  saveSeenIds(seen)
-}
-
-export const runPollAndNotify = async (): Promise<number> => {
-  storage.set(LAST_POLL_KEY, Date.now())
-  const r = await pollAll()
+  if (r.errors.length) {
+    console.warn('mention notification poll errors', r.errors)
+  }
   if (!r.loggedIn) return 0
+  await ensureNotificationChannel()
   const seen = loadSeenIds()
   const fresh = r.items.filter((i) => !seen.has(itemKey(i)))
   let fired = 0
@@ -208,8 +252,9 @@ export const runPollAndNotify = async (): Promise<number> => {
           title: item.title,
           body: item.body || ' ',
           data: { url: item.url },
+          sound: 'default',
         },
-        trigger: null,
+        trigger: Platform.OS === 'android' ? { channelId: NOTIFICATION_CHANNEL_ID } : null,
       })
       fired += 1
     } catch (e) {
@@ -221,18 +266,54 @@ export const runPollAndNotify = async (): Promise<number> => {
   return fired
 }
 
-AppState.addEventListener('change', (state) => {
-  if (state !== 'active') return
+let foregroundPollTimer: ReturnType<typeof setInterval> | undefined
+let foregroundPollInFlight = false
+
+const runForegroundPollIfDue = () => {
+  if (AppState.currentState !== 'active') return
   if (!settings$.mentionNotificationsEnabled.get()) return
+  if (foregroundPollInFlight) return
+  const lastBackgroundPoll = storage.getNumber(LAST_BACKGROUND_POLL_KEY) || 0
+  if (Date.now() - lastBackgroundPoll < FOREGROUND_POLL_BACKGROUND_GRACE_MS) return
   const last = storage.getNumber(LAST_POLL_KEY) || 0
   if (Date.now() - last < FOREGROUND_POLL_MIN_AGE_MS) return
-  runPollAndNotify().catch((e) => console.warn('foreground poll failed', e))
+  foregroundPollInFlight = true
+  runPollAndNotify('foreground')
+    .catch((e) => console.warn('foreground poll failed', e))
+    .finally(() => {
+      foregroundPollInFlight = false
+    })
+}
+
+const syncForegroundPollTimer = () => {
+  const shouldRun = AppState.currentState === 'active' && settings$.mentionNotificationsEnabled.get()
+  if (!shouldRun) {
+    if (foregroundPollTimer) {
+      clearInterval(foregroundPollTimer)
+      foregroundPollTimer = undefined
+    }
+    return
+  }
+  if (!foregroundPollTimer) {
+    foregroundPollTimer = setInterval(runForegroundPollIfDue, FOREGROUND_POLL_INTERVAL_MS)
+  }
+  runForegroundPollIfDue()
+}
+
+AppState.addEventListener('change', () => {
+  syncForegroundPollTimer()
 })
+
+settings$.mentionNotificationsEnabled.onChange(() => {
+  syncForegroundPollTimer()
+})
+
+syncForegroundPollTimer()
 
 if (!TaskManager.isTaskDefined(POLL_TASK)) {
   TaskManager.defineTask(POLL_TASK, async () => {
     try {
-      await runPollAndNotify()
+      await runPollAndNotify('background')
       return BackgroundTask.BackgroundTaskResult.Success
     } catch (e) {
       console.warn('mention poll task failed', e)
@@ -248,16 +329,41 @@ const ensurePermission = async (): Promise<boolean> => {
   return !!req.granted
 }
 
+const registerBackgroundPollTask = async () => {
+  await BackgroundTask.registerTaskAsync(POLL_TASK, { minimumInterval: BACKGROUND_POLL_MIN_INTERVAL_MINUTES })
+}
+
+const ensureEnabledRuntime = async () => {
+  if (!settings$.mentionNotificationsEnabled.get()) return
+  try {
+    await ensureNotificationChannel()
+    await registerBackgroundPollTask()
+  } catch (e) {
+    console.warn('mention notification runtime setup failed', e)
+  }
+  syncForegroundPollTimer()
+}
+
 export const enableMentionNotifications = async (): Promise<{ ok: boolean; reason?: string }> => {
   const granted = await ensurePermission()
   if (!granted) return { ok: false, reason: 'notification permission denied' }
+  await ensureNotificationChannel()
   try {
-    await seedSeen()
+    const r = await pollAll()
+    if (r.loggedIn) {
+      const seen = loadSeenIds()
+      for (const item of r.items) seen.add(itemKey(item))
+      saveSeenIds(seen)
+    }
+    if (r.errors.length) {
+      console.warn('mention notification seed poll errors', r.errors)
+    }
   } catch (e) {
     console.warn('seed failed', e)
   }
   try {
-    await BackgroundTask.registerTaskAsync(POLL_TASK, { minimumInterval: 30 })
+    await registerBackgroundPollTask()
+    syncForegroundPollTimer()
     return { ok: true }
   } catch (e: any) {
     return { ok: false, reason: e?.message || String(e) }
@@ -271,3 +377,5 @@ export const disableMentionNotifications = async () => {
     // ignore
   }
 }
+
+ensureEnabledRuntime()
