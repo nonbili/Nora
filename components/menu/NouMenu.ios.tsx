@@ -1,5 +1,5 @@
-import { Button, ContextMenu, Divider, Host, Section } from '@expo/ui/swift-ui'
-import { frame } from '@expo/ui/swift-ui/modifiers'
+import { Button, Divider, Host, Menu, Section } from '@expo/ui/swift-ui'
+import { disabled, frame, tint } from '@expo/ui/swift-ui/modifiers'
 import type { Item } from './NouMenu'
 import { Fragment, ReactNode } from 'react'
 
@@ -22,12 +22,11 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
       .map((item, itemIndex) => (
         <Button
           key={`${groupIndex}-${itemIndex}`}
-          disabled={item.disabled}
+          label={item.metaLabel ? `${item.label} (${item.metaLabel})` : item.label}
+          modifiers={item.disabled ? [disabled(true)] : undefined}
           onPress={item.handler}
           systemImage={item.systemImage as any}
-        >
-          {item.metaLabel ? `${item.label} (${item.metaLabel})` : item.label}
-        </Button>
+        />
       ))
 
     const content = header ? (
@@ -48,21 +47,13 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
 
   return (
     <Host matchContents>
-      <ContextMenu activationMethod="singlePress">
-        <ContextMenu.Items>{menuItems}</ContextMenu.Items>
-        <ContextMenu.Trigger>
-          {typeof trigger === 'string' ? (
-            <Button
-              variant="borderless"
-              color={triggerColor}
-              systemImage={trigger as any}
-              modifiers={[frame({ width: 44, height: 44 })]}
-            />
-          ) : (
-            trigger
-          )}
-        </ContextMenu.Trigger>
-      </ContextMenu>
+      <Menu
+        label={typeof trigger === 'string' ? '' : trigger}
+        systemImage={typeof trigger === 'string' ? (trigger as any) : undefined}
+        modifiers={typeof trigger === 'string' ? [frame({ width: 44, height: 44 }), ...(triggerColor ? [tint(triggerColor)] : [])] : undefined}
+      >
+        {menuItems}
+      </Menu>
     </Host>
   )
 }
