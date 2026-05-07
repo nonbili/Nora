@@ -47,9 +47,6 @@ async function getVideoUrl() {
     const video = document.querySelector('video')
     return video?.currentSrc || video?.src
   })
-  if (hostname == 'www.instagram.com' && !src) {
-    return
-  }
   const fileName = slugs.filter(Boolean).at(-1) + '.mp4'
   // if (src?.startsWith('https://')) {
   //   emit('download', { url: src, fileName })
@@ -94,19 +91,31 @@ async function getVideoUrl() {
       }
       break
     case 'www.instagram.com':
-      const scripts = document.scripts
-      for (const script of [...scripts]) {
-        const text = script.textContent
-        if (!text) continue
-        const term = '"video_versions":'
-        const start = text.indexOf(term)
-        if (start > -1) {
-          const end = text.indexOf(']', start)
-          const slice = text.slice(start + term.length, end + 1)
-          const videos = JSON.parse(slice)
-          emit('download', { url: videos[0].url, fileName })
-          return
+      const igUrl = await waitUntil(() => {
+        for (const script of [...document.scripts]) {
+          const text = script.textContent
+          if (!text || !text.includes('"video_versions":')) continue
+          const m = text.match(/"video_versions":\[\{[^}]*?"url":"([^"]+)"/)
+          if (m) {
+            try {
+              return JSON.parse(`"${m[1]}"`)
+            } catch (e) {
+              console.warn('[nora] failed to decode instagram url', e)
+            }
+          }
         }
+      })
+      if (igUrl) {
+        emit('download', { url: igUrl, fileName })
+        return
+      }
+      if (src?.startsWith('https://')) {
+        emit('download', { url: src, fileName })
+        return
+      }
+      if (src?.startsWith('blob:')) {
+        await downloadBlob(src, fileName, 'video/mp4')
+        return
       }
       break
     case 'x.com':

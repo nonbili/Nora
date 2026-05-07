@@ -31,15 +31,44 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   const currentUrl = useValue(ui$.downloadVideoModalUrl)
   const inspectable = useValue(settings$.inspectable)
   const onClose = () => ui$.downloadVideoModalUrl.set('')
-  const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [downloadOptions, setDownloadOptions] = useState<DownloadOption[]>([])
   const [fileName, setFileName] = useState('')
   const nativeRef = useRef<DownloadWebview | null>(null)
   const parsingStartedRef = useRef(false)
   const loadRequestRef = useRef(0)
+  const loadedUrlRef = useRef('')
 
   const downloadVideoModalOpen = !!currentUrl
+
+  const parseVideoUrl = useCallback((force = false) => {
+    const webview = nativeRef.current
+    if (!webview || (!force && parsingStartedRef.current)) {
+      return
+    }
+
+    parsingStartedRef.current = true
+    setTitle('Parsing...')
+    void executeWebviewJavaScriptQuietly(
+      webview,
+      `
+        (function() {
+          function emitVideoNotFound(reason) {
+            if (window.NoraI && typeof window.NoraI.onMessage === 'function') {
+              window.NoraI.onMessage(JSON.stringify({ type: 'video-not-found', data: { reason: reason } }));
+            }
+          }
+          if (window.Nora && typeof window.Nora.getVideoUrl === 'function') {
+            Promise.resolve(window.Nora.getVideoUrl()).catch(function() {
+              emitVideoNotFound('parse-error');
+            });
+          } else {
+            emitVideoNotFound('nora-not-ready');
+          }
+        })();
+      `,
+    )
+  }, [])
 
   const loadDownloadUrl = useCallback(
     (webview: DownloadWebview, targetUrl: string) => {
@@ -72,7 +101,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
       loadRequestRef.current += 1
       nativeRef.current = null
       setTitle('Loading...')
-      setUrl('')
+      loadedUrlRef.current = ''
       setFileName('')
       setDownloadOptions([])
       parsingStartedRef.current = false
@@ -104,13 +133,9 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
     setTitle('Parsing...')
     const value = e.nativeEvent.url
     if (value) {
-      setUrl(value)
+      loadedUrlRef.current = value
     }
-    const webview = nativeRef.current
-    if (!parsingStartedRef.current && webview) {
-      parsingStartedRef.current = true
-      void executeWebviewJavaScriptQuietly(webview, 'window.Nora.getVideoUrl()')
-    }
+    parseVideoUrl()
   }
 
   const onMessage = async (e: { nativeEvent: { payload: string | object } }) => {
@@ -122,10 +147,8 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         console.log(type, data)
         break
       case 'onload':
-        if (url && !parsingStartedRef.current) {
-          const webview = nativeRef.current
-          parsingStartedRef.current = true
-          void executeWebviewJavaScriptQuietly(webview, 'window.Nora.getVideoUrl()')
+        if (loadedUrlRef.current) {
+          parseVideoUrl()
         }
         break
       case 'download':
@@ -169,6 +192,11 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
                 onMessage={onMessage}
                 inspectable={inspectable}
               />
+              <View className="mt-3 flex-row justify-end">
+                <NouButton variant="outline" size="1" onPress={() => parseVideoUrl(true)}>
+                  Retry parsing
+                </NouButton>
+              </View>
             </View>
             {downloadOptions.length ? (
               <View className="gap-3">
