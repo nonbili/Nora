@@ -29,6 +29,34 @@ let TRACKING_PARAMS: Set<String> = [
   "xmt"
 ]
 
+// Hosts where Google runs WebView-detection for OAuth.
+let GOOGLE_AUTH_HOSTS: Set<String> = ["accounts.google.com", "accounts.youtube.com"]
+
+// Masks WebView-only fingerprints that Google's sign-in checks. Mirrors the
+// Android shim in modules/nora-view/android. Self-gates on hostname because
+// WKUserScript has no per-origin scoping.
+let OAUTH_SHIM_SCRIPT = """
+  (function() {
+    var host = location.hostname;
+    if (host !== 'accounts.google.com' && host !== 'accounts.youtube.com') return;
+    try {
+      Object.defineProperty(navigator, 'webdriver', { get: function() { return undefined; }, configurable: true });
+    } catch (e) {}
+    try {
+      if (!window.chrome) { window.chrome = {}; }
+      if (!window.chrome.runtime) { window.chrome.runtime = {}; }
+      if (!window.chrome.app) { window.chrome.app = { isInstalled: false }; }
+      if (!window.chrome.csi) { window.chrome.csi = function() { return {}; }; }
+      if (!window.chrome.loadTimes) { window.chrome.loadTimes = function() { return {}; }; }
+    } catch (e) {}
+  })();
+"""
+
+func installGoogleOAuthShim(_ controller: WKUserContentController) {
+  let script = WKUserScript(source: OAUTH_SHIM_SCRIPT, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+  controller.addUserScript(script)
+}
+
 let INTERNAL_SCHEMES: Set<String> = [
   "about",
   "blob",

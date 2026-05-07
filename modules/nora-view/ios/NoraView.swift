@@ -14,6 +14,9 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   var lastContextMenuLocation: CGPoint?
   var currentProfile: String = "default"
   var appliedBlocklistRuleList: WKContentRuleList?
+  private var popupContainer: UIView?
+  private var popupWebView: WKWebView?
+  private var popupCommittedToGoogleOAuth = false
 
   // MARK: - Profile Data Store
 
@@ -104,7 +107,10 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       config.userContentController.addUserScript(startScript)
     }
 
+    installGoogleOAuthShim(config.userContentController)
+
     config.allowsInlineMediaPlayback = true
+    config.preferences.javaScriptCanOpenWindowsAutomatically = true
     config.websiteDataStore = NoraView.dataStore(for: profile)
 
     return config
@@ -113,6 +119,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   private func setupWebView(profile: String) {
     // Remove existing webview if present
     if webView != nil {
+      dismissPopup()
       webView.removeObserver(self, forKeyPath: "title")
       webView.removeObserver(self, forKeyPath: "url")
       webView.removeFromSuperview()
@@ -142,8 +149,61 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     webView.addObserver(self, forKeyPath: "url", options: .new, context: nil)
   }
 
+  private func isGoogleOAuthPopupUrl(_ url: URL) -> Bool {
+    guard let host = url.host?.lowercased() else { return false }
+    return GOOGLE_AUTH_HOSTS.contains(host)
+  }
+
+  private func showPopup(_ popup: WKWebView) {
+    let container = UIView(frame: bounds)
+    container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    container.backgroundColor = .black
+
+    popup.frame = container.bounds
+    popup.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    container.addSubview(popup)
+
+    let closeButton = UIButton(type: .system)
+    closeButton.setTitle("X", for: .normal)
+    closeButton.setTitleColor(.white, for: .normal)
+    closeButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+    closeButton.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+    closeButton.layer.cornerRadius = 20
+    closeButton.translatesAutoresizingMaskIntoConstraints = false
+    closeButton.addTarget(self, action: #selector(closePopup), for: .touchUpInside)
+    container.addSubview(closeButton)
+
+    NSLayoutConstraint.activate([
+      closeButton.topAnchor.constraint(equalTo: container.safeAreaLayoutGuide.topAnchor, constant: 8),
+      closeButton.trailingAnchor.constraint(equalTo: container.safeAreaLayoutGuide.trailingAnchor, constant: -8),
+      closeButton.widthAnchor.constraint(equalToConstant: 40),
+      closeButton.heightAnchor.constraint(equalToConstant: 40),
+    ])
+
+    addSubview(container)
+    popupContainer = container
+    popupWebView = popup
+  }
+
+  @objc
+  private func closePopup() {
+    dismissPopup()
+  }
+
+  private func dismissPopup() {
+    popupWebView?.stopLoading()
+    popupWebView?.navigationDelegate = nil
+    popupWebView?.uiDelegate = nil
+    popupWebView?.removeFromSuperview()
+    popupContainer?.removeFromSuperview()
+    popupWebView = nil
+    popupContainer = nil
+    popupCommittedToGoogleOAuth = false
+  }
+
   deinit {
       NouController.shared.unregister(self)
+      dismissPopup()
       webView.removeObserver(self, forKeyPath: "title")
       webView.removeObserver(self, forKeyPath: "url")
   }
@@ -151,6 +211,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   override func layoutSubviews() {
     super.layoutSubviews()
     webView.frame = bounds
+    popupContainer?.frame = bounds
   }
 
   func setInspectable(_ inspectable: Bool) {
@@ -232,6 +293,24 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       let urlString = url.absoluteString
       let scheme = url.scheme?.lowercased() ?? ""
       let isInternalScheme = INTERNAL_SCHEMES.contains(scheme)
+      let isMainFrame = navigationAction.targetFrame?.isMainFrame ?? true
+
+      if webView == popupWebView && isMainFrame && !popupCommittedToGoogleOAuth {
+          if scheme == "about" {
+              decisionHandler(.allow)
+              return
+          }
+          if isGoogleOAuthPopupUrl(url) {
+              popupCommittedToGoogleOAuth = true
+              decisionHandler(.allow)
+              return
+          }
+
+          emitCustomEvent(type: "new-tab", data: ["url": urlString])
+          dismissPopup()
+          decisionHandler(.cancel)
+          return
+      }
 
       // Redirect to Old Reddit if setting is enabled
       if NouController.shared.settings.redirectToOldReddit && urlString.hasPrefix("https://www.reddit.com/") {
@@ -262,8 +341,6 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
         isGoogle ||
         !NouController.shared.settings.openExternalLinkInSystemBrowser
 
-      let isMainFrame = navigationAction.targetFrame?.isMainFrame ?? true
-
       if allowedInView || !isMainFrame {
           decisionHandler(.allow)
       } else {
@@ -277,6 +354,10 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   }
 
   func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+      if webView == popupWebView {
+          return
+      }
+
       let url = webView.url?.absoluteString ?? ""
       let title = webView.title ?? ""
 
@@ -388,6 +469,46 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   }
 
   // MARK: - WKUIDelegate
+  func webView(
+    _ webView: WKWebView,
+    createWebViewWith configuration: WKWebViewConfiguration,
+    for navigationAction: WKNavigationAction,
+    windowFeatures: WKWindowFeatures
+  ) -> WKWebView? {
+      guard navigationAction.targetFrame == nil else {
+          return nil
+      }
+
+      var startsAsGoogleOAuth = false
+      if let url = navigationAction.request.url {
+          let scheme = url.scheme?.lowercased() ?? ""
+          if scheme != "about" && !isGoogleOAuthPopupUrl(url) {
+              emitCustomEvent(type: "new-tab", data: ["url": url.absoluteString])
+              return nil
+          }
+          startsAsGoogleOAuth = isGoogleOAuthPopupUrl(url)
+      }
+
+      dismissPopup()
+      installGoogleOAuthShim(configuration.userContentController)
+      let popup = WKWebView(frame: bounds, configuration: configuration)
+      popup.navigationDelegate = self
+      popup.uiDelegate = self
+      popup.allowsBackForwardNavigationGestures = true
+      if let ua = userAgent {
+          popup.customUserAgent = ua
+      }
+      showPopup(popup)
+      popupCommittedToGoogleOAuth = startsAsGoogleOAuth
+      return popup
+  }
+
+  func webViewDidClose(_ webView: WKWebView) {
+      if webView == popupWebView {
+          dismissPopup()
+      }
+  }
+
   @available(iOS 15.0, *)
   func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin, initiatedByFrame frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: @escaping (WKPermissionDecision) -> Void) {
       decisionHandler(.grant)
