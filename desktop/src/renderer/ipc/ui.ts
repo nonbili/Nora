@@ -1,9 +1,15 @@
 import { showToast } from '@/lib/toast.js'
+import { ui$ } from '@/states/ui.js'
 import { handleDeeplink } from '../lib/deeplink.js'
 import { UI_CHANNEL } from 'main/ipc/constants.js'
 
+function openLinkInProfile(url: string) {
+  ui$.profileLinkUrl.set(url)
+}
+
 const interfaces = {
   handleDeeplink,
+  openLinkInProfile,
   showToast,
 }
 

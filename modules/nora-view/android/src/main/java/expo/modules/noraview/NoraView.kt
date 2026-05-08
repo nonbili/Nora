@@ -59,6 +59,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.json.JSONArray
+import org.json.JSONTokener
 import org.apache.tika.Tika
 
 val VIEW_HOSTS = arrayOf(
@@ -358,6 +360,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   private var gestureDetector = GestureDetectorCompat(context, NoraGestureListener())
+  private var lastTouchX = 0f
+  private var lastTouchY = 0f
 
   internal val currentActivity: Activity?
     get() = appContext.currentActivity
@@ -403,6 +407,14 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         }
       }
 
+    fun openInProfile(targetUrl: String) =
+      object : MenuItem.OnMenuItemClickListener {
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+          emit("open-in-profile", mapOf("url" to targetUrl))
+          return true
+        }
+      }
+
     if (
       result.getType() in arrayOf(WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE)
     ) {
@@ -417,20 +429,19 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       menu.add(nouController.t("menu_saveImage")).setOnMenuItemClickListener(onDownload)
       menu.add(nouController.t("menu_openImageInNewTab")).setOnMenuItemClickListener(openInNewTab(imageTargetUrl, "image"))
       menu.add(nouController.t("menu_copyImageLink")).setOnMenuItemClickListener(copyUrl("image", imageTargetUrl))
-      if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE && linkUrl != null && linkUrl != imageTargetUrl) {
+      if (linkUrl != null && linkUrl != imageTargetUrl) {
         menu.add(nouController.t("menu_openInNewTab")).setOnMenuItemClickListener(openInNewTab(linkUrl))
+        menu.add(nouController.t("menu_openInProfile")).setOnMenuItemClickListener(openInProfile(linkUrl))
         menu.add(nouController.t("menu_copyLink")).setOnMenuItemClickListener(copyUrl("link", linkUrl))
       }
     } else if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && linkUrl != null) {
       menu.add(nouController.t("menu_openInNewTab")).setOnMenuItemClickListener(openInNewTab(linkUrl))
+      menu.add(nouController.t("menu_openInProfile")).setOnMenuItemClickListener(openInProfile(linkUrl))
       menu.add(nouController.t("menu_copyLink")).setOnMenuItemClickListener(copyUrl("link", linkUrl))
     }
   }
 
   private fun prepareContextMenuTargets() {
-    contextMenuLinkUrl = null
-    contextMenuImageUrl = null
-
     val result = webView.getHitTestResult()
     when (result.getType()) {
       WebView.HitTestResult.SRC_ANCHOR_TYPE -> contextMenuLinkUrl = result.getExtra()
@@ -452,6 +463,43 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         false
       }
     webView.requestFocusNodeHref(handler.obtainMessage())
+    resolveContextMenuTargetsFromPoint()
+  }
+
+  private fun resolveContextMenuTargetsFromPoint() {
+    val x = lastTouchX
+    val y = lastTouchY
+    val script =
+      """
+        (() => {
+          const dpr = window.devicePixelRatio || 1;
+          const element =
+            document.elementFromPoint($x / dpr, $y / dpr) ||
+            document.elementFromPoint($x, $y);
+          const image = element?.closest?.('img');
+          const link = element?.closest?.('a[href]');
+          return JSON.stringify([
+            link ? link.href : '',
+            image ? (image.currentSrc || image.src || '') : ''
+          ]);
+        })();
+      """.trimIndent()
+
+    webView.evaluateJavascript(script) { result ->
+      try {
+        val payload = JSONTokener(result).nextValue() as? String ?: return@evaluateJavascript
+        val targets = JSONArray(payload)
+        val linkUrl = targets.optString(0).takeIf { it.isNotEmpty() }
+        val imageUrl = targets.optString(1).takeIf { it.isNotEmpty() }
+        if (linkUrl != null) {
+          contextMenuLinkUrl = linkUrl
+        }
+        if (imageUrl != null) {
+          contextMenuImageUrl = imageUrl
+        }
+      } catch (_: Throwable) {
+      }
+    }
   }
 
   inner class NoraGestureListener : GestureDetector.SimpleOnGestureListener() {
@@ -733,6 +781,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       setOnTouchListener { v, event ->
         gestureDetector.onTouchEvent(event)
         if (event.action == MotionEvent.ACTION_DOWN) {
+          lastTouchX = event.x
+          lastTouchY = event.y
+          contextMenuLinkUrl = null
+          contextMenuImageUrl = null
+          resolveContextMenuTargetsFromPoint()
           v.requestFocus()
         }
         false

@@ -556,6 +556,14 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
                       self?.emitCustomEvent(type: "new-tab", data: ["url": linkUrl])
                   }
                   actions.append(openInNewTab)
+
+                  let openInProfile = UIAction(
+                    title: NouController.shared.t("menu_openInProfile"),
+                    image: UIImage(systemName: "person.crop.circle")
+                  ) { [weak self] _ in
+                      self?.emitCustomEvent(type: "open-in-profile", data: ["url": linkUrl])
+                  }
+                  actions.append(openInProfile)
               }
 
               return UIMenu(title: "", children: actions + suggestedActions)

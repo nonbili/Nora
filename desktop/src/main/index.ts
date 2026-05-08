@@ -8,7 +8,8 @@ import { bindDeeplink } from './lib/deeplink'
 import { genDesktopFile } from './lib/linux'
 import { checkForUpdate } from './lib/auto-update'
 import { initMainChannel } from './ipc/main'
-import contextMenu from 'electron-context-menu'
+import { uiClient } from './ipc/ui'
+import contextMenu, { type Options as ContextMenuOptions } from 'electron-context-menu'
 import { getUserAgent } from '@/lib/useragent'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
@@ -57,21 +58,30 @@ function createWindow(): void {
     webPreferences.preload = join(__dirname, '../preload/index.js')
   })
 
-  const saveImageAppend = (
+  const contextMenuAppend: NonNullable<ContextMenuOptions['append']> = (
     _defaults: unknown,
     params: Electron.ContextMenuParams,
-    target: Electron.BrowserWindow | Electron.WebContents,
-  ): Electron.MenuItemConstructorOptions[] => [
-    {
-      label: 'Save Image As…',
-      visible: params.mediaType === 'image',
-      click: () => {
-        const wc =
-          (target as Electron.BrowserWindow).webContents ?? (target as Electron.WebContents)
-        wc.downloadURL(params.srcURL)
+    target,
+  ): Electron.MenuItemConstructorOptions[] => {
+    const wc = 'downloadURL' in target ? target : target.webContents
+
+    return [
+      {
+        label: 'Open in profile',
+        visible: /^https?:\/\//i.test(params.linkURL),
+        click: () => {
+          uiClient.openLinkInProfile(params.linkURL)
+        },
       },
-    },
-  ]
+      {
+        label: 'Save Image As…',
+        visible: params.mediaType === 'image',
+        click: () => {
+          wc.downloadURL(params.srcURL)
+        },
+      },
+    ]
+  }
 
   const contextMenuOptions = {
     showCopyImage: true,
@@ -80,17 +90,17 @@ function createWindow(): void {
     showLookUpSelection: false,
     showSearchWithGoogle: false,
     showSelectAll: false,
-    append: saveImageAppend,
+    append: contextMenuAppend,
   }
   attachDownloadHandler(mainWindow.webContents.session)
-  contextMenu.default({ ...contextMenuOptions, window: mainWindow })
+  contextMenu({ ...contextMenuOptions, window: mainWindow })
   mainWindow.webContents.on('did-attach-webview', (e, wc) => {
     attachDownloadHandler(wc.session)
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
       callback(permission === 'notifications')
     })
     // @ts-expect-error electron-context-menu accepts a webContents-shaped wrapper
-    contextMenu.default({ ...contextMenuOptions, window: { webContents: wc } })
+    contextMenu({ ...contextMenuOptions, window: { webContents: wc } })
     wc.setWindowOpenHandler((details) => {
       let url = details.url
       const { host, pathname, searchParams } = new URL(url)

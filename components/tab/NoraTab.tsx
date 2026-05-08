@@ -538,6 +538,11 @@ export const NoraTab: React.FC<{
           tabs$.openTab(nextUrl, { parentTabId: tab.id, source: 'child' })
         }
         break
+      case 'open-in-profile':
+        if (!isExternalAppUrl(data.url)) {
+          ui$.profileLinkUrl.set(forceHttps(data.url))
+        }
+        break
       case 'save-file':
         webview?.saveFile(data.content, data.fileName, data.mimeType)
         break

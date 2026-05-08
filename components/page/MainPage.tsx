@@ -12,6 +12,7 @@ import { DownloadVideoModal } from '../modal/DownloadVideoModal'
 import { UrlModal } from '../modal/UrlModal'
 import { ToolsModal } from '../modal/ToolsModal'
 import { ProfileEditModal } from '../modal/ProfileEditModal'
+import { ProfileLinkModal } from '../modal/ProfileLinkModal'
 import { RenameViewModal } from '../modal/RenameViewModal'
 import { UserStyleEditModal } from '../modal/UserStyleEditModal'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
@@ -64,6 +65,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <UrlModal />
         <ToolsModal />
         <ProfileEditModal />
+        <ProfileLinkModal />
         <RenameViewModal />
         <UserStyleEditModal />
         {nIf(
