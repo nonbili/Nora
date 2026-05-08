@@ -4,7 +4,7 @@ import { Image } from 'expo-image'
 import { use$ } from '@legendapp/state/react'
 import { auth$ } from '@/states/auth'
 import { isWeb, isIos } from '@/lib/utils'
-import { signOut } from '@/lib/supabase/auth'
+import { openDeleteAccount, signOut } from '@/lib/supabase/auth'
 import { NouLink } from '../link/NouLink'
 import { NouMenu } from '../menu/NouMenu'
 import { capitalize } from 'es-toolkit'
@@ -33,7 +33,7 @@ const SettingsBadge: React.FC<{ label: string }> = ({ label }) => {
 }
 
 export const SettingsModalTabSync = () => {
-  const { user, userEmail, plan, userId } = use$(auth$)
+  const { user, userEmail, plan, userId, accessToken } = use$(auth$)
   const { me, refetchMe } = useMe()
   const syncHint = userId && (!plan || plan === 'free') ? t('sync.upgradeHint') : t('sync.hint')
   const [loadingProduct, setLoadingProduct] = useState(isIos)
@@ -153,13 +153,27 @@ export const SettingsModalTabSync = () => {
       await NoraBilling.manageSubscriptions()
     })
 
+  const onDeleteAccount = async () => {
+    setActionError(undefined)
+    if (!accessToken) {
+      setActionError(t('sync.signInRequired'))
+      return
+    }
+    try {
+      await openDeleteAccount(accessToken)
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error))
+    }
+  }
+
   const accountMenuItems = [
     ...(isIos
       ? me?.source === 'app_store' && me?.plan === 'sync'
         ? [{ label: t('sync.manageIos'), handler: () => void onManageSubscriptions() }]
-        : [] 
+        : []
       : []),
     ...(isIos ? [{ label: t('sync.restore'), handler: () => void onRestore() }] : []),
+    ...(isIos ? [{ label: t('sync.deleteAccount'), handler: () => void onDeleteAccount() }] : []),
     { label: t('menus.signOut'), handler: signOut },
   ]
 
@@ -174,7 +188,7 @@ export const SettingsModalTabSync = () => {
               <NouText className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{syncHint}</NouText>
               <View className="mt-5">
                 <NouLink
-                  className="rounded-full bg-zinc-100 px-5 py-2.5 text-center text-sm text-zinc-950"
+                  className="rounded-full bg-zinc-900 px-5 py-2.5 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-950"
                   href="https://nora.inks.page/auth/app"
                   target="_blank"
                 >

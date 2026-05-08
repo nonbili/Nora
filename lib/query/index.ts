@@ -28,6 +28,10 @@ export interface SyncIosTransactionResponse {
   entitlement: NoraEntitlement
 }
 
+export interface WebAuthLinkResponse {
+  token?: string | null
+}
+
 const defaultEntitlement: NoraEntitlement = {
   plan: 'free',
   source: 'none',
@@ -37,8 +41,7 @@ function getErrorMessage(payload: any, fallback?: string) {
   return payload?.error?.json?.message || payload?.message || fallback || 'Request failed'
 }
 
-async function callNoraApi<T>(path: string, init?: RequestInit): Promise<T> {
-  const authorization = auth$.accessToken.get()
+async function callNoraApi<T>(path: string, init?: RequestInit, authorization = auth$.accessToken.get()): Promise<T> {
   const headers = new Headers(init?.headers)
   if (authorization) {
     headers.set('authorization', authorization)
@@ -80,6 +83,8 @@ export const getMeQuery = (options?: Partial<UseQueryOptions<NoraEntitlement>>) 
   staleTime: 15 * 60 * 1000, // 15 minutes
   ...options,
 })
+
+export const fetchWebAuthLink = (accessToken: string) => callNoraApi<WebAuthLinkResponse>('users.link', undefined, accessToken)
 
 export const prepareIosPurchase = () => callNoraApi<PrepareIosPurchaseResponse>('nora.prepareIosPurchase', { method: 'POST' })
 

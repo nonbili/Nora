@@ -268,6 +268,7 @@
     "upgradeHint": "Upgrade to sync bookmarks and settings across devices.",
     "currentPlan": "Current plan",
     "managePlan": "Manage plan",
+    "deleteAccount": "Delete account",
     "buy": "Subscribe with App Store",
     "restore": "Restore purchases",
     "manageIos": "Manage in App Store",
@@ -284,7 +285,8 @@
     "expiresAt": "Renews or expires: {{value}}",
     "legalNotice": "Subscriptions renew automatically unless canceled. By subscribing, you agree to the Terms of Use (EULA) and Privacy Policy.",
     "termsOfUse": "Terms of Use (EULA)",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "signInRequired": "Sign in to continue."
   },
   "tabs": {
     "new": "New tab",
