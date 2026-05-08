@@ -292,6 +292,10 @@
     "noRecentlyClosed": "No recently closed tabs"
   },
   "newTab": {
+    "presets": {
+      "open": "Add preset bookmarks",
+      "title": "Preset bookmarks"
+    },
     "search": {
       "urlPlaceholder": "Enter a URL",
       "searchPlaceholder": "Search the web"

@@ -261,14 +261,14 @@ export const NouHeader: React.FC<{}> = ({}) => {
                               className={clsx(
                                 'rounded-full px-2 py-1',
                                 currentTab?.desktopMode
-                                  ? 'bg-indigo-500/20 border border-indigo-400/40'
+                                  ? 'bg-indigo-100 border border-indigo-300 dark:bg-indigo-500/20 dark:border-indigo-400/40'
                                   : 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700',
                               )}
                             >
                               <Text
                                 className={clsx(
                                   'text-[11px] font-medium',
-                                  currentTab?.desktopMode ? 'text-indigo-200' : 'text-zinc-400',
+                                  currentTab?.desktopMode ? 'text-indigo-700 dark:text-indigo-200' : 'text-zinc-600 dark:text-zinc-400',
                                 )}
                               >
                                 {currentTab?.desktopMode ? t('common.on') : t('common.off')}
