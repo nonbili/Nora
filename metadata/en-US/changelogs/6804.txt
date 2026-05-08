@@ -1,0 +1,4 @@
+- Support one profile per site
+- Support clearing all webview data from profiles
+- Add "Open in profile" to link context menu
+- Add preset bookmarks to be easily toggleable
