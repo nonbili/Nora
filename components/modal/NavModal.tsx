@@ -23,6 +23,7 @@ import { SearchProviderIcon } from '../service/SearchProviderIcon'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ProfileSelectorChips } from '../profile/ProfileSelectorChips'
 import { colors } from '@/lib/colors'
+import { AUTO_PROFILE_ID, getSiteProfileId, isSiteProfileId } from '@/lib/site-profile'
 
 const cls =
   'flex-row items-center gap-2 rounded-full w-40 py-2 px-3 overflow-hidden border border-zinc-200 bg-white/90 dark:border-zinc-800 dark:bg-zinc-900/90'
@@ -45,7 +46,8 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   const disabledServices = useValue(settings$.disabledServicesArr)
   const profiles = useValue(settings$.profiles)
   const bookmarks = useValue(bookmarks$.bookmarks)
-  const oneHandMode = !isWeb && useValue(settings$.oneHandMode)
+  const oneHandModeSetting = useValue(settings$.oneHandMode)
+  const oneHandMode = !isWeb && oneHandModeSetting
   const enabledSearchProviderIds = useValue(settings$.enabledSearchProviderIds)
   const customSearchProviders = useValue(settings$.customSearchProviders)
   const selectedSearchProviderId = useValue(settings$.selectedSearchProviderId)
@@ -58,7 +60,15 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   const insets = useSafeAreaInsets()
-  const selectedProfile = profileId || currentTab?.profile || 'default'
+  const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
+  const selectedProfile =
+    profileId ||
+    (oneProfilePerSite &&
+    (currentTab?.profileMode === 'auto' ||
+      isSiteProfileId(currentTab?.profile) ||
+      (!currentTab?.profileMode && (!currentTab?.profile || currentTab.profile === 'default')))
+      ? AUTO_PROFILE_ID
+      : currentTab?.profile || 'default')
   const enabledSearchProviders = getEnabledSearchProviders(enabledSearchProviderIds, customSearchProviders)
   const selectedSearchProvider =
     getResolvedSearchProvider(selectedSearchProviderId, customSearchProviders) || enabledSearchProviders[0]
@@ -85,10 +95,19 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
     } else {
       const tab$ = tabs$.tabs[index]
       if (tab$.get()) {
-        tab$.profile.set(profileId)
+        if (profileId === AUTO_PROFILE_ID) {
+          const currentUrl = tab$.url.peek()
+          tab$.profile.set((currentUrl && getSiteProfileId(currentUrl)) || 'default')
+          tab$.profileMode.set('auto')
+        } else {
+          tab$.profile.set(profileId)
+          tab$.profileMode.set('manual')
+        }
       }
     }
-    ui$.lastSelectedProfileId.set(profileId)
+    if (profileId !== AUTO_PROFILE_ID) {
+      ui$.lastSelectedProfileId.set(profileId)
+    }
   }
 
   const submitInput = () => {
@@ -122,6 +141,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
           profiles={profiles}
           selectedProfileId={selectedProfile}
           onSelectProfile={selectProfile}
+          showAuto={oneProfilePerSite}
           containerClassName="flex-row gap-4"
         />
       </ScrollView>

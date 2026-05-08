@@ -405,8 +405,27 @@ export const SettingsAppearanceContent = () => {
 }
 
 export const SettingsProfilesContent = () => {
+  const settings = useValue(settings$)
+
   return (
     <View className="pb-4">
+      <NouText className={subheaderCls}>{t('settings.profiles.sessionMode')}</NouText>
+      <SettingsSurface className="mb-10">
+        <SettingsRow isLast>
+          <NouSwitch
+            label={
+              <View>
+                <NouText className="font-medium">{t('settings.oneProfilePerSite')}</NouText>
+                <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  {t('settings.oneProfilePerSiteHint')}
+                </NouText>
+              </View>
+            }
+            value={settings.oneProfilePerSite}
+            onPress={() => settings$.oneProfilePerSite.toggle()}
+          />
+        </SettingsRow>
+      </SettingsSurface>
       <ProfileManager />
       <View className="mt-10">
         <NouText className={subheaderCls}>{t('settings.profiles.injectCookie')}</NouText>

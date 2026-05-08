@@ -1,7 +1,14 @@
 import { settings$, type Profile } from '@/states/settings'
+import { getSiteFromProfileId } from './site-profile'
+import { getDeterministicProfileColor } from './profile-color'
 
 export const getProfileColor = (profileId?: string) => {
-  const profiles = settings$.profiles.get() as Array<Profile | null | undefined> | undefined
+  const site = getSiteFromProfileId(profileId)
+  if (site) {
+    return getDeterministicProfileColor(site)
+  }
+
+  const profiles = settings$.profiles.get() as (Profile | null | undefined)[] | undefined
   const sanitized = (profiles || []).filter((p): p is Profile => p != null)
   if (!sanitized.length) {
     return undefined

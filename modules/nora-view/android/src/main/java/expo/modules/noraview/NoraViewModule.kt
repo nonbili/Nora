@@ -17,6 +17,8 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileWriter
@@ -110,19 +112,21 @@ class NoraViewModule : Module() {
       }
     }
 
-    AsyncFunction("getCookies") { url: String, profile: String? ->
-      try {
-        val manager = if (profile != null && profile != "default" &&
-          WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
-          ProfileStore.getInstance().getProfile(profile)?.cookieManager
-            ?: CookieManager.getInstance()
-        } else {
-          CookieManager.getInstance()
+    AsyncFunction("getCookies") Coroutine { url: String, profile: String? ->
+      withContext(Dispatchers.Main) {
+        try {
+          val manager = if (profile != null && profile != "default" &&
+            WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+            ProfileStore.getInstance().getProfile(profile)?.cookieManager
+              ?: CookieManager.getInstance()
+          } else {
+            CookieManager.getInstance()
+          }
+          manager.getCookie(url) ?: ""
+        } catch (e: Exception) {
+          log("getCookies failed: ${e.message}")
+          ""
         }
-        manager.getCookie(url) ?: ""
-      } catch (e: Exception) {
-        log("getCookies failed: ${e.message}")
-        ""
       }
     }
 

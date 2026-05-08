@@ -2,6 +2,7 @@ import { syncState, when } from '@legendapp/state'
 import NoraViewModule from '@/modules/nora-view'
 import { isWeb, isIos, isAndroid } from '@/lib/utils'
 import { settings$ } from '@/states/settings'
+import { autoProfiles$ } from '@/states/auto-profiles'
 import { blocklist$ } from '@/states/blocklist'
 import { mergeFilterListsText, mergeFilterListsAsync } from './parser'
 import { shouldAutoRefresh } from './policy'
@@ -113,7 +114,8 @@ async function fetchRemoteText(url: string, headers: Record<string, string> = {}
 
 function getDesktopPartitions() {
   const partitions = settings$.profiles.get().map((profile) => `persist:${profile.id}`)
-  return Array.from(new Set(['persist:default', ...partitions])).sort()
+  const autoPartitions = autoProfiles$.profiles.get().map((profile) => `persist:${profile.id}`)
+  return Array.from(new Set(['persist:default', ...partitions, ...autoPartitions])).sort()
 }
 
 function emptyPayload(revision: number): BlocklistPayload {

@@ -29,6 +29,7 @@ import { SettingsUsageLimitsContent } from './SettingsUsageLimitsContent'
 import { queryClient } from '@/lib/query/client'
 import { getReleaseFeedQuery } from '@/lib/query/changelog'
 import { settingsUi, SettingsSection, SettingsSurface } from './SettingsPrimitives'
+import { colors } from '@/lib/colors'
 
 const repo = 'https://github.com/nonbili/Nora'
 const donateLinks = [
@@ -37,8 +38,6 @@ const donateLinks = [
   { label: 'PayPal', detail: 'paypal.me/rnons', url: 'https://paypal.me/rnons' },
 ]
 type SettingsPage = 'home' | 'browsing' | 'styles' | 'appearance' | 'services' | 'profiles' | 'bookmarks' | 'search' | 'sync' | 'about' | 'changelog' | 'usageLimits'
-
-import { colors } from '@/lib/colors'
 
 const SettingsNavRow: React.FC<{
   title: string
@@ -288,8 +287,14 @@ export const SettingsModal = () => {
             </SettingsSurface>
           </SettingsSection>
 
-          <SettingsSection label={t('settings.sections.bookmarksSearch')}>
+          <SettingsSection label={t('settings.sections.accounts')}>
             <SettingsSurface>
+              <SettingsNavRow
+                title={t('settings.pages.profiles')}
+                description={t('settings.profiles.description')}
+                icon="people"
+                onPress={() => pushPage('profiles')}
+              />
               <SettingsNavRow
                 title={t('settings.pages.bookmarks')}
                 description={t('settings.bookmarks.description')}
@@ -301,18 +306,6 @@ export const SettingsModal = () => {
                 description={t('settings.search.description')}
                 icon="manage-search"
                 onPress={() => pushPage('search')}
-                isLast
-              />
-            </SettingsSurface>
-          </SettingsSection>
-
-          <SettingsSection label={t('settings.sections.accounts')}>
-            <SettingsSurface>
-              <SettingsNavRow
-                title={t('settings.pages.profiles')}
-                description={t('settings.profiles.description')}
-                icon="people"
-                onPress={() => pushPage('profiles')}
                 isLast={!showSync}
               />
               {showSync ? (

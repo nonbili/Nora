@@ -17,6 +17,14 @@ import {
   type ChildBackParentByTabId,
 } from '@/lib/tab-behavior'
 import { removeTrackingParams } from '@/lib/url'
+import { autoProfiles$ } from './auto-profiles'
+import {
+  AUTO_PROFILE_ID,
+  getSiteFromProfileId,
+  getSiteProfileId,
+  isSiteProfileId,
+  type ProfileMode,
+} from '@/lib/site-profile'
 
 export interface Tab {
   id: string
@@ -26,6 +34,7 @@ export interface Tab {
   isLoading?: boolean
   desktopMode?: boolean
   profile?: string
+  profileMode?: ProfileMode
   backToNewTab?: boolean
   history?: string[]
   historyIndex?: number
@@ -81,6 +90,7 @@ const pushRecentlyClosedTabs = (closedTabs: Tab[]) => {
 export type OpenTabOptions = {
   parentTabId?: string
   profile?: string
+  profileMode?: ProfileMode
   source?: 'manual' | 'child' | 'shared' | 'reuse'
 }
 
@@ -132,6 +142,59 @@ const getClosePreferredTabIds = (availableTabIds: string[]) => {
 
   const availableTabIdSet = new Set(availableTabIds)
   return activeView.slotTabIds.filter((tabId): tabId is string => typeof tabId === 'string' && availableTabIdSet.has(tabId))
+}
+
+const recordAutoProfile = (profileId?: string) => {
+  const site = getSiteFromProfileId(profileId)
+  if (site) {
+    autoProfiles$.recordProfile(profileId!, site)
+  }
+}
+
+const resolveOpenProfile = (url: string, options?: OpenTabOptions): Pick<Tab, 'profile' | 'profileMode'> => {
+  const oneProfilePerSite = settings$.oneProfilePerSite.get()
+  const tabs = tabs$.tabs.get()
+  const parentTab = options?.parentTabId ? tabs.find((tab) => tab.id === options.parentTabId) : undefined
+  const requestedAuto = options?.profile === AUTO_PROFILE_ID || options?.profileMode === 'auto'
+  const requestedProfile = requestedAuto ? undefined : options?.profile
+  const fallbackProfile = requestedProfile || ui$.lastSelectedProfileId.get() || 'default'
+
+  if (!oneProfilePerSite) {
+    return { profile: fallbackProfile, profileMode: 'manual' }
+  }
+
+  if (options?.source === 'child' && parentTab?.profile) {
+    recordAutoProfile(parentTab.profile)
+    return {
+      profile: parentTab.profile,
+      profileMode: parentTab.profileMode || (isSiteProfileId(parentTab.profile) ? 'auto' : 'manual'),
+    }
+  }
+
+  const profileMode: ProfileMode = requestedProfile && !requestedAuto ? 'manual' : 'auto'
+  if (profileMode === 'auto') {
+    const siteProfile = getSiteProfileId(url)
+    if (siteProfile) {
+      recordAutoProfile(siteProfile)
+      return { profile: siteProfile, profileMode: 'auto' }
+    }
+    return { profile: fallbackProfile, profileMode: 'auto' }
+  }
+
+  return { profile: fallbackProfile, profileMode: 'manual' }
+}
+
+const shouldResolveTabUrlAsAutoProfile = (tab: Tab) => {
+  if (!settings$.oneProfilePerSite.get()) {
+    return false
+  }
+  if (tab.profileMode === 'manual') {
+    return false
+  }
+  if (tab.profileMode === 'auto' || isSiteProfileId(tab.profile)) {
+    return true
+  }
+  return !tab.profile || tab.profile === 'default'
 }
 
 const setActiveTabIndexInternal = (index: number, reason: TabActivationReason = 'user') => {
@@ -197,28 +260,38 @@ export const tabs$: Observable<Store> = observable<Store>({
             try {
               const tabUrl = new URL(t.url)
               return tabUrl.hostname === newUrl.hostname
-            } catch (e) {
+            } catch {
               return false
             }
           })
 
           if (existingTabIndex !== -1) {
             tabs$.setActiveTabIndex(existingTabIndex, 'open')
+            const existingTab = tabs[existingTabIndex]
+            if (existingTab && shouldResolveTabUrlAsAutoProfile(existingTab)) {
+              const siteProfile = getSiteProfileId(url)
+              if (siteProfile) {
+                recordAutoProfile(siteProfile)
+                tabs$.tabs[existingTabIndex].profile.set(siteProfile)
+                tabs$.tabs[existingTabIndex].profileMode.set('auto')
+              }
+            }
             tabs$.tabs[existingTabIndex].url.set(url)
             tabs$.tabs[existingTabIndex].isLoading.set(Boolean(url))
             return tabs$.tabs[existingTabIndex].id.get()
           }
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
 
+    const profile = resolveOpenProfile(cleaned || url, options)
     const tab: Tab = {
       id: genId(),
       url,
       isLoading: Boolean(url),
-      profile: options?.profile || ui$.lastSelectedProfileId.get(),
+      ...profile,
       backToNewTab: !url,
     }
     tabs$.tabs.push(tab)
@@ -396,9 +469,18 @@ export const tabs$: Observable<Store> = observable<Store>({
       return tabs$.openTab(url)
     }
     const targetIndex = index ?? tabs$.activeTabIndex.get()
-    const tab$ = tabs$.tabs[targetIndex]
-    if (tab$.get()) {
+      const tab$ = tabs$.tabs[targetIndex]
+    const tab = tab$.get()
+    if (tab) {
       const previousUrl = tab$.url.get()
+      if (url && shouldResolveTabUrlAsAutoProfile(tab)) {
+        const siteProfile = getSiteProfileId(url)
+        if (siteProfile) {
+          recordAutoProfile(siteProfile)
+          tab$.profile.set(siteProfile)
+          tab$.profileMode.set('auto')
+        }
+      }
       tab$.url.set(url)
       tab$.isLoading.set(Boolean(url))
       if (!previousUrl && url) {
@@ -502,6 +584,12 @@ syncObservable(tabs$, {
                 tab.id = genId()
               }
               tab.isLoading = false
+              if (isSiteProfileId(tab.profile)) {
+                tab.profileMode = 'auto'
+                recordAutoProfile(tab.profile)
+              } else if (tab.profileMode !== 'auto' && tab.profileMode !== 'manual') {
+                tab.profileMode = undefined
+              }
               tab.backToNewTab = Boolean(tab.backToNewTab || !tab.url)
               if (Array.isArray(tab.history)) {
                 const cleaned = tab.history.filter((u): u is string => typeof u === 'string' && u.length > 0)

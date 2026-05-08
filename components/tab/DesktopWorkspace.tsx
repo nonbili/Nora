@@ -16,6 +16,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { ServiceIcon } from '../service/Services'
 import { getProfileColor } from '@/lib/profile'
 import { ui$ } from '@/states/ui'
+import { AUTO_PROFILE_ID } from '@/lib/site-profile'
 
 const SLOT_GAP = 8
 const getHiddenTabStyle = (width: number | string): CSSProperties => ({
@@ -153,7 +154,8 @@ const EmptySlot: React.FC<{
   isSplit?: boolean
 }> = ({ isActive, onActivate, slotIndex, orderedTabs, tabIdSet, view, isSplit }) => {
   const lastSelectedProfileId = useValue(ui$.lastSelectedProfileId)
-  const selectedProfileId = lastSelectedProfileId
+  const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
+  const selectedProfileId = oneProfilePerSite ? AUTO_PROFILE_ID : lastSelectedProfileId
   const profileColor = getProfileColor(selectedProfileId)
   const canCloseSlot = isSplit && slotIndex >= 2 && view.slotTabIds.length > 2
   const usedTabIds = new Set(view.slotTabIds.filter((tabId): tabId is string => Boolean(tabId)))
@@ -163,7 +165,10 @@ const EmptySlot: React.FC<{
 
   const createTabInSlot = (url: string, profileId: string) => {
     onActivate()
-    const tabId = openDesktopTab(url, { profile: profileId })
+    const tabId =
+      profileId === AUTO_PROFILE_ID
+        ? openDesktopTab(url, { profileMode: 'auto' })
+        : openDesktopTab(url, { profile: profileId, profileMode: 'manual' })
     if (tabId) {
       savedViews$.assignSlotTab(view.id, slotIndex, tabId)
       tabs$.setActiveTabById(tabId, 'open')

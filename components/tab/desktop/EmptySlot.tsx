@@ -11,6 +11,8 @@ import { type CustomSavedView, savedViews$ } from '@/states/saved-views'
 import { openDesktopTab, type Tab, tabs$ } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
 import { getSlotStyle, getTabLabel } from './desktopWorkspaceShared'
+import { AUTO_PROFILE_ID } from '@/lib/site-profile'
+import { settings$ } from '@/states/settings'
 
 export const EmptySlot: React.FC<{
   isActive: boolean
@@ -22,7 +24,9 @@ export const EmptySlot: React.FC<{
   isSplit?: boolean
 }> = ({ isActive, onActivate, slotIndex, orderedTabs, tabIdSet, view, isSplit }) => {
   const lastSelectedProfileId = useValue(ui$.lastSelectedProfileId)
-  const profileColor = getProfileColor(lastSelectedProfileId)
+  const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
+  const selectedProfileId = oneProfilePerSite ? AUTO_PROFILE_ID : lastSelectedProfileId
+  const profileColor = getProfileColor(selectedProfileId)
   const canCloseSlot = isSplit && slotIndex >= 2 && view.slotTabIds.length > 2
   const usedTabIds = new Set(view.slotTabIds.filter((tabId): tabId is string => Boolean(tabId)))
   const availableTabs = orderedTabs.filter((tab) => !usedTabIds.has(tab.id) && tabIdSet.has(tab.id))
@@ -31,7 +35,10 @@ export const EmptySlot: React.FC<{
 
   const createTabInSlot = (url: string, profileId: string) => {
     onActivate()
-    const tabId = openDesktopTab(url, { profile: profileId })
+    const tabId =
+      profileId === AUTO_PROFILE_ID
+        ? openDesktopTab(url, { profileMode: 'auto' })
+        : openDesktopTab(url, { profile: profileId, profileMode: 'manual' })
     if (tabId) {
       savedViews$.assignSlotTab(view.id, slotIndex, tabId)
       tabs$.setActiveTabById(tabId, 'open')
@@ -112,7 +119,7 @@ export const EmptySlot: React.FC<{
             <View className="w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white/95 shadow-sm shadow-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-950/90">
               <Pressable
                 className="flex-row items-center gap-3 px-5 py-4 active:bg-zinc-100 dark:active:bg-zinc-900"
-                onPress={() => createTabInSlot('', lastSelectedProfileId)}
+                onPress={() => createTabInSlot('', selectedProfileId)}
               >
                 <View className="h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-900">
                   <MaterialIcons name="add" size={20} color="#f97316" />

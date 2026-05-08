@@ -89,6 +89,17 @@
   },
   "profiles": {
     "label": "Profiles",
+    "auto": "Auto",
+    "autoProfiles": "Auto profiles",
+    "autoProfilesEmpty": "No auto profiles yet.",
+    "autoProfileLastUsed": "Last used: {{value}}",
+    "autoProfileLastUsedLabel": "Last used",
+    "manageAutoProfiles": "Manage auto profiles ({{count}})",
+    "deleteAutoProfileConfirm": "Delete the auto profile for {{site}}? This clears its stored browsing data and closes tabs using it.",
+    "deleteAllAutoProfiles": "Delete all",
+    "deleteAllAutoProfilesConfirm": "Delete all {{count}} auto profiles? This clears their stored browsing data and closes tabs using them.",
+    "deleteStaleAutoProfiles": "Delete unused 14 days",
+    "deleteStaleAutoProfilesConfirm": "Delete {{count}} auto profiles not used in the last 14 days? This clears their stored browsing data and closes tabs using them.",
     "add": "Add",
     "edit": "Edit",
     "save": "Save",
@@ -102,6 +113,8 @@
     "inspectable": "Make webview inspectable",
     "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
     "doubleBackToExitApp": "Double back to exit app",
+    "oneProfilePerSite": "One profile per site",
+    "oneProfilePerSiteHint": "Use a separate automatic session for each site. Links opened from a site keep that site's profile.",
     "hideHeader": "Hide and show toolbar on scroll direction",
     "hideToolbarWhenScrolled": "Hide toolbar when page is not at top",
     "xHomeTimeline": {
@@ -141,6 +154,7 @@
     },
     "profiles": {
       "description": "Multiple accounts with separate cookies and browsing state.",
+      "sessionMode": "Session mode",
       "injectCookie": "Inject Cookie",
       "injectCookieHint": "Paste a Cookie header from another browser to restore a session manually."
     },

@@ -126,8 +126,10 @@ public class NoraViewModule: Module {
         promise.resolve("")
         return
       }
-      NoraView.getCookies(profile: profile ?? "default", host: host) { value in
-        promise.resolve(value)
+      DispatchQueue.main.async {
+        NoraView.getCookies(profile: profile ?? "default", host: host) { value in
+          promise.resolve(value)
+        }
       }
     }
 

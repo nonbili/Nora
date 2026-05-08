@@ -15,6 +15,7 @@ interface Store {
   cookieModalOpen: boolean
   downloadVideoModalUrl: string
   navModalOpen: boolean
+  autoProfilesModalOpen: boolean
   profileModalOpen: boolean
   editingProfileId: string | null
   lastSelectedProfileId: string
@@ -50,6 +51,7 @@ export const ui$ = observable<Store>({
   cookieModalOpen: false,
   downloadVideoModalUrl: '',
   navModalOpen: false,
+  autoProfilesModalOpen: false,
   profileModalOpen: false,
   editingProfileId: null,
   renameViewModalTargetViewId: null,

@@ -1,16 +1,150 @@
-import { Pressable, View } from 'react-native'
+import { Alert, Pressable, ScrollView, View } from 'react-native'
 import { clsx, isWeb, isIos } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
 import { settings$, Profile } from '@/states/settings'
+import { autoProfiles$ } from '@/states/auto-profiles'
 import { NouMenu } from '../menu/NouMenu'
 import { t } from 'i18next'
 import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { ui$ } from '@/states/ui'
+import { BaseCenterModal } from '../modal/BaseCenterModal'
+import { NouButton } from '../button/NouButton'
+import { deleteAutoProfilesData } from '@/lib/auto-profile-data'
+import { getDeterministicProfileColor } from '@/lib/profile-color'
+
+const formatDate = (value: number) => {
+  if (!value) {
+    return ''
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const AUTO_PROFILE_STALE_MS = 14 * 24 * 60 * 60 * 1000
+
+const AutoProfilesModal = () => {
+  const open = useValue(ui$.autoProfilesModalOpen)
+  const autoProfiles = useValue(autoProfiles$.profiles)
+  const staleProfiles = autoProfiles.filter((profile) => Date.now() - profile.lastUsedAt >= AUTO_PROFILE_STALE_MS)
+
+  if (!open) {
+    return null
+  }
+
+  const onClose = () => ui$.autoProfilesModalOpen.set(false)
+  const confirmDelete = (profileIds: string[], message: string) => {
+    if (!profileIds.length) {
+      return
+    }
+
+    Alert.alert(t('menus.delete'), message, [
+      { text: t('buttons.cancel'), style: 'cancel' },
+      {
+        text: t('menus.delete'),
+        style: 'destructive',
+        onPress: () => deleteAutoProfilesData(profileIds),
+      },
+    ])
+  }
+
+  return (
+    <BaseCenterModal onClose={onClose}>
+      <View className="w-full p-4">
+        <View className="mb-4 flex-row items-center justify-between">
+          <NouText className="text-lg font-bold">{t('profiles.autoProfiles')}</NouText>
+          <View className="flex-row items-center">
+            {autoProfiles.length ? (
+              <NouMenu
+                trigger={
+                  isWeb ? (
+                    <View className="h-10 w-10 items-center justify-center rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800">
+                      <MaterialIcons name="more-vert" size={22} color="#71717a" />
+                    </View>
+                  ) : isIos ? (
+                    'ellipsis'
+                  ) : (
+                    'filled.MoreVert'
+                  )
+                }
+                items={[
+                  {
+                    label: t('profiles.deleteStaleAutoProfiles'),
+                    disabled: !staleProfiles.length,
+                    handler: () =>
+                      confirmDelete(
+                        staleProfiles.map((profile) => profile.id),
+                        t('profiles.deleteStaleAutoProfilesConfirm', { count: staleProfiles.length }),
+                      ),
+                  },
+                  {
+                    label: t('profiles.deleteAllAutoProfiles'),
+                    handler: () =>
+                      confirmDelete(
+                        autoProfiles.map((profile) => profile.id),
+                        t('profiles.deleteAllAutoProfilesConfirm', { count: autoProfiles.length }),
+                      ),
+                  },
+                ]}
+              />
+            ) : null}
+            <MaterialButton name="close" onPress={onClose} />
+          </View>
+        </View>
+        {autoProfiles.length ? (
+            <ScrollView
+              className="max-h-[60vh] overflow-hidden rounded-[20px] border border-zinc-300 dark:border-zinc-800"
+              showsVerticalScrollIndicator={false}
+            >
+              {autoProfiles.map((profile, index) => (
+                <View
+                  key={profile.id}
+                  className={clsx(
+                    'flex-row items-center justify-between gap-3 bg-zinc-100/80 dark:bg-zinc-900/70 px-4 py-3',
+                    index !== autoProfiles.length - 1 && 'border-b border-zinc-300 dark:border-zinc-800',
+                  )}
+                >
+                  <View
+                    className="h-4 w-4 shrink-0 rounded-full"
+                    style={{ backgroundColor: getDeterministicProfileColor(profile.site) }}
+                  />
+                  <View className="min-w-0 flex-1">
+                    <NouText className="font-medium" numberOfLines={1}>
+                      {profile.site}
+                    </NouText>
+                    <NouText className="mt-1 text-xs text-zinc-500 dark:text-zinc-400" numberOfLines={1}>
+                      {t('profiles.autoProfileLastUsedLabel')}: {formatDate(profile.lastUsedAt)}
+                    </NouText>
+                  </View>
+                  <MaterialButton
+                    name="delete-outline"
+                    size={20}
+                    color="#ef4444"
+                    onPress={() => confirmDelete([profile.id], t('profiles.deleteAutoProfileConfirm', { site: profile.site }))}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+        ) : (
+          <View className="rounded-[20px] border border-zinc-300 dark:border-zinc-800 px-4 py-8">
+            <NouText className="text-center text-zinc-500 dark:text-zinc-400">{t('profiles.autoProfilesEmpty')}</NouText>
+          </View>
+        )}
+      </View>
+    </BaseCenterModal>
+  )
+}
 
 export const ProfileManager = () => {
   const profiles = useValue(settings$.profiles)
+  const autoProfiles = useValue(autoProfiles$.profiles)
 
   const startEdit = (profile: Profile) => {
     ui$.assign({
@@ -21,6 +155,7 @@ export const ProfileManager = () => {
 
   return (
     <View className="mb-4">
+      <AutoProfilesModal />
       <View className="flex-row items-center justify-between mb-3">
         <NouText className="font-medium">{t('profiles.label')}</NouText>
         <Pressable
@@ -62,6 +197,11 @@ export const ProfileManager = () => {
           </View>
         </View>
       ))}
+      <View className="mt-4 flex-row justify-end">
+        <NouButton variant="outline" onPress={() => ui$.autoProfilesModalOpen.set(true)}>
+          {t('profiles.manageAutoProfiles', { count: autoProfiles.length })}
+        </NouButton>
+      </View>
     </View>
   )
 }

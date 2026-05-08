@@ -21,7 +21,18 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const insets = useSafeAreaInsets()
   const triggerRef = useRef<View>(null)
-  const menuWidth = 280
+  const horizontalPadding = 8
+  const estimatedContentWidth = items.reduce((maxWidth, item) => {
+    if (item.kind === 'separator') {
+      return maxWidth
+    }
+
+    const textLength = Math.max(item.label?.length || 0, item.description?.length || 0)
+    const iconWidth = item.icon ? 28 : 0
+    const metaWidth = item.meta || item.metaLabel ? 40 : 0
+    return Math.max(maxWidth, textLength * 8 + iconWidth + metaWidth + 40)
+  }, 0)
+  const menuWidth = Math.min(Math.max(176, estimatedContentWidth), Math.min(280, screenWidth - horizontalPadding * 2))
   const getRowHeight = (item: Item) => {
     if (item.kind === 'separator') return 9
     if (item.kind === 'label') return 32
@@ -38,7 +49,6 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
 
   const closeMenu = () => setOpen(false)
 
-  const horizontalPadding = 8
   const verticalPadding = 8
   const triggerGap = 4
   const minTop = insets.top + verticalPadding
