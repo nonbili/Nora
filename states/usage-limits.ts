@@ -2,7 +2,7 @@ import { observable, type Observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
-import { todayKey } from '@/lib/usage-limits'
+import { todayKey, isLimitableUrl } from '@/lib/usage-limits'
 
 export type UsageLimitScope = { kind: 'all' } | { kind: 'services'; services: string[] }
 
@@ -135,8 +135,8 @@ syncObservable(usageLimits$, {
 // Bypass is session-scoped: clear any stale bypasses persisted from a previous session.
 usageLimits$.bypassed.set({})
 
-export const limitMatchesService = (limit: UsageLimit, service: string | null): boolean => {
-  if (limit.scope.kind === 'all') return service !== null
+export const limitMatchesService = (limit: UsageLimit, service: string | null, url?: string): boolean => {
+  if (limit.scope.kind === 'all') return isLimitableUrl(url)
   if (!service) return false
   return limit.scope.services.includes(service)
 }

@@ -24,13 +24,14 @@ export const UsageLockout: React.FC = () => {
   const pin = useValue(usageLimits$.pin)
 
   const activeTab = tabs[activeIndex]
-  const service = resolveServiceFromUrl(activeTab?.url)
+  const url = activeTab?.url
+  const service = resolveServiceFromUrl(url)
 
   const trippedLimits: NonNullable<(typeof limits)[number]>[] = []
-  if (service) {
+  if (url) {
     for (const limit of limits) {
       if (!limit) continue
-      if (!limitMatchesService(limit, service)) continue
+      if (!limitMatchesService(limit, service, url)) continue
       if (isLimitBypassedToday(limit.id)) continue
       const used = getLimitUsageToday(limit.id)
       if (used >= limit.dailyMinutes) {

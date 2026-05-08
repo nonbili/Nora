@@ -15,7 +15,21 @@ export const useUsageTracker = () => {
   }, [])
 
   useEffect(() => {
-    if (isWeb) return
+    if (isWeb) {
+      const onFocus = () => {
+        isActiveRef.current = true
+      }
+      const onBlur = () => {
+        isActiveRef.current = false
+      }
+      window.addEventListener('focus', onFocus)
+      window.addEventListener('blur', onBlur)
+      isActiveRef.current = document.hasFocus()
+      return () => {
+        window.removeEventListener('focus', onFocus)
+        window.removeEventListener('blur', onBlur)
+      }
+    }
     const sub = AppState.addEventListener('change', (state) => {
       isActiveRef.current = state === 'active'
     })
@@ -29,12 +43,14 @@ export const useUsageTracker = () => {
       if (!tabs.length) return
       const idx = tabs$.activeTabIndex.get()
       const tab = tabs[idx]
-      const service = resolveServiceFromUrl(tab?.url)
-      if (!service) return
+      const url = tab?.url
+      if (!url) return
+
+      const service = resolveServiceFromUrl(url)
       const limits = usageLimits$.limits.get()
       for (const limit of limits) {
         if (!limit) continue
-        if (limitMatchesService(limit, service)) {
+        if (limitMatchesService(limit, service, url)) {
           usageLimits$.incrementUsage(limit.id, 1)
         }
       }

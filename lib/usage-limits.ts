@@ -17,6 +17,12 @@ export const todayKey = (date = new Date()): string => {
   return `${y}-${m}-${d}`
 }
 
+export const isLimitableUrl = (url: string | undefined | null): boolean => {
+  if (!url) return false
+  // We only track usage for actual websites, not internal nora:// pages or blank tabs.
+  return url.startsWith('http://') || url.startsWith('https://')
+}
+
 export const formatMinutes = (minutes: number): string => {
   const m = Math.max(0, Math.floor(minutes))
   if (m < 60) return `${m}m`
