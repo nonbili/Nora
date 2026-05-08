@@ -17,7 +17,7 @@ const interfaces = {
     session.fromPartition('persist:webview').clearData()
   },
   clearProfileData: (profile: string) => {
-    if (!profile || profile === 'default') {
+    if (!profile) {
       return
     }
 

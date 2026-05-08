@@ -362,15 +362,18 @@ export const tabs$: Observable<Store> = observable<Store>({
   },
 
   deleteProfileData: (profileId) => {
-    if (!profileId || profileId === 'default') {
+    if (!profileId) {
       return
     }
 
+    const matchesProfile = (tabProfile: string | undefined) =>
+      profileId === 'default' ? !tabProfile || tabProfile === 'default' : tabProfile === profileId
+
     const tabs = tabs$.tabs.get()
     const activeTabId = tabs[tabs$.activeTabIndex.get()]?.id
-    const removedTabs = tabs.filter((tab) => tab?.profile === profileId)
+    const removedTabs = tabs.filter((tab) => matchesProfile(tab?.profile))
     const removedTabIds = removedTabs.map((tab) => tab.id)
-    const nextRecentlyClosedTabs = tabs$.recentlyClosedTabs.get().filter((tab) => tab?.profile !== profileId)
+    const nextRecentlyClosedTabs = tabs$.recentlyClosedTabs.get().filter((tab) => !matchesProfile(tab?.profile))
 
     if (!removedTabIds.length && nextRecentlyClosedTabs.length === tabs$.recentlyClosedTabs.get().length) {
       return
@@ -378,7 +381,7 @@ export const tabs$: Observable<Store> = observable<Store>({
 
     if (removedTabIds.length) {
       const removedTabIdSet = new Set(removedTabIds)
-      const remainingTabs = tabs.filter((tab) => tab?.profile !== profileId)
+      const remainingTabs = tabs.filter((tab) => !matchesProfile(tab?.profile))
       const nextOrders = Object.fromEntries(Object.entries(tabs$.orders.get()).filter(([tabId]) => !removedTabIdSet.has(tabId)))
 
       tabs$.orders.set(nextOrders)

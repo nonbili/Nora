@@ -103,7 +103,9 @@
     "add": "Add",
     "edit": "Edit",
     "save": "Save",
-    "namePlaceholder": "Profile name"
+    "namePlaceholder": "Profile name",
+    "clearData": "Clear data",
+    "clearDataConfirm": "Clear all browsing data for \"{{name}}\"? This signs you out and closes tabs using this profile."
   },
   "settings": {
     "label": "Settings",

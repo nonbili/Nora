@@ -4,12 +4,22 @@ import { ui$ } from '@/states/ui'
 
 const DEFAULT_PROFILE_ID = 'default'
 
-export const deleteProfileData = (profileId: string) => {
-  if (!profileId || profileId === DEFAULT_PROFILE_ID) {
+export const clearProfileData = (profileId: string) => {
+  if (!profileId) {
     return
   }
 
   tabs$.deleteProfileData(profileId)
+
+  void Promise.resolve(NoraViewModule.clearProfileData(profileId)).catch((error) => {
+    console.warn('Failed to clear profile data', error)
+  })
+}
+
+export const deleteProfileData = (profileId: string) => {
+  if (!profileId || profileId === DEFAULT_PROFILE_ID) {
+    return
+  }
 
   if (ui$.lastSelectedProfileId.get() === profileId) {
     ui$.lastSelectedProfileId.set(DEFAULT_PROFILE_ID)
@@ -18,7 +28,5 @@ export const deleteProfileData = (profileId: string) => {
     ui$.editingProfileId.set(null)
   }
 
-  void Promise.resolve(NoraViewModule.clearProfileData(profileId)).catch((error) => {
-    console.warn('Failed to clear profile data', error)
-  })
+  clearProfileData(profileId)
 }

@@ -55,21 +55,23 @@ function parsePersistedMatcherSnapshot(raw: string | null | undefined): Persiste
   }
 
   try {
-    const parsed = JSON.parse(raw) as Partial<PersistedBlocklistMatcherSnapshot>
+    const parsed = JSON.parse(raw) as Partial<Record<keyof PersistedBlocklistMatcherSnapshot, unknown>>
     if (typeof parsed?.revision !== 'number') {
       return null
     }
+    const blockedHostsRaw = parsed.blockedHosts
     const blockedHosts =
-      typeof parsed.blockedHosts === 'string'
-        ? parsed.blockedHosts
-        : Array.isArray(parsed.blockedHosts) && parsed.blockedHosts.every((host) => typeof host === 'string')
-          ? parsed.blockedHosts.join('\n')
+      typeof blockedHostsRaw === 'string'
+        ? blockedHostsRaw
+        : Array.isArray(blockedHostsRaw) && blockedHostsRaw.every((host) => typeof host === 'string')
+          ? (blockedHostsRaw as string[]).join('\n')
           : null
+    const allowedHostsRaw = parsed.allowedHosts
     const allowedHosts =
-      typeof parsed.allowedHosts === 'string'
-        ? parsed.allowedHosts
-        : Array.isArray(parsed.allowedHosts) && parsed.allowedHosts.every((host) => typeof host === 'string')
-          ? parsed.allowedHosts.join('\n')
+      typeof allowedHostsRaw === 'string'
+        ? allowedHostsRaw
+        : Array.isArray(allowedHostsRaw) && allowedHostsRaw.every((host) => typeof host === 'string')
+          ? (allowedHostsRaw as string[]).join('\n')
           : null
     if (blockedHosts === null || allowedHosts === null) {
       return null

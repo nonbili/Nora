@@ -273,7 +273,7 @@ export const NoraTab: React.FC<{
       webview.addEventListener('page-favicon-updated', (e) => {
         tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons.at(-1) })
       })
-      webview.addEventListener('before-input-event', (e) => {
+      webview.addEventListener('before-input-event', ((e: Electron.Event & { input: Electron.Input }) => {
         if (e.input.type === 'keyDown') {
           if ((e.input.meta || e.input.control) && e.input.key.toLowerCase() === 'r') {
             reloadPage()
@@ -281,7 +281,7 @@ export const NoraTab: React.FC<{
             handleShortcuts(e.input)
           }
         }
-      })
+      }) as unknown as (e: Event) => void)
       webview.addEventListener('ipc-message', (e) => {})
       webview.addEventListener('update-target-url', (e) => {
         ui$.hoverLinkUrl.set(e.url || '')

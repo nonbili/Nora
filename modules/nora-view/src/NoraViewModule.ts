@@ -6,6 +6,9 @@ declare class NoraViewModule extends NativeModule {
   openExternalUrl(url: string): Promise<boolean>
   reloadBlocklistFromDisk?(enabled: boolean, revision: number): Promise<boolean>
   reloadBlocklistFromSourceFiles?(enabled: boolean, revision: number): Promise<boolean>
+  setSettings(settings: object): void
+  setBlocklist(blocklist: object): void
+  setLocaleStrings(strings: object): void
 }
 
 export default requireNativeModule<NoraViewModule>('NoraView')

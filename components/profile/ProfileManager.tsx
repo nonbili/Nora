@@ -12,6 +12,7 @@ import { ui$ } from '@/states/ui'
 import { BaseCenterModal } from '../modal/BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { deleteAutoProfilesData } from '@/lib/auto-profile-data'
+import { clearProfileData } from '@/lib/profile-data'
 import { getDeterministicProfileColor } from '@/lib/profile-color'
 
 const formatDate = (value: number) => {
@@ -153,6 +154,17 @@ export const ProfileManager = () => {
     })
   }
 
+  const confirmClearData = (profile: Profile) => {
+    Alert.alert(t('profiles.clearData'), t('profiles.clearDataConfirm', { name: profile.name }), [
+      { text: t('buttons.cancel'), style: 'cancel' },
+      {
+        text: t('profiles.clearData'),
+        style: 'destructive',
+        onPress: () => clearProfileData(profile.id),
+      },
+    ])
+  }
+
   return (
     <View className="mb-4">
       <AutoProfilesModal />
@@ -189,6 +201,7 @@ export const ProfileManager = () => {
               trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
               items={[
                 { label: t('common.edit'), handler: () => startEdit(profile) },
+                { label: t('profiles.clearData'), handler: () => confirmClearData(profile) },
                 ...(profile.isDefault
                   ? []
                   : [{ label: t('menus.delete'), handler: () => settings$.deleteProfile(profile.id) }]),

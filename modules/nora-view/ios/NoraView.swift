@@ -65,7 +65,12 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
   static func clearProfileData(_ profile: String, promise: Promise) {
     if profile == "default" {
-      promise.resolve(nil)
+      WKWebsiteDataStore.default().removeData(
+        ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+        modifiedSince: .distantPast
+      ) {
+        promise.resolve(nil)
+      }
       return
     }
 
