@@ -6,7 +6,6 @@ import { Asset } from 'expo-asset'
 import { settings$ } from '@/states/settings'
 import { useShareIntent } from 'expo-share-intent'
 import { useLinkingURL } from 'expo-linking'
-import * as Notifications from 'expo-notifications'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
 import NoraViewModule from '@/modules/nora-view'
@@ -16,6 +15,14 @@ import { blocklist$ } from '@/states/blocklist'
 import { applyBlocklist, refreshBlocklistIfDue, supportsRuntimeBlocklist, waitForBlocklistPersist } from '@/lib/blocklist'
 import { showToast } from '@/lib/toast'
 import { t } from 'i18next'
+
+let Notifications: typeof import('expo-notifications') | undefined
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Notifications = require('expo-notifications')
+} catch {
+  // ignore
+}
 
 const getHost = (url: string | undefined) => {
   if (!url) return ''
@@ -79,6 +86,8 @@ export default function HomeScreen() {
   }, [linkingUrl])
 
   useEffect(() => {
+    if (!Notifications) return
+
     Notifications.getLastNotificationResponseAsync().then((response) => {
       const url = response?.notification?.request?.content?.data?.url
       if (typeof url === 'string') openSharedUrl(url)

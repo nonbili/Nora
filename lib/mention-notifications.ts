@@ -1,19 +1,35 @@
 import { AppState, Platform } from 'react-native'
 import NoraViewModule from '@/modules/nora-view'
-import * as Notifications from 'expo-notifications'
-import * as TaskManager from 'expo-task-manager'
-import * as BackgroundTask from 'expo-background-task'
 import { MMKV } from 'react-native-mmkv'
 import { settings$ } from '@/states/settings'
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-})
+let Notifications: typeof import('expo-notifications') | undefined
+let TaskManager: typeof import('expo-task-manager') | undefined
+let BackgroundTask: typeof import('expo-background-task') | undefined
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Notifications = require('expo-notifications')
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  TaskManager = require('expo-task-manager')
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  BackgroundTask = require('expo-background-task')
+} catch (e) {
+  console.warn('Failed to load expo-notifications or related modules', e)
+}
+
+if (Notifications) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  })
+}
+
+export const isMentionNotificationsAvailable = Boolean(Notifications && TaskManager && BackgroundTask)
 
 const storage = new MMKV({ id: 'mention-notifications' })
 const SEEN_KEY = 'seenIds'
@@ -187,7 +203,7 @@ const pollX = async (): Promise<PollResult> => {
 const pollers: ServicePoller[] = [{ id: 'x', poll: pollX }]
 
 const ensureNotificationChannel = async () => {
-  if (Platform.OS !== 'android') return
+  if (Platform.OS !== 'android' || !Notifications) return
   await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL_ID, {
     name: 'Mentions and DMs',
     importance: Notifications.AndroidImportance.HIGH,
@@ -246,16 +262,18 @@ export const runPollAndNotify = async (source: 'foreground' | 'background' | 'ma
   let fired = 0
   for (const item of fresh) {
     try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: item.title,
-          body: item.body || ' ',
-          data: { url: item.url },
-          sound: 'default',
-        },
-        trigger: Platform.OS === 'android' ? { channelId: NOTIFICATION_CHANNEL_ID } : null,
-      })
-      fired += 1
+      if (Notifications) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: item.title,
+            body: item.body || ' ',
+            data: { url: item.url },
+            sound: 'default',
+          },
+          trigger: Platform.OS === 'android' ? { channelId: NOTIFICATION_CHANNEL_ID } : null,
+        })
+        fired += 1
+      }
     } catch (e) {
       console.warn('schedule notification failed', e)
     }
@@ -285,7 +303,8 @@ const runForegroundPollIfDue = () => {
 }
 
 const syncForegroundPollTimer = () => {
-  const shouldRun = AppState.currentState === 'active' && settings$.mentionNotificationsEnabled.get()
+  const shouldRun =
+    isMentionNotificationsAvailable && AppState.currentState === 'active' && settings$.mentionNotificationsEnabled.get()
   if (!shouldRun) {
     if (foregroundPollTimer) {
       clearInterval(foregroundPollTimer)
@@ -309,19 +328,20 @@ settings$.mentionNotificationsEnabled.onChange(() => {
 
 syncForegroundPollTimer()
 
-if (!TaskManager.isTaskDefined(POLL_TASK)) {
+if (TaskManager && !TaskManager.isTaskDefined(POLL_TASK)) {
   TaskManager.defineTask(POLL_TASK, async () => {
     try {
       await runPollAndNotify('background')
-      return BackgroundTask.BackgroundTaskResult.Success
+      return BackgroundTask?.BackgroundTaskResult.Success ?? 1
     } catch (e) {
       console.warn('mention poll task failed', e)
-      return BackgroundTask.BackgroundTaskResult.Failed
+      return BackgroundTask?.BackgroundTaskResult.Failed ?? 2
     }
   })
 }
 
 const ensurePermission = async (): Promise<boolean> => {
+  if (!Notifications) return false
   const cur = await Notifications.getPermissionsAsync()
   if (cur.granted) return true
   const req = await Notifications.requestPermissionsAsync()
@@ -329,11 +349,12 @@ const ensurePermission = async (): Promise<boolean> => {
 }
 
 const registerBackgroundPollTask = async () => {
+  if (!BackgroundTask) return
   await BackgroundTask.registerTaskAsync(POLL_TASK, { minimumInterval: BACKGROUND_POLL_MIN_INTERVAL_MINUTES })
 }
 
 const ensureEnabledRuntime = async () => {
-  if (!settings$.mentionNotificationsEnabled.get()) return
+  if (!isMentionNotificationsAvailable || !settings$.mentionNotificationsEnabled.get()) return
   try {
     await ensureNotificationChannel()
     await registerBackgroundPollTask()
@@ -344,6 +365,9 @@ const ensureEnabledRuntime = async () => {
 }
 
 export const enableMentionNotifications = async (): Promise<{ ok: boolean; reason?: string }> => {
+  if (!isMentionNotificationsAvailable) {
+    return { ok: false, reason: 'Notifications not supported on this device' }
+  }
   const granted = await ensurePermission()
   if (!granted) return { ok: false, reason: 'notification permission denied' }
   await ensureNotificationChannel()
@@ -370,6 +394,7 @@ export const enableMentionNotifications = async (): Promise<{ ok: boolean; reaso
 }
 
 export const disableMentionNotifications = async () => {
+  if (!BackgroundTask) return
   try {
     await BackgroundTask.unregisterTaskAsync(POLL_TASK)
   } catch {

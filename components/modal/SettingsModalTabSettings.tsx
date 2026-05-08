@@ -26,7 +26,11 @@ import {
 } from '@/lib/search'
 import { SearchProviderIcon } from '../service/SearchProviderIcon'
 import { showToast } from '@/lib/toast'
-import { enableMentionNotifications, disableMentionNotifications } from '@/lib/mention-notifications'
+import {
+  enableMentionNotifications,
+  disableMentionNotifications,
+  isMentionNotificationsAvailable,
+} from '@/lib/mention-notifications'
 import { BaseCenterModal } from './BaseCenterModal'
 import { builtinUserStyleDefinitions } from '@/lib/user-styles'
 import { userStyles$ } from '@/states/user-styles'
@@ -123,7 +127,7 @@ export const SettingsBrowsingContent: React.FC = () => {
       ) : null}
 
       {nIf(
-        !isWeb,
+        !isWeb && isMentionNotificationsAvailable,
         <View className="mt-10">
           <NouText className={subheaderCls}>{t('settings.sections.notifications')}</NouText>
           <SettingsSurface>
