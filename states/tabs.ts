@@ -36,11 +36,7 @@ export interface Tab {
   profile?: string
   profileMode?: ProfileMode
   backToNewTab?: boolean
-  history?: string[]
-  historyIndex?: number
 }
-
-export const MAX_TAB_HISTORY = 50
 
 export interface ClosedTab extends Tab {
   closedAt: number
@@ -268,6 +264,9 @@ export const tabs$: Observable<Store> = observable<Store>({
           if (existingTabIndex !== -1) {
             tabs$.setActiveTabIndex(existingTabIndex, 'open')
             const existingTab = tabs[existingTabIndex]
+            if (existingTab && options?.source === 'child' && options.parentTabId && options.parentTabId !== existingTab.id) {
+              childBackParentByTabId[existingTab.id] = options.parentTabId
+            }
             if (existingTab && shouldResolveTabUrlAsAutoProfile(existingTab)) {
               const siteProfile = getSiteProfileId(url)
               if (siteProfile) {
@@ -520,12 +519,7 @@ export const tabs$: Observable<Store> = observable<Store>({
     const webview = ui$.webview.get()
     const canGoBack = ui$.activeCanGoBack.get()
     if (canGoBack) {
-      const customGoBack = ui$.activeGoBack.get() as (() => void) | undefined
-      if (customGoBack) {
-        customGoBack()
-      } else {
-        webview?.goBack?.()
-      }
+      webview?.goBack?.()
       return true
     }
 
@@ -594,16 +588,6 @@ syncObservable(tabs$, {
                 tab.profileMode = undefined
               }
               tab.backToNewTab = Boolean(tab.backToNewTab || !tab.url)
-              if (Array.isArray(tab.history)) {
-                const cleaned = tab.history.filter((u): u is string => typeof u === 'string' && u.length > 0)
-                tab.history = cleaned.slice(-MAX_TAB_HISTORY)
-                if (typeof tab.historyIndex !== 'number' || tab.historyIndex < 0 || tab.historyIndex >= tab.history.length) {
-                  tab.historyIndex = tab.history.length - 1
-                }
-              } else {
-                tab.history = undefined
-                tab.historyIndex = undefined
-              }
               seenIds.add(tab.id)
               return tab
             })
