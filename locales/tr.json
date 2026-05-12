@@ -31,7 +31,9 @@
     "share": "Paylaş",
     "signOut": "Çıkış yap",
     "tools": "Araçlar",
-    "editUrl": "Sekme URL'sini düzenle"
+    "editUrl": "Sekme URL'sini düzenle",
+    "duplicate": "Yinelenen sekme",
+    "viewInSplitView": "Bölünmüş ekranda görüntüle"
   },
   "modals": {
     "downloadVideo": "Video indir"
@@ -46,14 +48,29 @@
     "httpBlocked_title": "HTTP internet sitesi engellendi",
     "httpBlocked_body": "Bu web sitesi güvenli olmayan bir HTTP bağlantısı kullanmaktadır. HTTP web sitelerinin yüklenmesine izin vermek için Ayarlar'daki \"HTTP web sitelerine izin ver\" seçeneğini etkinleştirin.",
     "menu_openInNewTab": "Yeni sekmede aç",
-    "menu_openImageInNewTab": "Görseli yeni sekmede aç"
+    "menu_openImageInNewTab": "Görseli yeni sekmede aç",
+    "menu_openInProfile": "Profilde aç"
   },
   "profiles": {
     "label": "Profiller",
     "add": "Ekle",
     "edit": "Düzenle",
     "save": "Kaydet",
-    "namePlaceholder": "Profil adı"
+    "namePlaceholder": "Profil adı",
+    "auto": "Otomatik",
+    "autoProfiles": "Otomatik profiller",
+    "autoProfilesEmpty": "Henüz otomatik profil yok.",
+    "openLinkInProfile": "Profildeki bağlantıyı aç",
+    "autoProfileLastUsed": "Son kullanım: {{value}}",
+    "autoProfileLastUsedLabel": "Son kullanım",
+    "manageAutoProfiles": "Otomatik profilleri yönet ({{count}})",
+    "deleteAutoProfileConfirm": "{{site}} için otomatik profili silmek istiyor musunuz? Bu işlem, sitenin saklanan tarama verilerini siler ve bu profili kullanan sekmeleri kapatır.",
+    "deleteAllAutoProfiles": "Hepsini sil",
+    "deleteAllAutoProfilesConfirm": "{{count}} otomatik profili silmek istiyor musunuz? Bu işlem, bu profillerde saklanan tarama verilerini siler ve bu profilleri kullanan sekmeleri kapatır.",
+    "deleteStaleAutoProfiles": "14 gün boyunca kullanılmayanları sil",
+    "deleteStaleAutoProfilesConfirm": "Son 14 gün içinde kullanılmayan {{count}} otomatik profili silmek ister misiniz? Bu işlem, bu profillerde saklanan tarama verilerini siler ve bu profilleri kullanan sekmeleri kapatır.",
+    "clearData": "Verileri sil",
+    "clearDataConfirm": "\"{{name}}\" için tüm tarama verilerini silmek istiyor musunuz? Bu işlem, oturumunuzu kapatır ve bu profili kullanan sekmeleri kapatır."
   },
   "settings": {
     "label": "Ayarlar",
@@ -91,7 +108,8 @@
       "advanced": "Gelişmiş",
       "about": "Hakkında",
       "general": "Genel",
-      "bookmarksSearch": "Yer imleri ve Arama"
+      "bookmarksSearch": "Yer imleri ve Arama",
+      "notifications": "Bildirimler"
     },
     "pages": {
       "browsing": "Tercihler",
@@ -116,7 +134,8 @@
     "profiles": {
       "description": "Her hesap için ayrı çerez ve tarama durumu.",
       "injectCookie": "Çerez ekle",
-      "injectCookieHint": "Bir oturumu manuel olarak geri yüklemek için başka bir tarayıcıdan bir çerez başlığı yapıştırın."
+      "injectCookieHint": "Bir oturumu manuel olarak geri yüklemek için başka bir tarayıcıdan bir çerez başlığı yapıştırın.",
+      "sessionMode": "Oturum modu"
     },
     "bookmarks": {
       "description": "Sabitlenmiş web sitelerini yönet.",
@@ -204,7 +223,11 @@
       "label": "Dil",
       "system": "Sistem",
       "hint": "Bir dil seçin veya sistem dilini kullanın."
-    }
+    },
+    "oneProfilePerSite": "Site başına bir profil",
+    "oneProfilePerSiteHint": "Her site için ayrı bir otomatik oturum kullanın. Bir siteden açılan bağlantılar, o sitenin profilini korur.",
+    "mentionNotifications": "Etiketler ve DM bildirimleri",
+    "mentionNotificationsHint": "İşletim sisteminin arka plan sınırlamaları nedeniyle, bildirimler gecikebilir ve garanti edilemez."
   },
   "sync": {
     "label": "Senkronize et",
@@ -228,7 +251,9 @@
     "upgradeHint": "Yer imlerinizi ve ayarlarınızı tüm cihazlarınızda senkronize etmek için yükseltin.",
     "legalNotice": "Abonelikler iptal edilmedikçe otomatik olarak yenilenir. Abone olarak, Kullanım Koşulları (EULA) ve Gizlilik Politikasını kabul etmiş olursunuz.",
     "termsOfUse": "Kullanım Koşulları (EULA)",
-    "privacyPolicy": "Gizlilik Politikası"
+    "privacyPolicy": "Gizlilik Politikası",
+    "deleteAccount": "Hesabı sil",
+    "signInRequired": "Devam etmek için giriş yapın."
   },
   "tabs": {
     "new": "Yeni sekme",
@@ -269,12 +294,82 @@
   },
   "views": {
     "rename": "Görünümü yeniden adlandır",
-    "namePlaceholder": "Görünüm adı"
+    "namePlaceholder": "Görünüm adı",
+    "desktop": {
+      "blankTab": "Boş sekme",
+      "newBlankTab": "Yeni boş sekme",
+      "newSplitView": "Yeni bölünmüş ekran",
+      "newGridView": "Yeni ızgara görünümü",
+      "chooseTabToAdd": "{{layout}}'a eklemek için bir sekme seçin",
+      "createBlankTabInSlot": "Bu slotta yeni bir boş sekme oluştur",
+      "layout": {
+        "split": "Bölünmüş ekran",
+        "grid": "Izgara görünümü",
+        "gridFour": "4 sekmeli ızgara"
+      }
+    }
   },
   "newTab": {
     "search": {
       "urlPlaceholder": "Bir URL girin",
       "searchPlaceholder": "İnternette ara"
+    },
+    "presets": {
+      "open": "Önceden ayarlanmış yer imlerini ekle",
+      "title": "Önceden ayarlanmış yer imleri"
+    }
+  },
+  "usageLimits": {
+    "label": "Kullanım sınırları",
+    "description": "Seçtiğiniz hizmetler veya uygulamanın tamamı için günlük zaman sınırları belirleyin.",
+    "limits": "Limitler",
+    "empty": "Henüz kullanım sınırı yok.",
+    "emptyHint": "Günlük tarama süresini takip etmeye başlamak için bir sınır belirleyin.",
+    "usageLine": "Bugün: {{used}} / {{limit}}",
+    "deleteConfirm": "Bu kullanım sınırını silmek ister misiniz?",
+    "scope": {
+      "all": "Uygulamanın tamamı",
+      "none": "Hiçbir hizmet seçilmedi"
+    },
+    "editor": {
+      "addTitle": "Kullanım süresi ekle",
+      "editTitle": "Kullanım sınırını düzenle",
+      "name": "Ad",
+      "namePlaceholder": "Örnek: Sosyal Medya",
+      "defaultName": "Sınır",
+      "dailyLimit": "Günlük sınır",
+      "hours": "Saat",
+      "minutes": "Dakika",
+      "scope": "Uygula",
+      "add": "Ekle",
+      "errorMinutes": "Günde en az 1 dakikalık bir sınır belirleyin",
+      "errorScope": "En az bir hizmet seçin veya tüm uygulamaya uygulayın"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "Limitleri yönetmek ve limite ulaşıldığında kilidi açmak için bir PIN kodu gereklidir. Her gün yerel saatle gece yarısı sıfırlanır.",
+      "set": "PIN ayarlandı",
+      "notSet": "PIN kodu ayarlanmamış",
+      "setAction": "PIN ayarla",
+      "change": "Değiştir",
+      "remove": "Kaldır",
+      "currentPlaceholder": "Mevcut PIN",
+      "newPlaceholder": "Yeni PIN",
+      "confirmPlaceholder": "Yeni PIN'i onayla",
+      "errorEmpty": "PIN boş olamaz",
+      "errorMismatch": "PIN kodları uyuşmuyor",
+      "errorIncorrect": "Yanlış PIN kodu",
+      "requiredFirst": "Önce bir PIN kodu belirleyin",
+      "confirmEdit": "Düzenlemek için PIN kodunu girin",
+      "confirmDelete": "Silmek için PIN kodunu girin"
+    },
+    "lockout": {
+      "title": "Bugünlük zaman doldu",
+      "body": "{{name}} için günlük {{limit}} kullanım sürenizin {{used}}'sini kullandınız.",
+      "pinPlaceholder": "Kilidi açmak için PIN kodunu girin",
+      "pinIncorrect": "Yanlış PIN kodu",
+      "unlock": "Bugün için kilidi aç",
+      "noPinHint": "Ayarlar'dan bir PIN kodu belirleyin → Kullanım sınırlarını erken açmak için."
     }
   }
 }

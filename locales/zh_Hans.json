@@ -48,7 +48,8 @@
     "httpBlocked_title": "HTTP 网站被屏蔽",
     "httpBlocked_body": "此网站使用不安全的 HTTP 连接。要允许加载 HTTP 网站，请在“设置”中启用“允许 HTTP 网站”。",
     "menu_openInNewTab": "在新标签页中打开",
-    "menu_openImageInNewTab": "在新标签页中打开图片"
+    "menu_openImageInNewTab": "在新标签页中打开图片",
+    "menu_openInProfile": "在配置文件中打开"
   },
   "settings": {
     "label": "设置",
@@ -119,7 +120,8 @@
     "profiles": {
       "description": "支持多账号，各自拥有独立的 Cookie 和浏览状态。",
       "injectCookie": "注入 Cookie",
-      "injectCookieHint": "粘贴来自其他浏览器的 Cookie 标头，以手动恢复会话。"
+      "injectCookieHint": "粘贴来自其他浏览器的 Cookie 标头，以手动恢复会话。",
+      "sessionMode": "会话模式"
     },
     "bookmarks": {
       "description": "管理已固定的网站。",
@@ -200,7 +202,9 @@
       "hint": "选择一种语言或使用系统语言。"
     },
     "mentionNotifications": "提及和私信通知",
-    "mentionNotificationsHint": "由于操作系统后台限制，通知送达可能会延迟且无法保证。"
+    "mentionNotificationsHint": "由于操作系统后台限制，通知送达可能会延迟且无法保证。",
+    "oneProfilePerSite": "每个网站一个配置文件",
+    "oneProfilePerSiteHint": "为每个网站使用独立的自动会话。从某个网站打开的链接将保留该网站的配置文件。"
   },
   "tabs": {
     "new": "新标签页",
@@ -217,7 +221,21 @@
     "add": "添加",
     "edit": "编辑",
     "save": "保存",
-    "namePlaceholder": "配置文件名称"
+    "namePlaceholder": "配置文件名称",
+    "auto": "自动",
+    "autoProfiles": "自动配置文件",
+    "autoProfilesEmpty": "尚无自动配置文件。",
+    "openLinkInProfile": "在配置文件中打开链接",
+    "autoProfileLastUsed": "上次使用：{{value}}",
+    "autoProfileLastUsedLabel": "上次使用",
+    "manageAutoProfiles": "管理自动配置文件（{{count}}）",
+    "deleteAutoProfileConfirm": "删除 {{site}} 的自动配置文件？这将清除其存储的浏览数据并关闭使用该配置文件的标签页。",
+    "deleteAllAutoProfiles": "全部删除",
+    "deleteAllAutoProfilesConfirm": "删除所有 {{count}} 个自动配置文件？这将清除它们存储的浏览数据并关闭使用这些配置文件的标签页。",
+    "deleteStaleAutoProfiles": "删除 14 天内未使用的",
+    "deleteStaleAutoProfilesConfirm": "删除过去 14 天内未使用的 {{count}} 个自动配置文件？这将清除它们存储的浏览数据并关闭使用这些配置文件的标签页。",
+    "clearData": "清除数据",
+    "clearDataConfirm": "清除“{{name}}”的所有浏览数据？这将使您退出登录并关闭使用此配置文件的标签页。"
   },
   "sync": {
     "label": "同步",
@@ -241,7 +259,9 @@
     "productUnavailable": "此 App Store 产品尚未推出。",
     "expiresAt": "续订或到期时间：{{value}}",
     "legalNotice": "订阅会自动续订，除非取消。订阅即表示您同意使用条款（最终用户许可协议）和隐私政策。",
-    "termsOfUse": "使用条款（最终用户许可协议）"
+    "termsOfUse": "使用条款（最终用户许可协议）",
+    "deleteAccount": "删除账号",
+    "signInRequired": "登录以继续。"
   },
   "changelog": {
     "label": "更新日志",
@@ -291,6 +311,10 @@
     "search": {
       "urlPlaceholder": "输入网址",
       "searchPlaceholder": "搜索网络"
+    },
+    "presets": {
+      "open": "添加预设书签",
+      "title": "预设书签"
     }
   },
   "usageLimits": {
@@ -343,6 +367,7 @@
       "pinIncorrect": "PIN 码错误",
       "unlock": "今日解锁",
       "noPinHint": "在“设置”→“使用限制”中设置 PIN 码以提前解锁。"
-    }
+    },
+    "emptyHint": "添加限制以开始跟踪每日浏览时间。"
   }
 }
