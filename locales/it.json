@@ -48,7 +48,8 @@
     "httpBlocked_title": "Sito web HTTP bloccato",
     "httpBlocked_body": "Questo sito web utilizza una connessione HTTP non sicura. Per consentire il caricamento dei siti web HTTP, abilita l'opzione \"Consenti siti web HTTP\" nelle Impostazioni.",
     "menu_openInNewTab": "Apri in nuova scheda",
-    "menu_openImageInNewTab": "Apri immagine in nuova scheda"
+    "menu_openImageInNewTab": "Apri immagine in nuova scheda",
+    "menu_openInProfile": "Apri nel profilo"
   },
   "settings": {
     "label": "Impostazioni",
@@ -93,7 +94,8 @@
       "advanced": "Avanzato",
       "about": "Informazioni",
       "general": "Generale",
-      "bookmarksSearch": "Segnalibri e Ricerca"
+      "bookmarksSearch": "Segnalibri e Ricerca",
+      "notifications": "Notifiche"
     },
     "pages": {
       "browsing": "Preferenze",
@@ -118,7 +120,8 @@
     "profiles": {
       "description": "Account multipli con cookie e dati di navigazione separati.",
       "injectCookie": "Inietta Cookie",
-      "injectCookieHint": "Incolla un Cookie header da un altro browser per ripristinare manualmente una sessione."
+      "injectCookieHint": "Incolla un Cookie header da un altro browser per ripristinare manualmente una sessione.",
+      "sessionMode": "Modalità sessione"
     },
     "bookmarks": {
       "description": "Gestisci i siti web aggiunti ai preferiti.",
@@ -199,7 +202,11 @@
       "label": "Lingua",
       "system": "Sistema",
       "hint": "Scegli una lingua oppure utilizza la lingua di sistema."
-    }
+    },
+    "oneProfilePerSite": "Un profilo per sito",
+    "oneProfilePerSiteHint": "Utilizza una sessione automatica distinta per ogni sito. I link aperti da un sito mantengono il profilo di quel sito.",
+    "mentionNotifications": "Notifiche menzioni e DM",
+    "mentionNotificationsHint": "A causa dei limiti imposti dal sistema operativo, la consegna potrebbe subire ritardi e non è garantita."
   },
   "sync": {
     "label": "Sincronizza",
@@ -223,7 +230,9 @@
     "expiresAt": "Rinnovo o scadenza: {{value}}",
     "legalNotice": "Gli abbonamenti si rinnovano automaticamente, salvo disdetta. Effettuando l'abbonamento, l'utente accetta i Termini di utilizzo (EULA) e l'Informativa sulla privacy.",
     "termsOfUse": "Condizioni d'Uso (EULA)",
-    "privacyPolicy": "Informativa sulla privacy"
+    "privacyPolicy": "Informativa sulla privacy",
+    "deleteAccount": "Elimina account",
+    "signInRequired": "Accedi per continuare."
   },
   "tabs": {
     "new": "Nuova scheda",
@@ -240,7 +249,21 @@
     "add": "Aggiungi",
     "edit": "Modifica",
     "save": "Salva",
-    "namePlaceholder": "Nome profilo"
+    "namePlaceholder": "Nome profilo",
+    "auto": "Auto",
+    "autoProfiles": "Profili automatici",
+    "autoProfilesEmpty": "Non ci sono ancora profili automatici.",
+    "openLinkInProfile": "Apri il link nel profilo",
+    "autoProfileLastUsed": "Ultimo utilizzo: {{value}}",
+    "autoProfileLastUsedLabel": "Ultimo utilizzo",
+    "manageAutoProfiles": "Gestisci i profili automatici ({{count}})",
+    "deleteAutoProfileConfirm": "Eliminare il profilo automatico per {{site}}? Questa operazione cancella i dati di navigazione memorizzati e chiude le schede che lo utilizzano.",
+    "deleteAllAutoProfiles": "Elimina tutto",
+    "deleteAllAutoProfilesConfirm": "Eliminare tutti i {{count}} profili automatici? Questa operazione cancella i dati di navigazione memorizzati e chiude le schede che li utilizzano.",
+    "deleteStaleAutoProfiles": "Elimina non utilizzati da 14 giorni",
+    "deleteStaleAutoProfilesConfirm": "Eliminare {{count}} profili automatici non utilizzati negli ultimi 14 giorni? Questa operazione cancella i dati di navigazione memorizzati e chiude le schede che li utilizzano.",
+    "clearData": "Cancella dati",
+    "clearDataConfirm": "Cancellare tutti i dati di navigazione relativi a “{{name}}”? Questa operazione comporta la disconnessione e la chiusura delle schede associate a questo profilo."
   },
   "blocklist": {
     "label": "Lista di blocco",
@@ -277,6 +300,10 @@
     "search": {
       "urlPlaceholder": "Inserisci un URL",
       "searchPlaceholder": "Cerca sul web"
+    },
+    "presets": {
+      "open": "Aggiungi segnalibri predefiniti",
+      "title": "Segnalibri predefiniti"
     }
   },
   "views": {
@@ -294,6 +321,59 @@
         "grid": "visualizzazione a griglia",
         "gridFour": "griglia a 4 schede"
       }
+    }
+  },
+  "usageLimits": {
+    "label": "Limiti di utilizzo",
+    "description": "Imposta limiti di tempo giornalieri per determinati servizi o per l'intera app.",
+    "limits": "Limiti",
+    "empty": "Non ci sono ancora limiti di utilizzo.",
+    "emptyHint": "Imposta un limite per iniziare a monitorare il tempo di navigazione giornaliero.",
+    "usageLine": "Oggi: {{used}} su {{limit}}",
+    "deleteConfirm": "Eliminare questo limite di utilizzo?",
+    "scope": {
+      "all": "L'intera app",
+      "none": "Nessun servizio selezionato"
+    },
+    "editor": {
+      "addTitle": "Aggiungi un limite di utilizzo",
+      "editTitle": "Modifica del limite di utilizzo",
+      "name": "Nome",
+      "namePlaceholder": "es. Social media",
+      "defaultName": "Limite",
+      "dailyLimit": "Limite giornaliero",
+      "hours": "Ore",
+      "minutes": "Minuti",
+      "scope": "Applicare a",
+      "add": "Aggiungi",
+      "errorMinutes": "Imposta un limite giornaliero di almeno 1 minuto",
+      "errorScope": "Seleziona almeno un servizio oppure applica l'impostazione all'intera app"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "Per gestire i limiti e sbloccare l'account quando viene raggiunto un limite è necessario un PIN. Il conteggio si azzera alla mezzanotte.",
+      "set": "Il PIN è impostato",
+      "notSet": "Nessun PIN impostato",
+      "setAction": "Imposta PIN",
+      "change": "Sostituire",
+      "remove": "Rimuovi",
+      "currentPlaceholder": "PIN attuale",
+      "newPlaceholder": "Nuovo PIN",
+      "confirmPlaceholder": "Conferma nuovo PIN",
+      "errorEmpty": "Il PIN non può essere vuoto",
+      "errorMismatch": "I PIN non corrispondono",
+      "errorIncorrect": "PIN non corretto",
+      "requiredFirst": "Imposta prima un PIN",
+      "confirmEdit": "Inserisci il PIN per modificare",
+      "confirmDelete": "Inserisci il PIN per eliminare"
+    },
+    "lockout": {
+      "title": "Tempo scaduto per oggi",
+      "body": "Hai utilizzato {{used}} del tuo limite giornaliero di {{limit}} per {{name}}.",
+      "pinPlaceholder": "Inserisci il PIN per sbloccare",
+      "pinIncorrect": "PIN errato",
+      "unlock": "Sblocca per oggi",
+      "noPinHint": "Imposta un PIN in Impostazioni → Limiti di utilizzo per sbloccare il dispositivo in anticipo."
     }
   }
 }
