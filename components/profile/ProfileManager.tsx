@@ -14,6 +14,7 @@ import { NouButton } from '../button/NouButton'
 import { deleteAutoProfilesData } from '@/lib/auto-profile-data'
 import { clearProfileData } from '@/lib/profile-data'
 import { getDeterministicProfileColor } from '@/lib/profile-color'
+import { showToast } from '@/lib/toast'
 
 const formatDate = (value: number) => {
   if (!value) {
@@ -31,6 +32,24 @@ const formatDate = (value: number) => {
 
 const AUTO_PROFILE_STALE_MS = 14 * 24 * 60 * 60 * 1000
 
+const confirmDestructiveAction = (title: string, message: string, confirmText: string, action: () => void) => {
+  if (isWeb) {
+    if (window.confirm(message)) {
+      action()
+    }
+    return
+  }
+
+  Alert.alert(title, message, [
+    { text: t('buttons.cancel'), style: 'cancel' },
+    {
+      text: confirmText,
+      style: 'destructive',
+      onPress: action,
+    },
+  ])
+}
+
 const AutoProfilesModal = () => {
   const open = useValue(ui$.autoProfilesModalOpen)
   const autoProfiles = useValue(autoProfiles$.profiles)
@@ -46,14 +65,7 @@ const AutoProfilesModal = () => {
       return
     }
 
-    Alert.alert(t('menus.delete'), message, [
-      { text: t('buttons.cancel'), style: 'cancel' },
-      {
-        text: t('menus.delete'),
-        style: 'destructive',
-        onPress: () => deleteAutoProfilesData(profileIds),
-      },
-    ])
+    confirmDestructiveAction(t('menus.delete'), message, t('menus.delete'), () => deleteAutoProfilesData(profileIds))
   }
 
   return (
@@ -100,42 +112,46 @@ const AutoProfilesModal = () => {
           </View>
         </View>
         {autoProfiles.length ? (
-            <ScrollView
-              className="max-h-[60vh] overflow-hidden rounded-[20px] border border-zinc-300 dark:border-zinc-800"
-              showsVerticalScrollIndicator={false}
-            >
-              {autoProfiles.map((profile, index) => (
+          <ScrollView
+            className="max-h-[60vh] overflow-hidden rounded-[20px] border border-zinc-300 dark:border-zinc-800"
+            showsVerticalScrollIndicator={false}
+          >
+            {autoProfiles.map((profile, index) => (
+              <View
+                key={profile.id}
+                className={clsx(
+                  'flex-row items-center justify-between gap-3 bg-zinc-100/80 dark:bg-zinc-900/70 px-4 py-3',
+                  index !== autoProfiles.length - 1 && 'border-b border-zinc-300 dark:border-zinc-800',
+                )}
+              >
                 <View
-                  key={profile.id}
-                  className={clsx(
-                    'flex-row items-center justify-between gap-3 bg-zinc-100/80 dark:bg-zinc-900/70 px-4 py-3',
-                    index !== autoProfiles.length - 1 && 'border-b border-zinc-300 dark:border-zinc-800',
-                  )}
-                >
-                  <View
-                    className="h-4 w-4 shrink-0 rounded-full"
-                    style={{ backgroundColor: getDeterministicProfileColor(profile.site) }}
-                  />
-                  <View className="min-w-0 flex-1">
-                    <NouText className="font-medium" numberOfLines={1}>
-                      {profile.site}
-                    </NouText>
-                    <NouText className="mt-1 text-xs text-zinc-500 dark:text-zinc-400" numberOfLines={1}>
-                      {t('profiles.autoProfileLastUsedLabel')}: {formatDate(profile.lastUsedAt)}
-                    </NouText>
-                  </View>
-                  <MaterialButton
-                    name="delete-outline"
-                    size={20}
-                    color="#ef4444"
-                    onPress={() => confirmDelete([profile.id], t('profiles.deleteAutoProfileConfirm', { site: profile.site }))}
-                  />
+                  className="h-4 w-4 shrink-0 rounded-full"
+                  style={{ backgroundColor: getDeterministicProfileColor(profile.site) }}
+                />
+                <View className="min-w-0 flex-1">
+                  <NouText className="font-medium" numberOfLines={1}>
+                    {profile.site}
+                  </NouText>
+                  <NouText className="mt-1 text-xs text-zinc-500 dark:text-zinc-400" numberOfLines={1}>
+                    {t('profiles.autoProfileLastUsedLabel')}: {formatDate(profile.lastUsedAt)}
+                  </NouText>
                 </View>
-              ))}
-            </ScrollView>
+                <MaterialButton
+                  name="delete-outline"
+                  size={20}
+                  color="#ef4444"
+                  onPress={() =>
+                    confirmDelete([profile.id], t('profiles.deleteAutoProfileConfirm', { site: profile.site }))
+                  }
+                />
+              </View>
+            ))}
+          </ScrollView>
         ) : (
           <View className="rounded-[20px] border border-zinc-300 dark:border-zinc-800 px-4 py-8">
-            <NouText className="text-center text-zinc-500 dark:text-zinc-400">{t('profiles.autoProfilesEmpty')}</NouText>
+            <NouText className="text-center text-zinc-500 dark:text-zinc-400">
+              {t('profiles.autoProfilesEmpty')}
+            </NouText>
           </View>
         )}
       </View>
@@ -155,14 +171,25 @@ export const ProfileManager = () => {
   }
 
   const confirmClearData = (profile: Profile) => {
-    Alert.alert(t('profiles.clearData'), t('profiles.clearDataConfirm', { name: profile.name }), [
-      { text: t('buttons.cancel'), style: 'cancel' },
-      {
-        text: t('profiles.clearData'),
-        style: 'destructive',
-        onPress: () => clearProfileData(profile.id),
+    confirmDestructiveAction(
+      t('profiles.clearData'),
+      t('profiles.clearDataConfirm', { name: profile.name }),
+      t('profiles.clearData'),
+      () => {
+        void clearProfileData(profile.id)
+          .then(() => showToast(t('toast.profileDataCleared')))
+          .catch(() => showToast(t('toast.profileDataClearFailed')))
       },
-    ])
+    )
+  }
+
+  const confirmDeleteProfile = (profile: Profile) => {
+    confirmDestructiveAction(
+      t('menus.delete'),
+      t('profiles.deleteConfirm', { name: profile.name }),
+      t('menus.delete'),
+      () => settings$.deleteProfile(profile.id),
+    )
   }
 
   return (
@@ -204,7 +231,7 @@ export const ProfileManager = () => {
                 { label: t('profiles.clearData'), handler: () => confirmClearData(profile) },
                 ...(profile.isDefault
                   ? []
-                  : [{ label: t('menus.delete'), handler: () => settings$.deleteProfile(profile.id) }]),
+                  : [{ label: t('menus.delete'), handler: () => confirmDeleteProfile(profile) }]),
               ]}
             />
           </View>

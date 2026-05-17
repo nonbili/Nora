@@ -107,7 +107,8 @@
     "save": "Save",
     "namePlaceholder": "Profile name",
     "clearData": "Clear data",
-    "clearDataConfirm": "Clear all browsing data for \"{{name}}\"? This signs you out and closes tabs using this profile."
+    "clearDataConfirm": "Clear all browsing data for \"{{name}}\"? This signs you out and closes tabs using this profile.",
+    "deleteConfirm": "Delete \"{{name}}\"? This clears its stored browsing data and closes tabs using this profile."
   },
   "settings": {
     "label": "Settings",
@@ -308,6 +309,8 @@
   "toast": {
     "pinned": "Pinned to new tab page",
     "blocklistUpdated": "Blocklist updated",
+    "profileDataCleared": "Profile data cleared",
+    "profileDataClearFailed": "Failed to clear profile data",
     "pressBackAgainToExit": "Press back again to exit"
   },
   "usageLimits": {
