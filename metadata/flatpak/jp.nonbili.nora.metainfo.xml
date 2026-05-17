@@ -59,6 +59,19 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.0" date="2026-05-17">
+      <description>
+        <ul>
+          <li>Render hovered link URL on bottom left</li>
+          <li>Add "Open in profile" to link context menu</li>
+          <li>Add preset bookmarks for easy toggling</li>
+          <li>Support clearing all webview data from profiles</li>
+          <li>Support one profile per site</li>
+          <li>Support usage limits with password unlock</li>
+          <li>Apply custom styles without reloading</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.12" date="2026-04-21">
       <description>
         <ul>

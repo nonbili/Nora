@@ -1,0 +1,7 @@
+- Render hovered link URL on bottom left
+- Add "Open in profile" to link context menu
+- Add preset bookmarks for easy toggling
+- Support clearing all webview data from profiles
+- Support one profile per site
+- Support usage limits with password unlock
+- Apply custom styles without reloading
