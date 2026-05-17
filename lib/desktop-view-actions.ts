@@ -6,7 +6,14 @@ export const openTabForActiveDesktopView = () => {
   const activeView = savedViews$.savedViews.get().find((view) => view.id === activeViewId)
 
   if (activeView?.layout === 'split-view') {
+    const tabId = openDesktopTab('')
+    if (!tabId) {
+      return
+    }
+
     savedViews$.appendSplitViewSlot(activeView.id)
+    savedViews$.assignSlotTab(activeView.id, activeView.slotTabIds.length, tabId)
+    tabs$.setActiveTabById(tabId, 'open')
     return
   }
 

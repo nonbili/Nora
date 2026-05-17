@@ -40,11 +40,16 @@ const getSanitizedLayout = (layout?: string): CustomSavedViewLayout => (layout =
 
 const getSlotCount = (layout: CustomSavedViewLayout) => savedViewSlotCounts[layout]
 
-const getInitialSeedTabIds = (layout: CustomSavedViewLayout, seedTabIds: string[]) => seedTabIds.slice(0, getSlotCount(layout))
+const getInitialSeedTabIds = (layout: CustomSavedViewLayout, seedTabIds: string[]) =>
+  seedTabIds.slice(0, layout === 'split-view' ? getSlotCount('split-view') : getSlotCount(layout))
 
 const sanitizeSlotTabIds = (layout: CustomSavedViewLayout, slotTabIds?: (string | null)[]) => {
   const minimumCount = getSlotCount(layout)
-  const sanitizedSource = layout === 'split-view' ? slotTabIds || [] : (slotTabIds || []).slice(0, minimumCount)
+  if (layout === 'split-view') {
+    return (slotTabIds || []).filter((tabId): tabId is string => typeof tabId === 'string' && Boolean(tabId))
+  }
+
+  const sanitizedSource = (slotTabIds || []).slice(0, minimumCount)
   const sanitized = sanitizedSource.map((tabId) => (typeof tabId === 'string' && tabId ? tabId : null))
 
   while (sanitized.length < minimumCount) {
@@ -154,17 +159,25 @@ export const savedViews$: Observable<Store> = observable<Store>({
 
     const view$ = savedViews$.savedViews[index]
     const layout = view$.layout.get()
-    const slotCount = view$.slotTabIds.get().length
+    const slotTabIds = view$.slotTabIds.get()
+    const slotCount = slotTabIds.length
     if (slotIndex < 0 || slotIndex >= slotCount) {
       return
     }
 
     if (tabId) {
-      const currentSlots = view$.slotTabIds.get()
-      if (currentSlots.some((currentTabId, currentIndex) => currentIndex !== slotIndex && currentTabId === tabId)) {
+      if (slotTabIds.some((currentTabId, currentIndex) => currentIndex !== slotIndex && currentTabId === tabId)) {
         return
       }
       view$.slotTabIds[slotIndex].set(tabId)
+      return
+    }
+
+    if (layout === 'split-view') {
+      view$.slotTabIds.splice(slotIndex, 1)
+      if (!view$.slotTabIds.get().length) {
+        savedViews$.deleteView(viewId)
+      }
       return
     }
 
@@ -197,11 +210,14 @@ export const savedViews$: Observable<Store> = observable<Store>({
     }
 
     const slotCount = view$.slotTabIds.get().length
-    if (slotCount <= getSlotCount('split-view') || slotIndex < getSlotCount('split-view') || slotIndex >= slotCount) {
+    if (slotIndex < 0 || slotIndex >= slotCount) {
       return
     }
 
     view$.slotTabIds.splice(slotIndex, 1)
+    if (!view$.slotTabIds.get().length) {
+      savedViews$.deleteView(viewId)
+    }
   },
 
   cleanupClosedTabIds: (tabIds) => {
