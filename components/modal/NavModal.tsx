@@ -163,7 +163,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="gap-4 px-4 flex-grow justify-center"
-        className="flex-grow-0"
+        style={{ flexGrow: 0, flexShrink: 0 }}
       >
         <ProfileSelectorChips
           profiles={profiles}
@@ -177,7 +177,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
         className="flex-1"
         contentContainerClassName={clsx('pb-16 flex-grow', oneHandMode ? 'justify-end pt-[40vh]' : 'justify-center')}
       >
-        <View className="mb-8 w-full max-w-2xl self-center px-4">
+        <View className="mb-8 mt-6 w-full max-w-2xl self-center px-4">
           <View className="flex-row items-center overflow-hidden rounded-[24px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
             {isIos ? (
               <View ref={providerTriggerRef} collapsable={false}>

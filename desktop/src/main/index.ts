@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, screen, session } from 'electron'
+import { app, shell, BrowserWindow, screen, session, Menu, clipboard } from 'electron'
 import { attachDownloadHandler } from './lib/download'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -9,10 +9,93 @@ import { genDesktopFile } from './lib/linux'
 import { checkForUpdate } from './lib/auto-update'
 import { initMainChannel } from './ipc/main'
 import { uiClient } from './ipc/ui'
-import contextMenu, { type Options as ContextMenuOptions } from 'electron-context-menu'
 import { getUserAgent } from '@/lib/useragent'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
+
+function isHttpUrl(url: string): boolean {
+  return /^https?:\/\//i.test(url)
+}
+
+function attachContextMenu(webContents: Electron.WebContents, ownerWindow: BrowserWindow): void {
+  webContents.on('context-menu', (_event, params) => {
+    const hasSelection = params.selectionText.trim().length > 0
+    const can = (type: keyof Electron.EditFlags): boolean => params.editFlags[type]
+    const menuTemplate: Electron.MenuItemConstructorOptions[] = [
+      {
+        label: 'Cut',
+        visible: params.isEditable,
+        enabled: can('canCut'),
+        click: () => webContents.cut(),
+      },
+      {
+        label: 'Copy',
+        visible: params.isEditable || hasSelection,
+        enabled: can('canCopy') || hasSelection,
+        click: () => webContents.copy(),
+      },
+      {
+        label: 'Paste',
+        visible: params.isEditable,
+        enabled: can('canPaste'),
+        click: () => webContents.paste(),
+      },
+      { type: 'separator' },
+      {
+        label: 'Copy Link',
+        visible: params.linkURL.length > 0 && params.mediaType === 'none',
+        click: () => {
+          clipboard.write({
+            bookmark: params.linkText,
+            text: params.linkURL,
+          })
+        },
+      },
+      {
+        label: 'Open in profile',
+        visible: isHttpUrl(params.linkURL),
+        click: () => {
+          uiClient.openLinkInProfile(params.linkURL)
+        },
+      },
+      { type: 'separator' },
+      {
+        label: 'Copy Image',
+        visible: params.mediaType === 'image',
+        click: () => {
+          webContents.copyImageAt(params.x, params.y)
+        },
+      },
+      {
+        label: 'Save Image As…',
+        visible: params.mediaType === 'image' && params.srcURL.length > 0,
+        click: () => {
+          webContents.downloadURL(params.srcURL)
+        },
+      },
+    ]
+
+    const visibleItems = menuTemplate
+      .filter((item) => item.visible !== false)
+      .filter((item, index, items) => {
+        if (item.type !== 'separator') {
+          return true
+        }
+        return (
+          index > 0 &&
+          index < items.length - 1 &&
+          items[index - 1].type !== 'separator' &&
+          items[index + 1].type !== 'separator'
+        )
+      })
+
+    if (visibleItems.length === 0) {
+      return
+    }
+
+    Menu.buildFromTemplate(visibleItems).popup({ window: ownerWindow })
+  })
+}
 
 function createWindow(): void {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
@@ -58,52 +141,17 @@ function createWindow(): void {
     webPreferences.preload = join(__dirname, '../preload/index.js')
   })
 
-  const contextMenuAppend: NonNullable<ContextMenuOptions['append']> = (
-    _defaults: unknown,
-    params: Electron.ContextMenuParams,
-    target,
-  ): Electron.MenuItemConstructorOptions[] => {
-    const wc = 'downloadURL' in target ? target : target.webContents
-
-    return [
-      {
-        label: 'Open in profile',
-        visible: /^https?:\/\//i.test(params.linkURL),
-        click: () => {
-          uiClient.openLinkInProfile(params.linkURL)
-        },
-      },
-      {
-        label: 'Save Image As…',
-        visible: params.mediaType === 'image',
-        click: () => {
-          wc.downloadURL(params.srcURL)
-        },
-      },
-    ]
-  }
-
-  const contextMenuOptions = {
-    showCopyImage: true,
-    showSaveImageAs: false,
-    showLearnSpelling: false,
-    showLookUpSelection: false,
-    showSearchWithGoogle: false,
-    showSelectAll: false,
-    append: contextMenuAppend,
-  }
   attachDownloadHandler(mainWindow.webContents.session)
-  contextMenu({ ...contextMenuOptions, window: mainWindow })
+  attachContextMenu(mainWindow.webContents, mainWindow)
   mainWindow.webContents.on('did-attach-webview', (e, wc) => {
     attachDownloadHandler(wc.session)
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
       callback(permission === 'notifications')
     })
-    // @ts-expect-error electron-context-menu accepts a webContents-shaped wrapper
-    contextMenu({ ...contextMenuOptions, window: { webContents: wc } })
+    attachContextMenu(wc, mainWindow)
     wc.setWindowOpenHandler((details) => {
       let url = details.url
-      const { host, pathname, searchParams } = new URL(url)
+      const { host, searchParams } = new URL(url)
       switch (host) {
         case 'l.threads.com':
           url = searchParams.get('u') || url
@@ -133,7 +181,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  const win = createWindow()
+  createWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

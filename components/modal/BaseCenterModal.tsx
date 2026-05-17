@@ -1,6 +1,7 @@
 import { clsx, isIos, isWeb } from '@/lib/utils'
 import { ReactNode, useEffect, useState } from 'react'
 import { Keyboard, KeyboardAvoidingView, Modal, Pressable, View } from 'react-native'
+import { createPortal } from 'react-dom'
 
 export const BaseCenterModal: React.FC<{ className?: string; containerClassName?: string; children: ReactNode; onClose: () => void }> = ({
   className,
@@ -44,7 +45,7 @@ export const BaseCenterModal: React.FC<{ className?: string; containerClassName?
   )
 
   if (isWeb) {
-    return body
+    return createPortal(body, document.body)
   }
 
   return (
