@@ -1,18 +1,26 @@
-import { savedViews$ } from '@/states/saved-views'
+import { tabGroups$ } from '@/states/tab-groups'
 import { openDesktopTab, tabs$ } from '@/states/tabs'
 
 export const openTabForActiveDesktopView = () => {
-  const activeViewId = savedViews$.activeViewId.get()
-  const activeView = savedViews$.savedViews.get().find((view) => view.id === activeViewId)
-
-  if (activeView?.layout === 'split-view') {
+  const activeGroupId = tabGroups$.activeGroupId.get()
+  const activeGroup = activeGroupId ? tabGroups$.groups.get().find((group) => group.id === activeGroupId) : null
+  if (activeGroup) {
     const tabId = openDesktopTab('')
     if (!tabId) {
       return
     }
-
-    savedViews$.appendSplitViewSlot(activeView.id)
-    savedViews$.assignSlotTab(activeView.id, activeView.slotTabIds.length, tabId)
+    if (activeGroup.layout === 'split-view') {
+      const emptySlotIndex = activeGroup.tabIds.findIndex((slotTabId) => !slotTabId)
+      if (emptySlotIndex >= 0) {
+        tabGroups$.assignGroupSlot(activeGroup.id, emptySlotIndex, tabId)
+      } else {
+        const newSlotIndex = activeGroup.tabIds.length
+        tabGroups$.appendSplitGroupSlot(activeGroup.id)
+        tabGroups$.assignGroupSlot(activeGroup.id, newSlotIndex, tabId)
+      }
+    } else {
+      tabGroups$.moveTabToGroup(tabId, activeGroup.id)
+    }
     tabs$.setActiveTabById(tabId, 'open')
     return
   }
@@ -21,6 +29,6 @@ export const openTabForActiveDesktopView = () => {
   if (!tabId) {
     return
   }
-
+  tabGroups$.setActiveGroup(null)
   tabs$.setActiveTabById(tabId, 'open')
 }

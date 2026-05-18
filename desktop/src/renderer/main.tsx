@@ -74,7 +74,7 @@ export function Root(): React.JSX.Element {
     } else {
       document.documentElement.classList.remove('dark')
     }
-    Appearance.setColorScheme(theme)
+    Appearance.setColorScheme(theme ?? systemAppearance ?? 'light')
   }, [theme, systemAppearance])
 
   return (

@@ -20,6 +20,7 @@ interface Store {
   profileModalOpen: boolean
   editingProfileId: string | null
   lastSelectedProfileId: string
+  renameGroupModalTargetGroupId: string | null
   renameViewModalTargetViewId: string | null
   settingsModalOpen: boolean
   tabModalOpen: boolean
@@ -54,6 +55,7 @@ export const ui$ = observable<Store>({
   autoProfilesModalOpen: false,
   profileModalOpen: false,
   editingProfileId: null,
+  renameGroupModalTargetGroupId: null,
   renameViewModalTargetViewId: null,
   settingsModalOpen: false,
   tabModalOpen: false,

@@ -14,6 +14,7 @@ import { ToolsModal } from '../modal/ToolsModal'
 import { ProfileEditModal } from '../modal/ProfileEditModal'
 import { ProfileLinkModal } from '../modal/ProfileLinkModal'
 import { RenameViewModal } from '../modal/RenameViewModal'
+import { RenameGroupModal } from '../modal/RenameGroupModal'
 import { UserStyleEditModal } from '../modal/UserStyleEditModal'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { useLocales } from 'expo-localization'
@@ -66,6 +67,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <ToolsModal />
         <ProfileEditModal />
         <ProfileLinkModal />
+        <RenameGroupModal />
         <RenameViewModal />
         <UserStyleEditModal />
         {nIf(

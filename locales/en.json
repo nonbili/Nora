@@ -29,14 +29,22 @@
     "namePlaceholder": "View name",
     "desktop": {
       "blankTab": "Blank tab",
+      "deck": "Deck",
+      "groupNamePlaceholder": "Group name",
+      "newGroupFromTab": "New group from tab",
       "newBlankTab": "New blank tab",
       "newSplitView": "New split view",
       "newGridView": "New grid view",
+      "renameGroup": "Rename group",
+      "tabCount": "{{count}} tab",
+      "tabCount_plural": "{{count}} tabs",
+      "ungrouped": "Ungrouped",
       "chooseTabToAdd": "Choose a tab to add to {{layout}}",
       "createBlankTabInSlot": "Create a new blank tab in this slot",
       "layout": {
-        "split": "split view",
-        "grid": "grid view",
+        "deck": "Deck view",
+        "split": "Split view",
+        "grid": "Grid view",
         "gridFour": "4-tabs grid"
       }
     }

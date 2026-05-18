@@ -26,7 +26,8 @@ import { getProfileViewKey } from '@/lib/profile-view'
 import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { colors } from '@/lib/colors'
-import { DECK_VIEW_ID, createDesktopSavedView, savedViews$ } from '@/states/saved-views'
+import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
+import { createDesktopTabGroupFromTab, tabGroups$ } from '@/states/tab-groups'
 
 const getRedirectTo = (str: string) => {
   try {
@@ -147,7 +148,7 @@ const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || t
 export const NoraTab: React.FC<{
   tab: Tab
   index: number
-  desktopVariant?: 'deck' | 'saved-view'
+  desktopVariant?: 'deck' | 'saved-view' | 'single'
   slotSwitcher?: ReactNode
 }> = ({ tab, index, desktopVariant = 'deck', slotSwitcher }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
@@ -470,9 +471,12 @@ export const NoraTab: React.FC<{
   const deckTabWidth = useValue(settings$.deckTabWidth)
   const activeViewId = useValue(savedViews$.activeViewId)
   const savedViews = useValue(savedViews$.savedViews)
+  const activeGroupId = useValue(tabGroups$.activeGroupId)
+  const groups = useValue(tabGroups$.groups)
   const activeViewLayout =
     activeViewId === DECK_VIEW_ID ? 'deck' : savedViews.find((view) => view.id === activeViewId)?.layout
-  const canDuplicate = activeViewLayout !== 'grid-4'
+  const activeGroupLayout = activeGroupId ? groups.find((group) => group.id === activeGroupId)?.layout : undefined
+  const canDuplicate = (activeGroupLayout || activeViewLayout) !== 'grid-4'
 
   if (isWeb) {
     return (
@@ -480,8 +484,16 @@ export const NoraTab: React.FC<{
         className={clsx('flex h-full min-h-0 min-w-0 flex-col', desktopVariant === 'deck' ? 'shrink-0' : 'w-full')}
         style={desktopVariant === 'deck' ? { width: deckTabWidth } : undefined}
       >
-        <NouContextMenu
+        {desktopVariant === 'single' ? null : <NouContextMenu
           items={[
+            {
+              label: t('views.desktop.newGroupFromTab'),
+              icon: <MaterialIcons name="create-new-folder" size={18} color={menuIconColor} />,
+              handler: () => {
+                createDesktopTabGroupFromTab(tab.id)
+                tabs$.setActiveTabById(tab.id, 'system')
+              },
+            },
             {
               label: t('menus.reload'),
               icon: <MaterialIcons name="refresh" size={18} color={menuIconColor} />,
@@ -501,14 +513,6 @@ export const NoraTab: React.FC<{
                   },
                 ]
               : []),
-            {
-              label: t('menus.viewInSplitView'),
-              icon: <MaterialIcons name="vertical-split" size={18} color={menuIconColor} />,
-              handler: () => {
-                createDesktopSavedView('split-view', [tab.id])
-                tabs$.setActiveTabById(tab.id, 'system')
-              },
-            },
             {
               label: t('menus.scroll'),
               icon: <MaterialIcons name="vertical-align-top" size={18} color={menuIconColor} />,
@@ -574,7 +578,7 @@ export const NoraTab: React.FC<{
               <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
             </View>
           </View>
-        </NouContextMenu>
+        </NouContextMenu>}
         <NoraView
           className={clsx('flex-1', !tab.url && 'hidden')}
           ref={noraViewRef}

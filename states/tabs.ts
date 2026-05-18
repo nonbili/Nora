@@ -5,6 +5,7 @@ import { genId } from '@/lib/utils'
 import { ui$ } from './ui'
 import { settings$ } from './settings'
 import { DECK_VIEW_ID, savedViews$ } from './saved-views'
+import { tabGroups$ } from './tab-groups'
 import { sortBy } from 'es-toolkit'
 import {
   consumeChildBackTarget,
@@ -329,6 +330,7 @@ export const tabs$: Observable<Store> = observable<Store>({
     }
     pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
     savedViews$.cleanupClosedTabIds([tabId])
+    tabGroups$.cleanupClosedTabIds([tabId])
     syncRuntimeTabMetadata()
 
     const remainingTabs = tabs$.tabs.get()
@@ -358,6 +360,7 @@ export const tabs$: Observable<Store> = observable<Store>({
     childBackParentByTabId = {}
     ui$.activeCanGoBack.set(false)
     savedViews$.cleanupClosedTabIds(closedTabIds)
+    tabGroups$.cleanupClosedTabIds(closedTabIds)
   },
 
   deleteProfileData: (profileId) => {
@@ -386,6 +389,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       tabs$.orders.set(nextOrders)
       tabs$.tabs.set(remainingTabs.length ? remainingTabs : [{ id: genId(), url: '' }])
       savedViews$.cleanupClosedTabIds(removedTabIds)
+      tabGroups$.cleanupClosedTabIds(removedTabIds)
       syncRuntimeTabMetadata()
 
       const activeDeleted = activeTabId != null && removedTabIdSet.has(activeTabId)
@@ -443,6 +447,21 @@ export const tabs$: Observable<Store> = observable<Store>({
               view$.slotTabIds[emptySlotIndex].set(duplicated.id)
             }
           }
+        }
+      }
+    }
+    const activeGroupId = tabGroups$.activeGroupId.get()
+    if (activeGroupId) {
+      const group = tabGroups$.groups.get().find((currentGroup) => currentGroup?.id === activeGroupId)
+      const sourceSlotIndex = group?.tabIds.findIndex((slotTabId) => slotTabId === tabId) ?? -1
+      if (group && sourceSlotIndex !== -1) {
+        if (group.layout === 'grid-4') {
+          const emptySlotIndex = group.tabIds.findIndex((slotTabId) => !slotTabId)
+          if (emptySlotIndex !== -1) {
+            tabGroups$.assignGroupSlot(group.id, emptySlotIndex, duplicated.id)
+          }
+        } else {
+          tabGroups$.moveTabToGroup(duplicated.id, group.id, sourceSlotIndex + 1)
         }
       }
     }
@@ -551,6 +570,7 @@ export const tabs$: Observable<Store> = observable<Store>({
     tabs$.tabs.splice(activeIndex, 1)
     pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
     savedViews$.cleanupClosedTabIds(activeTabId ? [activeTabId] : [])
+    tabGroups$.cleanupClosedTabIds(activeTabId ? [activeTabId] : [])
     syncRuntimeTabMetadata()
     ui$.webview.set(undefined)
     ui$.activeCanGoBack.set(false)

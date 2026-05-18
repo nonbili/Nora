@@ -24,7 +24,8 @@ import { bookmarks$ } from '@/states/bookmarks'
 import { showToast } from '@/lib/toast'
 import { Directions, Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
-import { SavedViewsPicker } from '../view/SavedViewsPicker'
+import { openTabForActiveDesktopView } from '@/lib/desktop-view-actions'
+import { DesktopTabsSidebar } from '../view/DesktopTabsSidebar'
 import { ServiceIcon } from '../service/Services'
 
 const webAnimatedHelpers = {
@@ -154,7 +155,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     <Root
       className={clsx(
         'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between pl-2 py-1',
-        isWeb && 'lg:w-[52px] lg:flex-col lg:items-center lg:justify-start lg:gap-4 lg:bg-zinc-50 lg:px-0 lg:py-4',
+        isWeb && 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0',
       )}
       style={{ marginTop: isWeb ? webMarginTop : marginTop }}
       onLayout={onLayout}
@@ -171,14 +172,14 @@ export const NouHeader: React.FC<{}> = ({}) => {
       )}
       {nIf(
         isWeb,
-        <View className="min-w-0 lg:w-full lg:flex-none">
-          <SavedViewsPicker />
+        <View className="min-w-0 lg:w-full lg:flex-1 lg:min-h-0">
+          <DesktopTabsSidebar />
         </View>,
       )}
       <View
         className={clsx(
           'flex-row items-center justify-end gap-1',
-          isWeb && 'lg:mt-auto lg:w-full lg:flex-col lg:items-center lg:justify-start',
+          isWeb && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-r lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-950',
         )}
       >
         {nIf(
@@ -199,6 +200,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
               <NouText className="text-xs font-semibold" style={{ color: headerControlColor }}>{tabs.length}</NouText>
             </View>
           </TouchableOpacity>,
+        )}
+        {nIf(
+          isWeb,
+          <MaterialButton name="add" color={headerControlColor} onPress={openTabForActiveDesktopView} />,
         )}
         {nIf(
           isWeb && recentlyClosedTabs.length > 0,

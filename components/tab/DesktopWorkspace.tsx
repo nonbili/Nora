@@ -1,24 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
-import { arrayMove, SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useValue } from '@legendapp/state/react'
-import { clsx } from '@/lib/utils'
-import { NoraTab } from './NoraTab'
-import { Tab, getOrderedTabIds, openDesktopTab, sortTabsByOrder, tabs$ } from '@/states/tabs'
-import { settings$ } from '@/states/settings'
-import { CustomSavedView, DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
+import { Pressable, View } from 'react-native'
+import { t } from 'i18next'
 import { NouMenu } from '../menu/NouMenu'
 import { NouText } from '../NouText'
-import { t } from 'i18next'
-import { Pressable, View } from 'react-native'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { ServiceIcon } from '../service/Services'
+import { clsx } from '@/lib/utils'
 import { getProfileColor } from '@/lib/profile'
-import { ui$ } from '@/states/ui'
 import { AUTO_PROFILE_ID } from '@/lib/site-profile'
+import { settings$ } from '@/states/settings'
+import { tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
+import { type Tab, getOrderedTabIds, openDesktopTab, sortTabsByOrder, tabs$ } from '@/states/tabs'
+import { ui$ } from '@/states/ui'
+import { NoraTab } from './NoraTab'
 
 const SLOT_GAP = 8
+
 const getHiddenTabStyle = (width: number | string): CSSProperties => ({
   position: 'absolute',
   left: '-200vw',
@@ -31,7 +32,7 @@ const getHiddenTabStyle = (width: number | string): CSSProperties => ({
 
 const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 
-const getSlotStyle = (layout: CustomSavedView['layout'], slotIndex: number): CSSProperties => {
+const getSlotStyle = (layout: Exclude<TabGroupLayout, 'deck'>, slotIndex: number): CSSProperties => {
   const half = `calc((100% - ${SLOT_GAP}px) / 2)`
   if (layout === 'split-view') {
     return {
@@ -54,33 +55,24 @@ const getSlotStyle = (layout: CustomSavedView['layout'], slotIndex: number): CSS
   }
 }
 
+const getLayoutLabel = (layout: TabGroupLayout) => {
+  if (layout === 'split-view') return t('views.desktop.layout.split')
+  if (layout === 'grid-4') return t('views.desktop.layout.grid')
+  return t('views.desktop.layout.deck')
+}
+
 const SlotTabPicker: React.FC<{
   currentTabId: string | null
+  group: TabGroup
   isActive: boolean
   onActivate: () => void
   orderedTabs: Tab[]
   slotIndex: number
   tabIdSet: Set<string>
-  view: CustomSavedView
-}> = ({ currentTabId, isActive, onActivate, orderedTabs, slotIndex, tabIdSet, view }) => {
-  const usedTabIds = new Set(view.slotTabIds.filter((tabId): tabId is string => Boolean(tabId)))
+}> = ({ currentTabId, group, isActive, onActivate, orderedTabs, slotIndex, tabIdSet }) => {
+  const usedTabIds = new Set(group.tabIds.filter((tabId): tabId is string => Boolean(tabId)))
   const currentTab = orderedTabs.find((tab) => tab.id === currentTabId) || null
   const availableTabs = orderedTabs.filter((tab) => tab.id === currentTabId || !usedTabIds.has(tab.id))
-
-  const items = [
-    ...availableTabs.map((tab) => ({
-      label: getTabLabel(tab),
-      description: tab.url || t('views.desktop.blankTab'),
-      icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
-      meta:
-        tab.id === currentTabId ? <MaterialIcons name="check" size={16} color={isActive ? '#4f46e5' : '#71717a'} /> : undefined,
-      handler: () => {
-        onActivate()
-        savedViews$.assignSlotTab(view.id, slotIndex, tab.id)
-        tabs$.setActiveTabById(tab.id, 'user')
-      },
-    })),
-  ]
 
   return (
     <NouMenu
@@ -111,18 +103,26 @@ const SlotTabPicker: React.FC<{
           >
             {currentTabId && tabIdSet.has(currentTabId) ? getTabLabel(currentTab) : t('tabs.new')}
           </NouText>
-          <MaterialIcons
-            name="unfold-more"
-            size={14}
-            color={isActive ? '#4f46e5' : '#71717a'}
-            className="shrink-0 opacity-80"
-          />
+          <MaterialIcons name="unfold-more" size={14} color={isActive ? '#4f46e5' : '#71717a'} />
         </Pressable>
       }
       items={[
-        ...items,
+        ...availableTabs.map((tab) => ({
+          label: getTabLabel(tab),
+          description: tab.url || t('views.desktop.blankTab'),
+          icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
+          meta:
+            tab.id === currentTabId ? (
+              <MaterialIcons name="check" size={16} color={isActive ? '#4f46e5' : '#71717a'} />
+            ) : undefined,
+          handler: () => {
+            onActivate()
+            tabGroups$.assignGroupSlot(group.id, slotIndex, tab.id)
+            tabs$.setActiveTabById(tab.id, 'user')
+          },
+        })),
         {
-          kind: 'separator',
+          kind: 'separator' as const,
           label: '',
           handler: () => {},
         },
@@ -134,7 +134,7 @@ const SlotTabPicker: React.FC<{
             onActivate()
             const tabId = openDesktopTab('')
             if (tabId) {
-              savedViews$.assignSlotTab(view.id, slotIndex, tabId)
+              tabGroups$.assignGroupSlot(group.id, slotIndex, tabId)
               tabs$.setActiveTabById(tabId, 'open')
             }
           },
@@ -145,39 +145,37 @@ const SlotTabPicker: React.FC<{
 }
 
 const EmptySlot: React.FC<{
+  group: TabGroup
   isActive: boolean
+  isSplit: boolean
   onActivate: () => void
-  slotIndex: number
   orderedTabs: Tab[]
+  slotIndex: number
   tabIdSet: Set<string>
-  view: CustomSavedView
-  isSplit?: boolean
-}> = ({ isActive, onActivate, slotIndex, orderedTabs, tabIdSet, view, isSplit }) => {
+}> = ({ group, isActive, isSplit, onActivate, orderedTabs, slotIndex, tabIdSet }) => {
   const lastSelectedProfileId = useValue(ui$.lastSelectedProfileId)
   const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
   const selectedProfileId = oneProfilePerSite ? AUTO_PROFILE_ID : lastSelectedProfileId
   const profileColor = getProfileColor(selectedProfileId)
-  const canCloseSlot = isSplit && slotIndex >= 2 && view.slotTabIds.length > 2
-  const usedTabIds = new Set(view.slotTabIds.filter((tabId): tabId is string => Boolean(tabId)))
+  const canCloseSlot = isSplit && slotIndex >= 2 && group.tabIds.length > 2
+  const usedTabIds = new Set(group.tabIds.filter((tabId): tabId is string => Boolean(tabId)))
   const availableTabs = orderedTabs.filter((tab) => !usedTabIds.has(tab.id) && tabIdSet.has(tab.id))
-  const targetLayoutLabel =
-    view.layout === 'split-view' ? t('views.desktop.layout.split') : t('views.desktop.layout.grid')
 
-  const createTabInSlot = (url: string, profileId: string) => {
+  const createTabInSlot = () => {
     onActivate()
     const tabId =
-      profileId === AUTO_PROFILE_ID
-        ? openDesktopTab(url, { profileMode: 'auto' })
-        : openDesktopTab(url, { profile: profileId, profileMode: 'manual' })
+      selectedProfileId === AUTO_PROFILE_ID
+        ? openDesktopTab('', { profileMode: 'auto' })
+        : openDesktopTab('', { profile: selectedProfileId, profileMode: 'manual' })
     if (tabId) {
-      savedViews$.assignSlotTab(view.id, slotIndex, tabId)
+      tabGroups$.assignGroupSlot(group.id, slotIndex, tabId)
       tabs$.setActiveTabById(tabId, 'open')
     }
   }
 
   const assignExistingTab = (tabId: string) => {
     onActivate()
-    savedViews$.assignSlotTab(view.id, slotIndex, tabId)
+    tabGroups$.assignGroupSlot(group.id, slotIndex, tabId)
     tabs$.setActiveTabById(tabId, 'user')
   }
 
@@ -185,20 +183,17 @@ const EmptySlot: React.FC<{
     <div
       className={clsx(
         isSplit
-          ? clsx(
-              'flex-1 min-w-0 h-full overflow-hidden border transition-all',
-              isActive
-                ? 'border-indigo-300 bg-indigo-50/40 shadow-[0_0_0_1px_rgba(165,180,252,0.9)] dark:border-indigo-300/40 dark:bg-indigo-400/10'
-                : 'border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950',
-            )
-          : clsx(
-              'absolute overflow-hidden border transition-all',
-              isActive
-                ? 'border-indigo-300 bg-indigo-50/40 shadow-[0_0_0_1px_rgba(165,180,252,0.9)] dark:border-indigo-300/40 dark:bg-indigo-400/10'
-                : 'border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950',
-            ),
+          ? 'flex-1 min-w-0 h-full overflow-hidden border transition-all'
+          : 'absolute overflow-hidden border transition-all',
+        isActive
+          ? 'border-indigo-300 bg-indigo-50/40 shadow-[0_0_0_1px_rgba(165,180,252,0.9)] dark:border-indigo-300/40 dark:bg-indigo-400/10'
+          : 'border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950',
       )}
-      style={!isSplit ? getSlotStyle(view.layout, slotIndex) : { flex: 1, minWidth: 0, order: slotIndex }}
+      style={
+        isSplit
+          ? { flex: 1, minWidth: 0, order: slotIndex }
+          : getSlotStyle(group.layout === 'grid-4' ? 'grid-4' : 'split-view', slotIndex)
+      }
       onClick={onActivate}
     >
       <View className="flex h-full min-h-0 min-w-0 flex-col">
@@ -209,23 +204,20 @@ const EmptySlot: React.FC<{
           )}
           style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
         >
-          <View className="flex-row items-center gap-2 shrink-0">
-            <ServiceIcon url="" />
-          </View>
-          <View className="flex-1 min-w-0 flex-row items-center justify-center">
-            <NouText
-              className={clsx(
-                'text-[11px] font-bold tracking-wider text-center px-2',
-                isActive ? 'text-indigo-950 dark:text-indigo-50' : 'text-zinc-500 dark:text-zinc-400',
-              )}
-            >
-              {t('tabs.new')}
-            </NouText>
-          </View>
+          <ServiceIcon url="" />
+          <NouText
+            className={clsx(
+              'min-w-0 flex-1 px-2 text-center text-[11px] font-bold tracking-wider',
+              isActive ? 'text-indigo-950 dark:text-indigo-50' : 'text-zinc-500 dark:text-zinc-400',
+            )}
+            numberOfLines={1}
+          >
+            {t('tabs.new')}
+          </NouText>
           {canCloseSlot ? (
             <Pressable
               className="h-7 w-7 shrink-0 items-center justify-center rounded-md hover:bg-zinc-700/60"
-              onPress={() => savedViews$.removeSplitViewSlot(view.id, slotIndex)}
+              onPress={() => tabGroups$.removeSplitGroupSlot(group.id, slotIndex)}
             >
               <MaterialIcons name="close" size={16} color="#a1a1aa" />
             </Pressable>
@@ -244,28 +236,21 @@ const EmptySlot: React.FC<{
               className="mb-6 w-full text-center text-2xl font-bold leading-tight text-zinc-900 dark:text-zinc-50"
               numberOfLines={2}
             >
-              {t('views.desktop.chooseTabToAdd', { layout: targetLayoutLabel })}
+              {t('views.desktop.chooseTabToAdd', { layout: getLayoutLabel(group.layout) })}
             </NouText>
             <View className="w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white/95 shadow-sm shadow-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-950/90">
-              <Pressable
-                className="flex-row items-center gap-3 px-5 py-4 active:bg-zinc-100 dark:active:bg-zinc-900"
-                onPress={() => createTabInSlot('', selectedProfileId)}
-              >
+              <Pressable className="flex-row items-center gap-3 px-5 py-4 active:bg-zinc-100 dark:active:bg-zinc-900" onPress={createTabInSlot}>
                 <View className="h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-900">
                   <MaterialIcons name="add" size={20} color="#f97316" />
                 </View>
                 <View className="min-w-0 flex-1">
-                  <NouText className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                    {t('tabs.new')}
-                  </NouText>
+                  <NouText className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{t('tabs.new')}</NouText>
                   <NouText className="text-sm text-zinc-500 dark:text-zinc-400">
                     {t('views.desktop.createBlankTabInSlot')}
                   </NouText>
                 </View>
               </Pressable>
-
               {availableTabs.length ? <View className="mx-5 h-px bg-zinc-200 dark:bg-zinc-800" /> : null}
-
               {availableTabs.map((tab, index) => (
                 <Pressable
                   key={tab.id}
@@ -297,31 +282,31 @@ const EmptySlot: React.FC<{
 }
 
 const SortableDesktopTab: React.FC<{
+  index: number
   isDeck: boolean
+  isSingle: boolean
+  isSplit: boolean
   isVisible: boolean
-  orders: Record<string, number>
+  order: number
   slotIndex: number | null
   slotSwitcher?: ReactNode
   tab: Tab
-  index: number
-  viewLayout?: CustomSavedView['layout']
-  isSplit?: boolean
-}> = ({ isDeck, isVisible, orders, slotIndex, slotSwitcher, tab, index, viewLayout, isSplit }) => {
-  const activeTabIndex = useValue(tabs$.activeTabIndex)
-  const { attributes, listeners, setNodeRef, transform, transition, over, isOver, active } = useSortable({
-    id: tab.id,
-  })
+  viewLayout: TabGroupLayout
+}> = ({ index, isDeck, isSingle, isSplit, isVisible, order, slotIndex, slotSwitcher, tab, viewLayout }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, active } = useSortable({ id: tab.id })
 
   let style: CSSProperties
-  if (isDeck) {
+  if (isDeck && isVisible) {
     style = {
-      order: orders[tab.id] ?? index,
+      order,
       transform: CSS.Transform.toString(transform),
       transition,
     }
+  } else if (isSingle && isVisible) {
+    style = { position: 'absolute', inset: 0 }
   } else if (isSplit && isVisible) {
     style = { flex: 1, minWidth: 0, order: slotIndex ?? 0 }
-  } else if (viewLayout && slotIndex != null) {
+  } else if (isVisible && viewLayout !== 'deck' && slotIndex != null) {
     style = getSlotStyle(viewLayout, slotIndex)
   } else {
     style = getHiddenTabStyle(settings$.deckTabWidth.get())
@@ -331,30 +316,23 @@ const SortableDesktopTab: React.FC<{
     <div
       ref={setNodeRef}
       className={clsx(
-        isDeck
-          ? 'flex h-full transition-all'
-          : isSplit && isVisible
-            ? 'flex-1 min-w-0 h-full overflow-hidden'
-            : viewLayout && slotIndex != null
-              ? 'absolute overflow-hidden border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950'
-              : 'absolute overflow-hidden',
-
-        isDeck && over && 'pointer-events-none',
-        isDeck && active?.id === tab.id && 'rotate-[1deg] translate-y-[-16px]',
-        isDeck &&
-          isOver &&
-          active &&
-          over &&
-          (orders[active.id as string] < orders[over.id as string]
-            ? 'border-r-2 border-r-sky-500 pr-2'
-            : 'border-l-2 border-l-sky-500 pl-2'),
+        isDeck && isVisible
+          ? 'flex h-full cursor-grab active:cursor-grabbing transition-opacity'
+          : isSingle && isVisible
+            ? 'overflow-hidden'
+            : isSplit && isVisible
+              ? 'flex-1 min-w-0 h-full overflow-hidden'
+              : isVisible && viewLayout !== 'deck'
+                ? 'absolute overflow-hidden border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950'
+                : 'absolute overflow-hidden',
+        active?.id === tab.id && 'opacity-30 z-10',
       )}
       style={style}
-      onMouseDown={() => tabs$.setActiveTabIndex(index, 'user')}
-      {...(isDeck ? attributes : {})}
-      {...(isDeck ? listeners : {})}
+      onMouseDown={() => tabs$.setActiveTabById(tab.id, 'user')}
+      {...(isDeck && isVisible ? attributes : {})}
+      {...(isDeck && isVisible ? listeners : {})}
     >
-      <NoraTab tab={tab} index={index} desktopVariant={isDeck ? 'deck' : 'saved-view'} slotSwitcher={slotSwitcher} />
+      <NoraTab tab={tab} index={index} desktopVariant={isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'} slotSwitcher={slotSwitcher} />
     </div>
   )
 }
@@ -363,37 +341,34 @@ export const DesktopWorkspace: React.FC = () => {
   const tabs = useValue(tabs$.tabs)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const orders = useValue(tabs$.orders)
-  const activeViewId = useValue(savedViews$.activeViewId)
-  const savedViews = useValue(savedViews$.savedViews)
-  const [focusedEmptySlotByView, setFocusedEmptySlotByView] = useState<Record<string, number>>({})
+  const activeGroupId = useValue(tabGroups$.activeGroupId)
+  const groups = useValue(tabGroups$.groups)
+  const [focusedEmptySlotByGroup, setFocusedEmptySlotByGroup] = useState<Record<string, number>>({})
   const deckScrollRef = useRef<HTMLDivElement>(null)
   const prevTabCountRef = useRef(tabs.length)
-  const activeView = savedViews.find((view) => view.id === activeViewId)
-  const isDeck = !activeView || activeViewId === DECK_VIEW_ID
+  const activeGroup = groups.find((group) => group.id === activeGroupId) || null
+  const groupedTabIds = useMemo(
+    () => new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
+    [groups],
+  )
   const tabIdsKey = tabs.map((tab) => tab.id).join('|')
-  const orderedTabIds = useMemo(() => getOrderedTabIds(tabs, orders), [tabIdsKey, orders])
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
+  const orderedTabIds = useMemo(() => getOrderedTabIds(tabs, orders), [tabIdsKey, orders])
   const tabIdSet = useMemo(() => new Set(tabs.map((tab) => tab.id)), [tabIdsKey])
-  const visibleSlots = activeView?.slotTabIds ?? []
-  const visibleTabIds = visibleSlots.filter((tabId): tabId is string => typeof tabId === 'string' && tabIdSet.has(tabId))
+  const ungroupedTabIds = orderedTabs.filter((tab) => !groupedTabIds.has(tab.id)).map((tab) => tab.id)
   const activeTabId = tabs[activeTabIndex]?.id
-
-  const ordersRef = useRef(orders)
-  ordersRef.current = orders
-  useEffect(() => {
-    const currentOrders = ordersRef.current
-    const currentTabIds = getOrderedTabIds(tabs$.tabs.get(), currentOrders)
-    const nextOrders: Record<string, number> = {}
-    currentTabIds.forEach((tabId, order) => {
-      nextOrders[tabId] = order
-    })
-
-    const hasSameSize = Object.keys(nextOrders).length === Object.keys(currentOrders).length
-    const hasSameOrder = hasSameSize && currentTabIds.every((tabId, index) => currentOrders[tabId] === index)
-    if (!hasSameOrder) {
-      tabs$.orders.set(nextOrders)
-    }
-  }, [tabIdsKey])
+  const isSingle = !activeGroup
+  const singleVisibleTabId = isSingle
+    ? activeTabId && ungroupedTabIds.includes(activeTabId)
+      ? activeTabId
+      : ungroupedTabIds[0]
+    : undefined
+  const visibleSlots = activeGroup ? activeGroup.tabIds : singleVisibleTabId ? [singleVisibleTabId] : []
+  const visibleTabIds = visibleSlots.filter((tabId): tabId is string => typeof tabId === 'string' && tabIdSet.has(tabId))
+  const visibleTabIdSet = useMemo(() => new Set(visibleTabIds), [visibleTabIds.join('|')])
+  const viewLayout: TabGroupLayout = activeGroup?.layout || 'deck'
+  const isDeck = viewLayout === 'deck' && !isSingle
+  const isSplit = viewLayout === 'split-view' && !isSingle
 
   useEffect(() => {
     if (isDeck && tabs.length > prevTabCountRef.current && deckScrollRef.current) {
@@ -405,89 +380,81 @@ export const DesktopWorkspace: React.FC = () => {
   }, [isDeck, tabs.length])
 
   useEffect(() => {
-    if (isDeck || !tabs.length) {
+    if (!tabs.length) {
       return
     }
-
-    const activeTabId = tabs[activeTabIndex]?.id
     if (activeTabId && visibleTabIds.includes(activeTabId)) {
       return
     }
-
     const fallbackTabId = visibleTabIds.find((tabId) => tabIdSet.has(tabId))
     if (fallbackTabId) {
       tabs$.setActiveTabById(fallbackTabId, 'system')
     }
-  }, [activeTabIndex, activeViewId, isDeck, savedViews, tabIdsKey, visibleTabIds.join('|')])
+  }, [activeGroupId, activeTabId, tabIdsKey, visibleTabIds.join('|')])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 1,
-      },
+      activationConstraint: { distance: 1 },
     }),
   )
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    if (!isDeck) {
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!isDeck || !over || active.id === over.id) {
+      return
+    }
+    const oldIndex = visibleTabIds.findIndex((tabId) => tabId === active.id)
+    const newIndex = visibleTabIds.findIndex((tabId) => tabId === over.id)
+    if (oldIndex === -1 || newIndex === -1) {
       return
     }
 
-    const { active, over } = event
-    if (over && active.id !== over.id) {
-      const entries = orderedTabIds.map((tabId) => [tabId, orders[tabId] ?? 0] as const)
-      const oldIndex = entries.findIndex(([tabId]) => tabId === active.id)
-      const newIndex = entries.findIndex(([tabId]) => tabId === over.id)
-      const newEntries = arrayMove(entries, oldIndex, newIndex)
-      const nextOrders: Record<string, number> = {}
-      newEntries.forEach(([tabId], index) => {
-        nextOrders[tabId] = index
-      })
-      tabs$.orders.set(nextOrders)
+    if (activeGroup) {
+      tabGroups$.moveTabToGroup(active.id as string, activeGroup.id, newIndex)
+      return
     }
+
+    const nextOrders: Record<string, number> = {}
+    const reorderedVisible = arrayMove(visibleTabIds, oldIndex, newIndex)
+    const visibleSet = new Set(visibleTabIds)
+    const nextTabIds = [...reorderedVisible, ...orderedTabIds.filter((tabId) => !visibleSet.has(tabId))]
+    nextTabIds.forEach((tabId, index) => {
+      nextOrders[tabId] = index
+    })
+    tabs$.orders.set(nextOrders)
   }
 
   const slotIndexByTabId = new Map<string, number>()
-  if (activeView) {
-    activeView.slotTabIds.forEach((tabId, slotIndex) => {
-      if (tabId && tabIdSet.has(tabId)) {
-        slotIndexByTabId.set(tabId, slotIndex)
-      }
-    })
-  }
+  visibleSlots.forEach((tabId, slotIndex) => {
+    if (tabId && tabIdSet.has(tabId)) {
+      slotIndexByTabId.set(tabId, slotIndex)
+    }
+  })
 
-  const fallbackEmptySlotIndex =
-    activeView?.slotTabIds.findIndex((tabId) => !tabId || !tabIdSet.has(tabId)) ?? -1
+  const fallbackEmptySlotIndex = visibleSlots.findIndex((tabId) => !tabId || !tabIdSet.has(tabId))
   const activeSlotIndex =
-    !activeView || isDeck
+    !activeGroup || isDeck
       ? null
       : activeTabId && slotIndexByTabId.has(activeTabId)
         ? slotIndexByTabId.get(activeTabId) ?? null
-        : focusedEmptySlotByView[activeView.id] ?? (fallbackEmptySlotIndex >= 0 ? fallbackEmptySlotIndex : null)
+        : focusedEmptySlotByGroup[activeGroup.id] ?? (fallbackEmptySlotIndex >= 0 ? fallbackEmptySlotIndex : null)
 
-  const isSplit = activeView?.layout === 'split-view'
   const createDeckTab = () => {
     const tabId = openDesktopTab('')
+    if (tabId && activeGroup) {
+      tabGroups$.moveTabToGroup(tabId, activeGroup.id)
+    }
     if (tabId) {
       tabs$.setActiveTabById(tabId, 'open')
     }
   }
 
-  const focusSlot = (viewId: string, slotIndex: number) => {
-    setFocusedEmptySlotByView((current) => {
-      if (current[viewId] === slotIndex) {
-        return current
-      }
-      return {
-        ...current,
-        [viewId]: slotIndex,
-      }
-    })
+  const focusSlot = (groupId: string, slotIndex: number) => {
+    setFocusedEmptySlotByGroup((current) => (current[groupId] === slotIndex ? current : { ...current, [groupId]: slotIndex }))
   }
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={orderedTabIds} strategy={horizontalListSortingStrategy}>
+      <SortableContext items={isDeck ? visibleTabIds : []} strategy={horizontalListSortingStrategy}>
         <div className="relative flex-1 flex flex-col overflow-hidden">
           <div
             ref={isDeck ? deckScrollRef : undefined}
@@ -499,48 +466,30 @@ export const DesktopWorkspace: React.FC = () => {
                   : 'relative flex-1 overflow-hidden p-2',
             )}
           >
-            {(() => {
-              const seen = new Set<string>()
-              return tabs.map((tab, index) => {
-                if (!tab?.id || seen.has(tab.id)) return null
-                seen.add(tab.id)
-
-                const slotIndex = slotIndexByTabId.get(tab.id)
-                const isVisible = isDeck || slotIndex != null
-
-                return (
-                  <SortableDesktopTab
-                    key={tab.id}
-                    isDeck={isDeck}
-                    isSplit={isSplit}
-                    isVisible={isVisible}
-                    orders={orders}
-                    slotIndex={slotIndex ?? null}
-                    slotSwitcher={
-                      !isDeck && activeView && slotIndex != null ? (
-                        <SlotTabPicker
-                          currentTabId={tab.id}
-                          isActive={slotIndex === activeSlotIndex}
-                          onActivate={() => focusSlot(activeView.id, slotIndex)}
-                          orderedTabs={orderedTabs}
-                          slotIndex={slotIndex}
-                          tabIdSet={tabIdSet}
-                          view={activeView}
-                        />
-                      ) : undefined
-                    }
-                    tab={tab}
-                    index={index}
-                    viewLayout={activeView?.layout}
-                  />
-                )
-              })
-            })()}
+            {tabs.map((tab, index) => {
+              const slotIndex = slotIndexByTabId.get(tab.id)
+              const isVisible = visibleTabIdSet.has(tab.id)
+              const order = isDeck ? visibleTabIds.findIndex((tabId) => tabId === tab.id) : slotIndex ?? index
+              return (
+                <SortableDesktopTab
+                  key={tab.id}
+                  index={index}
+                  isDeck={isDeck}
+                  isSingle={isSingle}
+                  isSplit={isSplit}
+                  isVisible={isVisible}
+                  order={order}
+                  slotIndex={slotIndex ?? null}
+                  tab={tab}
+                  viewLayout={viewLayout}
+                />
+              )
+            })}
 
             {isDeck ? (
-              <div style={{ order: tabs.length + 1 }}>
+              <div style={{ order: visibleTabIds.length + 1 }}>
                 <Pressable
-                  className="flex h-full w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950/40 hover:bg-zinc-200 dark:hover:bg-zinc-900/70"
+                  className="flex h-full w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-100 hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:bg-zinc-900/70"
                   onPress={createDeckTab}
                 >
                   <MaterialIcons name="add" size={22} color="#a1a1aa" />
@@ -548,18 +497,18 @@ export const DesktopWorkspace: React.FC = () => {
               </div>
             ) : null}
 
-            {activeView
-              ? activeView.slotTabIds.map((tabId, slotIndex) =>
+            {activeGroup && !isDeck
+              ? activeGroup.tabIds.map((tabId, slotIndex) =>
                   tabId && tabIdSet.has(tabId) ? null : (
                     <EmptySlot
-                      key={`${activeView.id}-${slotIndex}`}
+                      key={`${activeGroup.id}-${slotIndex}`}
+                      group={activeGroup}
                       isActive={slotIndex === activeSlotIndex}
-                      onActivate={() => focusSlot(activeView.id, slotIndex)}
-                      slotIndex={slotIndex}
-                      orderedTabs={orderedTabs}
-                      tabIdSet={tabIdSet}
-                      view={activeView}
                       isSplit={isSplit}
+                      onActivate={() => focusSlot(activeGroup.id, slotIndex)}
+                      orderedTabs={orderedTabs}
+                      slotIndex={slotIndex}
+                      tabIdSet={tabIdSet}
                     />
                   ),
                 )
