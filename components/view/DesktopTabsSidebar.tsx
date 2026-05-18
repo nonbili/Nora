@@ -1,7 +1,7 @@
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
-import React, { memo, useMemo, type ReactNode } from 'react'
+import React, { memo, useMemo, useState, type ReactNode } from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { closestCenter, DndContext, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { closestCenter, DndContext, DragOverlay, PointerSensor, useDndContext, useDroppable, useSensor, useSensors, type DragEndEvent, type DragOverEvent, type DragStartEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { batch } from '@legendapp/state'
@@ -70,13 +70,19 @@ const SectionDropTarget: React.FC<{
     id: groupId ? `${GROUP_DND_PREFIX}${groupId}` : UNGROUPED_ID,
     data: { type: 'section', groupId },
   })
+  const { active, over } = useDndContext()
+  const activeGroupId = (active?.data.current?.groupId ?? null) as string | null | undefined
+  const overGroupId = (over?.data.current?.groupId ?? null) as string | null | undefined
+  const isCrossSectionTarget =
+    !!active && !!over && activeGroupId !== groupId && overGroupId === groupId
+  const showHighlight = isOver || isCrossSectionTarget
 
   return (
     <div
       ref={setNodeRef}
       className={clsx(
         'rounded-md transition-colors',
-        isOver && 'bg-indigo-50/80 dark:bg-indigo-400/10',
+        showHighlight && 'bg-indigo-50/80 dark:bg-indigo-400/10',
       )}
     >
       {children}
@@ -93,7 +99,7 @@ const TabRow = memo<{
 }>(({ groupId, index, isActive, tab, collapsed = false }) => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, active } = useSortable({
     id: `${TAB_DND_PREFIX}${tab.id}`,
     data: { type: 'tab', tabId: tab.id, groupId, index },
   })
@@ -129,7 +135,7 @@ const TabRow = memo<{
         tabs$.setActiveTabById(tab.id, 'user')
       }}
     >
-      <View className="h-5 w-1 shrink-0 rounded-full" style={{ backgroundColor: profileColor }} />
+      <View className="h-4 w-1 shrink-0 rounded-full" style={{ backgroundColor: profileColor }} />
       <View className="h-4 w-4 shrink-0 items-center justify-center">
         <ServiceIcon url={tab.url} icon={tab.icon} />
       </View>
@@ -176,7 +182,7 @@ const TabRow = memo<{
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.4 : 1,
+        opacity: isDragging ? 0 : 1,
       }}
       {...attributes}
       {...listeners}
@@ -185,6 +191,68 @@ const TabRow = memo<{
     </div>
   )
 })
+
+const TabRowPreview: React.FC<{ tab: Tab; collapsed?: boolean }> = ({ tab, collapsed = false }) => {
+  const profileColor = getProfileColor(tab.profile)
+  if (collapsed) {
+    return (
+      <div
+        style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 36,
+          width: 36,
+          borderRadius: 8,
+          background: '#ffffff',
+          boxShadow: '0 10px 20px rgba(0,0,0,0.18)',
+          cursor: 'grabbing',
+          zIndex: 9999,
+        }}
+      >
+        <span style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} />
+        <ServiceIcon url={tab.url} icon={tab.icon} />
+      </div>
+    )
+  }
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        minHeight: 32,
+        padding: '4px 8px',
+        borderRadius: 6,
+        background: '#ffffff',
+        boxShadow: '0 10px 20px rgba(0,0,0,0.18)',
+        cursor: 'grabbing',
+        zIndex: 9999,
+      }}
+    >
+      <span style={{ width: 4, height: 20, borderRadius: 999, backgroundColor: profileColor, flexShrink: 0 }} />
+      <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <ServiceIcon url={tab.url} icon={tab.icon} />
+      </span>
+      <span
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontSize: 12,
+          fontWeight: 500,
+          color: '#18181b',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {getTabLabel(tab)}
+      </span>
+    </div>
+  )
+}
 
 const GroupHeader = memo<{
   group: TabGroup
@@ -299,9 +367,16 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const activeGroupId = useValue(tabGroups$.activeGroupId)
   const groups = useValue(tabGroups$.groups)
 
+  const [draggingTabId, setDraggingTabId] = useState<string | null>(null)
+  const [dragState, setDragState] = useState<{
+    groups: TabGroup[]
+    ungroupedTabs: Tab[]
+  } | null>(null)
+
   const tabIdsKey = tabs.map((tab) => tab.id).join('|')
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
   const activeTabId = tabs[activeTabIndex]?.id
+  const draggingTab = draggingTabId ? tabs.find((tab) => tab.id === draggingTabId) ?? null : null
   const groupedTabIds = useMemo(
     () => new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
     [groups],
@@ -325,7 +400,61 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     })
   }
 
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    const tabId = active.data.current?.tabId as string | undefined
+    setDraggingTabId(tabId ?? null)
+    setDragState({
+      groups: JSON.parse(JSON.stringify(groups)),
+      ungroupedTabs: [...ungroupedTabs],
+    })
+  }
+
+  const handleDragOver = ({ active, over }: DragOverEvent) => {
+    const tabId = active.data.current?.tabId as string | undefined
+    if (!tabId || !over || !dragState) {
+      return
+    }
+    const overData = over.data.current
+    const targetGroupId = (overData?.type === 'section' ? overData.groupId : overData?.groupId) as string | null | undefined
+    const targetIndex = overData?.type === 'tab' ? (overData.index as number) : undefined
+    if (typeof targetGroupId === 'undefined') {
+      return
+    }
+
+    const currentGroups = dragState.groups
+    const currentUngrouped = dragState.ungroupedTabs
+    const tab = tabs.find((t) => t.id === tabId)
+    if (!tab) return
+
+    // Replicate move logic locally
+    let nextGroups = currentGroups.map((g) => ({
+      ...g,
+      tabIds: g.layout === 'grid-4'
+        ? g.tabIds.map((tid) => (tid === tabId ? null : tid))
+        : g.tabIds.filter((tid) => tid !== tabId),
+    }))
+    let nextUngrouped = currentUngrouped.filter((t) => t.id !== tabId)
+
+    if (targetGroupId) {
+      nextGroups = nextGroups.map((g) => {
+        if (g.id !== targetGroupId) return g
+        const tabIds = g.tabIds.filter((tid): tid is string => typeof tid === 'string')
+        const withoutTab = tabIds.filter((tid) => tid !== tabId)
+        const boundedIndex = typeof targetIndex === 'number' ? Math.max(0, Math.min(targetIndex, withoutTab.length)) : withoutTab.length
+        const nextTabIds = [...withoutTab.slice(0, boundedIndex), tabId, ...withoutTab.slice(boundedIndex)]
+        return { ...g, tabIds: nextTabIds }
+      })
+    } else {
+      const boundedIndex = typeof targetIndex === 'number' ? Math.max(0, Math.min(targetIndex, nextUngrouped.length)) : nextUngrouped.length
+      nextUngrouped = [...nextUngrouped.slice(0, boundedIndex), tab, ...nextUngrouped.slice(boundedIndex)]
+    }
+
+    setDragState({ groups: nextGroups, ungroupedTabs: nextUngrouped })
+  }
+
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    setDraggingTabId(null)
+    setDragState(null)
     const tabId = active.data.current?.tabId as string | undefined
     if (!tabId || !over) {
       return
@@ -346,13 +475,26 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     })
   }
 
+  const currentGroups = dragState?.groups ?? groups
+  const currentUngrouped = dragState?.ungroupedTabs ?? ungroupedTabs
+
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const newTabIconColor = isDark ? colors.icon : colors.iconLightStrong
 
   if (collapsed) {
     return (
-      <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext
+        collisionDetection={closestCenter}
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => {
+          setDraggingTabId(null)
+          setDragState(null)
+        }}
+      >
         <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
           <ScrollView className="flex-1" contentContainerClassName="gap-2 items-center px-1 pb-2 pt-1">
             <SectionDropTarget groupId={null}>
@@ -369,16 +511,16 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                   </Pressable>
                 </div>
               </View>
-              <SortableContext items={ungroupedTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={currentUngrouped.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
                 <View className="gap-1 items-center">
-                  {ungroupedTabs.map((tab, index) => (
+                  {currentUngrouped.map((tab, index) => (
                     <TabRow collapsed groupId={null} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
                   ))}
                 </View>
               </SortableContext>
             </SectionDropTarget>
 
-            {groups.map((group) => {
+            {currentGroups.map((group) => {
               const groupTabs = group.tabIds
                 .filter((tabId): tabId is string => typeof tabId === 'string')
                 .map((tabId) => tabById.get(tabId))
@@ -418,12 +560,25 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
             })}
           </ScrollView>
         </View>
+        <DragOverlay dropAnimation={null}>
+          {draggingTab ? <TabRowPreview collapsed tab={draggingTab} /> : null}
+        </DragOverlay>
       </DndContext>
     )
   }
 
   return (
-    <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext
+      collisionDetection={closestCenter}
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => {
+        setDraggingTabId(null)
+        setDragState(null)
+      }}
+    >
       <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
         <ScrollView className="flex-1" contentContainerClassName="gap-3 px-2 pb-3 pt-1">
           <SectionDropTarget groupId={null}>
@@ -443,16 +598,16 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                 </Pressable>
               </div>
             </View>
-            <SortableContext items={ungroupedTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
+            <SortableContext items={currentUngrouped.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
               <View className="gap-1">
-                {ungroupedTabs.map((tab, index) => (
+                {currentUngrouped.map((tab, index) => (
                   <TabRow groupId={null} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
                 ))}
               </View>
             </SortableContext>
           </SectionDropTarget>
 
-          {groups.map((group) => {
+          {currentGroups.map((group) => {
             const groupTabs = group.tabIds
               .filter((tabId): tabId is string => typeof tabId === 'string')
               .map((tabId) => tabById.get(tabId))
@@ -489,6 +644,9 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
           })}
         </ScrollView>
       </View>
+      <DragOverlay dropAnimation={null}>
+        {draggingTab ? <TabRowPreview tab={draggingTab} /> : null}
+      </DragOverlay>
     </DndContext>
   )
 }

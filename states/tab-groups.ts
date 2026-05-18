@@ -27,6 +27,7 @@ interface Store {
   moveTabToGroup: (tabId: string, groupId: string | null, targetIndex?: number) => void
   appendSplitGroupSlot: (groupId: string) => void
   removeSplitGroupSlot: (groupId: string, slotIndex: number) => void
+  reorderGroupSlots: (groupId: string, fromSlotIndex: number, toSlotIndex: number) => void
   cleanupClosedTabIds: (tabIds: string[]) => void
 }
 
@@ -158,6 +159,28 @@ export const tabGroups$: Observable<Store> = observable<Store>({
     if (slotIndex >= 0 && slotIndex < slotCount) {
       tabGroups$.groups[index].tabIds.splice(slotIndex, 1)
     }
+  },
+
+  reorderGroupSlots: (groupId, fromSlotIndex, toSlotIndex) => {
+    const index = findGroupIndex(groupId)
+    if (index === -1) {
+      return
+    }
+    const currentTabIds = tabGroups$.groups[index].tabIds.get()
+    const slotCount = currentTabIds.length
+    if (
+      fromSlotIndex < 0 ||
+      fromSlotIndex >= slotCount ||
+      toSlotIndex < 0 ||
+      toSlotIndex >= slotCount ||
+      fromSlotIndex === toSlotIndex
+    ) {
+      return
+    }
+    const nextTabIds = [...currentTabIds]
+    const [moved] = nextTabIds.splice(fromSlotIndex, 1)
+    nextTabIds.splice(toSlotIndex, 0, moved)
+    tabGroups$.groups[index].tabIds.set(nextTabIds)
   },
 
   cleanupClosedTabIds: (tabIds) => {

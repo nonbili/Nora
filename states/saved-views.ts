@@ -26,6 +26,7 @@ interface Store {
   assignSlotTab: (viewId: string, slotIndex: number, tabId: string | null) => void
   appendSplitViewSlot: (viewId: string) => void
   removeSplitViewSlot: (viewId: string, slotIndex: number) => void
+  reorderSlots: (viewId: string, fromSlotIndex: number, toSlotIndex: number) => void
   cleanupClosedTabIds: (tabIds: string[]) => void
 }
 
@@ -218,6 +219,29 @@ export const savedViews$: Observable<Store> = observable<Store>({
     if (!view$.slotTabIds.get().length) {
       savedViews$.deleteView(viewId)
     }
+  },
+
+  reorderSlots: (viewId, fromSlotIndex, toSlotIndex) => {
+    const index = findSavedViewIndex(viewId)
+    if (index === -1) {
+      return
+    }
+    const view$ = savedViews$.savedViews[index]
+    const currentTabIds = view$.slotTabIds.get()
+    const slotCount = currentTabIds.length
+    if (
+      fromSlotIndex < 0 ||
+      fromSlotIndex >= slotCount ||
+      toSlotIndex < 0 ||
+      toSlotIndex >= slotCount ||
+      fromSlotIndex === toSlotIndex
+    ) {
+      return
+    }
+    const nextTabIds = [...currentTabIds]
+    const [moved] = nextTabIds.splice(fromSlotIndex, 1)
+    nextTabIds.splice(toSlotIndex, 0, moved)
+    view$.slotTabIds.set(nextTabIds)
   },
 
   cleanupClosedTabIds: (tabIds) => {

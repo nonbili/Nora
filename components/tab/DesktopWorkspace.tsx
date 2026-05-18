@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { SortableContext, arrayMove, horizontalListSortingStrategy, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useValue } from '@legendapp/state/react'
 import { Pressable, View } from 'react-native'
@@ -313,22 +313,39 @@ const SortableDesktopTab: React.FC<{
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, active } = useSortable({ id: tab.id })
 
+  const isGrid = isVisible && viewLayout === 'grid-4' && slotIndex != null
+  const sortableTransform = CSS.Transform.toString(transform)
   let style: CSSProperties
   if (isDeck && isVisible) {
     style = {
       order,
-      transform: CSS.Transform.toString(transform),
+      transform: sortableTransform,
       transition,
     }
   } else if (isSingle && isVisible) {
     style = { position: 'absolute', inset: 0 }
   } else if (isSplit && isVisible) {
-    style = { flex: 1, minWidth: 0, minHeight: 0, order: slotIndex ?? 0 }
+    style = {
+      flex: 1,
+      minWidth: 0,
+      minHeight: 0,
+      order: slotIndex ?? 0,
+      transform: sortableTransform,
+      transition,
+    }
+  } else if (isGrid) {
+    style = {
+      ...getSlotStyle(viewLayout as Exclude<TabGroupLayout, 'deck'>, slotIndex),
+      transform: sortableTransform,
+      transition,
+    }
   } else if (isVisible && viewLayout !== 'deck' && slotIndex != null) {
     style = getSlotStyle(viewLayout, slotIndex)
   } else {
     style = getHiddenTabStyle(hiddenTabWidth)
   }
+
+  const isDraggable = isVisible && (isDeck || isSplit || isGrid)
 
   return (
     <div
@@ -347,8 +364,8 @@ const SortableDesktopTab: React.FC<{
       )}
       style={style}
       onMouseDown={() => tabs$.setActiveTabById(tab.id, 'user')}
-      {...(isDeck && isVisible ? attributes : {})}
-      {...(isDeck && isVisible ? listeners : {})}
+      {...(isDraggable ? attributes : {})}
+      {...(isDraggable ? listeners : {})}
     >
       <NoraTab
         tab={tab}
@@ -431,7 +448,21 @@ export const DesktopWorkspace: React.FC = () => {
   )
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!isDeck || !over || active.id === over.id) {
+    if (!over || active.id === over.id) {
+      return
+    }
+
+    if ((isSplit || (activeGroup && viewLayout === 'grid-4')) && activeGroup) {
+      const fromSlotIndex = activeGroup.tabIds.findIndex((tabId) => tabId === active.id)
+      const toSlotIndex = activeGroup.tabIds.findIndex((tabId) => tabId === over.id)
+      if (fromSlotIndex === -1 || toSlotIndex === -1) {
+        return
+      }
+      tabGroups$.reorderGroupSlots(activeGroup.id, fromSlotIndex, toSlotIndex)
+      return
+    }
+
+    if (!isDeck) {
       return
     }
     const oldIndex = visibleTabIds.findIndex((tabId) => tabId === active.id)
@@ -486,7 +517,10 @@ export const DesktopWorkspace: React.FC = () => {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={isDeck ? visibleTabIds : []} strategy={horizontalListSortingStrategy}>
+      <SortableContext
+        items={isDeck || isSplit || (activeGroup && viewLayout === 'grid-4') ? visibleTabIds : []}
+        strategy={viewLayout === 'grid-4' ? rectSortingStrategy : horizontalListSortingStrategy}
+      >
         <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
           <div
             ref={isDeck ? deckScrollRef : undefined}
