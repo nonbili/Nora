@@ -20,25 +20,29 @@ function isHttpUrl(url: string): boolean {
 function attachContextMenu(webContents: Electron.WebContents, ownerWindow: BrowserWindow): void {
   webContents.on('context-menu', (_event, params) => {
     const hasSelection = params.selectionText.trim().length > 0
+    const hasMisspelling = params.isEditable && params.misspelledWord.length > 0
     const can = (type: keyof Electron.EditFlags): boolean => params.editFlags[type]
     const menuTemplate: Electron.MenuItemConstructorOptions[] = [
+      ...params.dictionarySuggestions.map((suggestion) => ({
+        label: suggestion,
+        visible: hasMisspelling,
+        click: () => webContents.replaceMisspelling(suggestion),
+      })),
+      { type: 'separator' },
       {
-        label: 'Cut',
+        role: 'cut',
         visible: params.isEditable,
         enabled: can('canCut'),
-        click: () => webContents.cut(),
       },
       {
-        label: 'Copy',
+        role: 'copy',
         visible: params.isEditable || hasSelection,
         enabled: can('canCopy') || hasSelection,
-        click: () => webContents.copy(),
       },
       {
-        label: 'Paste',
+        role: 'paste',
         visible: params.isEditable,
         enabled: can('canPaste'),
-        click: () => webContents.paste(),
       },
       { type: 'separator' },
       {
