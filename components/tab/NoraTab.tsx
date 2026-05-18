@@ -1,5 +1,5 @@
+import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
 import { NoraView } from '@/modules/nora-view'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useObserveEffect, useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
@@ -12,7 +12,6 @@ import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { MaterialButton } from '../button/IconButtons'
 import { NouText } from '../NouText'
-import { share } from '@/lib/share'
 import { ServiceIcon } from '../service/Services'
 import { getUserAgent } from '@/lib/useragent'
 import { useContentJs } from '@/lib/hooks/useContentJs'
@@ -20,14 +19,12 @@ import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 import { handleShortcuts } from '@/desktop/src/renderer/lib/shortcuts'
 import { t } from 'i18next'
-import { addBookmark } from '@/lib/bookmark'
 import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
 import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
-import { colors } from '@/lib/colors'
 import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
-import { createDesktopTabGroupFromTab, tabGroups$ } from '@/states/tab-groups'
+import { tabGroups$ } from '@/states/tab-groups'
 
 const getRedirectTo = (str: string) => {
   try {
@@ -166,7 +163,6 @@ export const NoraTab: React.FC<{
   const [canGoBack, setCanGoBack] = useState(false)
   const contentJs = useContentJs()
   const profileColor = getProfileColor(tab.profile)
-  const menuIconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
   const viewKey = getProfileViewKey(tab)
   const viewInstanceKey = `${viewKey}:${tab.url ? 'page' : 'blank'}`
   const refreshCanGoBack = useCallback(
@@ -512,6 +508,14 @@ export const NoraTab: React.FC<{
   const activeGroupLayout = activeGroupId ? groups.find((group) => group.id === activeGroupId)?.layout : undefined
   const canDuplicate = (activeGroupLayout || activeViewLayout) !== 'grid-4'
 
+  const menuItems = useTabContextMenuItems(tab, {
+    runWebviewAction: (action) => {
+      const webview = noraViewRef.current
+      if (webview) action(webview)
+    },
+    canDuplicate,
+  })
+
   if (isWeb) {
     return (
       <View
@@ -524,73 +528,7 @@ export const NoraTab: React.FC<{
         )}
         style={desktopVariant === 'deck' ? { width: deckTabWidth } : undefined}
       >
-        <NouContextMenu
-          items={[
-            {
-              label: t('views.desktop.newGroupFromTab'),
-              icon: <MaterialIcons name="create-new-folder" size={18} color={menuIconColor} />,
-              handler: () => {
-                createDesktopTabGroupFromTab(tab.id)
-                tabs$.setActiveTabById(tab.id, 'system')
-              },
-            },
-            {
-              label: t('menus.reload'),
-              icon: <MaterialIcons name="refresh" size={18} color={menuIconColor} />,
-              handler: reloadPage,
-            },
-            {
-              label: t('menus.editUrl'),
-              icon: <MaterialIcons name="edit" size={18} color={menuIconColor} />,
-              handler: editTabUrl,
-            },
-            {
-              label: t('menus.openInProfile'),
-              icon: <MaterialIcons name="account-circle" size={18} color={menuIconColor} />,
-              handler: () => {
-                if (tab.url) {
-                  ui$.profileLinkUrl.set(tab.url)
-                }
-              },
-            },
-            ...(canDuplicate
-              ? [
-                  {
-                    label: t('menus.duplicate'),
-                    icon: <MaterialIcons name="content-copy" size={18} color={menuIconColor} />,
-                    handler: () => tabs$.duplicateTab(tab.id),
-                  },
-                ]
-              : []),
-            {
-              label: t('menus.scroll'),
-              icon: <MaterialIcons name="vertical-align-top" size={18} color={menuIconColor} />,
-              handler: () => {
-                void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
-              },
-            },
-            {
-              label: t('menus.addBookmark'),
-              icon: <MaterialIcons name="bookmark-add" size={18} color={menuIconColor} />,
-              handler: () => addBookmark(tab),
-            },
-            {
-              label: t('menus.share'),
-              icon: <MaterialIcons name="share" size={18} color={menuIconColor} />,
-              handler: () => share(pageUrlRef.current),
-            },
-            {
-              label: t('menus.close'),
-              icon: <MaterialIcons name="close" size={18} color={menuIconColor} />,
-              handler: () => tabs$.closeTab(index),
-            },
-            {
-              label: t('buttons.closeAll'),
-              icon: <MaterialIcons name="tab-unselected" size={18} color={menuIconColor} />,
-              handler: () => tabs$.closeAll(),
-            },
-          ]}
-        >
+        <NouContextMenu items={menuItems}>
           <View
             className={clsx(
               'flex-row items-center justify-between gap-2 pl-2 pr-1 border-b',
@@ -667,3 +605,4 @@ export const NoraTab: React.FC<{
     </View>
   )
 }
+

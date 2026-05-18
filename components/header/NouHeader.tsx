@@ -59,12 +59,30 @@ function nextTab() {
 }
 
 export const NouHeader: React.FC<{}> = ({}) => {
-  const uiState = useValue(ui$)
-  const settings = useValue(settings$)
+  const headerShown = useValue(ui$.headerShown)
+  const headerHeight = useValue(ui$.headerHeight)
+  const urlModalOpen = useValue(ui$.urlModalOpen)
+  const downloadVideoModalUrl = useValue(ui$.downloadVideoModalUrl)
+  const tabModalOpen = useValue(ui$.tabModalOpen)
+  const toolsModalOpen = useValue(ui$.toolsModalOpen)
+  const settingsModalOpen = useValue(ui$.settingsModalOpen)
+
+  const autoHideHeader = useValue(settings$.autoHideHeader)
+  const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
+  const showNewTabButtonInHeader = useValue(settings$.showNewTabButtonInHeader)
+  const showBackButtonInHeader = useValue(settings$.showBackButtonInHeader)
+  const showForwardButtonInHeader = useValue(settings$.showForwardButtonInHeader)
+  const showReloadButtonInHeader = useValue(settings$.showReloadButtonInHeader)
+  const showScrollButtonInHeader = useValue(settings$.showScrollButtonInHeader)
+  const sidebarCollapsed = isWeb && useValue(settings$.sidebarCollapsed)
+
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const headerControlColor = isDark ? colors.icon : colors.iconLightStrong
-  const { tabs, activeTabIndex, recentlyClosedTabs } = useValue(tabs$)
+
+  const tabsCount = useValue(() => tabs$.tabs.length)
+  const activeTabIndex = useValue(tabs$.activeTabIndex)
+  const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
   const currentTab = useValue(tabs$.currentTab)
   const webview = ui$.webview.get()
   const { AnimatedView, useSharedValueSafe, withTimingSafe } = isWeb ? webAnimatedHelpers : nativeAnimatedHelpers!
@@ -96,9 +114,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
     if (isWeb) {
       return
     }
-    const shouldHide = (settings.autoHideHeader || settings.hideToolbarWhenScrolled) && !uiState.headerShown
-    marginTop.value = withTimingSafe(shouldHide ? -uiState.headerHeight : 0)
-  }, [settings.autoHideHeader, settings.hideToolbarWhenScrolled, uiState.headerHeight, uiState.headerShown, marginTop, withTimingSafe])
+    const shouldHide = (autoHideHeader || hideToolbarWhenScrolled) && !headerShown
+    marginTop.value = withTimingSafe(shouldHide ? -headerHeight : 0)
+  }, [autoHideHeader, hideToolbarWhenScrolled, headerHeight, headerShown, marginTop, withTimingSafe])
 
   const scrollToTop = () => {
     void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
@@ -149,9 +167,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const Root = AnimatedView
 
-  const webMarginTop = (settings.autoHideHeader || settings.hideToolbarWhenScrolled) && !uiState.headerShown ? -uiState.headerHeight : 0
+  const webMarginTop = (autoHideHeader || hideToolbarWhenScrolled) && !headerShown ? -headerHeight : 0
 
-  const sidebarCollapsed = isWeb && settings.sidebarCollapsed
   const toggleSidebar = () => settings$.sidebarCollapsed.set(!settings$.sidebarCollapsed.get())
 
   const ret = (
@@ -159,8 +176,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
       className={clsx(
         'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between pl-2 py-1',
         isWeb && (sidebarCollapsed
-          ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
-          : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
+          ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
+          : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
       )}
       style={{ marginTop: isWeb ? webMarginTop : marginTop }}
       onLayout={onLayout}
@@ -168,11 +185,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         !isWeb,
         <View className="flex-row items-center gap-1">
-          {nIf(settings.showNewTabButtonInHeader, <MaterialButton name="add" size={22} color={headerControlColor} onPress={() => tabs$.openTab('')} />)}
-          {nIf(settings.showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} />)}
-          {nIf(settings.showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} />)}
-          {nIf(settings.showReloadButtonInHeader, <MaterialButton name="refresh" size={22} color={headerControlColor} onPress={reloadPage} />)}
-          {nIf(settings.showScrollButtonInHeader, <MaterialButton name="arrow-upward" color={headerControlColor} onPress={scrollToTop} />)}
+          {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={22} color={headerControlColor} onPress={() => tabs$.openTab('')} />)}
+          {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} />)}
+          {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} />)}
+          {nIf(showReloadButtonInHeader, <MaterialButton name="refresh" size={22} color={headerControlColor} onPress={reloadPage} />)}
+          {nIf(showScrollButtonInHeader, <MaterialButton name="arrow-upward" color={headerControlColor} onPress={scrollToTop} />)}
         </View>,
       )}
       {nIf(
@@ -206,8 +223,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
       <View
         className={clsx(
           'flex-row items-center justify-end gap-1',
-          isWeb && !sidebarCollapsed && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
-          isWeb && sidebarCollapsed && 'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
+          isWeb && !sidebarCollapsed && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-t lg:border-zinc-200 lg:bg-zinc-100 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
+          isWeb && sidebarCollapsed && 'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-100 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
         )}
       >
         {nIf(
@@ -227,7 +244,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
               className="rounded-md px-2 py-1 border"
               style={{ borderColor: headerControlColor, borderWidth: isDark ? 1 : 1.25 }}
             >
-              <NouText className="text-xs font-semibold" style={{ color: headerControlColor }}>{tabs.length}</NouText>
+              <NouText className="text-xs font-semibold" style={{ color: headerControlColor }}>{tabsCount}</NouText>
             </View>
           </TouchableOpacity>,
         )}

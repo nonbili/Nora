@@ -18,7 +18,8 @@ const logger = createLogger('sync')
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
-  const { tabs, activeTabIndex } = useValue(tabs$)
+  const tabs = useValue(tabs$.tabs)
+  const activeTabIndex = useValue(tabs$.activeTabIndex)
   const { userId, me } = useMe()
   useUsageTracker()
 

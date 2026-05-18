@@ -12,7 +12,9 @@ import { tabs$ } from '@/states/tabs'
 import { resolveUrlInput } from '@/lib/search'
 
 export const UrlModal = () => {
-  const { urlModalOpen, urlModalMode, urlModalTargetTabId } = useValue(ui$)
+  const urlModalOpen = useValue(ui$.urlModalOpen)
+  const urlModalMode = useValue(ui$.urlModalMode)
+  const urlModalTargetTabId = useValue(ui$.urlModalTargetTabId)
   const tabs = useValue(tabs$.tabs)
   const [url, setUrl] = useState('')
   const targetTabIndex = tabs.findIndex((tab) => tab.id === urlModalTargetTabId)

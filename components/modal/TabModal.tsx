@@ -21,7 +21,9 @@ type Anchor = { x: number; y: number; width: number; height: number }
 export const TabModal = () => {
   const tabModalOpen = useValue(ui$.tabModalOpen)
   const oneHandMode = !isWeb && useValue(settings$.oneHandMode)
-  const { tabs, activeTabIndex, recentlyClosedTabs } = useValue(tabs$)
+  const tabs = useValue(tabs$.tabs)
+  const activeTabIndex = useValue(tabs$.activeTabIndex)
+  const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const iconColor = isDark ? colors.icon : colors.iconLight

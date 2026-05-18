@@ -29,7 +29,8 @@ const ViewTypeIcon = ({ layout, size = 20, color = '#71717a' }: { layout: string
 }
 
 export const SavedViewsPicker = () => {
-  const { activeViewId, savedViews } = useValue(savedViews$)
+  const activeViewId = useValue(savedViews$.activeViewId)
+  const savedViews = useValue(savedViews$.savedViews)
   const tabs = useValue(tabs$.tabs)
   const orders = useValue(tabs$.orders)
   const { width } = useWindowDimensions()

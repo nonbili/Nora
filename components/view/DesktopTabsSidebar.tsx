@@ -1,3 +1,4 @@
+import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
 import React, { memo, useMemo, type ReactNode } from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { closestCenter, DndContext, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
@@ -8,21 +9,21 @@ import { useValue } from '@legendapp/state/react'
 import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
 import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
-import { NouMenu } from '@/components/menu/NouMenu'
 import { NouText } from '@/components/NouText'
 import { ServiceIcon } from '@/components/service/Services'
 import { clsx } from '@/lib/utils'
+import { colors } from '@/lib/colors'
 import { getProfileColor } from '@/lib/profile'
-import { addBookmark } from '@/lib/bookmark'
-import { share } from '@/lib/share'
-import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
-import { createDesktopTabGroupFromTab, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
+import { tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
 import { sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
 
 const UNGROUPED_ID = 'ungrouped'
 const TAB_DND_PREFIX = 'tab:'
 const GROUP_DND_PREFIX = 'group:'
+
+const isMacPlatform = typeof window !== 'undefined' && window.electron?.process?.platform === 'darwin'
+const NEW_TAB_SHORTCUT = isMacPlatform ? '⌘T' : 'Ctrl+T'
 
 const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 
@@ -33,7 +34,7 @@ const getLayoutLabel = (layout: TabGroupLayout) => {
 }
 
 const ViewTypeIcon = ({ layout, size = 18, color = '#71717a' }: { layout: TabGroupLayout; size?: number; color?: string }) => {
-  let name: React.ComponentProps<typeof MaterialIcons>['name'] = 'view-carousel'
+  let name: React.ComponentProps<typeof MaterialIcons>['name'] = 'view-day'
   if (layout === 'split-view') name = 'view-week'
   if (layout === 'grid-4') name = 'grid-view'
   return <MaterialIcons name={name} size={size} color={color} />
@@ -102,26 +103,26 @@ const TabRow = memo<{
   const row = collapsed ? (
     <Pressable
       className={clsx(
-        'h-9 w-9 items-center justify-center rounded-md border transition-colors',
+        'h-9 w-9 items-center justify-center rounded-lg transition-colors',
         isActive
-          ? 'border-indigo-300 bg-indigo-50 dark:border-indigo-300/40 dark:bg-indigo-400/20'
-          : 'border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900',
+          ? 'bg-white shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-700 dark:ring-zinc-700'
+          : 'hover:bg-zinc-200/70 dark:hover:bg-zinc-800',
       )}
       onPress={() => {
         tabGroups$.setActiveGroup(groupId)
         tabs$.setActiveTabById(tab.id, 'user')
       }}
     >
-      <View style={{ position: 'absolute', left: 0, top: 7, bottom: 7, width: 3, backgroundColor: profileColor }} />
+      <View style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} />
       <ServiceIcon url={tab.url} icon={tab.icon} />
     </Pressable>
   ) : (
     <Pressable
       className={clsx(
-        'min-h-8 flex-row items-center gap-2 rounded-md border px-2 py-1 transition-colors',
+        'min-h-8 flex-row items-center gap-2 rounded-md px-2 py-1 transition-colors',
         isActive
-          ? 'border-indigo-300 bg-indigo-50 dark:border-indigo-300/40 dark:bg-indigo-400/20'
-          : 'border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900',
+          ? 'bg-white shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-700 dark:ring-zinc-700'
+          : 'hover:bg-zinc-200/70 dark:hover:bg-zinc-800',
       )}
       onPress={() => {
         tabGroups$.setActiveGroup(groupId)
@@ -134,7 +135,7 @@ const TabRow = memo<{
       </View>
       <View className="min-w-0 flex-1">
         <NouText
-          className={clsx('text-xs font-medium', isActive ? 'text-indigo-950 dark:text-indigo-50' : 'text-zinc-800 dark:text-zinc-200')}
+          className={clsx('text-xs font-medium', isActive ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-800 dark:text-zinc-200')}
           numberOfLines={1}
         >
           {getTabLabel(tab)}
@@ -162,82 +163,10 @@ const TabRow = memo<{
     tabs$.setActiveTabById(tab.id, 'user')
     setTimeout(performIfActive, 80)
   }
-  const items: ContextItem[] = [
-    {
-      label: t('views.desktop.newGroupFromTab'),
-      icon: <MaterialIcons name="create-new-folder" size={14} color={menuIconColor} />,
-      handler: () => {
-        const groupId = createDesktopTabGroupFromTab(tab.id)
-        tabGroups$.setActiveGroup(groupId)
-        tabs$.setActiveTabById(tab.id, 'system')
-      },
-    },
-    {
-      label: t('menus.reload'),
-      icon: <MaterialIcons name="refresh" size={14} color={menuIconColor} />,
-      handler: () =>
-        runWebviewAction((webview) => {
-          if (typeof webview.reload === 'function') {
-            webview.reload()
-          } else {
-            void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
-          }
-        }),
-    },
-    {
-      label: t('menus.editUrl'),
-      icon: <MaterialIcons name="edit" size={14} color={menuIconColor} />,
-      handler: () => {
-        ui$.assign({ urlModalOpen: true, urlModalMode: 'editTab', urlModalTargetTabId: tab.id })
-      },
-    },
-    {
-      label: t('menus.openInProfile'),
-      icon: <MaterialIcons name="account-circle" size={14} color={menuIconColor} />,
-      handler: () => {
-        if (tab.url) {
-          ui$.profileLinkUrl.set(tab.url)
-        }
-      },
-    },
-    {
-      label: t('menus.duplicate'),
-      icon: <MaterialIcons name="content-copy" size={14} color={menuIconColor} />,
-      handler: () => tabs$.duplicateTab(tab.id),
-    },
-    {
-      label: t('menus.scroll'),
-      icon: <MaterialIcons name="vertical-align-top" size={14} color={menuIconColor} />,
-      handler: () =>
-        runWebviewAction((webview) => {
-          void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
-        }),
-    },
-    {
-      label: t('menus.addBookmark'),
-      icon: <MaterialIcons name="bookmark-add" size={14} color={menuIconColor} />,
-      handler: () => addBookmark(tab),
-    },
-    {
-      label: t('menus.share'),
-      icon: <MaterialIcons name="share" size={14} color={menuIconColor} />,
-      handler: () => share(tab.url || ''),
-    },
-    {
-      label: t('menus.close'),
-      icon: <MaterialIcons name="close" size={14} color="#f87171" />,
-      color: 'red',
-      handler: () => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id)),
-    },
-    {
-      label: t('buttons.closeAll'),
-      icon: <MaterialIcons name="tab-unselected" size={14} color={menuIconColor} />,
-      handler: () => tabs$.closeAll(),
-    },
-  ]
+  const items = useTabContextMenuItems(tab, { runWebviewAction })
 
   const titleAttr = collapsed
-    ? tabLabel
+    ? [tabLabel, tab.url].filter(Boolean).join('\n')
     : tab.url || undefined
 
   return (
@@ -417,14 +346,18 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     })
   }
 
+  const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
+  const newTabIconColor = isDark ? colors.icon : colors.iconLightStrong
+
   if (collapsed) {
     return (
       <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
-        <View className="h-full w-full flex-col bg-zinc-50 dark:bg-zinc-900">
+        <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
           <ScrollView className="flex-1" contentContainerClassName="gap-2 items-center px-1 pb-2 pt-1">
             <SectionDropTarget groupId={null}>
               <View className="items-center mb-1">
-                <div title={t('tabs.new')}>
+                <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
                   <Pressable
                     className="h-9 w-9 items-center justify-center rounded-md border border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900"
                     onPress={() => {
@@ -432,7 +365,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                       tabs$.openTab('')
                     }}
                   >
-                    <MaterialIcons name="add" size={20} color="#71717a" />
+                    <MaterialIcons name="add" size={20} color={newTabIconColor} />
                   </Pressable>
                 </div>
               </View>
@@ -469,13 +402,15 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                         isActive={isActiveGroup}
                         onFocus={() => focusSection(group.id, groupTabs.map((tab) => tab.id))}
                       />
-                      <SortableContext items={groupTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
-                        <View className="gap-1 items-center">
-                          {groupTabs.map((tab, index) => (
-                            <TabRow collapsed groupId={group.id} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
-                          ))}
-                        </View>
-                      </SortableContext>
+                      {groupTabs.length > 0 && (
+                        <SortableContext items={groupTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
+                          <View className="gap-1 items-center">
+                            {groupTabs.map((tab, index) => (
+                              <TabRow collapsed groupId={group.id} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
+                            ))}
+                          </View>
+                        </SortableContext>
+                      )}
                     </View>
                   </div>
                 </SectionDropTarget>
@@ -489,14 +424,14 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
 
   return (
     <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
-      <View className="h-full w-full flex-col bg-zinc-50 dark:bg-zinc-900">
+      <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
         <ScrollView className="flex-1" contentContainerClassName="gap-3 px-2 pb-3 pt-1">
           <SectionDropTarget groupId={null}>
             <View className="flex-row items-center justify-between px-2 py-1 mb-1">
               <NouText className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                 {t('views.desktop.ungrouped')}
               </NouText>
-              <div title={t('tabs.new')}>
+              <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
                 <Pressable
                   className="h-5 w-5 items-center justify-center rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   onPress={() => {
@@ -539,13 +474,15 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                     isActive={isActiveGroup}
                     onFocus={() => focusSection(group.id, groupTabs.map((tab) => tab.id))}
                   />
-                  <SortableContext items={groupTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
-                    <View className="mt-1 gap-1">
-                      {groupTabs.map((tab, index) => (
-                        <TabRow groupId={group.id} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
-                      ))}
-                    </View>
-                  </SortableContext>
+                  {groupTabs.length > 0 && (
+                    <SortableContext items={groupTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
+                      <View className="mt-1 gap-1">
+                        {groupTabs.map((tab, index) => (
+                          <TabRow groupId={group.id} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
+                        ))}
+                      </View>
+                    </SortableContext>
+                  )}
                 </div>
               </SectionDropTarget>
             )

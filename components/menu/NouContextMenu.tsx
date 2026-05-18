@@ -21,19 +21,21 @@ export const NouContextMenu: React.FC<{ children: ReactNode; items: ContextItem[
         key={index}
         onClick={item.handler}
         color={item.color}
-        className="flex-row items-center gap-2 min-w-[140px]"
+        className="min-w-[160px] px-3 py-2"
       >
-        {item.icon}
-        <div className="flex-1">{item.label}</div>
-        {item.meta}
+        <div className="flex flex-row items-center gap-3 leading-none">
+          {item.icon ? <div className="flex shrink-0 items-center justify-center h-5 w-5">{item.icon}</div> : null}
+          <div className="flex-1 truncate text-[13px] leading-[18px]">{item.label}</div>
+          {item.meta}
+        </div>
       </ContextMenu.Item>
     )
   })
 
   return (
-    <ContextMenu.Root>
+    <ContextMenu.Root modal={true}>
       <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-      <ContextMenu.Content variant="soft" className="border border-zinc-300/70 dark:border-zinc-800/80">
+      <ContextMenu.Content variant="soft" className="border border-zinc-300/70 dark:border-zinc-800/80 shadow-xl shadow-zinc-900/15 dark:shadow-black/40">
         {menuItems}
       </ContextMenu.Content>
     </ContextMenu.Root>
