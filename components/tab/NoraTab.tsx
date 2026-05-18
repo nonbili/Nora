@@ -504,6 +504,15 @@ export const NoraTab: React.FC<{
               icon: <MaterialIcons name="edit" size={18} color={menuIconColor} />,
               handler: editTabUrl,
             },
+            {
+              label: t('menus.openInProfile'),
+              icon: <MaterialIcons name="account-circle" size={18} color={menuIconColor} />,
+              handler: () => {
+                if (tab.url) {
+                  ui$.profileLinkUrl.set(tab.url)
+                }
+              },
+            },
             ...(canDuplicate
               ? [
                   {

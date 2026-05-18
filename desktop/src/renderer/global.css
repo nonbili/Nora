@@ -11,3 +11,31 @@
 body {
   @apply bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
 }
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(161, 161, 170, 0.4);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(161, 161, 170, 0.7);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(82, 82, 91, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(82, 82, 91, 0.7);
+}

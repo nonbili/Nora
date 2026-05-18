@@ -1,8 +1,9 @@
-import React, { type ReactNode } from 'react'
+import React, { memo, useMemo, type ReactNode } from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { closestCenter, DndContext, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { batch } from '@legendapp/state'
 import { useValue } from '@legendapp/state/react'
 import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
@@ -82,12 +83,13 @@ const SectionDropTarget: React.FC<{
   )
 }
 
-const TabRow: React.FC<{
+const TabRow = memo<{
   groupId: string | null
   index: number
   isActive: boolean
   tab: Tab
-}> = ({ groupId, index, isActive, tab }) => {
+  collapsed?: boolean
+}>(({ groupId, index, isActive, tab, collapsed = false }) => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -96,7 +98,24 @@ const TabRow: React.FC<{
   })
   const profileColor = getProfileColor(tab.profile)
   const menuIconColor = isDark ? '#a1a1aa' : '#52525b'
-  const row = (
+  const row = collapsed ? (
+    <Pressable
+      title={tab.title || tab.url || undefined}
+      className={clsx(
+        'h-9 w-9 items-center justify-center rounded-md border transition-colors',
+        isActive
+          ? 'border-indigo-300 bg-indigo-50 dark:border-indigo-300/40 dark:bg-indigo-400/20'
+          : 'border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900',
+      )}
+      style={{ borderLeftWidth: 3, borderLeftColor: profileColor }}
+      onPress={() => {
+        tabGroups$.setActiveGroup(groupId)
+        tabs$.setActiveTabById(tab.id, 'user')
+      }}
+    >
+      <ServiceIcon url={tab.url} icon={tab.icon} />
+    </Pressable>
+  ) : (
     <Pressable
       className={clsx(
         'min-h-10 flex-row items-center gap-2 rounded-md border px-2 py-1.5 transition-colors',
@@ -171,6 +190,15 @@ const TabRow: React.FC<{
       },
     },
     {
+      label: t('menus.openInProfile'),
+      icon: <MaterialIcons name="account-circle" size={14} color={menuIconColor} />,
+      handler: () => {
+        if (tab.url) {
+          ui$.profileLinkUrl.set(tab.url)
+        }
+      },
+    },
+    {
       label: t('menus.duplicate'),
       icon: <MaterialIcons name="content-copy" size={14} color={menuIconColor} />,
       handler: () => tabs$.duplicateTab(tab.id),
@@ -206,10 +234,14 @@ const TabRow: React.FC<{
     },
   ]
 
+  const titleAttr = collapsed
+    ? [tab.title, tab.url].filter(Boolean).join('\n') || undefined
+    : tab.url || undefined
+
   return (
     <div
       ref={setNodeRef}
-      title={tab.url || undefined}
+      title={titleAttr}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -221,14 +253,15 @@ const TabRow: React.FC<{
       <NouContextMenu items={items}>{row}</NouContextMenu>
     </div>
   )
-}
+})
 
-const GroupHeader: React.FC<{
+const GroupHeader = memo<{
   group: TabGroup
   isActive: boolean
   tabCount: number
   onFocus: () => void
-}> = ({ group, isActive, tabCount, onFocus }) => {
+  collapsed?: boolean
+}>(({ group, isActive, tabCount, onFocus, collapsed = false }) => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const iconColor = isActive ? (isDark ? '#e0e7ff' : '#312e81') : isDark ? '#a1a1aa' : '#52525b'
@@ -252,6 +285,36 @@ const GroupHeader: React.FC<{
       handler: () => tabGroups$.deleteGroup(group.id),
     },
   ]
+
+  if (collapsed) {
+    const mergedContextItems: ContextItem[] = [
+      ...layoutItems.map((item) => ({
+        ...item,
+        handler: () => {
+          item.handler()
+          onFocus()
+        },
+      })),
+      { kind: 'separator' },
+      ...contextItems,
+    ]
+    return (
+      <NouContextMenu items={mergedContextItems}>
+        <Pressable
+          title={group.name}
+          className={clsx(
+            'h-9 w-9 items-center justify-center rounded-md border transition-colors',
+            isActive
+              ? 'border-indigo-300 bg-indigo-100 dark:border-indigo-300/40 dark:bg-indigo-400/25'
+              : 'border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900',
+          )}
+          onPress={onFocus}
+        >
+          <ViewTypeIcon layout={group.layout} size={16} color={iconColor} />
+        </Pressable>
+      </NouContextMenu>
+    )
+  }
 
   return (
     <NouContextMenu items={contextItems}>
@@ -283,18 +346,23 @@ const GroupHeader: React.FC<{
       </Pressable>
     </NouContextMenu>
   )
-}
+})
 
-export const DesktopTabsSidebar = () => {
+export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }) => {
   const tabs = useValue(tabs$.tabs)
   const orders = useValue(tabs$.orders)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const { activeGroupId, groups } = useValue(tabGroups$)
-  const orderedTabs = sortTabsByOrder(tabs, orders)
-  const activeTabId = tabs[activeTabIndex]?.id
-  const groupedTabIds = new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string')))
-  const tabById = new Map(tabs.map((tab) => [tab.id, tab]))
-  const ungroupedTabs = orderedTabs.filter((tab) => !groupedTabIds.has(tab.id))
+
+  const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabs, orders])
+  const activeTabId = useMemo(() => tabs[activeTabIndex]?.id, [tabs, activeTabIndex])
+  const groupedTabIds = useMemo(
+    () => new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
+    [groups],
+  )
+  const tabById = useMemo(() => new Map(tabs.map((tab) => [tab.id, tab])), [tabs])
+  const ungroupedTabs = useMemo(() => orderedTabs.filter((tab) => !groupedTabIds.has(tab.id)), [orderedTabs, groupedTabIds])
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },
@@ -302,11 +370,13 @@ export const DesktopTabsSidebar = () => {
   )
 
   const focusSection = (groupId: string | null, tabIds: string[]) => {
-    tabGroups$.setActiveGroup(groupId)
-    const firstTabId = tabIds.find(Boolean)
-    if (firstTabId) {
-      tabs$.setActiveTabById(firstTabId, 'user')
-    }
+    batch(() => {
+      tabGroups$.setActiveGroup(groupId)
+      const firstTabId = tabIds.find(Boolean)
+      if (firstTabId) {
+        tabs$.setActiveTabById(firstTabId, 'user')
+      }
+    })
   }
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
@@ -320,16 +390,68 @@ export const DesktopTabsSidebar = () => {
     if (typeof targetGroupId === 'undefined') {
       return
     }
-    tabGroups$.moveTabToGroup(tabId, targetGroupId, targetIndex)
-    if (!targetGroupId) {
-      const ungroupedIds = ungroupedTabs.map((tab) => tab.id)
-      reorderUngroupedTabs(tabId, ungroupedIds, targetIndex)
-    }
+
+    batch(() => {
+      tabGroups$.moveTabToGroup(tabId, targetGroupId, targetIndex)
+      if (!targetGroupId) {
+        const ungroupedIds = ungroupedTabs.map((tab) => tab.id)
+        reorderUngroupedTabs(tabId, ungroupedIds, targetIndex)
+      }
+    })
+  }
+
+  if (collapsed) {
+    return (
+      <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+        <View className="h-full w-full flex-col bg-zinc-50 dark:bg-zinc-950">
+          <ScrollView className="flex-1" contentContainerClassName="gap-2 items-center px-1 py-2">
+            <SectionDropTarget groupId={null}>
+              <SortableContext items={ungroupedTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
+                <View className="gap-1 items-center">
+                  {ungroupedTabs.map((tab, index) => (
+                    <TabRow collapsed groupId={null} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
+                  ))}
+                </View>
+              </SortableContext>
+            </SectionDropTarget>
+
+            {groups.map((group) => {
+              const groupTabs = group.tabIds
+                .filter((tabId): tabId is string => typeof tabId === 'string')
+                .map((tabId) => tabById.get(tabId))
+                .filter((tab): tab is Tab => tab != null)
+              const isActiveGroup = group.id === activeGroupId
+
+              return (
+                <SectionDropTarget groupId={group.id} key={group.id}>
+                  <View className="gap-1 items-center">
+                    <GroupHeader
+                      collapsed
+                      group={group}
+                      isActive={isActiveGroup}
+                      tabCount={groupTabs.length}
+                      onFocus={() => focusSection(group.id, groupTabs.map((tab) => tab.id))}
+                    />
+                    <SortableContext items={groupTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
+                      <View className="gap-1 items-center">
+                        {groupTabs.map((tab, index) => (
+                          <TabRow collapsed groupId={group.id} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
+                        ))}
+                      </View>
+                    </SortableContext>
+                  </View>
+                </SectionDropTarget>
+              )
+            })}
+          </ScrollView>
+        </View>
+      </DndContext>
+    )
   }
 
   return (
     <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
-      <View className="h-full w-full flex-col border-r border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
+      <View className="h-full w-full flex-col bg-zinc-50 dark:bg-zinc-950">
         <ScrollView className="flex-1" contentContainerClassName="gap-3 px-2 py-3">
           <SectionDropTarget groupId={null}>
             <SortableContext items={ungroupedTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>

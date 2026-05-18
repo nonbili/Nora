@@ -187,7 +187,7 @@ const EmptySlot: React.FC<{
           : 'absolute overflow-hidden border transition-all',
         isActive
           ? 'border-indigo-300 bg-indigo-50/40 shadow-[0_0_0_1px_rgba(165,180,252,0.9)] dark:border-indigo-300/40 dark:bg-indigo-400/10'
-          : 'border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950',
+          : 'border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900',
       )}
       style={
         isSplit
@@ -228,7 +228,7 @@ const EmptySlot: React.FC<{
         <View
           className={clsx(
             'flex-1 min-h-0 overflow-y-auto px-6 py-8 transition-colors',
-            isActive ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : 'bg-zinc-50 dark:bg-zinc-900',
+            isActive ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : 'bg-white dark:bg-zinc-900',
           )}
         >
           <View className="mx-auto w-full max-w-[28rem] items-center">
@@ -323,7 +323,7 @@ const SortableDesktopTab: React.FC<{
             : isSplit && isVisible
               ? 'flex-1 min-w-0 h-full overflow-hidden'
               : isVisible && viewLayout !== 'deck'
-                ? 'absolute overflow-hidden border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950'
+                ? 'absolute overflow-hidden border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900'
                 : 'absolute overflow-hidden',
         active?.id === tab.id && 'opacity-30 z-10',
       )}

@@ -58,6 +58,7 @@ export interface Settings {
   oneProfilePerSite: boolean
 
   deckTabWidth: number
+  sidebarCollapsed: boolean
 
   disabledServicesArr: string[]
   enabledSearchProviderIds: string[]
@@ -123,6 +124,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.deckTabWidth !== 'number') {
     data.deckTabWidth = 400
   }
+  if (typeof data.sidebarCollapsed !== 'boolean') {
+    data.sidebarCollapsed = false
+  }
   if (typeof data.oneProfilePerSite !== 'boolean') {
     data.oneProfilePerSite = false
   }
@@ -155,6 +159,7 @@ export const settings$: Observable<Store> = observable<Store>({
   oneProfilePerSite: false,
 
   deckTabWidth: 400,
+  sidebarCollapsed: false,
 
   disabledServicesArr: [],
   enabledSearchProviderIds: ['url', 'duckduckgo', 'google'],

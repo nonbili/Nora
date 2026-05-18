@@ -151,11 +151,16 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const webMarginTop = (settings.autoHideHeader || settings.hideToolbarWhenScrolled) && !uiState.headerShown ? -uiState.headerHeight : 0
 
+  const sidebarCollapsed = isWeb && settings.sidebarCollapsed
+  const toggleSidebar = () => settings$.sidebarCollapsed.set(!settings$.sidebarCollapsed.get())
+
   const ret = (
     <Root
       className={clsx(
         'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between pl-2 py-1',
-        isWeb && 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0',
+        isWeb && (sidebarCollapsed
+          ? 'lg:w-[44px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0'
+          : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0'),
       )}
       style={{ marginTop: isWeb ? webMarginTop : marginTop }}
       onLayout={onLayout}
@@ -171,15 +176,34 @@ export const NouHeader: React.FC<{}> = ({}) => {
         </View>,
       )}
       {nIf(
-        isWeb,
+        isWeb && !sidebarCollapsed,
+        <View className="lg:flex-row lg:items-center lg:justify-end lg:px-1 lg:pt-1">
+          <MaterialButton name="chevron-left" color={headerControlColor} onPress={toggleSidebar} />
+        </View>,
+      )}
+      {nIf(
+        isWeb && !sidebarCollapsed,
         <View className="min-w-0 lg:w-full lg:flex-1 lg:min-h-0">
           <DesktopTabsSidebar />
+        </View>,
+      )}
+      {nIf(
+        sidebarCollapsed,
+        <View className="lg:flex-row lg:items-center lg:justify-center lg:pt-2">
+          <MaterialButton name="chevron-right" color={headerControlColor} onPress={toggleSidebar} />
+        </View>,
+      )}
+      {nIf(
+        sidebarCollapsed,
+        <View className="min-w-0 lg:w-full lg:flex-1 lg:min-h-0">
+          <DesktopTabsSidebar collapsed />
         </View>,
       )}
       <View
         className={clsx(
           'flex-row items-center justify-end gap-1',
-          isWeb && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-r lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-950',
+          isWeb && !sidebarCollapsed && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-r lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-950',
+          isWeb && sidebarCollapsed && 'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-950',
         )}
       >
         {nIf(

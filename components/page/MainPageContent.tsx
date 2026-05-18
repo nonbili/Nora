@@ -50,7 +50,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     >
       <NouHeader />
       {isWeb && tabs.length ? (
-        <View className="relative flex-1">
+        <View className="relative flex-1 bg-white dark:bg-zinc-900">
           <DesktopWorkspace />
           <UsageLockout />
         </View>
@@ -62,7 +62,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
           <UsageLockout />
         </View>
       ) : (
-        <View className="flex-1 bg-zinc-100 dark:bg-zinc-950 lg:px-20">
+        <View className="flex-1 bg-white dark:bg-zinc-900 lg:px-20">
           <NavModalContent />
         </View>
       )}
