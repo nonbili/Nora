@@ -32,7 +32,6 @@
       "deck": "Deck",
       "groupNamePlaceholder": "Group name",
       "newGroupFromTab": "New group from tab",
-      "newBlankTab": "New blank tab",
       "newSplitView": "New split view",
       "newGridView": "New grid view",
       "renameGroup": "Rename group",
@@ -64,7 +63,9 @@
     "continue": "Continue",
     "openUrl": "Open URL",
     "open": "Open",
-    "save": "Save"
+    "restoreTabs": "Recently closed tabs",
+    "save": "Save",
+    "toggleSidebar": "Toggle sidebar"
   },
   "menus": {
     "close": "Close",
@@ -73,6 +74,7 @@
     "duplicate": "Duplicate tab",
     "addBookmark": "Add bookmark",
     "editUrl": "Edit tab URL",
+    "more": "More",
     "openInProfile": "Open in profile",
     "reload": "Reload",
     "scroll": "Scroll to top",

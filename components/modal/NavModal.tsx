@@ -158,7 +158,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   }
 
   return (
-    <View className="h-full bg-zinc-100 p-4 pt-8 dark:bg-zinc-950 lg:bg-white lg:dark:bg-zinc-900">
+    <View className="h-full bg-zinc-100 pt-8 dark:bg-zinc-950 lg:bg-white lg:dark:bg-zinc-900">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -175,7 +175,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
       </ScrollView>
       <ScrollView
         className="flex-1"
-        contentContainerClassName={clsx('pb-16 flex-grow', oneHandMode ? 'justify-end pt-[40vh]' : 'justify-center')}
+        contentContainerClassName={clsx('px-4 pb-16 flex-grow', oneHandMode ? 'justify-end pt-[40vh]' : 'justify-center')}
       >
         <View className="mb-8 mt-6 w-full max-w-2xl self-center px-4">
           <View className="flex-row items-center overflow-hidden rounded-[24px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">

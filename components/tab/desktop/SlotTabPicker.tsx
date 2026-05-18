@@ -81,19 +81,19 @@ export const SlotTabPicker: React.FC<{
           handler: () => {},
         },
         {
-          label: t('views.desktop.newBlankTab'),
+          label: t('tabs.new'),
           description: t('views.desktop.createBlankTabInSlot'),
           icon: <MaterialIcons name="add" size={16} color="#f97316" />,
           handler: () => {
             onActivate()
             const tabId = openDesktopTab('')
             if (tabId) {
-              savedViews$.assignSlotTab(view.id, slotIndex, tabId)
+              view$.slotTabIds[slotIndex].set(tabId)
               tabs$.setActiveTabById(tabId, 'open')
             }
           },
         },
-      ]}
-    />
-  )
-}
+        ]}
+        />
+        )
+        }

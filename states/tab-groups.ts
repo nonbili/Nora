@@ -144,7 +144,8 @@ export const tabGroups$: Observable<Store> = observable<Store>({
   appendSplitGroupSlot: (groupId) => {
     const index = findGroupIndex(groupId)
     if (index !== -1 && tabGroups$.groups[index].layout.get() === 'split-view') {
-      tabGroups$.groups[index].tabIds.push(null)
+      const currentTabIds = tabGroups$.groups[index].tabIds.get()
+      tabGroups$.groups[index].tabIds.set([...currentTabIds, null])
     }
   },
 

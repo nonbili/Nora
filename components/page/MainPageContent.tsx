@@ -1,5 +1,5 @@
 import { useValue } from '@legendapp/state/react'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { createLogger } from '@/lib/log'
 import { settings$ } from '@/states/settings'
 import { NouHeader } from '../header/NouHeader'
@@ -18,7 +18,7 @@ const logger = createLogger('sync')
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
-  const { tabs } = useValue(tabs$)
+  const { tabs, activeTabIndex } = useValue(tabs$)
   const { userId, me } = useMe()
   useUsageTracker()
 
@@ -50,14 +50,14 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     >
       <NouHeader />
       {isWeb && tabs.length ? (
-        <View className="relative flex-1 bg-white dark:bg-zinc-900">
+        <View className="relative flex-1 min-h-0 overflow-hidden bg-zinc-200 dark:bg-black">
           <DesktopWorkspace />
           <UsageLockout />
         </View>
       ) : tabs.length ? (
         <View className="relative flex-1">
           {tabs.map((tab, index) => (
-            <NoraTab tab={tab} index={index} key={tab.id || index} />
+            <NoraTab tab={tab} index={index} isActive={activeTabIndex === index} key={tab.id || index} />
           ))}
           <UsageLockout />
         </View>

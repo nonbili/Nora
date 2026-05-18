@@ -2,7 +2,7 @@ import { NoraView } from '@/modules/nora-view'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useObserveEffect, useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { settings$ } from '@/states/settings'
 import { ActivityIndicator, Appearance, StyleSheet, View, useColorScheme } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
@@ -148,9 +148,10 @@ const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || t
 export const NoraTab: React.FC<{
   tab: Tab
   index: number
+  isActive: boolean
   desktopVariant?: 'deck' | 'saved-view' | 'single'
   slotSwitcher?: ReactNode
-}> = ({ tab, index, desktopVariant = 'deck', slotSwitcher }) => {
+}> = ({ tab, index, isActive, desktopVariant = 'deck', slotSwitcher }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
   const inspectable = useValue(settings$.inspectable)
@@ -160,12 +161,11 @@ export const NoraTab: React.FC<{
   const colorScheme = useColorScheme()
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag>(null)
-  const activeTabIndex = useValue(tabs$.activeTabIndex)
   const pageUrlRef = useRef('')
+  const loadingWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [canGoBack, setCanGoBack] = useState(false)
   const contentJs = useContentJs()
   const profileColor = getProfileColor(tab.profile)
-  const isActive = activeTabIndex === index
   const menuIconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
   const viewKey = getProfileViewKey(tab)
   const viewInstanceKey = `${viewKey}:${tab.url ? 'page' : 'blank'}`
@@ -200,12 +200,27 @@ export const NoraTab: React.FC<{
         return
       }
       pageUrlRef.current = url
-      const tab$ = tabs$.tabs[index]
-      if (tab$.get()) {
+      const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
+      const tab$ = currentIndex === -1 ? undefined : tabs$.tabs[currentIndex]
+      if (tab$?.get()) {
         tab$.url.set(url)
       }
     },
-    [index],
+    [tab.id],
+  )
+
+  const setTabLoading = useCallback(
+    (loading: boolean) => {
+      if (!loading && loadingWatchdogRef.current) {
+        clearTimeout(loadingWatchdogRef.current)
+        loadingWatchdogRef.current = null
+      }
+      const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
+      if (currentIndex !== -1) {
+        tabs$.setTabLoading(loading, currentIndex)
+      }
+    },
+    [tab.id],
   )
 
   const applyContentState = useCallback(
@@ -239,16 +254,27 @@ export const NoraTab: React.FC<{
         void refreshCanGoBack(webview)
       })
       webview.addEventListener('did-start-loading', () => {
-        tabs$.setTabLoading(true, index)
+        setTabLoading(true)
+        if (loadingWatchdogRef.current) {
+          clearTimeout(loadingWatchdogRef.current)
+        }
+        loadingWatchdogRef.current = setTimeout(() => {
+          if (typeof webview.isLoading === 'function' && !webview.isLoading()) {
+            setTabLoading(false)
+          }
+        }, 3000)
       })
       webview.addEventListener('did-stop-loading', () => {
-        tabs$.setTabLoading(false, index)
+        setTabLoading(false)
+      })
+      webview.addEventListener('did-finish-load', () => {
+        setTabLoading(false)
       })
       webview.addEventListener('did-fail-load', () => {
-        tabs$.setTabLoading(false, index)
+        setTabLoading(false)
       })
       webview.addEventListener('did-fail-provisional-load', () => {
-        tabs$.setTabLoading(false, index)
+        setTabLoading(false)
       })
       webview.addEventListener('did-navigate', (e) => {
         setPageUrl(e.url)
@@ -256,10 +282,14 @@ export const NoraTab: React.FC<{
       })
       webview.addEventListener('did-navigate-in-page', (e) => {
         setPageUrl(e.url)
+        setTabLoading(false)
         void refreshCanGoBack(webview)
       })
       webview.addEventListener('page-favicon-updated', (e) => {
-        tabs$.tabs[index].assign({ title: webview.getTitle(), icon: e.favicons.at(-1) })
+        const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
+        if (currentIndex !== -1) {
+          tabs$.tabs[currentIndex].assign({ title: webview.getTitle(), icon: e.favicons.at(-1) })
+        }
       })
       webview.addEventListener('before-input-event', ((e: Electron.Event & { input: Electron.Input }) => {
         if (e.input.type === 'keyDown') {
@@ -275,7 +305,7 @@ export const NoraTab: React.FC<{
         ui$.hoverLinkUrl.set(e.url || '')
       })
     },
-    [applyContentState, contentJs, index, refreshCanGoBack, setPageUrl],
+    [applyContentState, contentJs, index, refreshCanGoBack, setPageUrl, setTabLoading, tab.id],
   )
 
   const setActiveNativeWebview = useCallback(
@@ -361,6 +391,10 @@ export const NoraTab: React.FC<{
 
   useEffect(() => {
     return () => {
+      if (loadingWatchdogRef.current) {
+        clearTimeout(loadingWatchdogRef.current)
+        loadingWatchdogRef.current = null
+      }
       const native = nativeRef.current
       clearActiveNativeWebview(native)
       if (isActive && ui$.webview.get() === native) {
@@ -405,7 +439,7 @@ export const NoraTab: React.FC<{
     const { url, title, icon, canGoBack: nextCanGoBack } = e.nativeEvent
     const hasLoadedUrl = typeof url === 'string' && url !== '' && url !== 'about:blank'
     if (hasLoadedUrl) {
-      tabs$.setTabLoading(false, index)
+      setTabLoading(false)
       setPageUrl(url)
     }
     if (typeof title === 'string' || typeof icon === 'string') {
@@ -481,10 +515,16 @@ export const NoraTab: React.FC<{
   if (isWeb) {
     return (
       <View
-        className={clsx('flex h-full min-h-0 min-w-0 flex-col', desktopVariant === 'deck' ? 'shrink-0' : 'w-full')}
+        className={clsx(
+          'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border bg-white shadow-md shadow-zinc-900/10 dark:bg-zinc-900',
+          isActive
+            ? 'border-indigo-400/60 ring-2 ring-indigo-500/10 dark:border-indigo-400/50'
+            : 'border-zinc-300 dark:border-zinc-800',
+          desktopVariant === 'deck' ? 'shrink-0' : 'w-full',
+        )}
         style={desktopVariant === 'deck' ? { width: deckTabWidth } : undefined}
       >
-        {desktopVariant === 'single' ? null : <NouContextMenu
+        <NouContextMenu
           items={[
             {
               label: t('views.desktop.newGroupFromTab'),
@@ -553,15 +593,14 @@ export const NoraTab: React.FC<{
         >
           <View
             className={clsx(
-              'flex-row items-center justify-between gap-2 pl-2 pr-1',
+              'flex-row items-center justify-between gap-2 pl-2 pr-1 border-b',
               isActive
-                ? 'bg-indigo-100 dark:bg-indigo-400/30 dark:border-b dark:border-b-indigo-300/50'
-                : 'bg-zinc-100 dark:bg-zinc-800',
+                ? 'bg-indigo-100 border-indigo-200 dark:bg-indigo-400/30 dark:border-indigo-300/50'
+                : 'bg-zinc-50 border-zinc-300 dark:bg-zinc-800 dark:border-zinc-700/50',
             )}
             style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
           >
             <View className="flex-row items-center gap-2 shrink-0">
-              {slotSwitcher || desktopVariant === 'deck' ? null : <ServiceIcon url={tab.url} icon={tab.icon} />}
               {nIf(tab.isLoading, <ActivityIndicator size="small" color="#a1a1aa" />)}
               {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} />)}
             </View>
@@ -587,7 +626,7 @@ export const NoraTab: React.FC<{
               <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
             </View>
           </View>
-        </NouContextMenu>}
+        </NouContextMenu>
         <NoraView
           className={clsx('flex-1', !tab.url && 'hidden')}
           ref={noraViewRef}
@@ -597,7 +636,12 @@ export const NoraTab: React.FC<{
           allowpopups="true"
           key={viewInstanceKey}
         />
-        {nIf(!tab.url, <NavModalContent index={index} />)}
+        {nIf(
+          !tab.url,
+          <View className="flex-1 min-h-0">
+            <NavModalContent index={index} />
+          </View>,
+        )}
       </View>
     )
   }

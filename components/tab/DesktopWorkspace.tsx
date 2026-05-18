@@ -127,7 +127,7 @@ const SlotTabPicker: React.FC<{
           handler: () => {},
         },
         {
-          label: t('views.desktop.newBlankTab'),
+          label: t('tabs.new'),
           description: t('views.desktop.createBlankTabInSlot'),
           icon: <MaterialIcons name="add" size={16} color="#f97316" />,
           handler: () => {
@@ -152,7 +152,7 @@ const EmptySlot: React.FC<{
   orderedTabs: Tab[]
   slotIndex: number
   tabIdSet: Set<string>
-}> = ({ group, isActive, isSplit, onActivate, orderedTabs, slotIndex, tabIdSet }) => {
+}> = React.memo(({ group, isActive, isSplit, onActivate, orderedTabs, slotIndex, tabIdSet }) => {
   const lastSelectedProfileId = useValue(ui$.lastSelectedProfileId)
   const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
   const selectedProfileId = oneProfilePerSite ? AUTO_PROFILE_ID : lastSelectedProfileId
@@ -183,10 +183,10 @@ const EmptySlot: React.FC<{
     <div
       className={clsx(
         isSplit
-          ? 'flex-1 min-w-0 h-full overflow-hidden border transition-all'
-          : 'absolute overflow-hidden border transition-all',
+          ? 'flex-1 min-w-0 min-h-0 overflow-hidden rounded-xl border transition-all'
+          : 'absolute overflow-hidden rounded-xl border transition-all',
         isActive
-          ? 'border-indigo-300 bg-indigo-50/40 shadow-[0_0_0_1px_rgba(165,180,252,0.9)] dark:border-indigo-300/40 dark:bg-indigo-400/10'
+          ? 'border-indigo-400/60 bg-indigo-50/40 shadow-[0_0_0_2px_rgba(165,180,252,0.4)] dark:border-indigo-400/50 dark:bg-indigo-400/10'
           : 'border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900',
       )}
       style={
@@ -199,8 +199,10 @@ const EmptySlot: React.FC<{
       <View className="flex h-full min-h-0 min-w-0 flex-col">
         <View
           className={clsx(
-            'flex-row items-center justify-between gap-2 pl-2 pr-1 transition-colors',
-            isActive ? 'bg-indigo-100 dark:bg-indigo-400/25' : 'bg-zinc-100 dark:bg-zinc-800',
+            'flex-row items-center justify-between gap-2 pl-2 pr-1 transition-colors border-b',
+            isActive
+              ? 'bg-indigo-100 border-indigo-200 dark:bg-indigo-400/25 dark:border-indigo-300/40'
+              : 'bg-zinc-50 border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700/50',
           )}
           style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
         >
@@ -279,10 +281,12 @@ const EmptySlot: React.FC<{
       </View>
     </div>
   )
-}
+})
+EmptySlot.displayName = 'EmptySlot'
 
 const SortableDesktopTab: React.FC<{
   index: number
+  isActive: boolean
   isDeck: boolean
   isSingle: boolean
   isSplit: boolean
@@ -292,7 +296,21 @@ const SortableDesktopTab: React.FC<{
   slotSwitcher?: ReactNode
   tab: Tab
   viewLayout: TabGroupLayout
-}> = ({ index, isDeck, isSingle, isSplit, isVisible, order, slotIndex, slotSwitcher, tab, viewLayout }) => {
+  hiddenTabWidth: number | string
+}> = React.memo(({
+  index,
+  isActive,
+  isDeck,
+  isSingle,
+  isSplit,
+  isVisible,
+  order,
+  slotIndex,
+  slotSwitcher,
+  tab,
+  viewLayout,
+  hiddenTabWidth,
+}) => {
   const { attributes, listeners, setNodeRef, transform, transition, active } = useSortable({ id: tab.id })
 
   let style: CSSProperties
@@ -305,11 +323,11 @@ const SortableDesktopTab: React.FC<{
   } else if (isSingle && isVisible) {
     style = { position: 'absolute', inset: 0 }
   } else if (isSplit && isVisible) {
-    style = { flex: 1, minWidth: 0, order: slotIndex ?? 0 }
+    style = { flex: 1, minWidth: 0, minHeight: 0, order: slotIndex ?? 0 }
   } else if (isVisible && viewLayout !== 'deck' && slotIndex != null) {
     style = getSlotStyle(viewLayout, slotIndex)
   } else {
-    style = getHiddenTabStyle(settings$.deckTabWidth.get())
+    style = getHiddenTabStyle(hiddenTabWidth)
   }
 
   return (
@@ -317,13 +335,13 @@ const SortableDesktopTab: React.FC<{
       ref={setNodeRef}
       className={clsx(
         isDeck && isVisible
-          ? 'flex h-full cursor-grab active:cursor-grabbing transition-opacity'
+          ? 'flex min-h-0 cursor-grab active:cursor-grabbing transition-opacity rounded-xl'
           : isSingle && isVisible
-            ? 'overflow-hidden'
+            ? 'overflow-hidden rounded-xl'
             : isSplit && isVisible
-              ? 'flex-1 min-w-0 h-full overflow-hidden'
+              ? 'flex-1 min-w-0 min-h-0 overflow-hidden rounded-xl'
               : isVisible && viewLayout !== 'deck'
-                ? 'absolute overflow-hidden border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900'
+                ? 'absolute overflow-hidden border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-xl'
                 : 'absolute overflow-hidden',
         active?.id === tab.id && 'opacity-30 z-10',
       )}
@@ -332,10 +350,17 @@ const SortableDesktopTab: React.FC<{
       {...(isDeck && isVisible ? attributes : {})}
       {...(isDeck && isVisible ? listeners : {})}
     >
-      <NoraTab tab={tab} index={index} desktopVariant={isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'} slotSwitcher={slotSwitcher} />
+      <NoraTab
+        tab={tab}
+        index={index}
+        isActive={isActive}
+        desktopVariant={isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
+        slotSwitcher={slotSwitcher}
+      />
     </div>
   )
-}
+})
+SortableDesktopTab.displayName = 'SortableDesktopTab'
 
 export const DesktopWorkspace: React.FC = () => {
   const tabs = useValue(tabs$.tabs)
@@ -369,6 +394,13 @@ export const DesktopWorkspace: React.FC = () => {
   const viewLayout: TabGroupLayout = activeGroup?.layout || 'deck'
   const isDeck = viewLayout === 'deck' && !isSingle
   const isSplit = viewLayout === 'split-view' && !isSingle
+  const deckTabWidth = useValue(settings$.deckTabWidth)
+
+  const hiddenTabWidth = useMemo(() => {
+    if (isSingle) return '100%'
+    if (isSplit) return `calc((100% - ${SLOT_GAP}px) / 2)`
+    return deckTabWidth
+  }, [isSingle, isSplit, deckTabWidth])
 
   useEffect(() => {
     if (isDeck && tabs.length > prevTabCountRef.current && deckScrollRef.current) {
@@ -455,20 +487,21 @@ export const DesktopWorkspace: React.FC = () => {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={isDeck ? visibleTabIds : []} strategy={horizontalListSortingStrategy}>
-        <div className="relative flex-1 flex flex-col overflow-hidden">
+        <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
           <div
             ref={isDeck ? deckScrollRef : undefined}
             className={clsx(
               isDeck
-                ? 'flex-1 flex gap-2 overflow-x-auto overflow-y-hidden p-2'
+                ? 'flex min-h-0 flex-1 gap-2 overflow-x-auto overflow-y-hidden p-2'
                 : isSplit
-                  ? 'flex-1 min-w-0 flex flex-row gap-2 p-2'
-                  : 'relative flex-1 overflow-hidden p-2',
+                  ? 'flex min-h-0 flex-1 min-w-0 flex-row gap-2 overflow-hidden p-2'
+                  : 'relative min-h-0 flex-1 overflow-hidden p-2',
             )}
           >
             {tabs.map((tab, index) => {
               const slotIndex = slotIndexByTabId.get(tab.id)
               const isVisible = visibleTabIdSet.has(tab.id)
+              const isActive = activeTabId === tab.id
               const order = isDeck ? visibleTabIds.findIndex((tabId) => tabId === tab.id) : slotIndex ?? index
               return (
                 <SortableDesktopTab
@@ -478,10 +511,12 @@ export const DesktopWorkspace: React.FC = () => {
                   isSingle={isSingle}
                   isSplit={isSplit}
                   isVisible={isVisible}
+                  isActive={isActive}
                   order={order}
                   slotIndex={slotIndex ?? null}
                   tab={tab}
                   viewLayout={viewLayout}
+                  hiddenTabWidth={hiddenTabWidth}
                 />
               )
             })}

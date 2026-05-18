@@ -1,6 +1,6 @@
 import { ActivityIndicator, Dimensions, View, Text, TouchableOpacity, LayoutChangeEvent, useColorScheme } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import Drawer from 'expo-router/drawer'
 import { useValue, useObserve } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
@@ -159,8 +159,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
       className={clsx(
         'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between pl-2 py-1',
         isWeb && (sidebarCollapsed
-          ? 'lg:w-[44px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0'
-          : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0'),
+          ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
+          : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-50 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
       )}
       style={{ marginTop: isWeb ? webMarginTop : marginTop }}
       onLayout={onLayout}
@@ -178,7 +178,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         isWeb && !sidebarCollapsed,
         <View className="lg:flex-row lg:items-center lg:justify-end lg:px-1 lg:pt-1">
-          <MaterialButton name="chevron-left" color={headerControlColor} onPress={toggleSidebar} />
+          <div title={t('buttons.toggleSidebar')}>
+            <MaterialButton name="chevron-left" color={headerControlColor} onPress={toggleSidebar} />
+          </div>
         </View>,
       )}
       {nIf(
@@ -190,7 +192,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         sidebarCollapsed,
         <View className="lg:flex-row lg:items-center lg:justify-center lg:pt-2">
-          <MaterialButton name="chevron-right" color={headerControlColor} onPress={toggleSidebar} />
+          <div title={t('buttons.toggleSidebar')}>
+            <MaterialButton name="chevron-right" color={headerControlColor} onPress={toggleSidebar} />
+          </div>
         </View>,
       )}
       {nIf(
@@ -202,13 +206,15 @@ export const NouHeader: React.FC<{}> = ({}) => {
       <View
         className={clsx(
           'flex-row items-center justify-end gap-1',
-          isWeb && !sidebarCollapsed && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-r lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-950',
-          isWeb && sidebarCollapsed && 'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-950',
+          isWeb && !sidebarCollapsed && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
+          isWeb && sidebarCollapsed && 'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-50 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
         )}
       >
         {nIf(
           canDownload,
-          <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />,
+          <div title={t('modals.downloadVideo')}>
+            <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />
+          </div>,
         )}
         {nIf(
           !isWeb && currentTab?.isLoading,
@@ -226,112 +232,112 @@ export const NouHeader: React.FC<{}> = ({}) => {
           </TouchableOpacity>,
         )}
         {nIf(
-          isWeb,
-          <MaterialButton name="add" color={headerControlColor} onPress={openTabForActiveDesktopView} />,
-        )}
-        {nIf(
           isWeb && recentlyClosedTabs.length > 0,
-          <NouMenu
-            trigger={<MaterialButton name="restore" color={headerControlColor} />}
-            items={recentlyClosedTabs.map((tab) => ({
-              label: tab.title || tab.url || t('tabs.new'),
-              description: tab.title && tab.url && tab.title !== tab.url ? tab.url : undefined,
-              icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
-              handler: () => tabs$.reopenClosedTab(tab.id),
-            }))}
-          />,
+          <div title={t('buttons.restoreTabs')}>
+            <NouMenu
+              trigger={<MaterialButton name="restore" color={headerControlColor} />}
+              items={recentlyClosedTabs.map((tab) => ({
+                label: tab.title || tab.url || t('tabs.new'),
+                description: tab.title && tab.url && tab.title !== tab.url ? tab.url : undefined,
+                icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
+                handler: () => tabs$.reopenClosedTab(tab.id),
+              }))}
+            />
+          </div>,
         )}
-        <NouMenu
-          triggerColor={headerControlColor}
-          trigger={
-            isWeb
-              ? <MaterialButton name="more-vert" color={headerControlColor} />
-              : isIos
-                ? 'ellipsis'
-                : 'filled.MoreVert'
-          }
-          items={[
-            ...(isWeb
-              ? []
-              : [
-                  {
-                    label: t('menus.reload'),
-                    icon: <MaterialIcons name="refresh" size={18} color={headerControlColor} />,
-                    systemImage: 'arrow.clockwise',
-                    handler: reloadPage,
-                  },
-                  {
-                    label: t('menus.scroll'),
-                    icon: <MaterialIcons name="vertical-align-top" size={18} color={headerControlColor} />,
-                    systemImage: 'arrow.up.to.line',
-                    handler: scrollToTop,
-                  },
-                  {
-                    label: t('menus.editUrl'),
-                    icon: <MaterialIcons name="edit" size={18} color={headerControlColor} />,
-                    systemImage: 'pencil',
-                    handler: editTabUrl,
-                  },
-                  ...(hideDesktopSiteToggle
-                    ? []
-                    : [
-                        {
-                          label: t('menus.desktop'),
-                          icon: <MaterialIcons name="desktop-windows" size={18} color={headerControlColor} />,
-                          systemImage: 'desktopcomputer',
-                          metaLabel: currentTab?.desktopMode ? t('common.on') : t('common.off'),
-                          meta: (
-                            <View
-                              className={clsx(
-                                'rounded-full px-2 py-1',
-                                currentTab?.desktopMode
-                                  ? 'bg-indigo-100 border border-indigo-300 dark:bg-indigo-500/20 dark:border-indigo-400/40'
-                                  : 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700',
-                              )}
-                            >
-                              <Text
+        <div title={t('menus.more')}>
+          <NouMenu
+            triggerColor={headerControlColor}
+            trigger={
+              isWeb
+                ? <MaterialButton name="more-vert" color={headerControlColor} />
+                : isIos
+                  ? 'ellipsis'
+                  : 'filled.MoreVert'
+            }
+            items={[
+              ...(isWeb
+                ? []
+                : [
+                    {
+                      label: t('menus.reload'),
+                      icon: <MaterialIcons name="refresh" size={18} color={headerControlColor} />,
+                      systemImage: 'arrow.clockwise',
+                      handler: reloadPage,
+                    },
+                    {
+                      label: t('menus.scroll'),
+                      icon: <MaterialIcons name="vertical-align-top" size={18} color={headerControlColor} />,
+                      systemImage: 'arrow.up.to.line',
+                      handler: scrollToTop,
+                    },
+                    {
+                      label: t('menus.editUrl'),
+                      icon: <MaterialIcons name="edit" size={18} color={headerControlColor} />,
+                      systemImage: 'pencil',
+                      handler: editTabUrl,
+                    },
+                    ...(hideDesktopSiteToggle
+                      ? []
+                      : [
+                          {
+                            label: t('menus.desktop'),
+                            icon: <MaterialIcons name="desktop-windows" size={18} color={headerControlColor} />,
+                            systemImage: 'desktopcomputer',
+                            metaLabel: currentTab?.desktopMode ? t('common.on') : t('common.off'),
+                            meta: (
+                              <View
                                 className={clsx(
-                                  'text-[11px] font-medium',
-                                  currentTab?.desktopMode ? 'text-indigo-700 dark:text-indigo-200' : 'text-zinc-600 dark:text-zinc-400',
+                                  'rounded-full px-2 py-1',
+                                  currentTab?.desktopMode
+                                    ? 'bg-indigo-100 border border-indigo-300 dark:bg-indigo-500/20 dark:border-indigo-400/40'
+                                    : 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700',
                                 )}
                               >
-                                {currentTab?.desktopMode ? t('common.on') : t('common.off')}
-                              </Text>
-                            </View>
-                          ),
-                          handler: () => {
-                            tabs$.tabs[activeTabIndex].desktopMode.toggle()
-                            void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+                                <Text
+                                  className={clsx(
+                                    'text-[11px] font-medium',
+                                    currentTab?.desktopMode ? 'text-indigo-700 dark:text-indigo-200' : 'text-zinc-600 dark:text-zinc-400',
+                                  )}
+                                >
+                                  {currentTab?.desktopMode ? t('common.on') : t('common.off')}
+                                </Text>
+                              </View>
+                            ),
+                            handler: () => {
+                              tabs$.tabs[activeTabIndex].desktopMode.toggle()
+                              void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+                            },
                           },
-                        },
-                      ]),
-                  {
-                    label: t('menus.addBookmark'),
-                    icon: <MaterialIcons name="bookmark-add" size={18} color={headerControlColor} />,
-                    systemImage: 'bookmark',
-                    handler: addBookmark,
-                  },
-                  {
-                    label: t('menus.share'),
-                    icon: <MaterialIcons name="share" size={18} color={headerControlColor} />,
-                    systemImage: 'square.and.arrow.up',
-                    handler: () => (currentTab ? share(currentTab.url) : {}),
-                  },
-                ]),
-            {
-              label: t('menus.tools'),
-              icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
-              systemImage: 'wrench.and.screwdriver',
-              handler: () => ui$.toolsModalOpen.set(true),
-            },
-            {
-              label: t('settings.label'),
-              icon: <MaterialIcons name="settings" size={18} color={headerControlColor} />,
-              systemImage: 'gearshape',
-              handler: () => ui$.settingsModalOpen.set(true),
-            },
-          ]}
-        />
+                        ]),
+                    {
+                      label: t('menus.addBookmark'),
+                      icon: <MaterialIcons name="bookmark-add" size={18} color={headerControlColor} />,
+                      systemImage: 'bookmark',
+                      handler: addBookmark,
+                    },
+                    {
+                      label: t('menus.share'),
+                      icon: <MaterialIcons name="share" size={18} color={headerControlColor} />,
+                      systemImage: 'square.and.arrow.up',
+                      handler: () => (currentTab ? share(currentTab.url) : {}),
+                    },
+                  ]),
+              {
+                label: t('menus.tools'),
+                icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
+                systemImage: 'wrench.and.screwdriver',
+                handler: () => ui$.toolsModalOpen.set(true),
+              },
+              {
+                label: t('settings.label'),
+                icon: <MaterialIcons name="settings" size={18} color={headerControlColor} />,
+                systemImage: 'gearshape',
+                handler: () => ui$.settingsModalOpen.set(true),
+              },
+            ]}
+          />
+        </div>
       </View>
     </Root>
   )
