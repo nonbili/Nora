@@ -38,3 +38,4 @@ export const DeckTab: React.FC<{
     </div>
   )
 })
+DeckTab.displayName = 'DeckTab'

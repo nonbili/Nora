@@ -145,10 +145,10 @@ const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || t
 export const NoraTab: React.FC<{
   tab: Tab
   index: number
-  isActive: boolean
+  isActive?: boolean
   desktopVariant?: 'deck' | 'saved-view' | 'single'
   slotSwitcher?: ReactNode
-}> = ({ tab, index, isActive, desktopVariant = 'deck', slotSwitcher }) => {
+}> = ({ tab, index, isActive = false, desktopVariant = 'deck', slotSwitcher }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
   const inspectable = useValue(settings$.inspectable)
@@ -510,7 +510,7 @@ export const NoraTab: React.FC<{
 
   const menuItems = useTabContextMenuItems(tab, {
     runWebviewAction: (action) => {
-      const webview = noraViewRef.current
+      const webview = webviewRef.current || nativeRef.current
       if (webview) action(webview)
     },
     canDuplicate,
@@ -605,4 +605,3 @@ export const NoraTab: React.FC<{
     </View>
   )
 }
-

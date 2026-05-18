@@ -21,18 +21,6 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
 
   const items: ContextItem[] = [
     {
-      label: t('views.desktop.newGroupFromTab'),
-      icon: <MaterialIcons name="create-new-folder" size={16} color={menuIconColor} />,
-      handler: () => {
-        const groupId = createDesktopTabGroupFromTab(tab.id)
-        if (groupId) {
-          tabGroups$.setActiveGroup(groupId)
-        }
-        tabs$.setActiveTabById(tab.id, 'system')
-      },
-    },
-    { kind: 'separator' },
-    {
       label: t('menus.reload'),
       icon: <MaterialIcons name="refresh" size={16} color={menuIconColor} />,
       handler: () =>
@@ -49,6 +37,26 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
       icon: <MaterialIcons name="edit" size={16} color={menuIconColor} />,
       handler: () => {
         ui$.assign({ urlModalOpen: true, urlModalMode: 'editTab', urlModalTargetTabId: tab.id })
+      },
+    },
+    {
+      label: t('menus.scroll'),
+      icon: <MaterialIcons name="vertical-align-top" size={16} color={menuIconColor} />,
+      handler: () =>
+        options.runWebviewAction((webview) => {
+          void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
+        }),
+    },
+    { kind: 'separator' },
+    {
+      label: t('views.desktop.newGroupFromTab'),
+      icon: <MaterialIcons name="create-new-folder" size={16} color={menuIconColor} />,
+      handler: () => {
+        const groupId = createDesktopTabGroupFromTab(tab.id)
+        if (groupId) {
+          tabGroups$.setActiveGroup(groupId)
+        }
+        tabs$.setActiveTabById(tab.id, 'system')
       },
     },
     {
@@ -69,14 +77,6 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
           },
         ]
       : []),
-    {
-      label: t('menus.scroll'),
-      icon: <MaterialIcons name="vertical-align-top" size={16} color={menuIconColor} />,
-      handler: () =>
-        options.runWebviewAction((webview) => {
-          void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
-        }),
-    },
     { kind: 'separator' },
     {
       label: t('menus.addBookmark'),

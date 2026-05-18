@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {
   DndContext,
   closestCenter,
+  rectIntersection,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -110,7 +111,7 @@ export const SortableNoraTabs: React.FC<{ tabs: Tab[] }> = ({ tabs }) => {
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
       <SortableContext items={tabs} strategy={horizontalListSortingStrategy}>
         <div className="flex-1 flex gap-2 p-2 overflow-x-auto overflow-y-hidden">
           {tabs.map((tab, index) => (

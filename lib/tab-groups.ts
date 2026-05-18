@@ -58,17 +58,10 @@ export const addTabToGroup = (group: TabGroup, tabId: string, targetIndex?: numb
   const nextTabIds = [...withoutTab.slice(0, boundedIndex), tabId, ...withoutTab.slice(boundedIndex)]
 
   if (group.layout === 'grid-4') {
-    const nextSlots = [...group.tabIds]
-    const existingIndex = nextSlots.findIndex((currentTabId) => currentTabId === tabId)
-    if (existingIndex !== -1) {
-      nextSlots[existingIndex] = null
-    }
-    const targetSlot = typeof targetIndex === 'number' ? targetIndex : nextSlots.findIndex((currentTabId) => !currentTabId)
-    if (targetSlot < 0 || targetSlot >= 4 || nextSlots[targetSlot]) {
+    if (withoutTab.length >= 4) {
       return group
     }
-    nextSlots[targetSlot] = tabId
-    return { ...group, tabIds: nextSlots }
+    return { ...group, tabIds: sanitizeGroupTabIds(group.layout, nextTabIds) }
   }
 
   return { ...group, tabIds: sanitizeGroupTabIds(group.layout, nextTabIds) }

@@ -4,6 +4,7 @@ import {
   DndContext,
   PointerSensor,
   closestCenter,
+  rectIntersection,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -73,7 +74,7 @@ export const DeckWorkspace: React.FC<{
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={rectIntersection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}

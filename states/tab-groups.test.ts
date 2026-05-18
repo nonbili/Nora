@@ -24,6 +24,10 @@ describe('tab group helpers', () => {
   it('pads grid groups to four slots and ignores overflow inserts', () => {
     expect(sanitizeGroupTabIds('grid-4', ['tab-1'])).toEqual(['tab-1', null, null, null])
 
+    const gridWithSpace: TabGroup = { id: 'group-1', name: 'Grid', layout: 'grid-4', tabIds: ['tab-1', null, 'tab-2', null] }
+    expect(addTabToGroup(gridWithSpace, 'tab-3', 1).tabIds).toEqual(['tab-1', 'tab-3', 'tab-2', null])
+    expect(addTabToGroup(gridWithSpace, 'tab-2', 0).tabIds).toEqual(['tab-2', 'tab-1', null, null])
+
     const fullGrid: TabGroup = { id: 'group-1', name: 'Grid', layout: 'grid-4', tabIds: ['tab-1', 'tab-2', 'tab-3', 'tab-4'] }
     expect(addTabToGroup(fullGrid, 'tab-5')).toEqual(fullGrid)
   })
@@ -39,6 +43,6 @@ describe('tab group helpers', () => {
 
     expect(data?.activeGroupId).toBe('group-2')
     expect(data?.groups[0].tabIds).toEqual(['tab-1', 'tab-2'])
-    expect(data?.groups[1].tabIds).toEqual(['tab-3', null, null, null])
+    expect(data?.groups[1].tabIds as Array<string | null>).toEqual(['tab-3', null, null, null])
   })
 })

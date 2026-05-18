@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { t } from 'i18next'
-import type { CustomSavedView } from '@/states/saved-views'
+import type { TabGroupLayout } from '@/states/tab-groups'
 import type { Tab } from '@/states/tabs'
 
 export const SLOT_GAP = 8
@@ -17,7 +17,7 @@ export const getHiddenTabStyle = (width: number | string): CSSProperties => ({
 
 export const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 
-export const getSlotStyle = (layout: CustomSavedView['layout'], slotIndex: number): CSSProperties => {
+export const getSlotStyle = (layout: Exclude<TabGroupLayout, 'deck'>, slotIndex: number): CSSProperties => {
   const half = `calc((100% - ${SLOT_GAP}px) / 2)`
   if (layout === 'split-view') {
     return {
@@ -38,4 +38,10 @@ export const getSlotStyle = (layout: CustomSavedView['layout'], slotIndex: numbe
     width: half,
     height: half,
   }
+}
+
+export const getLayoutLabel = (layout: TabGroupLayout) => {
+  if (layout === 'split-view') return t('views.desktop.layout.split')
+  if (layout === 'grid-4') return t('views.desktop.layout.grid')
+  return t('views.desktop.layout.deck')
 }
