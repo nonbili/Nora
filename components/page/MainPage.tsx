@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import { settings$ } from '@/states/settings'
 import { MainPageContent } from './MainPageContent'
 import { NavModal } from '../modal/NavModal'
-import { SettingsModal } from '../modal/SettingsModal'
 import { CookieModal } from '../modal/CookieModal'
+import { SettingsModal } from '../modal/SettingsModal'
 import { isWeb, nIf } from '@/lib/utils'
 import { TabModal } from '../modal/TabModal'
 import { BookmarkModal } from '../modal/BookmarkModal'
@@ -16,6 +16,7 @@ import { ProfileLinkModal } from '../modal/ProfileLinkModal'
 import { RenameViewModal } from '../modal/RenameViewModal'
 import { RenameGroupModal } from '../modal/RenameGroupModal'
 import { UserStyleEditModal } from '../modal/UserStyleEditModal'
+import { UserScriptEditModal } from '../modal/UserScriptEditModal'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { useLocales } from 'expo-localization'
 import i18n from 'i18next'
@@ -60,7 +61,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
       <QueryClientProvider client={queryClient}>
         <MainPageContent contentJs={contentJs} />
         <NavModal />
-        <SettingsModal />
+        {nIf(!isWeb, <SettingsModal />)}
         <BookmarkModal />
         <CookieModal />
         <UrlModal />
@@ -70,6 +71,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <RenameGroupModal />
         <RenameViewModal />
         <UserStyleEditModal />
+        <UserScriptEditModal />
         {nIf(
           !isWeb,
           <>

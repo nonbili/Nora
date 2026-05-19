@@ -23,6 +23,7 @@ import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
 import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
+import { getEnabledUserScripts } from '@/lib/user-styles'
 import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
 import { tabGroups$ } from '@/states/tab-groups'
 
@@ -142,6 +143,47 @@ const parseWebviewMeta = (value?: string | null) => {
 
 const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 
+const getHostFromUrl = (url: string) => {
+  try {
+    return new URL(url).host
+  } catch {
+    return ''
+  }
+}
+
+const buildUserScriptRunner = (host: string) => {
+  const scripts = getEnabledUserScripts(host, getUserStylesSnapshot())
+  if (!scripts.length) {
+    return ''
+  }
+
+  const calls = scripts
+    .map(
+      (script) => `
+        run(${JSON.stringify(script.id)}, ${JSON.stringify(script.name)}, function() {
+          ${script.js}
+        });
+      `,
+    )
+    .join('\n')
+
+  return `
+    (() => {
+      window.__noraRanUserScriptIds = window.__noraRanUserScriptIds || new Set();
+      const run = (id, name, fn) => {
+        if (window.__noraRanUserScriptIds.has(id)) return;
+        window.__noraRanUserScriptIds.add(id);
+        try {
+          fn.call(window);
+        } catch (error) {
+          console.error('[Nora user script] ' + name, error);
+        }
+      };
+      ${calls}
+    })();
+  `
+}
+
 export const NoraTab: React.FC<{
   tab: Tab
   index: number
@@ -229,8 +271,12 @@ export const NoraTab: React.FC<{
       const userStylesScript = `window.Nora?.setUserStyles?.(${JSON.stringify(getUserStylesSnapshot())})`
       void executeWebviewJavaScriptQuietly(webview, settingsScript)
       void executeWebviewJavaScriptQuietly(webview, userStylesScript)
+      const userScriptRunner = buildUserScriptRunner(getHostFromUrl(pageUrlRef.current || tab.url))
+      if (userScriptRunner) {
+        void executeWebviewJavaScriptQuietly(webview, userScriptRunner)
+      }
     },
-    [videoEdgeLongPressTo2x, xDefaultHomeTimeline],
+    [tab.url, videoEdgeLongPressTo2x, xDefaultHomeTimeline],
   )
 
   const noraViewRef = useCallback(

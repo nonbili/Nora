@@ -28,6 +28,8 @@ interface Store {
   urlModalOpen: boolean
   userStyleModalOpen: boolean
   editingUserStyleId: string | null
+  userScriptModalOpen: boolean
+  editingUserScriptId: string | null
   previewBuiltinId: string | null
 
   // webview
@@ -63,6 +65,8 @@ export const ui$ = observable<Store>({
   urlModalOpen: false,
   userStyleModalOpen: false,
   editingUserStyleId: null,
+  userScriptModalOpen: false,
+  editingUserScriptId: null,
   previewBuiltinId: null,
   lastSelectedProfileId: 'default',
 

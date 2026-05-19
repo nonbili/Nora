@@ -1,11 +1,16 @@
 import { emit, waitUntil } from './utils'
 import { getFacebookDownloadInfo, getTikTokDownloadUrl } from './download'
 import { getService } from './services/manager'
-import { createDefaultUserStylesSnapshot, type UserStylesSnapshot } from '../lib/user-styles'
+import {
+  createDefaultUserStylesSnapshot,
+  type CustomUserScript,
+  type UserStylesSnapshot,
+} from '../lib/user-styles'
 import { getBase64Payload } from '../lib/base64'
 
 export const noraSettingsEvent = 'nora:settings'
 export const noraUserStylesEvent = 'nora:user-styles'
+export const noraUserScriptsEvent = 'nora:user-scripts'
 
 const defaultSettings = {
   videoEdgeLongPressTo2x: false,
@@ -15,6 +20,7 @@ const defaultSettings = {
 
 let settings = { ...defaultSettings }
 let userStyles = createDefaultUserStylesSnapshot()
+let userScripts: CustomUserScript[] = []
 
 function getMeta(url: string) {
   const icon = document.querySelector('link[rel*=icon]')?.getAttribute('href') || 'favicon.ico'
@@ -161,8 +167,20 @@ function getUserStyles() {
 
 function setUserStyles(next?: UserStylesSnapshot) {
   userStyles = next || createDefaultUserStylesSnapshot()
+  userScripts = userStyles.customScripts || []
   window.dispatchEvent(new CustomEvent(noraUserStylesEvent, { detail: userStyles }))
+  window.dispatchEvent(new CustomEvent(noraUserScriptsEvent, { detail: userScripts }))
   return userStyles
+}
+
+function getUserScripts() {
+  return userScripts
+}
+
+function setUserScripts(next?: CustomUserScript[]) {
+  userScripts = Array.isArray(next) ? next : []
+  window.dispatchEvent(new CustomEvent(noraUserScriptsEvent, { detail: userScripts }))
+  return userScripts
 }
 
 export function initNora() {
@@ -174,5 +192,7 @@ export function initNora() {
     setSettings,
     getUserStyles,
     setUserStyles,
+    getUserScripts,
+    setUserScripts,
   }
 }

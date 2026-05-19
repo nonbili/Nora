@@ -14,6 +14,7 @@ import { useMe } from '@/lib/hooks/useMe'
 import { syncSupabase } from '@/lib/supabase/sync'
 import { useUsageTracker } from '@/lib/hooks/useUsageTracker'
 import { UsageLockout } from '../lockout/UsageLockout'
+import { SettingsModal } from '../modal/SettingsModal'
 const logger = createLogger('sync')
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
@@ -50,6 +51,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
       )}
     >
       <NouHeader />
+      {isWeb ? <SettingsModal /> : null}
       {isWeb && tabs.length ? (
         <View className="relative flex-1 min-h-0 overflow-hidden bg-zinc-200 dark:bg-black">
           <DesktopWorkspace />

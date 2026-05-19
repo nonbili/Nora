@@ -209,14 +209,17 @@
       "deleteConfirm": "Are you sure you want to delete this custom search?"
     },
     "userStyles": {
-      "label": "User Styles",
-      "hint": "Toggle builtin CSS tweaks and add your own host-based styles.",
-      "customHint": "Customize any website with CSS.",
+      "label": "User Styles & Scripts",
+      "hint": "Toggle builtin CSS tweaks and add your own host-based styles and scripts.",
+      "customHint": "Customize any website with CSS or JavaScript.",
       "copyCss": "Copy CSS",
       "cssCopied": "CSS copied",
       "copyFailed": "Failed to copy CSS",
       "importCss": "Import CSS",
       "importFailed": "Failed to import CSS",
+      "preview": "Preview",
+      "previewApplied": "Preview applied",
+      "noActiveTab": "No active tab",
       "add": "Add style",
       "addTitle": "Add custom style",
       "editTitle": "Edit custom style",
@@ -249,6 +252,23 @@
       "custom": {
         "label": "Custom Styles",
         "empty": "No custom styles yet. Add one to inject your own CSS on matching hosts."
+      },
+      "scripts": {
+        "label": "Custom Scripts",
+        "add": "Add script",
+        "addTitle": "Add custom script",
+        "editTitle": "Edit custom script",
+        "deleteConfirm": "Are you sure you want to delete this custom script?",
+        "empty": "No custom scripts yet. Add one to run your own JavaScript on matching hosts.",
+        "namePlaceholder": "Script name",
+        "import": "Import",
+        "importFailed": "Failed to import script",
+        "run": "Run",
+        "runComplete": "Script ran",
+        "runFailed": "Script failed",
+        "validation": {
+          "js": "Add JavaScript before saving"
+        }
       }
     },
     "headerPosition": {

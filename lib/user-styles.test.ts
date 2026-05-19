@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 import { getInjectedCss } from '../content/css'
 import {
+  getEnabledUserScripts,
   getEnabledUserStyleCss,
   matchesAnyHostGlob,
   matchesHostGlob,
   normalizeUserStyles,
+  parseUserscriptMetadata,
+  stripUserscriptMetadata,
 } from './user-styles'
 
 const withBuiltinEnabled = (
@@ -70,6 +73,41 @@ describe('normalizeUserStyles', () => {
     expect(snapshot.customStyles[0]).toMatchObject({
       id: 'one',
       name: 'Reddit',
+      hostGlobs: ['*.reddit.com'],
+    })
+  })
+
+  it('normalizes custom scripts and drops invalid entries', () => {
+    const snapshot = normalizeUserStyles({
+      customScripts: [
+        {
+          id: 'one',
+          name: 'Reddit script',
+          enabled: true,
+          hostGlobs: ['*.reddit.com'],
+          js: 'document.body.dataset.test = "1"',
+        },
+        {
+          id: 'two',
+          name: 'Invalid host',
+          enabled: true,
+          hostGlobs: ['https://example.com'],
+          js: 'console.log(1)',
+        },
+        {
+          id: 'three',
+          name: 'Empty JS',
+          enabled: true,
+          hostGlobs: ['x.com'],
+          js: '   ',
+        },
+      ],
+    })
+
+    expect(snapshot.customScripts).toHaveLength(1)
+    expect(snapshot.customScripts[0]).toMatchObject({
+      id: 'one',
+      name: 'Reddit script',
       hostGlobs: ['*.reddit.com'],
     })
   })
@@ -149,5 +187,55 @@ describe('user style css composition', () => {
     const snapshot = withBuiltinEnabled('compact-tiktok-layout')
 
     expect(getEnabledUserStyleCss('www.tiktok.com', snapshot)).toContain("DivSideNavPlaceholderContainer")
+  })
+})
+
+describe('user scripts', () => {
+  it('extracts common userscript metadata', () => {
+    const source = `// ==UserScript==
+// @name Reddit helper
+// @match https://*.reddit.com/*
+// @include https://x.com/*
+// @grant GM_xmlhttpRequest
+// ==/UserScript==
+
+console.log('run')`
+
+    expect(parseUserscriptMetadata(source)).toEqual({
+      name: 'Reddit helper',
+      hostGlobs: ['*.reddit.com', 'x.com'],
+    })
+    expect(stripUserscriptMetadata(source)).toBe("console.log('run')")
+  })
+
+  it('matches enabled scripts by host', () => {
+    const snapshot = normalizeUserStyles({
+      customScripts: [
+        {
+          id: 'one',
+          name: 'Matching',
+          enabled: true,
+          hostGlobs: ['*.reddit.com'],
+          js: 'console.log("match")',
+        },
+        {
+          id: 'two',
+          name: 'Disabled',
+          enabled: false,
+          hostGlobs: ['*.reddit.com'],
+          js: 'console.log("disabled")',
+        },
+        {
+          id: 'three',
+          name: 'Other host',
+          enabled: true,
+          hostGlobs: ['x.com'],
+          js: 'console.log("other")',
+        },
+      ],
+    })
+
+    expect(getEnabledUserScripts('www.reddit.com', snapshot).map((script) => script.id)).toEqual(['one'])
+    expect(getEnabledUserScripts('x.com', snapshot).map((script) => script.id)).toEqual(['three'])
   })
 })

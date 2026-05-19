@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import * as Clipboard from 'expo-clipboard'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'
 import { useValue } from '@legendapp/state/react'
@@ -11,15 +10,15 @@ import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import { nIf } from '@/lib/utils'
 import {
+  parseUserscriptMetadata,
   sanitizeHostGlobs,
-  type CustomUserStyle,
-  builtinUserStyleDefinitionById,
-  type BuiltinUserStyleId,
+  stripUserscriptMetadata,
+  type CustomUserScript,
 } from '@/lib/user-styles'
 import { userStyles$ } from '@/states/user-styles'
 import { showToast } from '@/lib/toast'
 import { ui$ } from '@/states/ui'
-import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { executeWebviewJavaScript } from '@/lib/webview'
 
 const textInputCls =
   'rounded-2xl border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-4 text-zinc-900 dark:text-white'
@@ -34,46 +33,30 @@ type DraftState = {
   name: string
   enabled: boolean
   hostGlobsText: string
-  css: string
+  js: string
 }
 
-const formatHostGlobs = (hostGlobs: string[]) => hostGlobs.join(', ')
-
-const cleanCss = (css: string) => {
-  const lines = css
-    .replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '') // Remove comments
-    .split('\n')
-    .filter((line) => line.trim())
-
-  if (lines.length === 0) return ''
-
-  // Find the minimum indentation of the first line to strip it from all lines
-  const firstLineIndent = lines[0].match(/^\s*/)?.[0].length || 0
-
-  return lines.map((line) => line.slice(firstLineIndent)).join('\n')
-}
-
-const createDraft = (style?: CustomUserStyle | null): DraftState => {
-  if (!style) {
+const createDraft = (script?: CustomUserScript | null): DraftState => {
+  if (!script) {
     return {
       id: null,
       name: '',
       enabled: true,
       hostGlobsText: '',
-      css: '',
+      js: '',
     }
   }
 
   return {
-    id: style.id,
-    name: style.name,
-    enabled: style.enabled,
-    hostGlobsText: style.hostGlobs.join(', '),
-    css: style.css,
+    id: script.id,
+    name: script.name,
+    enabled: script.enabled,
+    hostGlobsText: script.hostGlobs.join(', '),
+    js: script.js,
   }
 }
 
-async function readPickedCss(result: DocumentPicker.DocumentPickerResult) {
+async function readPickedScript(result: DocumentPicker.DocumentPickerResult) {
   if (result.canceled) {
     return ''
   }
@@ -90,15 +73,12 @@ async function readPickedCss(result: DocumentPicker.DocumentPickerResult) {
   return new File(asset.uri).text()
 }
 
-export const UserStyleEditModal = () => {
-  const open = useValue(ui$.userStyleModalOpen)
-  const editingId = useValue(ui$.editingUserStyleId)
-  const previewBuiltinId = useValue(ui$.previewBuiltinId)
+export const UserScriptEditModal = () => {
+  const open = useValue(ui$.userScriptModalOpen)
+  const editingId = useValue(ui$.editingUserScriptId)
   const webview = useValue(ui$.webview)
-  const customStyles = useValue(userStyles$.customStyles)
+  const customScripts = useValue(userStyles$.customScripts)
   const [draft, setDraft] = useState<DraftState | null>(null)
-
-  const previewDefinition = previewBuiltinId ? builtinUserStyleDefinitionById[previewBuiltinId as BuiltinUserStyleId] : null
 
   useEffect(() => {
     if (!open) {
@@ -107,55 +87,56 @@ export const UserStyleEditModal = () => {
     }
 
     if (editingId) {
-      const style = customStyles.find((s) => s.id === editingId)
-      setDraft(createDraft(style))
+      const script = customScripts.find((s) => s.id === editingId)
+      setDraft(createDraft(script))
     } else {
       setDraft(createDraft())
     }
-  }, [open, editingId, customStyles])
+  }, [open, editingId, customScripts])
 
   const onClose = () => {
-    ui$.userStyleModalOpen.set(false)
-    ui$.editingUserStyleId.set(null)
-    ui$.previewBuiltinId.set(null)
+    ui$.userScriptModalOpen.set(false)
+    ui$.editingUserScriptId.set(null)
   }
 
-  const onCopyBuiltinCss = async () => {
-    if (!previewDefinition) {
-      return
-    }
+  const applyImportedScript = (source: string) => {
+    const metadata = parseUserscriptMetadata(source)
+    const js = stripUserscriptMetadata(source) || source
 
-    try {
-      await Clipboard.setStringAsync(previewDefinition.css.trim())
-      showToast(t('settings.userStyles.cssCopied'))
-    } catch (error) {
-      console.warn('[UserStyleEditModal] failed to copy css', error)
-      showToast(t('settings.userStyles.copyFailed'))
-    }
+    setDraft((value) =>
+      value
+        ? {
+            ...value,
+            name: value.name || metadata.name,
+            hostGlobsText: value.hostGlobsText || metadata.hostGlobs.join(', '),
+            js,
+          }
+        : value,
+    )
   }
 
-  const onImportCss = async () => {
+  const onImportScript = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['text/css', 'text/plain'],
+        type: ['text/javascript', 'application/javascript', 'text/plain'],
         copyToCacheDirectory: true,
         multiple: false,
       })
-      const css = await readPickedCss(result)
-      if (!css) {
+      const js = await readPickedScript(result)
+      if (!js) {
         return
       }
 
-      setDraft((value) => (value ? { ...value, css } : value))
+      applyImportedScript(js)
     } catch (error) {
-      console.warn('[UserStyleEditModal] failed to import css', error)
-      showToast(t('settings.userStyles.importFailed'))
+      console.warn('[UserScriptEditModal] failed to import script', error)
+      showToast(t('settings.userStyles.scripts.importFailed'))
     }
   }
 
-  const onPreviewCss = () => {
-    if (!draft?.css.trim()) {
-      showToast(t('settings.userStyles.validation.css'))
+  const onRunScript = () => {
+    if (!draft?.js.trim()) {
+      showToast(t('settings.userStyles.scripts.validation.js'))
       return
     }
 
@@ -166,18 +147,17 @@ export const UserStyleEditModal = () => {
 
     const script = `
       (() => {
-        const id = '_nora_preview_css';
-        let style = document.getElementById(id);
-        if (!style) {
-          style = document.createElement('style');
-          style.id = id;
-          (document.head || document.documentElement).appendChild(style);
+        try {
+          ${draft.js}
+        } catch (error) {
+          console.error('[Nora user script run]', error);
+          throw error;
         }
-        style.textContent = ${JSON.stringify(draft.css)};
       })();
     `
-    void executeWebviewJavaScriptQuietly(webview, script)
-    showToast(t('settings.userStyles.previewApplied'))
+    void executeWebviewJavaScript(webview, script)
+      .then(() => showToast(t('settings.userStyles.scripts.runComplete')))
+      .catch(() => showToast(t('settings.userStyles.scripts.runFailed')))
   }
 
   const onSave = () => {
@@ -191,8 +171,8 @@ export const UserStyleEditModal = () => {
       return
     }
 
-    if (!draft.css.trim()) {
-      showToast(t('settings.userStyles.validation.css'))
+    if (!draft.js.trim()) {
+      showToast(t('settings.userStyles.scripts.validation.js'))
       return
     }
 
@@ -200,66 +180,16 @@ export const UserStyleEditModal = () => {
       name: draft.name.trim(),
       enabled: draft.enabled,
       hostGlobs,
-      css: draft.css,
+      js: draft.js,
     }
 
     if (draft.id) {
-      userStyles$.updateCustomStyle(draft.id, input)
+      userStyles$.updateCustomScript(draft.id, input)
     } else {
-      userStyles$.addCustomStyle(input)
+      userStyles$.addCustomScript(input)
     }
 
     onClose()
-  }
-
-  if (previewDefinition) {
-    return (
-      <BaseCenterModal onClose={onClose} containerClassName="lg:w-[50rem] xl:w-[60rem] max-w-[95vw]">
-        <View className="p-6">
-          <View className="flex-row items-center gap-3">
-            <View className="h-10 w-10 items-center justify-center rounded-xl bg-zinc-950">
-              <MaterialIcons name="code" color="#818cf8" size={20} />
-            </View>
-            <View className="flex-1">
-              <NouText className="text-lg font-bold">{t(previewDefinition.labelKey)}</NouText>
-              <View className="mt-0.5 flex-row flex-wrap">
-                <NouText className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  {formatHostGlobs(previewDefinition.hostGlobs)}
-                </NouText>
-              </View>
-            </View>
-          </View>
-
-          <View className="mt-6 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
-            <ScrollView className="max-h-[400px]" showsVerticalScrollIndicator={false}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View className="p-4 items-start">
-                  <NouText
-                    className="font-mono text-[11px] leading-5 text-indigo-300"
-                    style={{ fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}
-                  >
-                    {cleanCss(previewDefinition.css)}
-                  </NouText>
-                </View>
-              </ScrollView>
-            </ScrollView>
-          </View>
-
-          <View className="mt-6 flex-row items-center justify-end gap-3">
-            <NouButton size="1" variant="outline" onPress={onClose}>
-              {t('buttons.cancel')}
-            </NouButton>
-            <Pressable
-              onPress={onCopyBuiltinCss}
-              className="flex-row items-center gap-2 rounded-full bg-indigo-600 px-6 py-2.5 active:bg-indigo-700"
-            >
-              <MaterialIcons name="content-copy" color="white" size={16} />
-              <NouText className="text-sm font-bold text-white">{t('settings.userStyles.copyCss')}</NouText>
-            </Pressable>
-          </View>
-        </View>
-      </BaseCenterModal>
-    )
   }
 
   if (!draft) {
@@ -273,10 +203,10 @@ export const UserStyleEditModal = () => {
           <View className="p-6">
             <View className="flex-row items-center gap-3">
               <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/10">
-                <MaterialIcons name="auto-fix-high" color="#818cf8" size={20} />
+                <MaterialIcons name="code" color="#818cf8" size={20} />
               </View>
               <NouText className="text-xl font-bold tracking-tight">
-                {draft.id ? t('settings.userStyles.editTitle') : t('settings.userStyles.addTitle')}
+                {draft.id ? t('settings.userStyles.scripts.editTitle') : t('settings.userStyles.scripts.addTitle')}
               </NouText>
             </View>
 
@@ -289,7 +219,7 @@ export const UserStyleEditModal = () => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 onChangeText={(name) => setDraft((value) => (value ? { ...value, name } : value))}
-                placeholder={t('settings.userStyles.namePlaceholder')}
+                placeholder={t('settings.userStyles.scripts.namePlaceholder')}
                 placeholderTextColor="#71717a"
                 value={draft.name}
               />
@@ -312,7 +242,7 @@ export const UserStyleEditModal = () => {
 
             <View className="mt-6">
               <NouText className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-                CSS
+                JavaScript
               </NouText>
               <ScrollView
                 horizontal
@@ -324,15 +254,15 @@ export const UserStyleEditModal = () => {
                   autoCapitalize="none"
                   autoCorrect={false}
                   multiline
-                  onChangeText={(css) => setDraft((value) => (value ? { ...value, css } : value))}
-                  placeholder={`body {\n  font-size: 18px;\n}`}
+                  onChangeText={(js) => setDraft((value) => (value ? { ...value, js } : value))}
+                  placeholder={`document.body.dataset.nora = '1'`}
                   placeholderTextColor="#71717a"
                   style={{
                     textAlignVertical: 'top',
                     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
                     minWidth: 800,
                   }}
-                  value={draft.css}
+                  value={draft.js}
                 />
               </ScrollView>
             </View>
@@ -346,13 +276,13 @@ export const UserStyleEditModal = () => {
                   draft.id,
                   <Pressable
                     onPress={() => {
-                      Alert.alert(t('menus.delete'), t('settings.userStyles.deleteConfirm'), [
+                      Alert.alert(t('menus.delete'), t('settings.userStyles.scripts.deleteConfirm'), [
                         { text: t('buttons.cancel'), style: 'cancel' },
                         {
                           text: t('menus.delete'),
                           style: 'destructive',
                           onPress: () => {
-                            userStyles$.deleteCustomStyle(draft.id!)
+                            userStyles$.deleteCustomScript(draft.id!)
                             onClose()
                           },
                         },
@@ -366,21 +296,21 @@ export const UserStyleEditModal = () => {
               </View>
               <View className="flex-row items-center justify-end gap-2">
                 <Pressable
-                  onPress={onImportCss}
+                  onPress={onImportScript}
                   className={secondaryActionCls}
                 >
                   <MaterialIcons name="file-upload" color="#71717a" size={18} />
                   <NouText className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                    {t('settings.userStyles.importCss')}
+                    {t('settings.userStyles.scripts.import')}
                   </NouText>
                 </Pressable>
                 <Pressable
-                  onPress={onPreviewCss}
+                  onPress={onRunScript}
                   className={primaryActionCls}
                 >
                   <MaterialIcons name="play-arrow" color="white" size={18} />
                   <NouText className="text-sm font-semibold" style={{ color: 'white' }}>
-                    {t('settings.userStyles.preview')}
+                    {t('settings.userStyles.scripts.run')}
                   </NouText>
                 </Pressable>
                 <NouButton size="1" onPress={onSave} className="h-10 items-center rounded-xl px-4">
