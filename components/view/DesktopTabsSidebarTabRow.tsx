@@ -31,21 +31,37 @@ export const TabRow = memo<{
   const profileColor = getProfileColor(tab.profile)
   const tabLabel = getTabLabel(tab)
   const row = collapsed ? (
-    <Pressable
-      className={clsx(
-        'h-9 w-9 items-center justify-center rounded-lg transition-colors',
-        isActive
-          ? 'bg-white shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-700 dark:ring-zinc-500/70'
-          : 'hover:bg-zinc-200/70 dark:hover:bg-zinc-800',
-      )}
-      onPress={() => {
-        tabGroups$.setActiveGroup(groupId)
-        tabs$.setActiveTabById(tab.id, 'user')
-      }}
-    >
-      <View style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} />
-      <ServiceIcon url={tab.url} icon={tab.icon} />
-    </Pressable>
+    <div className="group relative">
+      <Pressable
+        className={clsx(
+          'h-9 w-9 items-center justify-center rounded-lg transition-colors',
+          isActive
+            ? 'bg-white shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-700 dark:ring-zinc-500/70'
+            : 'hover:bg-zinc-200/70 dark:hover:bg-zinc-800',
+        )}
+        onPress={() => {
+          tabGroups$.setActiveGroup(groupId)
+          tabs$.setActiveTabById(tab.id, 'user')
+        }}
+      >
+        <View style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} />
+        <ServiceIcon url={tab.url} icon={tab.icon} />
+      </Pressable>
+      <div
+        title={t('menus.close')}
+        className="absolute -right-1 -top-1 hidden group-hover:block"
+        onPointerDown={(e) => {
+          e.stopPropagation()
+        }}
+      >
+        <Pressable
+          className="h-4 w-4 items-center justify-center rounded-full bg-zinc-200 shadow-sm hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+          onPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
+        >
+          <MaterialIcons name="close" size={10} color="#a1a1aa" />
+        </Pressable>
+      </div>
+    </div>
   ) : (
     <Pressable
       className={clsx(

@@ -41,6 +41,8 @@ export interface Tab {
 
 export interface ClosedTab extends Tab {
   closedAt: number
+  groupId?: string | null
+  groupSlotIndex?: number
 }
 
 interface Store {
@@ -70,10 +72,24 @@ let recentTabIds: string[] = []
 let childBackParentByTabId: ChildBackParentByTabId = {}
 const MAX_RECENTLY_CLOSED_TABS = 10
 
+const findGroupForTab = (tabId: string) => {
+  const groups = tabGroups$.groups.get()
+  for (const group of groups) {
+    const slotIndex = group.tabIds.findIndex((currentTabId) => currentTabId === tabId)
+    if (slotIndex !== -1) {
+      return { groupId: group.id, groupSlotIndex: slotIndex }
+    }
+  }
+  return undefined
+}
+
 const pushRecentlyClosedTabs = (closedTabs: Tab[]) => {
   const nextClosedTabs = closedTabs
     .filter((tab): tab is Tab => tab != null && Boolean(tab.url))
-    .map((tab) => ({ ...tab, closedAt: Date.now() }))
+    .map((tab) => {
+      const groupInfo = findGroupForTab(tab.id)
+      return { ...tab, closedAt: Date.now(), ...groupInfo }
+    })
 
   if (!nextClosedTabs.length) {
     return
@@ -478,9 +494,25 @@ export const tabs$: Observable<Store> = observable<Store>({
     }
 
     tabs$.recentlyClosedTabs.set(recentlyClosedTabs.filter((tab) => tab.id !== tabId))
-    const { id: _closedTabId, closedAt: _closedAt, ...rest } = closedTab
+    const { id: _closedTabId, closedAt: _closedAt, groupId, groupSlotIndex, ...rest } = closedTab
     const reopenedTab: Tab = { ...rest, id: genId(), isLoading: Boolean(rest.url) }
     tabs$.tabs.push(reopenedTab)
+
+    if (groupId && tabGroups$.groups.get().some((group) => group?.id === groupId)) {
+      const group = tabGroups$.groups.get().find((currentGroup) => currentGroup?.id === groupId)!
+      if (group.layout === 'grid-4') {
+        const targetSlot =
+          typeof groupSlotIndex === 'number' && groupSlotIndex >= 0 && groupSlotIndex < group.tabIds.length && !group.tabIds[groupSlotIndex]
+            ? groupSlotIndex
+            : group.tabIds.findIndex((slotTabId) => !slotTabId)
+        if (targetSlot !== -1) {
+          tabGroups$.assignGroupSlot(groupId, targetSlot, reopenedTab.id)
+        }
+      } else {
+        tabGroups$.moveTabToGroup(reopenedTab.id, groupId, groupSlotIndex)
+      }
+    }
+
     tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
     return reopenedTab.id
   },

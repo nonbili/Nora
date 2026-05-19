@@ -211,6 +211,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     handler: () => createDesktopTabGroup(layout),
   }))
 
+  const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
   const sidebarContextItems: ContextItem[] = [
     {
       label: `${t('tabs.new')} (${NEW_TAB_SHORTCUT})`,
@@ -220,6 +221,15 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
         tabs$.openTab('')
       },
     },
+    ...(recentlyClosedTabs.length
+      ? ([
+          {
+            label: t('buttons.reopenLastClosedTab'),
+            icon: <MaterialIcons name="restore" size={14} color={menuIconColor} />,
+            handler: () => tabs$.reopenClosedTab(recentlyClosedTabs[0].id),
+          },
+        ] as ContextItem[])
+      : []),
     { kind: 'separator' },
     ...newGroupItems,
     { kind: 'separator' },

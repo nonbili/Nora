@@ -64,6 +64,7 @@
     "continue": "Continue",
     "openUrl": "Open URL",
     "open": "Open",
+    "reopenLastClosedTab": "Reopen last closed tab",
     "restoreTabs": "Recently closed tabs",
     "save": "Save",
     "toggleSidebar": "Toggle sidebar"
