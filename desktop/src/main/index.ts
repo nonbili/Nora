@@ -147,6 +147,17 @@ function createWindow(): void {
 
   attachDownloadHandler(mainWindow.webContents.session)
   attachContextMenu(mainWindow.webContents, mainWindow)
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, cb) => {
+    if (details.resourceType === 'image' && details.responseHeaders) {
+      for (const k of Object.keys(details.responseHeaders)) {
+        if (k.toLowerCase() === 'cross-origin-resource-policy') {
+          delete details.responseHeaders[k]
+        }
+      }
+    }
+    cb({ responseHeaders: details.responseHeaders })
+  })
   mainWindow.webContents.on('did-attach-webview', (e, wc) => {
     attachDownloadHandler(wc.session)
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {

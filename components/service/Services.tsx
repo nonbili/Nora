@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import {
   IconBluesky,
@@ -65,11 +65,16 @@ export const ServiceManager: React.FC<{ hideTitle?: boolean }> = ({ hideTitle = 
 export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, icon }) => {
   const size = isWeb ? 20 : 24
   const fallbackColor = url ? '#52525b' : '#a1a1aa'
+  const [errored, setErrored] = useState(false)
 
-  if (icon) {
+  useEffect(() => {
+    setErrored(false)
+  }, [icon])
+
+  if (icon && !errored) {
     return (
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-        <Image source={icon} style={{ width: size, height: size }} contentFit="contain" />
+        <Image source={icon} style={{ width: size, height: size }} contentFit="contain" onError={() => setErrored(true)} />
       </View>
     )
   }
