@@ -6,6 +6,8 @@ import { NouText } from '../NouText'
 import { clsx } from '@/lib/utils'
 import { userStyles$ } from '@/states/user-styles'
 import { ui$ } from '@/states/ui'
+import { UserStyleEditModal } from './UserStyleEditModal'
+import { UserScriptEditModal } from './UserScriptEditModal'
 
 const surfaceCls = 'overflow-hidden rounded-[24px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/70'
 const subheaderCls = 'mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500'
@@ -21,6 +23,8 @@ const formatHostGlobs = (hostGlobs: string[]) => hostGlobs.join(', ')
 export const SettingsUserStylesContent = () => {
   const customStyles = useValue(userStyles$.customStyles)
   const customScripts = useValue(userStyles$.customScripts)
+  const userStyleModalOpen = useValue(ui$.userStyleModalOpen)
+  const userScriptModalOpen = useValue(ui$.userScriptModalOpen)
   const hasStyles = customStyles.length > 0
   const hasScripts = customScripts.length > 0
 
@@ -42,6 +46,14 @@ export const SettingsUserStylesContent = () => {
   const startEditCustomScript = (id: string) => {
     ui$.editingUserScriptId.set(id)
     ui$.userScriptModalOpen.set(true)
+  }
+
+  if (userStyleModalOpen) {
+    return <UserStyleEditModal inline />
+  }
+
+  if (userScriptModalOpen) {
+    return <UserScriptEditModal inline />
   }
 
   return (

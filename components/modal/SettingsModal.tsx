@@ -112,6 +112,8 @@ export const SettingsModal = () => {
   const urlModalOpen = useValue(ui$.urlModalOpen)
   const cookieModalOpen = useValue(ui$.cookieModalOpen)
   const profileModalOpen = useValue(ui$.profileModalOpen)
+  const userStyleModalOpen = useValue(ui$.userStyleModalOpen)
+  const userScriptModalOpen = useValue(ui$.userScriptModalOpen)
   const theme = useValue(settings$.theme)
   const { user, plan } = useValue(auth$)
   const colorScheme = useColorScheme()
@@ -153,6 +155,11 @@ export const SettingsModal = () => {
       cookieModalOpen: false,
       profileModalOpen: false,
       editingProfileId: null,
+      userStyleModalOpen: false,
+      editingUserStyleId: null,
+      previewBuiltinId: null,
+      userScriptModalOpen: false,
+      editingUserScriptId: null,
     })
   }, [])
 
@@ -186,6 +193,16 @@ export const SettingsModal = () => {
   }, [])
 
   const handleBack = useCallback(() => {
+    if (currentPage === 'styles' && (userStyleModalOpen || userScriptModalOpen)) {
+      ui$.assign({
+        userStyleModalOpen: false,
+        editingUserStyleId: null,
+        previewBuiltinId: null,
+        userScriptModalOpen: false,
+        editingUserScriptId: null,
+      })
+      return true
+    }
     if (closeTopOverlay()) {
       return true
     }
@@ -195,7 +212,7 @@ export const SettingsModal = () => {
     }
     closeSettingsTree()
     return true
-  }, [canGoBack, closeSettingsTree, closeTopOverlay, popPage])
+  }, [canGoBack, closeSettingsTree, closeTopOverlay, currentPage, popPage, userScriptModalOpen, userStyleModalOpen])
 
   useEffect(() => {
     if (!settingsModalOpen || isWeb) {
