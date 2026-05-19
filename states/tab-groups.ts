@@ -19,6 +19,7 @@ interface Store {
   groups: TabGroup[]
 
   createGroupFromTab: (tabId: string, name?: string) => string
+  createGroup: (layout: TabGroupLayout, name?: string) => string
   renameGroup: (groupId: string, name: string) => void
   deleteGroup: (groupId: string) => void
   setActiveGroup: (groupId: string | null) => void
@@ -47,11 +48,25 @@ export const createDesktopTabGroupFromTab = (tabId: string, name?: string) => {
   return groupId
 }
 
+export const createDesktopTabGroup = (layout: TabGroupLayout, name?: string) => {
+  const groupId = createTabGroupId()
+  const group: TabGroup = {
+    id: groupId,
+    name: name?.trim() || getDefaultGroupName(tabGroups$.groups.get().length + 1),
+    layout,
+    tabIds: sanitizeGroupTabIds(layout, []),
+  }
+  tabGroups$.groups.push(group)
+  tabGroups$.activeGroupId.set(groupId)
+  return groupId
+}
+
 export const tabGroups$: Observable<Store> = observable<Store>({
   activeGroupId: null,
   groups: [],
 
   createGroupFromTab: (tabId, name) => createDesktopTabGroupFromTab(tabId, name),
+  createGroup: (layout, name) => createDesktopTabGroup(layout, name),
 
   renameGroup: (groupId, name) => {
     const nextName = name.trim()

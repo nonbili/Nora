@@ -6,9 +6,10 @@ import { batch } from '@legendapp/state'
 import { useValue } from '@legendapp/state/react'
 import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
+import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
 import { colors } from '@/lib/colors'
-import { tabGroups$, type TabGroup } from '@/states/tab-groups'
+import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
 import { sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
 import {
   NEW_TAB_SHORTCUT,
@@ -196,6 +197,39 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const newTabIconColor = isDark ? colors.icon : colors.iconLightStrong
+  const menuIconColor = isDark ? '#a1a1aa' : '#52525b'
+
+  const newGroupItems: ContextItem[] = (
+    [
+      { layout: 'deck' as TabGroupLayout, label: t('views.desktop.newDeckView'), icon: 'view-day' as const },
+      { layout: 'split-view' as TabGroupLayout, label: t('views.desktop.newSplitView'), icon: 'view-week' as const },
+      { layout: 'grid-4' as TabGroupLayout, label: t('views.desktop.newGridView'), icon: 'grid-view' as const },
+    ]
+  ).map(({ layout, label, icon }) => ({
+    label,
+    icon: <MaterialIcons name={icon} size={14} color={menuIconColor} />,
+    handler: () => createDesktopTabGroup(layout),
+  }))
+
+  const sidebarContextItems: ContextItem[] = [
+    {
+      label: `${t('tabs.new')} (${NEW_TAB_SHORTCUT})`,
+      icon: <MaterialIcons name="add" size={14} color={menuIconColor} />,
+      handler: () => {
+        tabGroups$.setActiveGroup(null)
+        tabs$.openTab('')
+      },
+    },
+    { kind: 'separator' },
+    ...newGroupItems,
+    { kind: 'separator' },
+    {
+      label: t('buttons.closeAll'),
+      icon: <MaterialIcons name="tab-unselected" size={14} color="#f87171" />,
+      color: 'red',
+      handler: () => tabs$.closeAll(),
+    },
+  ]
 
   if (collapsed) {
     return (
@@ -212,6 +246,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
           lastUpdateAt.current = 0
         }}
       >
+        <NouContextMenu items={sidebarContextItems}>
         <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
           <ScrollView className="flex-1" contentContainerClassName="gap-2 items-center px-1 pb-2 pt-1">
             <SectionDropTarget groupId={null}>
@@ -256,6 +291,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
             })}
           </ScrollView>
         </View>
+        </NouContextMenu>
         <DragOverlay dropAnimation={null}>
           {draggingTab ? <TabRowPreview collapsed tab={draggingTab} /> : null}
         </DragOverlay>
@@ -277,6 +313,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
         lastUpdateAt.current = 0
       }}
     >
+      <NouContextMenu items={sidebarContextItems}>
       <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
         <ScrollView className="flex-1" contentContainerClassName="gap-3 px-2 pb-3 pt-1">
           <SectionDropTarget groupId={null}>
@@ -323,6 +360,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
           })}
         </ScrollView>
       </View>
+      </NouContextMenu>
       <DragOverlay dropAnimation={null}>
         {draggingTab ? <TabRowPreview tab={draggingTab} /> : null}
       </DragOverlay>
