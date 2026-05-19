@@ -20,6 +20,7 @@
   <description>
     <ul>
       <li>Block ads and trackers</li>
+      <li>Vertical tabs</li>
       <li>Deck/Split/Grid view to browse multiple timelines</li>
       <li>Download fb/ig/tiktok/x video</li>
       <li>Multiple accounts with separate cookie storage</li>
@@ -59,6 +60,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.1" date="2026-05-19">
+      <description>
+        <ul>
+          <li>Support vertical tabs</li>
+          <li>Support drag/drop to reorder tabs in split and grid views</li>
+          <li>Support collapsing the sidebar</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.0" date="2026-05-17">
       <description>
         <ul>

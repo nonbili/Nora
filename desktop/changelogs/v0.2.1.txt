@@ -1,0 +1,3 @@
+- Support vertical tabs
+- Support drag/drop to reorder tabs in split and grid views
+- Support collapsing the sidebar
