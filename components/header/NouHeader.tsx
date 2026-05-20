@@ -229,9 +229,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
       >
         {nIf(
           canDownload,
-          <div title={t('modals.downloadVideo')}>
-            <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />
-          </div>,
+          (() => {
+            const downloadButton = <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />
+            return isWeb ? <div title={t('modals.downloadVideo')}>{downloadButton}</div> : downloadButton
+          })(),
         )}
         {nIf(
           !isWeb && currentTab?.isLoading,
