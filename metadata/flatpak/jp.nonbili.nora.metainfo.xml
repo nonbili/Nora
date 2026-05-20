@@ -60,6 +60,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.2" date="2026-05-20">
+      <description>
+        <ul>
+          <li>Support user scripts</li>
+          <li>Add context menu to sidebar</li>
+          <li>Restore closed tab to original group</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1" date="2026-05-19">
       <description>
         <ul>

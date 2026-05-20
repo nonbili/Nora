@@ -1,0 +1,3 @@
+- Support user scripts
+- Add context menu to sidebar
+- Restore closed tab to original group

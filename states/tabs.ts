@@ -43,6 +43,7 @@ export interface ClosedTab extends Tab {
   closedAt: number
   groupId?: string | null
   groupSlotIndex?: number
+  precedingTabId?: string | null
 }
 
 interface Store {
@@ -83,12 +84,34 @@ const findGroupForTab = (tabId: string) => {
   return undefined
 }
 
+const restoreTabOrder = (tabId: string, precedingTabId?: string | null) => {
+  const orderedTabIds = getOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get())
+  const withoutTab = orderedTabIds.filter((id) => id !== tabId)
+  // No preceding tab means it sat at the very front of the list.
+  if (precedingTabId == null) {
+    const nextOrder = [tabId, ...withoutTab]
+    tabs$.orders.set(Object.fromEntries(nextOrder.map((id, index) => [id, index])))
+    return
+  }
+  const precedingIndex = withoutTab.indexOf(precedingTabId)
+  // Preceding tab is gone; leave the reopened tab at the end (default).
+  if (precedingIndex === -1) {
+    return
+  }
+  const insertIndex = precedingIndex + 1
+  const nextOrder = [...withoutTab.slice(0, insertIndex), tabId, ...withoutTab.slice(insertIndex)]
+  tabs$.orders.set(Object.fromEntries(nextOrder.map((id, index) => [id, index])))
+}
+
 const pushRecentlyClosedTabs = (closedTabs: Tab[]) => {
+  const orderedTabIds = getOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get())
   const nextClosedTabs = closedTabs
     .filter((tab): tab is Tab => tab != null && Boolean(tab.url))
     .map((tab) => {
       const groupInfo = findGroupForTab(tab.id)
-      return { ...tab, closedAt: Date.now(), ...groupInfo }
+      const orderIndex = orderedTabIds.indexOf(tab.id)
+      const precedingTabId = orderIndex > 0 ? orderedTabIds[orderIndex - 1] : null
+      return { ...tab, closedAt: Date.now(), ...groupInfo, precedingTabId }
     })
 
   if (!nextClosedTabs.length) {
@@ -340,11 +363,11 @@ export const tabs$: Observable<Store> = observable<Store>({
       adjacentTabId,
     })
 
+    pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
     tabs$.tabs.splice(index, 1)
     if (tabId in tabs$.orders.get()) {
       tabs$.orders[tabId].delete()
     }
-    pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
     savedViews$.cleanupClosedTabIds([tabId])
     tabGroups$.cleanupClosedTabIds([tabId])
     syncRuntimeTabMetadata()
@@ -494,7 +517,7 @@ export const tabs$: Observable<Store> = observable<Store>({
     }
 
     tabs$.recentlyClosedTabs.set(recentlyClosedTabs.filter((tab) => tab.id !== tabId))
-    const { id: _closedTabId, closedAt: _closedAt, groupId, groupSlotIndex, ...rest } = closedTab
+    const { id: _closedTabId, closedAt: _closedAt, groupId, groupSlotIndex, precedingTabId, ...rest } = closedTab
     const reopenedTab: Tab = { ...rest, id: genId(), isLoading: Boolean(rest.url) }
     tabs$.tabs.push(reopenedTab)
 
@@ -511,6 +534,8 @@ export const tabs$: Observable<Store> = observable<Store>({
       } else {
         tabGroups$.moveTabToGroup(reopenedTab.id, groupId, groupSlotIndex)
       }
+    } else {
+      restoreTabOrder(reopenedTab.id, precedingTabId)
     }
 
     tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
@@ -599,8 +624,8 @@ export const tabs$: Observable<Store> = observable<Store>({
     }
 
     const closedTab = tabs$.tabs[activeIndex].get()
-    tabs$.tabs.splice(activeIndex, 1)
     pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
+    tabs$.tabs.splice(activeIndex, 1)
     savedViews$.cleanupClosedTabIds(activeTabId ? [activeTabId] : [])
     tabGroups$.cleanupClosedTabIds(activeTabId ? [activeTabId] : [])
     syncRuntimeTabMetadata()
