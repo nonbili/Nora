@@ -262,7 +262,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
             />
           </div>,
         )}
-        <div title={t('menus.more')}>
+        {(() => {
+          const moreMenu = (
           <NouMenu
             triggerColor={headerControlColor}
             trigger={
@@ -354,7 +355,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
               },
             ]}
           />
-        </div>
+          )
+          return isWeb ? <div title={t('menus.more')}>{moreMenu}</div> : moreMenu
+        })()}
       </View>
     </Root>
   )
