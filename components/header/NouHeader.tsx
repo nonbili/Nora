@@ -27,6 +27,7 @@ import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { openTabForActiveDesktopView } from '@/lib/desktop-view-actions'
 import { DesktopTabsSidebar } from '../view/DesktopTabsSidebar'
 import { ServiceIcon } from '../service/Services'
+import { Tooltip } from '../tooltip/Tooltip'
 
 const webAnimatedHelpers = {
   AnimatedView: View,
@@ -74,7 +75,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const showForwardButtonInHeader = useValue(settings$.showForwardButtonInHeader)
   const showReloadButtonInHeader = useValue(settings$.showReloadButtonInHeader)
   const showScrollButtonInHeader = useValue(settings$.showScrollButtonInHeader)
-  const sidebarCollapsed = isWeb && useValue(settings$.sidebarCollapsed)
+  const sidebarCollapsedValue = useValue(settings$.sidebarCollapsed)
+  const sidebarCollapsed = isWeb && sidebarCollapsedValue
 
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
@@ -195,9 +197,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         isWeb && !sidebarCollapsed,
         <View className="lg:flex-row lg:items-center lg:justify-end lg:px-1 lg:pt-1">
-          <div title={t('buttons.toggleSidebar')}>
+          <Tooltip title={t('buttons.toggleSidebar')}>
             <MaterialButton name="chevron-left" color={headerControlColor} onPress={toggleSidebar} />
-          </div>
+          </Tooltip>
         </View>,
       )}
       {nIf(
@@ -209,9 +211,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         sidebarCollapsed,
         <View className="lg:flex-row lg:items-center lg:justify-center lg:pt-2">
-          <div title={t('buttons.toggleSidebar')}>
+          <Tooltip title={t('buttons.toggleSidebar')}>
             <MaterialButton name="chevron-right" color={headerControlColor} onPress={toggleSidebar} />
-          </div>
+          </Tooltip>
         </View>,
       )}
       {nIf(
@@ -231,7 +233,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           canDownload,
           (() => {
             const downloadButton = <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />
-            return isWeb ? <div title={t('modals.downloadVideo')}>{downloadButton}</div> : downloadButton
+            return <Tooltip title={t('modals.downloadVideo')}>{downloadButton}</Tooltip>
           })(),
         )}
         {nIf(
@@ -251,7 +253,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         )}
         {nIf(
           isWeb && recentlyClosedTabs.length > 0,
-          <div title={t('buttons.restoreTabs')}>
+          <Tooltip title={t('buttons.restoreTabs')}>
             <NouMenu
               trigger={<MaterialButton name="restore" color={headerControlColor} />}
               items={recentlyClosedTabs.map((tab) => ({
@@ -261,7 +263,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                 handler: () => tabs$.reopenClosedTab(tab.id),
               }))}
             />
-          </div>,
+          </Tooltip>,
         )}
         {(() => {
           const moreMenu = (
@@ -357,7 +359,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
             ]}
           />
           )
-          return isWeb ? <div title={t('menus.more')}>{moreMenu}</div> : moreMenu
+          return <Tooltip title={t('menus.more')}>{moreMenu}</Tooltip>
         })()}
       </View>
     </Root>
