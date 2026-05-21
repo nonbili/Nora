@@ -10,12 +10,9 @@ import { checkForUpdate } from './lib/auto-update'
 import { initMainChannel } from './ipc/main'
 import { uiClient } from './ipc/ui'
 import { getUserAgent } from '@/lib/useragent'
+import { isHttpUrl, normalizeExternalTargetUrl, shouldOpenInSystemBrowser } from './lib/link-handling'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
-
-function isHttpUrl(url: string): boolean {
-  return /^https?:\/\//i.test(url)
-}
 
 function attachContextMenu(webContents: Electron.WebContents, ownerWindow: BrowserWindow): void {
   webContents.on('context-menu', (_event, params) => {
@@ -165,15 +162,21 @@ function createWindow(): void {
     })
     attachContextMenu(wc, mainWindow)
     wc.setWindowOpenHandler((details) => {
-      let url = details.url
-      const { host, searchParams } = new URL(url)
-      switch (host) {
-        case 'l.threads.com':
-          url = searchParams.get('u') || url
-          break
+      const url = normalizeExternalTargetUrl(details.url)
+      if (shouldOpenInSystemBrowser(url, details.referrer.url || wc.getURL())) {
+        shell.openExternal(url)
+      } else if (isHttpUrl(url)) {
+        uiClient.openTab(url)
       }
-      shell.openExternal(url)
       return { action: 'deny' }
+    })
+    wc.on('will-navigate', (event, rawUrl) => {
+      const url = normalizeExternalTargetUrl(rawUrl)
+      if (!shouldOpenInSystemBrowser(url, wc.getURL())) {
+        return
+      }
+      event.preventDefault()
+      shell.openExternal(url)
     })
   })
 }

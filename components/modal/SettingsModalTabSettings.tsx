@@ -66,6 +66,7 @@ const serviceHosts: Record<string, string> = {
 }
 
 const normalizeHost = (host: string) => host.replace(/^\*\./, '').replace(/^www\./, '').toLowerCase()
+const isDesktop = isWeb && typeof window !== 'undefined' && !!(window as any).electron
 const languageNativeNames: Record<string, string> = {
   ar: 'العربية',
   el: 'Ελληνικά',
@@ -87,24 +88,27 @@ export const SettingsBrowsingContent: React.FC = () => {
 
   return (
     <View className="pb-4">
-      {!isWeb ? (
+      {!isWeb || isDesktop ? (
         <>
           <NouText className={subheaderCls}>{t('settings.browsing.features')}</NouText>
           <SettingsSurface>
-            <SettingsRow>
+            <SettingsRow isLast={isDesktop}>
               <NouSwitch
                 label={<NouText className="font-medium">{t('settings.openExternalLink')}</NouText>}
                 value={settings.openExternalLinkInSystemBrowser}
                 onPress={() => settings$.openExternalLinkInSystemBrowser.toggle()}
               />
             </SettingsRow>
-            <SettingsRow>
-              <NouSwitch
-                label={<NouText className="font-medium">{t('settings.oneTabPerSite')}</NouText>}
-                value={settings.oneTabPerSite}
-                onPress={() => settings$.oneTabPerSite.toggle()}
-              />
-            </SettingsRow>
+            {nIf(
+              !isWeb,
+              <SettingsRow>
+                <NouSwitch
+                  label={<NouText className="font-medium">{t('settings.oneTabPerSite')}</NouText>}
+                  value={settings.oneTabPerSite}
+                  onPress={() => settings$.oneTabPerSite.toggle()}
+                />
+              </SettingsRow>,
+            )}
             {nIf(
               isAndroid,
               <SettingsRow>
@@ -115,13 +119,16 @@ export const SettingsBrowsingContent: React.FC = () => {
                 />
               </SettingsRow>,
             )}
-            <SettingsRow isLast>
-              <NouSwitch
-                label={<NouText className="font-medium">{t('settings.videoEdgeLongPressTo2x')}</NouText>}
-                value={settings.videoEdgeLongPressTo2x}
-                onPress={() => settings$.videoEdgeLongPressTo2x.toggle()}
-              />
-            </SettingsRow>
+            {nIf(
+              !isWeb,
+              <SettingsRow isLast>
+                <NouSwitch
+                  label={<NouText className="font-medium">{t('settings.videoEdgeLongPressTo2x')}</NouText>}
+                  value={settings.videoEdgeLongPressTo2x}
+                  onPress={() => settings$.videoEdgeLongPressTo2x.toggle()}
+                />
+              </SettingsRow>,
+            )}
           </SettingsSurface>
         </>
       ) : null}
