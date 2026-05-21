@@ -53,6 +53,13 @@ function attachContextMenu(webContents: Electron.WebContents, ownerWindow: Brows
         },
       },
       {
+        label: 'Open in new tab',
+        visible: isHttpUrl(params.linkURL),
+        click: () => {
+          uiClient.openTab(params.linkURL)
+        },
+      },
+      {
         label: 'Open in profile',
         visible: isHttpUrl(params.linkURL),
         click: () => {

@@ -1,4 +1,9 @@
-export const BLOCKLIST_SOURCE_IDS = ['easylist', 'easyprivacy'] as const
+export const BLOCKLIST_SOURCE_IDS = [
+  'easylist',
+  'easyprivacy',
+  'braveFirstparty',
+  'braveFirstpartyRegional',
+] as const
 
 export type BlocklistSourceId = (typeof BLOCKLIST_SOURCE_IDS)[number]
 
@@ -25,6 +30,8 @@ export interface BlocklistSnapshot {
 export interface ParsedFilterList {
   blockedHosts: string[]
   allowedHosts: string[]
+  cosmeticFilters: string[]
+  cosmeticExceptions: string[]
   expiresInMs: number
 }
 
@@ -32,6 +39,8 @@ export interface BlocklistMatcherData {
   enabled: boolean
   blockedHosts: string[]
   allowedHosts: string[]
+  cosmeticFilters: string[]
+  cosmeticExceptions: string[]
   revision: number
 }
 
@@ -39,12 +48,16 @@ export interface PersistedBlocklistMatcherSnapshot {
   revision: number
   blockedHosts: string
   allowedHosts: string
+  cosmeticFilters?: string
+  cosmeticExceptions?: string
 }
 
 export interface BlocklistPayload {
   enabled: boolean
   blockedHosts: string
   allowedHosts: string
+  cosmeticFilters?: string
+  cosmeticExceptions?: string
   revision: number
 }
 

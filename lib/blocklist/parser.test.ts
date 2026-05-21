@@ -12,11 +12,15 @@ describe('parseFilterList', () => {
 example.org
 ||path.example.com/foo^
 example.net$image
+||third-party.example^$third-party
+@@||allow.third-party.example^$third-party
 news.example##.promo
 `)
 
-    expect(parsed.blockedHosts).toEqual(['ads.example.com', 'example.org', 'tracker.example'])
-    expect(parsed.allowedHosts).toEqual(['cdn.ads.example.com'])
+    expect(parsed.blockedHosts).toEqual(['ads.example.com', 'example.org', 'third-party.example', 'tracker.example'])
+    expect(parsed.allowedHosts).toEqual(['allow.third-party.example', 'cdn.ads.example.com'])
+    expect(parsed.cosmeticFilters).toEqual(['news.example##.promo'])
+    expect(parsed.cosmeticExceptions).toEqual([])
     expect(parsed.expiresInMs).toBe(12 * 60 * 60 * 1000)
   })
 
@@ -38,6 +42,8 @@ ads.example.com
 
     expect(parsed.blockedHosts).toEqual(['ads.example.com', 'tracker.example'])
     expect(parsed.allowedHosts).toEqual(['cdn.ads.example.com'])
+    expect(parsed.cosmeticFilters).toEqual([])
+    expect(parsed.cosmeticExceptions).toEqual([])
   })
 })
 
@@ -50,6 +56,10 @@ describe('shouldBlockHost', () => {
 
   it('keeps a more specific block over a broader allow', () => {
     expect(shouldBlockHost('img.ads.example.com', new Set(['ads.example.com']), new Set(['example.com']))).toBe(true)
+  })
+
+  it('blocks ad exchange subdomains from a broader host rule', () => {
+    expect(shouldBlockHost('zks1-ib.adnxs.com', new Set(['adnxs.com']), new Set())).toBe(true)
   })
 
   it('lets an exact allow win on a tie', () => {

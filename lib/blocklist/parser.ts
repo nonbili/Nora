@@ -4,6 +4,17 @@ const HOSTFILE_RE = /^(?:0\.0\.0\.0|127\.0\.0\.1|::1)\s+([^\s#]+)$/i
 const COSMETIC_TOKENS = ['##', '#@#', '#$#', '#?#', '#%#']
 const INVALID_RULE_TOKENS = ['*', '?', '/', '=', ',', '~']
 const HOST_LABEL_RE = /^[a-z0-9-]+$/i
+const UNSUPPORTED_COSMETIC_SELECTOR_TOKENS = [
+  '+js(',
+  ':has-text(',
+  ':-abp-',
+  ':contains(',
+  ':matches-css',
+  ':remove(',
+  ':style(',
+  ':upward(',
+  ':xpath(',
+]
 
 export const DEFAULT_BLOCKLIST_EXPIRY_MS = 4 * 24 * 60 * 60 * 1000
 const PARSE_YIELD_EVERY = 4_000
@@ -54,8 +65,13 @@ function extractHost(rawLine: string) {
     line = line.slice(2)
   }
 
-  if (line.includes('$')) {
-    return null
+  const optionIndex = line.indexOf('$')
+  if (optionIndex !== -1) {
+    const pattern = line.slice(0, optionIndex)
+    if (!pattern.startsWith('||') || !pattern.endsWith('^')) {
+      return null
+    }
+    line = pattern
   }
 
   const hostfileMatch = line.match(HOSTFILE_RE)
@@ -90,27 +106,90 @@ function addHostEntry(rawLine: string, blockedHosts: Set<string>, allowedHosts: 
   }
 }
 
-function finalizeHosts(blockedHosts: Set<string>, allowedHosts: Set<string>, sort = true) {
+function extractCosmeticFilter(rawLine: string) {
+  'worklet'
+  let line = rawLine.trim()
+  if (!line || line.startsWith('!') || line.startsWith('[')) {
+    return null
+  }
+
+  let separator = '##'
+  let separatorIndex = line.indexOf(separator)
+  const exceptionIndex = line.indexOf('#@#')
+  if (exceptionIndex !== -1 && (separatorIndex === -1 || exceptionIndex < separatorIndex)) {
+    separator = '#@#'
+    separatorIndex = exceptionIndex
+  }
+  if (separatorIndex === -1) {
+    return null
+  }
+  if (line.includes('#?#') || line.includes('#$#') || line.includes('#%#')) {
+    return null
+  }
+
+  const domains = line.slice(0, separatorIndex).trim()
+  const selector = line.slice(separatorIndex + separator.length).trim()
+  if (!selector || UNSUPPORTED_COSMETIC_SELECTOR_TOKENS.some((token) => selector.includes(token))) {
+    return null
+  }
+
+  return `${domains}${separator}${selector}`
+}
+
+function addCosmeticEntry(rawLine: string, cosmeticFilters: Set<string>, cosmeticExceptions: Set<string>) {
+  'worklet'
+  const entry = extractCosmeticFilter(rawLine)
+  if (!entry) {
+    return
+  }
+  if (entry.includes('#@#')) {
+    cosmeticExceptions.add(entry)
+  } else {
+    cosmeticFilters.add(entry)
+  }
+}
+
+function finalizeHosts(
+  blockedHosts: Set<string>,
+  allowedHosts: Set<string>,
+  cosmeticFilters: Set<string> = new Set(),
+  cosmeticExceptions: Set<string> = new Set(),
+  sort = true,
+) {
   'worklet'
   const nextBlockedHosts = Array.from(blockedHosts)
   const nextAllowedHosts = Array.from(allowedHosts)
+  const nextCosmeticFilters = Array.from(cosmeticFilters)
+  const nextCosmeticExceptions = Array.from(cosmeticExceptions)
   if (sort) {
     nextBlockedHosts.sort()
     nextAllowedHosts.sort()
+    nextCosmeticFilters.sort()
+    nextCosmeticExceptions.sort()
   }
 
   return {
     blockedHosts: nextBlockedHosts,
     allowedHosts: nextAllowedHosts,
+    cosmeticFilters: nextCosmeticFilters,
+    cosmeticExceptions: nextCosmeticExceptions,
   }
 }
 
-function finalizeHostText(blockedHosts: Set<string>, allowedHosts: Set<string>, sort = true) {
+function finalizeHostText(
+  blockedHosts: Set<string>,
+  allowedHosts: Set<string>,
+  cosmeticFilters: Set<string> = new Set(),
+  cosmeticExceptions: Set<string> = new Set(),
+  sort = true,
+) {
   'worklet'
-  const finalized = finalizeHosts(blockedHosts, allowedHosts, sort)
+  const finalized = finalizeHosts(blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions, sort)
   return {
     blockedHosts: finalized.blockedHosts.join('\n'),
     allowedHosts: finalized.allowedHosts.join('\n'),
+    cosmeticFilters: finalized.cosmeticFilters.join('\n'),
+    cosmeticExceptions: finalized.cosmeticExceptions.join('\n'),
   }
 }
 
@@ -133,18 +212,27 @@ export function parseFilterList(text: string): ParsedFilterList {
   'worklet'
   const blockedHosts = new Set<string>()
   const allowedHosts = new Set<string>()
+  const cosmeticFilters = new Set<string>()
+  const cosmeticExceptions = new Set<string>()
 
   for (const rawLine of text.split(/\r?\n/)) {
     addHostEntry(rawLine, blockedHosts, allowedHosts)
+    addCosmeticEntry(rawLine, cosmeticFilters, cosmeticExceptions)
   }
 
   return {
-    ...finalizeHosts(blockedHosts, allowedHosts, true),
+    ...finalizeHosts(blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions, true),
     expiresInMs: getAdvertisedExpiryMs(text),
   }
 }
 
-function collectHosts(text: string, blockedHosts: Set<string>, allowedHosts: Set<string>) {
+function collectHosts(
+  text: string,
+  blockedHosts: Set<string>,
+  allowedHosts: Set<string>,
+  cosmeticFilters: Set<string>,
+  cosmeticExceptions: Set<string>,
+) {
   'worklet'
   let lineStart = 0
 
@@ -157,6 +245,7 @@ function collectHosts(text: string, blockedHosts: Set<string>, allowedHosts: Set
     }
 
     addHostEntry(text.slice(lineStart, index), blockedHosts, allowedHosts)
+    addCosmeticEntry(text.slice(lineStart, index), cosmeticFilters, cosmeticExceptions)
 
     if (charCode === 13 && text.charCodeAt(index + 1) === 10) {
       index += 1
@@ -169,27 +258,37 @@ export function mergeFilterLists(texts: string[], { sort = false }: { sort?: boo
   'worklet'
   const blockedHosts = new Set<string>()
   const allowedHosts = new Set<string>()
+  const cosmeticFilters = new Set<string>()
+  const cosmeticExceptions = new Set<string>()
 
   for (const text of texts) {
-    collectHosts(text, blockedHosts, allowedHosts)
+    collectHosts(text, blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions)
   }
 
-  return finalizeHosts(blockedHosts, allowedHosts, sort)
+  return finalizeHosts(blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions, sort)
 }
 
 export function mergeFilterListsText(texts: string[], { sort = false }: { sort?: boolean } = {}) {
   'worklet'
   const blockedHosts = new Set<string>()
   const allowedHosts = new Set<string>()
+  const cosmeticFilters = new Set<string>()
+  const cosmeticExceptions = new Set<string>()
 
   for (const text of texts) {
-    collectHosts(text, blockedHosts, allowedHosts)
+    collectHosts(text, blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions)
   }
 
-  return finalizeHostText(blockedHosts, allowedHosts, sort)
+  return finalizeHostText(blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions, sort)
 }
 
-async function collectHostsAsync(text: string, blockedHosts: Set<string>, allowedHosts: Set<string>) {
+async function collectHostsAsync(
+  text: string,
+  blockedHosts: Set<string>,
+  allowedHosts: Set<string>,
+  cosmeticFilters: Set<string>,
+  cosmeticExceptions: Set<string>,
+) {
   let lineStart = 0
   let linesSinceYield = 0
 
@@ -201,7 +300,9 @@ async function collectHostsAsync(text: string, blockedHosts: Set<string>, allowe
       continue
     }
 
-    addHostEntry(text.slice(lineStart, index), blockedHosts, allowedHosts)
+    const line = text.slice(lineStart, index)
+    addHostEntry(line, blockedHosts, allowedHosts)
+    addCosmeticEntry(line, cosmeticFilters, cosmeticExceptions)
 
     if (charCode === 13 && text.charCodeAt(index + 1) === 10) {
       index += 1
@@ -219,12 +320,14 @@ async function collectHostsAsync(text: string, blockedHosts: Set<string>, allowe
 export async function mergeFilterListsAsync(texts: string[], { sort = false }: { sort?: boolean } = {}) {
   const blockedHosts = new Set<string>()
   const allowedHosts = new Set<string>()
+  const cosmeticFilters = new Set<string>()
+  const cosmeticExceptions = new Set<string>()
 
   for (const text of texts) {
-    await collectHostsAsync(text, blockedHosts, allowedHosts)
+    await collectHostsAsync(text, blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions)
   }
 
-  return finalizeHosts(blockedHosts, allowedHosts, sort)
+  return finalizeHosts(blockedHosts, allowedHosts, cosmeticFilters, cosmeticExceptions, sort)
 }
 
 export function hostCandidates(host: string) {

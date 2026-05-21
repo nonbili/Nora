@@ -26,6 +26,8 @@ import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { getEnabledUserScripts } from '@/lib/user-styles'
 import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
 import { tabGroups$ } from '@/states/tab-groups'
+import { blocklistMatcherRevision$, getCosmeticCssForHost, loadCosmeticFilters } from '@/lib/blocklist'
+import { blocklist$ } from '@/states/blocklist'
 
 const getRedirectTo = (str: string) => {
   try {
@@ -262,16 +264,20 @@ export const NoraTab: React.FC<{
   )
 
   const applyContentState = useCallback(
-    (target?: WebviewTag | any | null) => {
+    async (target?: WebviewTag | any | null, url?: string) => {
       const webview = target || webviewRef.current || nativeRef.current
+      const currentUrl = url || pageUrlRef.current || tab.url
+      const currentHost = getHostFromUrl(currentUrl)
+      await loadCosmeticFilters()
       const settingsScript = `window.Nora?.setSettings?.(${JSON.stringify({
         videoEdgeLongPressTo2x,
         xDefaultHomeTimeline,
+        cosmeticCss: getCosmeticCssForHost(currentHost),
       })})`
       const userStylesScript = `window.Nora?.setUserStyles?.(${JSON.stringify(getUserStylesSnapshot())})`
       void executeWebviewJavaScriptQuietly(webview, settingsScript)
       void executeWebviewJavaScriptQuietly(webview, userStylesScript)
-      const userScriptRunner = buildUserScriptRunner(getHostFromUrl(pageUrlRef.current || tab.url))
+      const userScriptRunner = buildUserScriptRunner(currentHost)
       if (userScriptRunner) {
         void executeWebviewJavaScriptQuietly(webview, userScriptRunner)
       }
@@ -320,10 +326,12 @@ export const NoraTab: React.FC<{
       })
       webview.addEventListener('did-navigate', (e) => {
         setPageUrl(e.url)
+        applyContentState(webview, e.url)
         void refreshCanGoBack(webview)
       })
       webview.addEventListener('did-navigate-in-page', (e) => {
         setPageUrl(e.url)
+        applyContentState(webview, e.url)
         setTabLoading(false)
         void refreshCanGoBack(webview)
       })
@@ -430,6 +438,8 @@ export const NoraTab: React.FC<{
   }, [applyContentState])
 
   useObserveEffect(userStyles$, () => applyContentState())
+  useObserveEffect(blocklist$, () => applyContentState())
+  useObserveEffect(blocklistMatcherRevision$, () => applyContentState())
 
   useEffect(() => {
     return () => {
@@ -500,7 +510,7 @@ export const NoraTab: React.FC<{
         ui$.activeCanGoBack.set(nextCanGoBack)
       }
     }
-    applyContentState()
+    applyContentState(undefined, hasLoadedUrl ? url : undefined)
   }
 
   const onMessage = async (e: { nativeEvent: { payload: string | object } }) => {
@@ -585,25 +595,30 @@ export const NoraTab: React.FC<{
             style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
           >
             <View className="flex-row items-center gap-2 shrink-0">
-              {nIf(tab.isLoading, <ActivityIndicator size="small" color="#a1a1aa" />)}
               {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} />)}
             </View>
             <View className="flex-1 min-w-0 flex-row items-center justify-center">
               {slotSwitcher || (
-                <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
-                  <View className="shrink-0">
-                    <ServiceIcon url={tab.url} icon={tab.icon} />
+                <div title={tab.url || undefined} style={{ display: 'flex', minWidth: 0, maxWidth: '100%' }}>
+                  <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
+                    <View className="shrink-0" style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+                      {tab.isLoading ? (
+                        <ActivityIndicator size="small" color="#a1a1aa" />
+                      ) : (
+                        <ServiceIcon url={tab.url} icon={tab.icon} />
+                      )}
+                    </View>
+                    <NouText
+                      className={clsx(
+                        'min-w-0 flex-1 text-[11px] font-bold tracking-wider text-center',
+                        isActive ? 'text-zinc-600 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400',
+                      )}
+                      numberOfLines={1}
+                    >
+                      {getTabLabel(tab)}
+                    </NouText>
                   </View>
-                  <NouText
-                    className={clsx(
-                      'min-w-0 flex-1 text-[11px] font-bold tracking-wider text-center',
-                      isActive ? 'text-zinc-600 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400',
-                    )}
-                    numberOfLines={1}
-                  >
-                    {getTabLabel(tab)}
-                  </NouText>
-                </View>
+                </div>
               )}
             </View>
             <View className="rounded hover:bg-zinc-300/70 dark:hover:bg-zinc-700/70">

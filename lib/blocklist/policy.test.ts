@@ -17,6 +17,12 @@ function createSnapshot(overrides: Partial<BlocklistSnapshot> = {}): BlocklistSn
       easyprivacy: {
         url: 'https://easylist.to/easylist/easyprivacy.txt',
       },
+      braveFirstparty: {
+        url: 'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt',
+      },
+      braveFirstpartyRegional: {
+        url: 'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-regional.txt',
+      },
     },
     ...overrides,
   }

@@ -15,6 +15,8 @@ function createSources() {
   return {
     easylist: createSource('https://easylist.to/easylist/easylist.txt'),
     easyprivacy: createSource('https://easylist.to/easylist/easyprivacy.txt'),
+    braveFirstparty: createSource('https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt'),
+    braveFirstpartyRegional: createSource('https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-regional.txt'),
   }
 }
 

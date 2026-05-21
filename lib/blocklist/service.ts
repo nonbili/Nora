@@ -1,4 +1,4 @@
-import { syncState, when } from '@legendapp/state'
+import { observable, syncState, when } from '@legendapp/state'
 import NoraViewModule from '@/modules/nora-view'
 import { isWeb, isIos, isAndroid } from '@/lib/utils'
 import { settings$ } from '@/states/settings'
@@ -41,6 +41,8 @@ let payloadCache:
       payload: BlocklistPayload
     }
   | undefined
+
+export const blocklistMatcherRevision$ = observable(0)
 
 let workletRuntime: WorkletRuntime | undefined
 if (isAndroid) {
@@ -123,6 +125,8 @@ function emptyPayload(revision: number): BlocklistPayload {
     enabled: false,
     blockedHosts: '',
     allowedHosts: '',
+    cosmeticFilters: '',
+    cosmeticExceptions: '',
     revision,
   }
 }
@@ -136,6 +140,8 @@ function serializePayload(matcherData: BlocklistMatcherData): BlocklistPayload {
     enabled: matcherData.enabled,
     blockedHosts: encodeHosts(matcherData.blockedHosts),
     allowedHosts: encodeHosts(matcherData.allowedHosts),
+    cosmeticFilters: encodeHosts(matcherData.cosmeticFilters),
+    cosmeticExceptions: encodeHosts(matcherData.cosmeticExceptions),
     revision: matcherData.revision,
   }
 }
@@ -146,6 +152,7 @@ function setPayloadCache(matcherData: BlocklistMatcherData) {
     matcherData,
     payload: serializePayload(matcherData),
   }
+  blocklistMatcherRevision$.set(matcherData.revision)
 }
 
 function toMatcherData(snapshot: PersistedBlocklistMatcherSnapshot): BlocklistMatcherData {
@@ -153,6 +160,8 @@ function toMatcherData(snapshot: PersistedBlocklistMatcherSnapshot): BlocklistMa
     enabled: true,
     blockedHosts: decodeHosts(snapshot.blockedHosts),
     allowedHosts: decodeHosts(snapshot.allowedHosts),
+    cosmeticFilters: decodeHosts(snapshot.cosmeticFilters || ''),
+    cosmeticExceptions: decodeHosts(snapshot.cosmeticExceptions || ''),
     revision: snapshot.revision,
   }
 }
@@ -162,6 +171,8 @@ function toPersistedMatcherSnapshot(matcherData: BlocklistMatcherData): Persiste
     revision: matcherData.revision,
     blockedHosts: encodeHosts(matcherData.blockedHosts),
     allowedHosts: encodeHosts(matcherData.allowedHosts),
+    cosmeticFilters: encodeHosts(matcherData.cosmeticFilters),
+    cosmeticExceptions: encodeHosts(matcherData.cosmeticExceptions),
   }
 }
 
@@ -180,6 +191,8 @@ async function mergeFilterListsInBackground(bodies: string[], revision: number):
           revision,
           blockedHosts: result.blockedHosts,
           allowedHosts: result.allowedHosts,
+          cosmeticFilters: typeof result.cosmeticFilters === 'string' ? result.cosmeticFilters : '',
+          cosmeticExceptions: typeof result.cosmeticExceptions === 'string' ? result.cosmeticExceptions : '',
         }
       }
       console.warn('[blocklist] Invalid worklet merge result, falling back to async parser')
@@ -192,6 +205,8 @@ async function mergeFilterListsInBackground(bodies: string[], revision: number):
     revision,
     blockedHosts: encodeHosts(merged.blockedHosts),
     allowedHosts: encodeHosts(merged.allowedHosts),
+    cosmeticFilters: encodeHosts(merged.cosmeticFilters),
+    cosmeticExceptions: encodeHosts(merged.cosmeticExceptions),
   }
 }
 
@@ -218,13 +233,82 @@ function getCachedPayload(revision: number) {
   return payloadCache?.revision === revision ? payloadCache.payload : undefined
 }
 
+function parseCosmeticRule(rule: string) {
+  const separator = rule.includes('#@#') ? '#@#' : '##'
+  const separatorIndex = rule.indexOf(separator)
+  if (separatorIndex === -1) {
+    return null
+  }
+  return {
+    domains: rule.slice(0, separatorIndex),
+    selector: rule.slice(separatorIndex + separator.length),
+  }
+}
+
+function cosmeticRuleMatchesHost(domains: string, host: string) {
+  const normalizedHost = host.toLowerCase()
+  const candidates = normalizedHost.split('.').map((_, index, parts) => parts.slice(index).join('.'))
+  if (!domains) {
+    return true
+  }
+
+  const entries = domains
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean)
+  if (!entries.length) {
+    return true
+  }
+
+  const isMatch = (entry: string) => candidates.includes(entry)
+  if (entries.some((entry) => entry.startsWith('~') && isMatch(entry.slice(1)))) {
+    return false
+  }
+
+  const positiveEntries = entries.filter((entry) => !entry.startsWith('~'))
+  return !positiveEntries.length || positiveEntries.some(isMatch)
+}
+
+export function getCosmeticCssForHost(host?: string | null) {
+  if (!host || !payloadCache?.matcherData.enabled) {
+    return ''
+  }
+
+  const matcherData = payloadCache.matcherData
+  const exceptions = new Set(
+    matcherData.cosmeticExceptions
+      .map(parseCosmeticRule)
+      .filter((rule): rule is NonNullable<ReturnType<typeof parseCosmeticRule>> => !!rule)
+      .filter((rule) => cosmeticRuleMatchesHost(rule.domains, host))
+      .map((rule) => rule.selector),
+  )
+
+  return matcherData.cosmeticFilters
+    .map(parseCosmeticRule)
+    .filter((rule): rule is NonNullable<ReturnType<typeof parseCosmeticRule>> => !!rule)
+    .filter((rule) => cosmeticRuleMatchesHost(rule.domains, host))
+    .filter((rule) => !exceptions.has(rule.selector))
+    .map((rule) => `${rule.selector}{display:none!important;}`)
+    .join('\n')
+}
+
+export async function loadCosmeticFilters() {
+  await waitForBlocklistPersist()
+  const state = blocklist$.get()
+  if (!state.enabled || !state.hasSnapshot) {
+    return false
+  }
+
+  return !!(await getPersistedMatcherData(state.revision))
+}
+
 async function getPersistedMatcherData(revision: number) {
   if (payloadCache?.revision === revision) {
     return payloadCache.matcherData
   }
 
   const persistedSnapshot = await readBlocklistMatcherSnapshot()
-  if (persistedSnapshot?.revision === revision) {
+  if (persistedSnapshot?.revision === revision && typeof persistedSnapshot.cosmeticFilters === 'string') {
     const matcherData = toMatcherData(persistedSnapshot)
     setPayloadCache(matcherData)
     return matcherData
@@ -267,6 +351,9 @@ export async function applyBlocklist() {
 
   let activePayload = emptyPayload(state.revision)
   if (isIos) {
+    if (enabled) {
+      await getPersistedMatcherData(state.revision)
+    }
     if (enabled && typeof NoraViewModule.reloadBlocklistFromDisk === 'function') {
       const reloaded = await NoraViewModule.reloadBlocklistFromDisk(enabled, state.revision)
       if (reloaded) {

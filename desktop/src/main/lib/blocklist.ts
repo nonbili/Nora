@@ -10,6 +10,8 @@ const MATCHER_FILENAME = 'matcher.json'
 const SOURCE_FILENAMES: Record<BlocklistSourceId, string> = {
   easylist: 'easylist.txt',
   easyprivacy: 'easyprivacy.txt',
+  braveFirstparty: 'brave-firstparty.txt',
+  braveFirstpartyRegional: 'brave-firstparty-regional.txt',
 }
 
 let enabled = false

@@ -16,6 +16,7 @@ const defaultSettings = {
   videoEdgeLongPressTo2x: false,
   xDefaultHomeTimeline: 'for-you',
   hideXHomeTimelineTabs: false,
+  cosmeticCss: '',
 }
 
 let settings = { ...defaultSettings }

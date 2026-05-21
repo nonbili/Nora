@@ -8,6 +8,8 @@ const MATCHER_FILENAME = 'matcher.json'
 const SOURCE_FILENAMES: Record<BlocklistSourceId, string> = {
   easylist: 'easylist.txt',
   easyprivacy: 'easyprivacy.txt',
+  braveFirstparty: 'brave-firstparty.txt',
+  braveFirstpartyRegional: 'brave-firstparty-regional.txt',
 }
 
 const hasElectron = () => isWeb && typeof window !== 'undefined' && typeof window.electron !== 'undefined'
@@ -73,6 +75,20 @@ function parsePersistedMatcherSnapshot(raw: string | null | undefined): Persiste
         : Array.isArray(allowedHostsRaw) && allowedHostsRaw.every((host) => typeof host === 'string')
           ? (allowedHostsRaw as string[]).join('\n')
           : null
+    const cosmeticFiltersRaw = parsed.cosmeticFilters
+    const cosmeticFilters =
+      typeof cosmeticFiltersRaw === 'string'
+        ? cosmeticFiltersRaw
+        : Array.isArray(cosmeticFiltersRaw) && cosmeticFiltersRaw.every((rule) => typeof rule === 'string')
+          ? (cosmeticFiltersRaw as string[]).join('\n')
+          : undefined
+    const cosmeticExceptionsRaw = parsed.cosmeticExceptions
+    const cosmeticExceptions =
+      typeof cosmeticExceptionsRaw === 'string'
+        ? cosmeticExceptionsRaw
+        : Array.isArray(cosmeticExceptionsRaw) && cosmeticExceptionsRaw.every((rule) => typeof rule === 'string')
+          ? (cosmeticExceptionsRaw as string[]).join('\n')
+          : undefined
     if (blockedHosts === null || allowedHosts === null) {
       return null
     }
@@ -80,6 +96,8 @@ function parsePersistedMatcherSnapshot(raw: string | null | undefined): Persiste
       revision: parsed.revision,
       blockedHosts,
       allowedHosts,
+      ...(cosmeticFilters === undefined ? {} : { cosmeticFilters }),
+      ...(cosmeticExceptions === undefined ? {} : { cosmeticExceptions }),
     }
   } catch {
     return null

@@ -30,6 +30,8 @@ const styles: Record<string, (settings: any) => string> = {
     img {
       pointer-events: initial !important;
     }
+
+    ${settings.cosmeticCss || ''}
   `,
 
   facebook: (settings) => css`
@@ -126,17 +128,28 @@ export function injectCSS() {
   const style = document.querySelector<HTMLStyleElement>(`#${injectedStyleId}`) || document.createElement('style')
   const { host } = document.location
 
+  const append = () => {
+    if (style.isConnected) {
+      return
+    }
+    ;(document.head || document.documentElement).appendChild(style)
+  }
+
   const update = () => {
     const settings = window.Nora?.getSettings?.() || {}
     const userStyles = window.Nora?.getUserStyles?.()
     const content = getInjectedCss(host, settings, userStyles)
     style.textContent = content
+    append()
   }
 
   style.id = injectedStyleId
   style.type = 'text/css'
   update()
-  ;(document.head || document.documentElement).appendChild(style)
+  new MutationObserver(() => append()).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  })
   window.addEventListener(noraSettingsEvent, () => update())
   window.addEventListener(noraUserStylesEvent, () => update())
 }

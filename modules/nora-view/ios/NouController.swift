@@ -76,7 +76,12 @@ class NouController {
   private let blocklistIdentifier = "nora.runtime.blocklist"
   private let blocklistStorageDirectory = "blocklist"
   private let blocklistMatcherFilename = "matcher.json"
-  private let blocklistSourceFilenames = ["easylist.txt", "easyprivacy.txt"]
+  private let blocklistSourceFilenames = [
+    "easylist.txt",
+    "easyprivacy.txt",
+    "brave-firstparty.txt",
+    "brave-firstparty-regional.txt"
+  ]
   private let registeredViews = NSHashTable<NoraView>.weakObjects()
 
   private func decodeHosts(_ value: String) -> [String] {
@@ -287,8 +292,12 @@ class NouController {
     if allow {
       line = String(line.dropFirst(2))
     }
-    if line.contains("$") {
-      return nil
+    if let optionIndex = line.firstIndex(of: "$") {
+      let pattern = String(line[..<optionIndex])
+      if !pattern.hasPrefix("||") || !pattern.hasSuffix("^") {
+        return nil
+      }
+      line = pattern
     }
 
     let hostfileParts = line.split(whereSeparator: \.isWhitespace)
