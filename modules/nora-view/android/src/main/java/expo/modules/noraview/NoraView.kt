@@ -796,6 +796,59 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       }
     }
 
+  private fun layoutChildren() {
+    val childWidth = width - paddingLeft - paddingRight
+    val childHeight = height - paddingTop - paddingBottom
+    if (childWidth <= 0 || childHeight <= 0) {
+      return
+    }
+    val childWidthSpec = MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY)
+    val childHeightSpec = MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.EXACTLY)
+    for (i in 0 until childCount) {
+      val child = getChildAt(i)
+      if (child.visibility != GONE) {
+        child.measure(childWidthSpec, childHeightSpec)
+        child.layout(
+          paddingLeft,
+          paddingTop,
+          paddingLeft + childWidth,
+          paddingTop + childHeight
+        )
+      }
+    }
+  }
+
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    val childWidthSpec = MeasureSpec.makeMeasureSpec(
+      measuredWidth - paddingLeft - paddingRight,
+      MeasureSpec.EXACTLY
+    )
+    val childHeightSpec = MeasureSpec.makeMeasureSpec(
+      measuredHeight - paddingTop - paddingBottom,
+      MeasureSpec.EXACTLY
+    )
+    for (i in 0 until childCount) {
+      val child = getChildAt(i)
+      if (child.visibility != GONE) {
+        child.measure(childWidthSpec, childHeightSpec)
+      }
+    }
+  }
+
+  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    super.onLayout(changed, left, top, right, bottom)
+    layoutChildren()
+  }
+
+  // On RN 0.85 + Fabric, requestLayout() from imperatively-added children
+  // (the WebView, popup container, etc.) can be swallowed because Yoga only
+  // manages views it owns. Re-layout children on the next frame.
+  override fun requestLayout() {
+    super.requestLayout()
+    post { layoutChildren() }
+  }
+
   init {
     addView(webView)
 

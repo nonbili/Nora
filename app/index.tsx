@@ -1,10 +1,11 @@
 import { BackHandler } from 'react-native'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useObserveEffect } from '@legendapp/state/react'
 import { homeUrls, openSharedUrl } from '@/lib/page'
 import { Asset } from 'expo-asset'
 import { settings$ } from '@/states/settings'
-import { useShareIntent } from 'expo-share-intent'
+import { useIncomingShare } from 'expo-sharing'
+import { parseSharedUrl } from '@/lib/share-intent'
 import { useLinkingURL } from 'expo-linking'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
@@ -68,16 +69,39 @@ const EXIT_DOUBLE_BACK_WINDOW_MS = 2000
 
 export default function HomeScreen() {
   const [scriptOnStart, setScriptOnStart] = useState('')
-  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent()
+  const { resolvedSharedPayloads, clearSharedPayloads, isResolving } = useIncomingShare()
+  const handledPayloadKeyRef = useRef<string | null>(null)
   const linkingUrl = useLinkingURL()
 
   useEffect(() => {
-    const url = shareIntent.webUrl || shareIntent.text
-    if (hasShareIntent && url) {
-      openSharedUrl(url)
-      resetShareIntent()
+    if (isResolving) {
+      return
     }
-  }, [hasShareIntent, shareIntent])
+    if (resolvedSharedPayloads.length === 0) {
+      handledPayloadKeyRef.current = null
+      return
+    }
+
+    const payload = resolvedSharedPayloads[0]
+    const key = `${payload.contentType ?? 'text'}:${payload.contentUri ?? ''}:${payload.value}`
+    if (handledPayloadKeyRef.current === key) {
+      return
+    }
+    handledPayloadKeyRef.current = key
+
+    let url: string | null = null
+    if (payload.contentType === 'website' && payload.contentUri) {
+      url = payload.contentUri
+    } else {
+      url = parseSharedUrl({ webUrl: payload.contentUri ?? undefined, text: payload.value ?? undefined })
+    }
+
+    if (url) {
+      openSharedUrl(url)
+    }
+
+    clearSharedPayloads()
+  }, [resolvedSharedPayloads, isResolving, clearSharedPayloads])
 
   useEffect(() => {
     if (linkingUrl) {

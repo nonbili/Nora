@@ -89,6 +89,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       ],
       'expo-asset',
       'expo-font',
+      'expo-status-bar',
       'expo-image',
       [
         'expo-localization',
@@ -111,7 +112,25 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
           ],
         },
       ],
-      ['expo-share-intent', { iosAppGroupIdentifier: 'group.g.jp.nonbili.nora' }],
+      [
+        'expo-sharing',
+        {
+          ios: {
+            enabled: true,
+            extensionBundleIdentifier: 'jp.nonbili.nora.ShareExtension',
+            appGroupId: 'group.g.jp.nonbili.nora',
+            activationRule: {
+              supportsWebUrlWithMaxCount: 1,
+              supportsFileWithMaxCount: 1,
+              supportsText: true,
+            },
+          },
+          android: {
+            enabled: true,
+            singleShareMimeTypes: ['text/*', '*/*'],
+          },
+        },
+      ],
       'expo-web-browser',
       'expo-notifications',
       'expo-background-task',

@@ -648,13 +648,27 @@ export const NoraTab: React.FC<{
   return (
     <View
       pointerEvents={isActive ? 'auto' : 'none'}
-      style={[StyleSheet.absoluteFillObject, { opacity: isActive ? 1 : 0, zIndex: isActive ? 1 : 0 }]}
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        opacity: isActive ? 1 : 0,
+        zIndex: isActive ? 1 : 0,
+      }}
     >
       <NoraView
         key={viewInstanceKey}
         ref={onNativeRef}
         className={clsx(!tab.url && 'hidden')}
-        style={StyleSheet.absoluteFillObject}
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+        }}
         profile={tab.profile || 'default'}
         scriptOnStart={contentJs}
         useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}

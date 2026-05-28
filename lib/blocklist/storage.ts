@@ -113,7 +113,10 @@ export async function readBlocklistSourceFile(id: BlocklistSourceId) {
   if (!file.exists) {
     return null
   }
-  return file.text()
+  // Use textSync() to avoid the SharedObject release race in expo-file-system v56:
+  // the async text() handle can be released between the JS File going out of scope
+  // and the native read completing.
+  return file.textSync()
 }
 
 export async function readBlocklistMatcherSnapshot() {
@@ -126,7 +129,8 @@ export async function readBlocklistMatcherSnapshot() {
   if (!file.exists) {
     return null
   }
-  return parsePersistedMatcherSnapshot(await file.text())
+  // See note in readBlocklistSourceFile re: textSync() vs text().
+  return parsePersistedMatcherSnapshot(file.textSync())
 }
 
 export async function writeBlocklistSourceFile(id: BlocklistSourceId, body: string) {

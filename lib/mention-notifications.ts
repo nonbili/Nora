@@ -1,6 +1,6 @@
 import { AppState, Platform } from 'react-native'
 import NoraViewModule from '@/modules/nora-view'
-import { MMKV } from 'react-native-mmkv'
+import { createMMKV, type MMKV } from 'react-native-mmkv'
 import { settings$ } from '@/states/settings'
 
 let Notifications: typeof import('expo-notifications') | undefined
@@ -31,7 +31,7 @@ if (Notifications) {
 
 export const isMentionNotificationsAvailable = Boolean(Notifications && TaskManager && BackgroundTask)
 
-const storage = new MMKV({ id: 'mention-notifications' })
+const storage = Platform.OS !== 'web' ? createMMKV({ id: 'mention-notifications' }) : null as unknown as MMKV
 const SEEN_KEY = 'seenIds'
 const LAST_POLL_KEY = 'lastPollMs'
 const LAST_BACKGROUND_POLL_KEY = 'lastBackgroundPollMs'
