@@ -16,7 +16,10 @@
     "open": "打开",
     "confirm": "确认",
     "continue": "继续",
-    "save": "保存"
+    "save": "保存",
+    "restoreTabs": "最近关闭的标签页",
+    "toggleSidebar": "切换侧边栏",
+    "reopenLastClosedTab": "重新打开上次关闭的标签页"
   },
   "menus": {
     "close": "关闭",
@@ -33,7 +36,9 @@
     "signOut": "退出登录",
     "duplicate": "复制标签页",
     "editUrl": "编辑标签页网址",
-    "viewInSplitView": "在分屏视图中查看"
+    "viewInSplitView": "在分屏视图中查看",
+    "more": "更多",
+    "openInProfile": "在配置文件中打开"
   },
   "modals": {
     "downloadVideo": "下载视频"
@@ -153,9 +158,9 @@
       "deleteConfirm": "确定要删除此自定义搜索吗？"
     },
     "userStyles": {
-      "label": "用户样式",
-      "hint": "切换内置 CSS 调整并添加您自己的基于主机的样式。",
-      "customHint": "使用 CSS 自定义任何网站。",
+      "label": "用户样式和脚本",
+      "hint": "切换内置 CSS 调整并添加您自己的基于主机的样式和脚本。",
+      "customHint": "使用 CSS 或 JavaScript 自定义任何网站。",
       "copyCss": "复制 CSS",
       "cssCopied": "CSS 已复制",
       "copyFailed": "无法复制 CSS",
@@ -193,6 +198,26 @@
         "hideXHomeTabs": {
           "label": "隐藏 X 首页时间线标签页"
         }
+      },
+      "preview": "预览",
+      "previewApplied": "预览已应用",
+      "noActiveTab": "无活动标签页",
+      "scripts": {
+        "label": "自定义脚本",
+        "add": "添加脚本",
+        "addTitle": "添加自定义脚本",
+        "editTitle": "编辑自定义脚本",
+        "deleteConfirm": "确定要删除此自定义脚本吗？",
+        "empty": "尚无自定义脚本。添加一个以在匹配的主机上运行您自己的 JavaScript。",
+        "namePlaceholder": "脚本名称",
+        "import": "导入",
+        "importFailed": "无法导入脚本",
+        "run": "运行",
+        "runComplete": "脚本已运行",
+        "runFailed": "脚本运行失败",
+        "validation": {
+          "js": "请在保存前添加 JavaScript"
+        }
       }
     },
     "showReloadButton": "显示重新加载按钮",
@@ -214,7 +239,9 @@
   "toast": {
     "pinned": "已固定到新标签页页面",
     "blocklistUpdated": "屏蔽列表已更新",
-    "pressBackAgainToExit": "再次按返回退出"
+    "pressBackAgainToExit": "再次按返回退出",
+    "profileDataClearFailed": "无法清除配置文件数据",
+    "profileDataCleared": "配置文件数据已清除"
   },
   "profiles": {
     "label": "配置文件",
@@ -235,7 +262,8 @@
     "deleteStaleAutoProfiles": "删除 14 天内未使用的",
     "deleteStaleAutoProfilesConfirm": "删除过去 14 天内未使用的 {{count}} 个自动配置文件？这将清除它们存储的浏览数据并关闭使用这些配置文件的标签页。",
     "clearData": "清除数据",
-    "clearDataConfirm": "清除“{{name}}”的所有浏览数据？这将使您退出登录并关闭使用此配置文件的标签页。"
+    "clearDataConfirm": "清除“{{name}}”的所有浏览数据？这将使您退出登录并关闭使用此配置文件的标签页。",
+    "deleteConfirm": "删除“{{name}}”？这将清除其存储的浏览数据，并关闭使用此配置文件的标签页。"
   },
   "sync": {
     "label": "同步",
@@ -295,8 +323,17 @@
       "layout": {
         "split": "分屏视图",
         "grid": "网格视图",
-        "gridFour": "四标签页网格"
-      }
+        "gridFour": "四标签页网格",
+        "deck": "卡片视图"
+      },
+      "deck": "卡片",
+      "groupNamePlaceholder": "分组名称",
+      "newGroupFromTab": "从标签页新建分组",
+      "renameGroup": "重命名分组",
+      "tabCount": "{{count}} 个标签页",
+      "tabCount_plural": "{{count}} 个标签页",
+      "ungrouped": "未分组",
+      "newDeckView": "新卡片视图"
     }
   },
   "blocklist": {
