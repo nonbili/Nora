@@ -16,7 +16,10 @@
     "open": "Apri",
     "confirm": "Conferma",
     "continue": "Continua",
-    "save": "Salva"
+    "save": "Salva",
+    "reopenLastClosedTab": "Riapri ultima scheda chiusa",
+    "restoreTabs": "Screde chiuse di recente",
+    "toggleSidebar": "Attiva/disattiva barra laterale"
   },
   "menus": {
     "close": "Chiudi",
@@ -33,7 +36,9 @@
     "tools": "Strumenti",
     "editUrl": "Modifica URL della scheda",
     "duplicate": "Scheda duplicata",
-    "viewInSplitView": "Visualizza in modalità schermo diviso"
+    "viewInSplitView": "Visualizza in modalità schermo diviso",
+    "openInProfile": "Apri nel profilo",
+    "more": "Altro"
   },
   "modals": {
     "downloadVideo": "Scarica video"
@@ -154,8 +159,8 @@
       "deleteConfirm": "Sei sicuro di voler eliminare questa ricerca personalizzata?"
     },
     "userStyles": {
-      "label": "Stili Utente",
-      "hint": "Attiva le modifiche CSS integrate e aggiungi i tuoi stili specifici per l'host.",
+      "label": "Stili Utente e Script",
+      "hint": "Attiva /disattiva modifiche CSS integrate e aggiungi i tuoi stili e script specifici per l'host.",
       "copyCss": "Copia CSS",
       "cssCopied": "CSS copiato",
       "copyFailed": "Impossibile copiare il CSS",
@@ -194,7 +199,27 @@
         "label": "Stili Personalizzati",
         "empty": "Non ci sono ancora stili personalizzati. Aggiungine uno per inserire il tuo CSS sugli host corrispondenti."
       },
-      "customHint": "Personalizza qualsiasi sito web con CSS."
+      "customHint": "Personalizza qualsiasi sito web con CSS o JavaScript.",
+      "preview": "Anteprima",
+      "previewApplied": "Anteprima applicata",
+      "noActiveTab": "Nessuna scheda attiva",
+      "scripts": {
+        "label": "Script Personalizzati",
+        "add": "Aggiungi script",
+        "addTitle": "Aggiungi script personalizzato",
+        "editTitle": "Modifica script personalizzato",
+        "deleteConfirm": "Sei sicuro di voler eliminare questo script personalizzato?",
+        "empty": "Non ci sono ancora script personalizzati. Aggiungine uno per eseguire il tuo codice JavaScript sugli host corrispondenti.",
+        "namePlaceholder": "Nome script",
+        "import": "Importa",
+        "importFailed": "Impossibile importare lo script",
+        "run": "Esegui",
+        "runComplete": "Script in esecuzione",
+        "runFailed": "Errore nell'esecuzione dello script",
+        "validation": {
+          "js": "Aggiungi il codice JavaScript prima di salvare"
+        }
+      }
     },
     "doubleBackToExitApp": "Doppio tocco indietro per uscire dall'app",
     "hideToolbarWhenScrolled": "Nascondi barra strumenti quando la pagina non è in primo piano",
@@ -242,7 +267,9 @@
   "toast": {
     "pinned": "Aggiunto alla pagina nuova scheda",
     "blocklistUpdated": "Lista di blocco aggiornata",
-    "pressBackAgainToExit": "Premi nuovamente il tasto Indietro per uscire"
+    "pressBackAgainToExit": "Premi nuovamente il tasto Indietro per uscire",
+    "profileDataCleared": "Dati del profilo cancellati",
+    "profileDataClearFailed": "Impossibile cancellare i dati del profilo"
   },
   "profiles": {
     "label": "Profili",
@@ -263,7 +290,8 @@
     "deleteStaleAutoProfiles": "Elimina non utilizzati da 14 giorni",
     "deleteStaleAutoProfilesConfirm": "Eliminare {{count}} profili automatici non utilizzati negli ultimi 14 giorni? Questa operazione cancella i dati di navigazione memorizzati e chiude le schede che li utilizzano.",
     "clearData": "Cancella dati",
-    "clearDataConfirm": "Cancellare tutti i dati di navigazione relativi a “{{name}}”? Questa operazione comporta la disconnessione e la chiusura delle schede associate a questo profilo."
+    "clearDataConfirm": "Cancellare tutti i dati di navigazione relativi a “{{name}}”? Questa operazione comporta la disconnessione e la chiusura delle schede associate a questo profilo.",
+    "deleteConfirm": "Elimina “{{name}}”? Questo cancella i dati di navigazione memorizzati e chiude le schede associate a questo profilo."
   },
   "blocklist": {
     "label": "Lista di blocco",
@@ -317,10 +345,19 @@
       "chooseTabToAdd": "Scegli una scheda da aggiungere a {{layout}}",
       "createBlankTabInSlot": "Crea una nuova scheda vuota in questo slot",
       "layout": {
-        "split": "visualizzazione schermo diviso",
-        "grid": "visualizzazione a griglia",
-        "gridFour": "griglia a 4 schede"
-      }
+        "split": "Visualizzazione schermo diviso",
+        "grid": "Visualizzazione a griglia",
+        "gridFour": "griglia a 4 schede",
+        "deck": "Visualizzazione a mazzo"
+      },
+      "groupNamePlaceholder": "Nome gruppo",
+      "newGroupFromTab": "Nuovo gruppo da scheda",
+      "renameGroup": "Rinomina gruppo",
+      "tabCount": "{{count}} scheda",
+      "tabCount_plural": "{{count}} schede",
+      "ungrouped": "Non raggruppate",
+      "deck": "Mazzo",
+      "newDeckView": "Nuova visualizzazione a mazzo"
     }
   },
   "usageLimits": {
