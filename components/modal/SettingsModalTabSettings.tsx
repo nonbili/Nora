@@ -85,6 +85,7 @@ const languageNativeNames: Record<string, string> = {
 
 export const SettingsBrowsingContent: React.FC = () => {
   const settings = useValue(settings$)
+  const builtinScripts = useValue(userStyles$.builtinScripts)
 
   return (
     <View className="pb-4">
@@ -92,7 +93,7 @@ export const SettingsBrowsingContent: React.FC = () => {
         <>
           <NouText className={subheaderCls}>{t('settings.browsing.features')}</NouText>
           <SettingsSurface>
-            <SettingsRow isLast={isDesktop}>
+            <SettingsRow>
               <NouSwitch
                 label={<NouText className="font-medium">{t('settings.openExternalLink')}</NouText>}
                 value={settings.openExternalLinkInSystemBrowser}
@@ -121,7 +122,7 @@ export const SettingsBrowsingContent: React.FC = () => {
             )}
             {nIf(
               !isWeb,
-              <SettingsRow isLast>
+              <SettingsRow>
                 <NouSwitch
                   label={<NouText className="font-medium">{t('settings.videoEdgeLongPressTo2x')}</NouText>}
                   value={settings.videoEdgeLongPressTo2x}
@@ -129,6 +130,13 @@ export const SettingsBrowsingContent: React.FC = () => {
                 />
               </SettingsRow>,
             )}
+            <SettingsRow isLast>
+              <NouSwitch
+                label={<NouText className="font-medium">{t('settings.enterInsertsNewline')}</NouText>}
+                value={builtinScripts['enter-as-shift-enter']?.enabled ?? false}
+                onPress={() => userStyles$.toggleBuiltinScript('enter-as-shift-enter')}
+              />
+            </SettingsRow>
           </SettingsSurface>
         </>
       ) : null}

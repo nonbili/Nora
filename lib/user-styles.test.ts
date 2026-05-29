@@ -111,6 +111,33 @@ describe('normalizeUserStyles', () => {
       hostGlobs: ['*.reddit.com'],
     })
   })
+
+  it('defaults the enter-as-shift-enter builtin script to off and respects an explicit value', () => {
+    const defaults = normalizeUserStyles({})
+    expect(defaults.builtinScripts['enter-as-shift-enter'].enabled).toBe(false)
+
+    const enabled = normalizeUserStyles({
+      builtinScripts: {
+        'enter-as-shift-enter': { enabled: true },
+      } as any,
+    })
+    expect(enabled.builtinScripts['enter-as-shift-enter'].enabled).toBe(true)
+  })
+
+  it('includes the builtin script globally only when enabled', () => {
+    const off = normalizeUserStyles({})
+    expect(getEnabledUserScripts('example.com', off)).toHaveLength(0)
+
+    const on = normalizeUserStyles({
+      builtinScripts: {
+        'enter-as-shift-enter': { enabled: true },
+      } as any,
+    })
+    const scripts = getEnabledUserScripts('example.com', on)
+    expect(scripts).toHaveLength(1)
+    expect(scripts[0].id).toBe('enter-as-shift-enter')
+    expect(getEnabledUserScripts('chatgpt.com', on)).toHaveLength(1)
+  })
 })
 
 describe('user style css composition', () => {

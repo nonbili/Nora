@@ -11,6 +11,10 @@ export const builtinUserStyleIds = [
 
 export type BuiltinUserStyleId = (typeof builtinUserStyleIds)[number]
 
+export const builtinUserScriptIds = ['enter-as-shift-enter'] as const
+
+export type BuiltinUserScriptId = (typeof builtinUserScriptIds)[number]
+
 export interface BuiltinUserStyleState {
   enabled: boolean
 }
@@ -34,6 +38,7 @@ export interface CustomUserScript {
 export interface UserStylesSnapshot {
   schemaVersion: number
   builtins: Record<BuiltinUserStyleId, BuiltinUserStyleState>
+  builtinScripts: Record<BuiltinUserScriptId, BuiltinUserStyleState>
   customStyles: CustomUserStyle[]
   customScripts: CustomUserScript[]
 }
@@ -43,6 +48,13 @@ export interface BuiltinUserStyleDefinition {
   labelKey: string
   hostGlobs: string[]
   css: string
+}
+
+export interface BuiltinUserScriptDefinition {
+  id: BuiltinUserScriptId
+  labelKey: string
+  hostGlobs: string[]
+  js: string
 }
 
 const css = (raw: ArrayLike<string>, ...values: any[]) => String.raw({ raw }, ...values)
@@ -160,9 +172,93 @@ export const createDefaultBuiltinUserStyles = (): Record<BuiltinUserStyleId, Bui
   'hide-x-home-tabs': { enabled: false },
 })
 
+export const builtinUserScriptDefinitions: BuiltinUserScriptDefinition[] = [
+  {
+    id: 'enter-as-shift-enter',
+    labelKey: 'settings.enterInsertsNewline',
+    hostGlobs: ['*'],
+    js: `
+      const isEditable = (el) => {
+        if (!el) return false
+        const tag = el.tagName
+        if (tag === 'TEXTAREA') return true
+        if (tag === 'INPUT') {
+          const type = (el.getAttribute('type') || 'text').toLowerCase()
+          return ['text', 'search', 'url', 'email', 'tel', 'password', ''].includes(type)
+        }
+        return el.isContentEditable === true
+      }
+
+      const insertNewline = (el) => {
+        if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+          const start = el.selectionStart
+          const end = el.selectionEnd
+          if (typeof start === 'number' && typeof end === 'number') {
+            const value = el.value
+            el.value = value.slice(0, start) + '\\n' + value.slice(end)
+            el.selectionStart = el.selectionEnd = start + 1
+          } else {
+            el.value += '\\n'
+          }
+          el.dispatchEvent(new Event('input', { bubbles: true }))
+          return
+        }
+        try {
+          if (!document.execCommand('insertLineBreak')) {
+            document.execCommand('insertText', false, '\\n')
+          }
+        } catch (e) {
+          document.execCommand('insertText', false, '\\n')
+        }
+      }
+
+      document.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key !== 'Enter') return
+          if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return
+          const target = e.target
+          if (!isEditable(target)) return
+
+          e.preventDefault()
+          e.stopImmediatePropagation()
+
+          const synthetic = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            shiftKey: true,
+            bubbles: true,
+            cancelable: true,
+          })
+          const notCancelled = target.dispatchEvent(synthetic)
+          if (notCancelled) {
+            insertNewline(target)
+          }
+        },
+        true,
+      )
+    `,
+  },
+]
+
+export const builtinUserScriptDefinitionById = builtinUserScriptDefinitions.reduce(
+  (acc, definition) => {
+    acc[definition.id] = definition
+    return acc
+  },
+  {} as Record<BuiltinUserScriptId, BuiltinUserScriptDefinition>,
+)
+
+export const createDefaultBuiltinUserScripts = (): Record<BuiltinUserScriptId, BuiltinUserStyleState> => ({
+  'enter-as-shift-enter': { enabled: false },
+})
+
 export const createDefaultUserStylesSnapshot = (): UserStylesSnapshot => ({
   schemaVersion: USER_STYLES_SCHEMA_VERSION,
   builtins: createDefaultBuiltinUserStyles(),
+  builtinScripts: createDefaultBuiltinUserScripts(),
   customStyles: [],
   customScripts: [],
 })
@@ -233,7 +329,18 @@ export const getEnabledUserScripts = (host: string, snapshot?: UserStylesSnapsho
   const normalizedHost = host.trim().toLowerCase()
   const userStyles = snapshot || createDefaultUserStylesSnapshot()
 
-  return (userStyles.customScripts || [])
+  const builtinScripts = builtinUserScriptDefinitions
+    .filter((definition) => userStyles.builtinScripts?.[definition.id]?.enabled)
+    .filter((definition) => definition.js.trim())
+    .filter((definition) => matchesAnyHostGlob(normalizedHost, definition.hostGlobs))
+    .map((definition) => ({
+      id: definition.id,
+      name: definition.labelKey,
+      hostGlobs: definition.hostGlobs,
+      js: definition.js.trim(),
+    }))
+
+  const customScripts = (userStyles.customScripts || [])
     .filter((script) => script.enabled)
     .filter((script) => script.js.trim())
     .filter((script) => matchesAnyHostGlob(normalizedHost, script.hostGlobs))
@@ -241,6 +348,8 @@ export const getEnabledUserScripts = (host: string, snapshot?: UserStylesSnapsho
       ...script,
       js: script.js.trim(),
     }))
+
+  return [...builtinScripts, ...customScripts]
 }
 
 const genId = (size = 6) => nanoid(size)
@@ -373,6 +482,17 @@ export const normalizeUserStyles = (data?: Partial<UserStylesSnapshot>): UserSty
     }
   }
 
+  const builtinScripts = createDefaultBuiltinUserScripts()
+
+  for (const id of builtinUserScriptIds) {
+    builtinScripts[id] = {
+      enabled:
+        typeof data?.builtinScripts?.[id]?.enabled === 'boolean'
+          ? data.builtinScripts[id].enabled
+          : defaults.builtinScripts[id].enabled,
+    }
+  }
+
   const customStyles = (data?.customStyles || [])
     .map((style, index) => normalizeCustomUserStyle(style, index))
     .filter((style): style is CustomUserStyle => style != null)
@@ -384,6 +504,7 @@ export const normalizeUserStyles = (data?: Partial<UserStylesSnapshot>): UserSty
   return {
     schemaVersion: USER_STYLES_SCHEMA_VERSION,
     builtins,
+    builtinScripts,
     customStyles,
     customScripts,
   }

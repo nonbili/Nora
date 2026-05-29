@@ -130,6 +130,7 @@
     "allowHttpWebsite": "Allow HTTP websites",
     "inspectable": "Make webview inspectable",
     "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
+    "enterInsertsNewline": "Enter inserts a new line (Shift+Enter)",
     "doubleBackToExitApp": "Double back to exit app",
     "oneProfilePerSite": "One profile per site",
     "oneProfilePerSiteHint": "Use a separate automatic session for each site. Links opened from a site keep that site's profile.",
