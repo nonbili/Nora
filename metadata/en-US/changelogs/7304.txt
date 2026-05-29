@@ -1,0 +1,3 @@
+- Block cosmetic ad elements
+- Support clearing cookies and site data for the current tab's host
+- Add setting to make the Enter key insert a new line
