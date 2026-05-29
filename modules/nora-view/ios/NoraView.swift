@@ -86,6 +86,25 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     promise.resolve(nil)
   }
 
+  static func clearHostData(_ profile: String, host: String, promise: Promise) {
+    let normalizedHost = host.lowercased()
+    let store = dataStore(for: profile)
+    let types = WKWebsiteDataStore.allWebsiteDataTypes()
+    store.fetchDataRecords(ofTypes: types) { records in
+      let matching = records.filter { record in
+        let name = record.displayName.lowercased()
+        return name == normalizedHost || normalizedHost.hasSuffix("." + name) || name.hasSuffix("." + normalizedHost)
+      }
+      guard !matching.isEmpty else {
+        promise.resolve(nil)
+        return
+      }
+      store.removeData(ofTypes: types, for: matching) {
+        promise.resolve(nil)
+      }
+    }
+  }
+
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
     NouController.shared.register(self)

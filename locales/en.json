@@ -70,6 +70,8 @@
     "toggleSidebar": "Toggle sidebar"
   },
   "menus": {
+    "clearSiteData": "Clear site data",
+    "clearSiteDataConfirm": "Clear all cookies and site data for \"{{host}}\"? This signs you out of this site.",
     "close": "Close",
     "delete": "Delete",
     "desktop": "Desktop site",
@@ -345,6 +347,8 @@
     "blocklistUpdated": "Blocklist updated",
     "profileDataCleared": "Profile data cleared",
     "profileDataClearFailed": "Failed to clear profile data",
+    "siteDataCleared": "Site data cleared",
+    "siteDataClearFailed": "Failed to clear site data",
     "pressBackAgainToExit": "Press back again to exit"
   },
   "usageLimits": {

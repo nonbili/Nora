@@ -19,6 +19,14 @@ export const clearProfileData = async (profileId: string) => {
   }
 }
 
+export const clearHostData = async (host: string, profileId: string) => {
+  if (!host) {
+    return
+  }
+
+  await NoraViewModule.clearHostData(profileId || DEFAULT_PROFILE_ID, host)
+}
+
 export const deleteProfileData = (profileId: string) => {
   if (!profileId || profileId === DEFAULT_PROFILE_ID) {
     return

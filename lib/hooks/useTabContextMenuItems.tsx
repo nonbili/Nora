@@ -9,6 +9,9 @@ import { ui$ } from '@/states/ui'
 import { addBookmark } from '@/lib/bookmark'
 import { share } from '@/lib/share'
 import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { clearHostData } from '@/lib/profile-data'
+import { confirmDestructiveAction } from '@/lib/confirm'
+import { showToast } from '@/lib/toast'
 
 export interface TabContextMenuOptions {
   runWebviewAction: (action: (webview: any) => void) => void
@@ -18,6 +21,38 @@ export interface TabContextMenuOptions {
 export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions) => {
   const colorScheme = useColorScheme()
   const menuIconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
+
+  let host = ''
+  if (tab.url) {
+    try {
+      host = new URL(tab.url).hostname
+    } catch {}
+  }
+
+  const clearSiteData = () => {
+    if (!host) {
+      return
+    }
+    confirmDestructiveAction(
+      t('menus.clearSiteData'),
+      t('menus.clearSiteDataConfirm', { host }),
+      t('menus.clearSiteData'),
+      () => {
+        void clearHostData(host, tab.profile || 'default')
+          .then(() => {
+            showToast(t('toast.siteDataCleared'))
+            options.runWebviewAction((webview) => {
+              if (typeof webview.reload === 'function') {
+                webview.reload()
+              } else {
+                void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+              }
+            })
+          })
+          .catch(() => showToast(t('toast.siteDataClearFailed')))
+      },
+    )
+  }
 
   const items: ContextItem[] = [
     {
@@ -88,6 +123,15 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
       icon: <MaterialIcons name="share" size={16} color={menuIconColor} />,
       handler: () => share(tab.url || ''),
     },
+    ...(host
+      ? [
+          {
+            label: t('menus.clearSiteData'),
+            icon: <MaterialIcons name="delete-sweep" size={16} color={menuIconColor} />,
+            handler: clearSiteData,
+          },
+        ]
+      : []),
     { kind: 'separator' },
     {
       label: t('menus.close'),

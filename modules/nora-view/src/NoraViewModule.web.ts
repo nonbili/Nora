@@ -9,6 +9,14 @@ class NoraViewModule extends NativeModule {
 
     await mainClient.clearProfileData(profile)
   }
+
+  async clearHostData(profile: string, host: string) {
+    if (!window.electron?.ipcRenderer) {
+      return
+    }
+
+    await mainClient.clearHostData(profile, host)
+  }
 }
 
 export default registerWebModule(NoraViewModule, 'NoraViewModule')

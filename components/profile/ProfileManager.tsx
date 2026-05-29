@@ -1,5 +1,6 @@
-import { Alert, Pressable, ScrollView, View } from 'react-native'
+import { Pressable, ScrollView, View } from 'react-native'
 import { clsx, isWeb, isIos } from '@/lib/utils'
+import { confirmDestructiveAction } from '@/lib/confirm'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
 import { settings$, Profile } from '@/states/settings'
@@ -31,24 +32,6 @@ const formatDate = (value: number) => {
 }
 
 const AUTO_PROFILE_STALE_MS = 14 * 24 * 60 * 60 * 1000
-
-const confirmDestructiveAction = (title: string, message: string, confirmText: string, action: () => void) => {
-  if (isWeb) {
-    if (window.confirm(message)) {
-      action()
-    }
-    return
-  }
-
-  Alert.alert(title, message, [
-    { text: t('buttons.cancel'), style: 'cancel' },
-    {
-      text: confirmText,
-      style: 'destructive',
-      onPress: action,
-    },
-  ])
-}
 
 const AutoProfilesModal = () => {
   const open = useValue(ui$.autoProfilesModalOpen)

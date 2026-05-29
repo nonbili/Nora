@@ -117,6 +117,43 @@ class NoraViewModule : Module() {
       }
     }
 
+    AsyncFunction("clearHostData") { profile: String, host: String ->
+      try {
+        if (host.isEmpty()) {
+          return@AsyncFunction
+        }
+
+        val cookieManager: CookieManager
+        val webStorage: WebStorage
+        if (profile != "default" && WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+          val targetProfile = ProfileStore.getInstance().getProfile(profile) ?: return@AsyncFunction
+          cookieManager = targetProfile.cookieManager
+          webStorage = targetProfile.webStorage
+        } else {
+          cookieManager = CookieManager.getInstance()
+          webStorage = WebStorage.getInstance()
+        }
+
+        for (scheme in listOf("https", "http")) {
+          val origin = "$scheme://$host"
+          webStorage.deleteOrigin(origin)
+
+          // CookieManager has no per-host delete, so expire each cookie.
+          val cookies = cookieManager.getCookie(origin) ?: continue
+          for (pair in cookies.split(";")) {
+            val name = pair.substringBefore("=").trim()
+            if (name.isEmpty()) continue
+            for (domain in listOf(host, ".$host")) {
+              cookieManager.setCookie(origin, "$name=; Max-Age=0; path=/; domain=$domain")
+            }
+          }
+        }
+        cookieManager.flush()
+      } catch (e: Exception) {
+        log("clearHostData failed: ${e.message}")
+      }
+    }
+
     AsyncFunction("getCookies") Coroutine { url: String, profile: String? ->
       withContext(Dispatchers.Main) {
         try {

@@ -24,6 +24,29 @@ const interfaces = {
 
     return session.fromPartition(`persist:${profile}`).clearData()
   },
+  clearHostData: async (profile: string, host: string) => {
+    if (!profile || !host) {
+      return
+    }
+
+    const ses = session.fromPartition(`persist:${profile}`)
+    await ses.clearData({ origins: [`https://${host}`, `http://${host}`] })
+
+    // clearData's origins filter does not reliably remove domain/subdomain
+    // cookies, so explicitly remove cookies scoped to the host as well.
+    try {
+      const cookies = await ses.cookies.get({ domain: host })
+      await Promise.all(
+        cookies.map((cookie) => {
+          const cookieHost = cookie.domain?.replace(/^\./, '') || host
+          const scheme = cookie.secure ? 'https' : 'http'
+          return ses.cookies.remove(`${scheme}://${cookieHost}${cookie.path || '/'}`, cookie.name)
+        }),
+      )
+    } catch (error) {
+      console.error(`Failed to clear cookies for ${host} in ${profile}`, error)
+    }
+  },
   fetchText: async (url: string, headers: Record<string, string> = {}) => {
     const res = await fetch(url, { headers })
     return {
