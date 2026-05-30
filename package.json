@@ -5,8 +5,8 @@
   "name": "nora",
   "private": true,
   "main": "expo-router/entry",
-  "version": "0.7.6",
-  "versionCode": 73,
+  "version": "0.7.7",
+  "versionCode": 74,
   "buildNumber": "22",
   "scripts": {
     "bundle": "bun build --target browser content/main.ts --outfile assets/scripts/main.bjs",
@@ -20,7 +20,7 @@
   "dependencies": {
     "@expo/ui": "~56.0.14",
     "@expo/vector-icons": "^15.0.2",
-    "@legendapp/state": "^3.0.0-beta.38",
+    "@legendapp/state": "^3.0.0-beta.47",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-navigation/drawer": "^7.3.9",
     "@react-navigation/native": "^7.1.6",
