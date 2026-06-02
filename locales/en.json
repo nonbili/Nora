@@ -88,7 +88,8 @@
     "viewInSplitView": "View in split view"
   },
   "modals": {
-    "downloadVideo": "Download video"
+    "downloadVideo": "Download video",
+    "downloadOnCobalt": "Download video on cobalt.tools"
   },
   "native": {
     "menu_saveImage": "Save image",

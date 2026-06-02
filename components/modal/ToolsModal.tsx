@@ -9,7 +9,8 @@ import { NouButton } from '../button/NouButton'
 import { t } from 'i18next'
 import { isDownloadable, normalizeDownloadUrl } from '@/content/download'
 import { mainClient } from '@/desktop/src/renderer/ipc/main'
-import { isWeb } from '@/lib/utils'
+import { isIos, isWeb, nIf } from '@/lib/utils'
+import { tabs$ } from '@/states/tabs'
 
 const canDownload = (url: string) => {
   let hostname, pathname
@@ -41,10 +42,12 @@ export const ToolsModal = () => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   const [url, setUrl] = useState('')
+  const [cobaltUrl, setCobaltUrl] = useState('')
   const onClose = () => ui$.toolsModalOpen.set(false)
 
   useEffect(() => {
     setUrl('')
+    setCobaltUrl('')
   }, [toolsModalOpen])
 
   const onDownload = () => {
@@ -59,6 +62,15 @@ export const ToolsModal = () => {
     ui$.downloadVideoModalUrl.set(normalizedUrl)
   }
 
+  const onOpenCobalt = () => {
+    const trimmed = cobaltUrl.trim()
+    const target = trimmed
+      ? `https://cobalt.tools/?u=${encodeURIComponent(trimmed)}`
+      : 'https://cobalt.tools/'
+    tabs$.openTab(target)
+    onClose()
+  }
+
   if (!toolsModalOpen) {
     return null
   }
@@ -66,21 +78,41 @@ export const ToolsModal = () => {
   return (
     <BaseModal onClose={onClose} useNativeModal={false}>
       <View className="p-5">
-        <NouText className="text-lg font-semibold mb-4">{t('modals.downloadVideo')}</NouText>
-        <NouText className="mb-4 text-sm text-zinc-600 dark:text-gray-200">Support Facebook, Instagram, TikTok and X</NouText>
-        <NouText className="mb-1 font-semibold text-zinc-700 dark:text-gray-300">URL</NouText>
-        <TextInput
-          className="border border-zinc-300 dark:border-gray-600 rounded mb-3 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-900 p-2 text-sm"
-          value={url}
-          onChangeText={setUrl}
-          placeholder="https://www.instagram.com/:user/reel/:id"
-          placeholderTextColor={isDark ? gray.gray11 : '#52525b'}
-          autoFocus
-        />
-        <View className="flex-row items-center justify-end mt-6">
-          <NouButton disabled={!canDownload(url.trim())} onPress={onDownload}>
-            Download
-          </NouButton>
+        {nIf(
+          !isIos,
+          <>
+            <NouText className="text-lg font-semibold mb-4">{t('modals.downloadVideo')}</NouText>
+            <NouText className="mb-4 text-sm text-zinc-600 dark:text-gray-200">Support Facebook, Instagram, TikTok and X</NouText>
+            <NouText className="mb-1 font-semibold text-zinc-700 dark:text-gray-300">URL</NouText>
+            <TextInput
+              className="border border-zinc-300 dark:border-gray-600 rounded mb-3 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-900 p-2 text-sm"
+              value={url}
+              onChangeText={setUrl}
+              placeholder="https://www.instagram.com/:user/reel/:id"
+              placeholderTextColor={isDark ? gray.gray11 : '#52525b'}
+              autoFocus
+            />
+            <View className="flex-row items-center justify-end mt-6">
+              <NouButton disabled={!canDownload(url.trim())} onPress={onDownload}>
+                Download
+              </NouButton>
+            </View>
+          </>,
+        )}
+
+        <View className={isIos ? '' : 'border-t border-zinc-200 dark:border-gray-700 mt-6 pt-5'}>
+          <NouText className="text-lg font-semibold mb-4">{t('modals.downloadOnCobalt')}</NouText>
+          <NouText className="mb-1 font-semibold text-zinc-700 dark:text-gray-300">URL</NouText>
+          <TextInput
+            className="border border-zinc-300 dark:border-gray-600 rounded mb-3 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-900 p-2 text-sm"
+            value={cobaltUrl}
+            onChangeText={setCobaltUrl}
+            placeholder="post or reel url"
+            placeholderTextColor={isDark ? gray.gray11 : '#52525b'}
+          />
+          <View className="flex-row items-center justify-end mt-6">
+            <NouButton onPress={onOpenCobalt}>Open</NouButton>
+          </View>
         </View>
       </View>
     </BaseModal>
