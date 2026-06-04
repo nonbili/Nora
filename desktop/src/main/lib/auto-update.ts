@@ -12,7 +12,7 @@ function getAutoUpdater(): AppUpdater {
 }
 
 export async function checkForUpdate() {
-  if (is.dev) {
+  if (is.dev || process.env.SNAP) {
     return
   }
   const autoUpdater = getAutoUpdater()
