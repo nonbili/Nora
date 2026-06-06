@@ -32,6 +32,7 @@ export interface CustomUserScript {
   name: string
   enabled: boolean
   hostGlobs: string[]
+  pinToHeader: boolean
   js: string
 }
 
@@ -337,6 +338,7 @@ export const getEnabledUserScripts = (host: string, snapshot?: UserStylesSnapsho
       id: definition.id,
       name: definition.labelKey,
       hostGlobs: definition.hostGlobs,
+      pinToHeader: false,
       js: definition.js.trim(),
     }))
 
@@ -350,6 +352,10 @@ export const getEnabledUserScripts = (host: string, snapshot?: UserStylesSnapsho
     }))
 
   return [...builtinScripts, ...customScripts]
+}
+
+export const buildUserScriptExecutionSource = (script: Pick<CustomUserScript, 'name' | 'js'>) => {
+  return `(() => { try {\n${script.js}\n} catch (error) { console.error(${JSON.stringify('[Nora user script run] ' + script.name)}, error); throw error } })();`
 }
 
 const genId = (size = 6) => nanoid(size)
@@ -400,6 +406,7 @@ const normalizeCustomUserScript = (
     name,
     enabled: typeof script.enabled === 'boolean' ? script.enabled : true,
     hostGlobs,
+    pinToHeader: typeof script.pinToHeader === 'boolean' ? script.pinToHeader : false,
     js,
   }
 }

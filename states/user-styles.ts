@@ -191,6 +191,7 @@ export const getUserStylesSnapshot = (value: Partial<Store> | undefined = userSt
     name: script.name,
     enabled: script.enabled,
     hostGlobs: [...script.hostGlobs],
+    pinToHeader: Boolean(script.pinToHeader),
     js: script.js,
   })),
 })

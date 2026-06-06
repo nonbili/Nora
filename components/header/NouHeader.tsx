@@ -30,6 +30,8 @@ import { openTabForActiveDesktopView } from '@/lib/desktop-view-actions'
 import { DesktopTabsSidebar } from '../view/DesktopTabsSidebar'
 import { ServiceIcon } from '../service/Services'
 import { Tooltip } from '../tooltip/Tooltip'
+import { userStyles$ } from '@/states/user-styles'
+import { buildUserScriptExecutionSource, matchesAnyHostGlob } from '@/lib/user-styles'
 
 const webAnimatedHelpers = {
   AnimatedView: View,
@@ -88,6 +90,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
   const currentTab = useValue(tabs$.currentTab)
+  const customScripts = useValue(userStyles$.customScripts)
   const webview = ui$.webview.get()
   const { AnimatedView, useSharedValueSafe, withTimingSafe } = isWeb ? webAnimatedHelpers : nativeAnimatedHelpers!
   const marginTop = useSharedValueSafe(0)
@@ -193,6 +196,14 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const webMarginTop = (autoHideHeader || hideToolbarWhenScrolled) && !headerShown ? -headerHeight : 0
 
   const toggleSidebar = () => settings$.sidebarCollapsed.set(!settings$.sidebarCollapsed.get())
+  const pinnedScripts = customScripts
+    .filter((script) => script.enabled && script.pinToHeader && script.js.trim())
+    .filter((script) => hostname && matchesAnyHostGlob(hostname, script.hostGlobs))
+    .map((script) => ({ ...script, js: script.js.trim() }))
+
+  const runPinnedScript = (script: (typeof pinnedScripts)[number]) => {
+    void executeWebviewJavaScriptQuietly(webview, buildUserScriptExecutionSource(script))
+  }
 
   const ret = (
     <Root
@@ -250,8 +261,13 @@ export const NouHeader: React.FC<{}> = ({}) => {
           isWeb && sidebarCollapsed && 'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-100 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
         )}
       >
+        {pinnedScripts.map((script) => (
+          <Tooltip key={script.id} title={script.name}>
+            <MaterialButton name="code" color={headerControlColor} onPress={() => runPinnedScript(script)} />
+          </Tooltip>
+        ))}
         {nIf(
-          canDownload,
+          !isIos && canDownload,
           (() => {
             const downloadButton = <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />
             return <Tooltip title={t('modals.downloadVideo')}>{downloadButton}</Tooltip>
@@ -375,12 +391,16 @@ export const NouHeader: React.FC<{}> = ({}) => {
                         ]
                       : []),
                   ]),
-              {
-                label: t('menus.tools'),
-                icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
-                systemImage: 'wrench.and.screwdriver',
-                handler: () => ui$.toolsModalOpen.set(true),
-              },
+              ...(isIos
+                ? []
+                : [
+                    {
+                      label: t('menus.tools'),
+                      icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
+                      systemImage: 'wrench.and.screwdriver',
+                      handler: () => ui$.toolsModalOpen.set(true),
+                    },
+                  ]),
               {
                 label: t('settings.label'),
                 icon: <MaterialIcons name="settings" size={18} color={headerControlColor} />,

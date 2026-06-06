@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native'
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Switch, TextInput, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'
@@ -10,6 +10,7 @@ import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import { nIf } from '@/lib/utils'
 import {
+  buildUserScriptExecutionSource,
   parseUserscriptMetadata,
   sanitizeHostGlobs,
   stripUserscriptMetadata,
@@ -32,6 +33,7 @@ type DraftState = {
   name: string
   enabled: boolean
   hostGlobsText: string
+  pinToHeader: boolean
   js: string
 }
 
@@ -42,6 +44,7 @@ const createDraft = (script?: CustomUserScript | null): DraftState => {
       name: '',
       enabled: true,
       hostGlobsText: '',
+      pinToHeader: false,
       js: '',
     }
   }
@@ -51,6 +54,7 @@ const createDraft = (script?: CustomUserScript | null): DraftState => {
     name: script.name,
     enabled: script.enabled,
     hostGlobsText: script.hostGlobs.join(', '),
+    pinToHeader: script.pinToHeader,
     js: script.js,
   }
 }
@@ -144,16 +148,10 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
       return
     }
 
-    const script = `
-      (() => {
-        try {
-          ${draft.js}
-        } catch (error) {
-          console.error('[Nora user script run]', error);
-          throw error;
-        }
-      })();
-    `
+    const script = buildUserScriptExecutionSource({
+      name: draft.name || t('settings.userStyles.scripts.namePlaceholder'),
+      js: draft.js,
+    })
     void executeWebviewJavaScript(webview, script)
       .then(() => showToast(t('settings.userStyles.scripts.runComplete')))
       .catch(() => showToast(t('settings.userStyles.scripts.runFailed')))
@@ -206,6 +204,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
       name: draft.name.trim(),
       enabled: draft.enabled,
       hostGlobs,
+      pinToHeader: draft.pinToHeader,
       js: draft.js,
     }
 
@@ -260,6 +259,25 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
           placeholder={t('settings.userStyles.hostGlobs.placeholder')}
           placeholderTextColor="#71717a"
           value={draft.hostGlobsText}
+        />
+      </View>
+
+      <View className="mt-6 flex-row items-center justify-between gap-4 rounded-2xl border border-zinc-300 bg-white px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950">
+        <View className="flex-1 pr-4">
+          <NouText className="font-medium">{t('settings.userStyles.scripts.pinToHeader')}</NouText>
+          <NouText className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
+            {t('settings.userStyles.scripts.pinToHeaderHint')}
+          </NouText>
+        </View>
+        <Switch
+          value={draft.pinToHeader}
+          onValueChange={(pinToHeader) => setDraft((value) => (value ? { ...value, pinToHeader } : value))}
+          trackColor={{ false: '#d4d4d8', true: '#4f46e5' }}
+          thumbColor="#ffffff"
+          {...Platform.select({
+            web: { activeThumbColor: '#ffffff' },
+            ios: { style: { transform: [{ scale: 0.7 }] } },
+          })}
         />
       </View>
 

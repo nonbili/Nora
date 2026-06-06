@@ -71,7 +71,7 @@ export const ToolsModal = () => {
     onClose()
   }
 
-  if (!toolsModalOpen) {
+  if (isIos || !toolsModalOpen) {
     return null
   }
 

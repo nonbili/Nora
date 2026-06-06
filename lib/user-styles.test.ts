@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { getInjectedCss } from '../content/css'
 import {
+  buildUserScriptExecutionSource,
   getEnabledUserScripts,
   getEnabledUserStyleCss,
   matchesAnyHostGlob,
@@ -85,6 +86,7 @@ describe('normalizeUserStyles', () => {
           name: 'Reddit script',
           enabled: true,
           hostGlobs: ['*.reddit.com'],
+          pinToHeader: true,
           js: 'document.body.dataset.test = "1"',
         },
         {
@@ -92,6 +94,7 @@ describe('normalizeUserStyles', () => {
           name: 'Invalid host',
           enabled: true,
           hostGlobs: ['https://example.com'],
+          pinToHeader: false,
           js: 'console.log(1)',
         },
         {
@@ -99,6 +102,7 @@ describe('normalizeUserStyles', () => {
           name: 'Empty JS',
           enabled: true,
           hostGlobs: ['x.com'],
+          pinToHeader: false,
           js: '   ',
         },
       ],
@@ -109,7 +113,24 @@ describe('normalizeUserStyles', () => {
       id: 'one',
       name: 'Reddit script',
       hostGlobs: ['*.reddit.com'],
+      pinToHeader: true,
     })
+  })
+
+  it('defaults legacy custom scripts to not pinned', () => {
+    const snapshot = normalizeUserStyles({
+      customScripts: [
+        {
+          id: 'legacy',
+          name: 'Legacy',
+          enabled: true,
+          hostGlobs: ['x.com'],
+          js: 'console.log("legacy")',
+        } as any,
+      ],
+    })
+
+    expect(snapshot.customScripts[0].pinToHeader).toBe(false)
   })
 
   it('defaults the enter-as-shift-enter builtin script to off and respects an explicit value', () => {
@@ -243,6 +264,7 @@ console.log('run')`
           name: 'Matching',
           enabled: true,
           hostGlobs: ['*.reddit.com'],
+          pinToHeader: true,
           js: 'console.log("match")',
         },
         {
@@ -250,6 +272,7 @@ console.log('run')`
           name: 'Disabled',
           enabled: false,
           hostGlobs: ['*.reddit.com'],
+          pinToHeader: false,
           js: 'console.log("disabled")',
         },
         {
@@ -257,6 +280,7 @@ console.log('run')`
           name: 'Other host',
           enabled: true,
           hostGlobs: ['x.com'],
+          pinToHeader: false,
           js: 'console.log("other")',
         },
       ],
@@ -264,5 +288,17 @@ console.log('run')`
 
     expect(getEnabledUserScripts('www.reddit.com', snapshot).map((script) => script.id)).toEqual(['one'])
     expect(getEnabledUserScripts('x.com', snapshot).map((script) => script.id)).toEqual(['three'])
+    expect(getEnabledUserScripts('www.reddit.com', snapshot)[0].pinToHeader).toBe(true)
+  })
+
+  it('wraps user script execution with named error handling', () => {
+    const source = buildUserScriptExecutionSource({
+      name: 'Pinned helper',
+      js: 'document.body.dataset.pinned = "1"',
+    })
+
+    expect(source).toContain('document.body.dataset.pinned = "1"')
+    expect(source).toContain('[Nora user script run] Pinned helper')
+    expect(source).toContain('throw error')
   })
 })
