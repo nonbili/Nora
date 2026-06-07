@@ -151,7 +151,7 @@ export const SettingsBrowsingContent: React.FC = () => {
                 label={
                   <View>
                     <NouText className="font-medium">{t('settings.mentionNotifications')}</NouText>
-                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">x.com only</NouText>
+                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">X and Facebook</NouText>
                   </View>
                 }
                 value={settings.mentionNotificationsEnabled}

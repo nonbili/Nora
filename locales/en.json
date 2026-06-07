@@ -146,7 +146,7 @@
       "forYou": "For you",
       "following": "Following"
     },
-    "mentionNotifications": "Mentions & DM notifications",
+    "mentionNotifications": "Social notifications",
     "mentionNotificationsHint": "Due to OS background limits, delivery may be delayed and is not guaranteed.",
     "sections": {
       "general": "General",

@@ -2,6 +2,13 @@ import { AppState, Platform } from 'react-native'
 import NoraViewModule from '@/modules/nora-view'
 import { createMMKV, type MMKV } from 'react-native-mmkv'
 import { settings$ } from '@/states/settings'
+import {
+  buildFacebookNotificationItemInput,
+  emptyFacebookNotificationCounts,
+  facebookNotificationItemDetails,
+  parseFacebookNotificationCounts,
+  type FacebookNotificationCounts,
+} from '@/lib/facebook-notification-poller'
 
 let Notifications: typeof import('expo-notifications') | undefined
 let TaskManager: typeof import('expo-task-manager') | undefined
@@ -35,6 +42,7 @@ const storage = Platform.OS !== 'web' ? createMMKV({ id: 'mention-notifications'
 const SEEN_KEY = 'seenIds'
 const LAST_POLL_KEY = 'lastPollMs'
 const LAST_BACKGROUND_POLL_KEY = 'lastBackgroundPollMs'
+const FACEBOOK_COUNTS_KEY = 'facebookCounts'
 const MAX_SEEN = 200
 const FOREGROUND_POLL_MIN_AGE_MS = 5 * 60 * 1000
 const FOREGROUND_POLL_INTERVAL_MS = 5 * 60 * 1000
@@ -198,14 +206,117 @@ const pollX = async (): Promise<PollResult> => {
   return merged
 }
 
+// --- Facebook poller --------------------------------------------------------
+
+const FACEBOOK_BOOKMARKS_URL = 'https://m.facebook.com/menu/bookmarks/'
+const FACEBOOK_USER_AGENT =
+  'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'
+const hasFacebookAuthCookies = (cookieHeader: string) => /(^|;\s*)(c_user|xs)=/.test(cookieHeader)
+
+const getPollProfiles = () =>
+  Array.from(
+    new Set(
+      settings$.profiles
+        .get()
+        .map((p) => p?.id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  )
+
+const loadFacebookCounts = (): Record<string, FacebookNotificationCounts> => {
+  const raw = storage.getString(FACEBOOK_COUNTS_KEY)
+  if (!raw) return {}
+  try {
+    return JSON.parse(raw) as Record<string, FacebookNotificationCounts>
+  } catch {
+    return {}
+  }
+}
+
+const saveFacebookCounts = (counts: Record<string, FacebookNotificationCounts>) => {
+  storage.set(FACEBOOK_COUNTS_KEY, JSON.stringify(counts))
+}
+
+const pollFacebookProfile = async (
+  profileId: string,
+  previousByProfile: Record<string, FacebookNotificationCounts>,
+): Promise<PollResult> => {
+  const result: PollResult = { loggedIn: false, items: [], errors: [] }
+  let cookieHeader = ''
+  try {
+    const mobileCookies = await NoraViewModule.getCookies('https://m.facebook.com', profileId)
+    cookieHeader = hasFacebookAuthCookies(mobileCookies)
+      ? mobileCookies
+      : await NoraViewModule.getCookies('https://www.facebook.com', profileId)
+  } catch (e: any) {
+    result.errors.push(`facebook ${profileId} getCookies: ${e?.message || e}`)
+    return result
+  }
+  if (!hasFacebookAuthCookies(cookieHeader)) return result
+  result.loggedIn = true
+
+  try {
+    const res = await fetch(FACEBOOK_BOOKMARKS_URL, {
+      headers: {
+        cookie: cookieHeader,
+        accept: 'text/html,application/xhtml+xml',
+        'accept-language': 'en-US,en;q=0.9',
+        'user-agent': FACEBOOK_USER_AGENT,
+      },
+    })
+    if (!res.ok) throw new Error(`bookmarks HTTP ${res.status}`)
+    const counts = parseFacebookNotificationCounts(await res.text())
+    const previous = previousByProfile[profileId] || emptyFacebookNotificationCounts()
+    previousByProfile[profileId] = counts
+    for (const item of buildFacebookNotificationItemInput(profileId, counts, previous)) {
+      const details = facebookNotificationItemDetails(item)
+      result.items.push({
+        source: 'facebook',
+        kind: 'mention',
+        profileId,
+        id: details.id,
+        url: details.url,
+        title: details.title,
+        body: details.body,
+        createdAtMs: Date.now(),
+      })
+    }
+  } catch (e: any) {
+    result.errors.push(`facebook ${profileId} bookmarks: ${e?.message || e}`)
+  }
+
+  return result
+}
+
+const pollFacebook = async (): Promise<PollResult> => {
+  const merged: PollResult = { loggedIn: false, items: [], errors: [] }
+  const profiles = getPollProfiles()
+  const previousByProfile = loadFacebookCounts()
+  const results = await Promise.allSettled(profiles.map((profileId) => pollFacebookProfile(profileId, previousByProfile)))
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      merged.loggedIn = merged.loggedIn || r.value.loggedIn
+      merged.items.push(...r.value.items)
+      merged.errors.push(...r.value.errors)
+    } else {
+      merged.errors.push(`facebook ${profiles[i]}: ${r.reason?.message || r.reason}`)
+    }
+  })
+  saveFacebookCounts(previousByProfile)
+  return merged
+}
+
 // --- registry & runtime -----------------------------------------------------
 
-const pollers: ServicePoller[] = [{ id: 'x', poll: pollX }]
+const pollers: ServicePoller[] = [
+  { id: 'x', poll: pollX },
+  { id: 'facebook', poll: pollFacebook },
+]
 
 const ensureNotificationChannel = async () => {
   if (Platform.OS !== 'android' || !Notifications) return
   await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL_ID, {
-    name: 'Mentions and DMs',
+    name: 'Social notifications',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
   })
