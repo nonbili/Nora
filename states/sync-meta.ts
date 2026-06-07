@@ -3,6 +3,7 @@ import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import type { Settings } from './settings'
 import type { Bookmarks } from './bookmarks'
+import type { UserStylesSnapshot } from '@/lib/user-styles'
 
 export interface SyncBackup<T> {
   value: T
@@ -21,6 +22,7 @@ export interface ResourceSyncMeta<T> {
 interface Store {
   settings: ResourceSyncMeta<Settings>
   bookmarks: ResourceSyncMeta<Bookmarks>
+  userStyles: ResourceSyncMeta<UserStylesSnapshot>
 }
 
 const emptyMeta = <T>(): ResourceSyncMeta<T> => ({
@@ -34,11 +36,21 @@ const emptyMeta = <T>(): ResourceSyncMeta<T> => ({
 export const syncMeta$ = observable<Store>({
   settings: emptyMeta<Settings>(),
   bookmarks: emptyMeta<Bookmarks>(),
+  userStyles: emptyMeta<UserStylesSnapshot>(),
+})
+
+const normalizeSyncMeta = (data?: Partial<Store>): Store => ({
+  settings: { ...emptyMeta<Settings>(), ...data?.settings },
+  bookmarks: { ...emptyMeta<Bookmarks>(), ...data?.bookmarks },
+  userStyles: { ...emptyMeta<UserStylesSnapshot>(), ...data?.userStyles },
 })
 
 syncObservable(syncMeta$, {
   persist: {
     name: 'sync-meta',
     plugin: ObservablePersistMMKV,
+    transform: {
+      load: normalizeSyncMeta,
+    },
   },
 })

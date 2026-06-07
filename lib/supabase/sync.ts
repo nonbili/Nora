@@ -2,8 +2,10 @@ import { auth$ } from '@/states/auth'
 import { bookmarks$ } from '@/states/bookmarks'
 import { createLogger } from '@/lib/log'
 import { settings$ } from '@/states/settings'
+import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { bookmarksSyncer } from './sync/bookmarks'
 import { settingsSyncer } from './sync/settings'
+import { userStylesSyncer } from './sync/user-styles'
 
 const logger = createLogger('sync', { devOnly: true })
 
@@ -29,7 +31,7 @@ export async function syncSupabase() {
   }
 
   logger.log('starting syncSupabase')
-  await Promise.all([settingsSyncer.syncNow(), bookmarksSyncer.syncNow()])
+  await Promise.all([settingsSyncer.syncNow(), bookmarksSyncer.syncNow(), userStylesSyncer.syncNow()])
   logger.log('completed syncSupabase')
 }
 
@@ -48,6 +50,25 @@ settings$.onChange(({ value, getPrevious }) => {
     settingsSyncer.markDirty()
     if (canSync()) {
       settingsSyncer.scheduleSync()
+    }
+  }
+})
+
+userStyles$.onChange(({ value, getPrevious }) => {
+  if (userStylesSyncer.isApplyingRemote()) {
+    return
+  }
+
+  const prev = getPrevious()
+  if (!prev) {
+    return
+  }
+
+  if (JSON.stringify(getUserStylesSnapshot(value)) !== JSON.stringify(getUserStylesSnapshot(prev))) {
+    logger.log('detected local user styles change')
+    userStylesSyncer.markDirty()
+    if (canSync()) {
+      userStylesSyncer.scheduleSync()
     }
   }
 })
