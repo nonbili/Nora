@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native'
+import { Alert, Keyboard, Platform, Pressable, ScrollView, TextInput, View, useWindowDimensions } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import * as Clipboard from 'expo-clipboard'
 import * as DocumentPicker from 'expo-document-picker'
@@ -96,8 +96,15 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
   const webview = useValue(ui$.webview)
   const customStyles = useValue(userStyles$.customStyles)
   const [draft, setDraft] = useState<DraftState | null>(null)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const { height: windowHeight } = useWindowDimensions()
 
   const previewDefinition = previewBuiltinId ? builtinUserStyleDefinitionById[previewBuiltinId as BuiltinUserStyleId] : null
+  const editorHeight =
+    keyboardHeight > 0 && Platform.OS !== 'web'
+      ? Math.max(140, Math.min(300, windowHeight - keyboardHeight - 260))
+      : 300
+  const keyboardAvoidingClassName = keyboardHeight > 0 && Platform.OS !== 'web' ? 'w-full items-center' : undefined
 
   useEffect(() => {
     if (!open) {
@@ -112,6 +119,20 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
       setDraft(createDraft())
     }
   }, [open, editingId, customStyles])
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      return
+    }
+
+    const showSub = Keyboard.addListener('keyboardDidShow', (event) => setKeyboardHeight(event.endCoordinates.height))
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0))
+
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
 
   const onClose = () => {
     ui$.userStyleModalOpen.set(false)
@@ -293,7 +314,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
   }
 
   const content = (
-    <View className={inline ? 'pb-4' : 'p-6'}>
+    <View className={inline ? 'pb-4' : 'p-6'} style={inline && keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 16 } : undefined}>
       <View className="flex-row items-center gap-3">
         <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/10">
           <MaterialIcons name="auto-fix-high" color="#818cf8" size={20} />
@@ -349,7 +370,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
           className="rounded-2xl border border-zinc-300 bg-white dark:border-zinc-800 dark:bg-zinc-950"
         >
           <TextInput
-            className="min-h-[300px] p-4 text-xs text-zinc-900 dark:text-white"
+            className="p-4 text-xs text-zinc-900 dark:text-white"
             autoCapitalize="none"
             autoCorrect={false}
             multiline
@@ -357,6 +378,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
             placeholder={`body {\n  font-size: 18px;\n}`}
             placeholderTextColor="#71717a"
             style={{
+              height: editorHeight,
               textAlignVertical: 'top',
               fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
               minWidth: inline ? 420 : 800,
@@ -395,12 +417,19 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
   }
 
   return (
-    <BaseCenterModal onClose={onClose} containerClassName="lg:w-[50rem] xl:w-[60rem] max-w-[95vw]">
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} enabled={Platform.OS === 'ios'}>
-        <ScrollView className="max-h-[80vh]">
-          {content}
-        </ScrollView>
-      </KeyboardAvoidingView>
+    <BaseCenterModal
+      onClose={onClose}
+      keyboardAvoidingClassName={keyboardAvoidingClassName}
+      containerClassName="lg:w-[50rem] xl:w-[60rem] max-w-[95vw]"
+    >
+      <ScrollView
+        className="max-h-[80vh]"
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? 16 : 0 }}
+      >
+        {content}
+      </ScrollView>
     </BaseCenterModal>
   )
 }

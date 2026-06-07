@@ -270,6 +270,7 @@
         "importFailed": "Failed to import script",
         "pinToHeader": "Pin to toolbar",
         "pinToHeaderHint": "Show this script as a toolbar action on matching sites.",
+        "pinnedScripts": "Pinned scripts",
         "run": "Run",
         "runComplete": "Script ran",
         "runFailed": "Script failed",

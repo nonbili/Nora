@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Switch, TextInput, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Alert, Keyboard, Platform, Pressable, ScrollView, Switch, TextInput, View, useWindowDimensions } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'
@@ -80,22 +80,49 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
   const open = useValue(ui$.userScriptModalOpen)
   const editingId = useValue(ui$.editingUserScriptId)
   const webview = useValue(ui$.webview)
-  const customScripts = useValue(userStyles$.customScripts)
   const [draft, setDraft] = useState<DraftState | null>(null)
+  const draftKeyRef = useRef<string | null>(null)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const { height: windowHeight } = useWindowDimensions()
+  const editorHeight =
+    keyboardHeight > 0 && Platform.OS !== 'web'
+      ? Math.max(140, Math.min(300, windowHeight - keyboardHeight - 260))
+      : 300
+  const keyboardAvoidingClassName = keyboardHeight > 0 && Platform.OS !== 'web' ? 'w-full items-center' : undefined
 
   useEffect(() => {
+    const draftKey = open ? editingId || 'new' : 'closed'
+    if (draftKeyRef.current === draftKey) {
+      return
+    }
+    draftKeyRef.current = draftKey
+
     if (!open) {
       setDraft(null)
       return
     }
 
     if (editingId) {
-      const script = customScripts.find((s) => s.id === editingId)
+      const script = userStyles$.customScripts.get().find((s): s is CustomUserScript => Boolean(s) && s.id === editingId)
       setDraft(createDraft(script))
     } else {
       setDraft(createDraft())
     }
-  }, [open, editingId, customScripts])
+  }, [open, editingId])
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      return
+    }
+
+    const showSub = Keyboard.addListener('keyboardDidShow', (event) => setKeyboardHeight(event.endCoordinates.height))
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0))
+
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
 
   const onClose = () => {
     ui$.userScriptModalOpen.set(false)
@@ -222,7 +249,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
   }
 
   const content = (
-    <View className={inline ? 'pb-4' : 'p-6'}>
+    <View className={inline ? 'pb-4' : 'p-6'} style={inline && keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 16 } : undefined}>
       <View className="flex-row items-center gap-3">
         <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/10">
           <MaterialIcons name="code" color="#818cf8" size={20} />
@@ -297,7 +324,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
           className="rounded-2xl border border-zinc-300 bg-white dark:border-zinc-800 dark:bg-zinc-950"
         >
           <TextInput
-            className="min-h-[300px] p-4 text-xs text-zinc-900 dark:text-white"
+            className="p-4 text-xs text-zinc-900 dark:text-white"
             autoCapitalize="none"
             autoCorrect={false}
             multiline
@@ -305,6 +332,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
             placeholder={`document.body.dataset.nora = '1'`}
             placeholderTextColor="#71717a"
             style={{
+              height: editorHeight,
               textAlignVertical: 'top',
               fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
               minWidth: inline ? 420 : 800,
@@ -343,12 +371,19 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
   }
 
   return (
-    <BaseCenterModal onClose={onClose} containerClassName="lg:w-[50rem] xl:w-[60rem] max-w-[95vw]">
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} enabled={Platform.OS === 'ios'}>
-        <ScrollView className="max-h-[80vh]">
-          {content}
-        </ScrollView>
-      </KeyboardAvoidingView>
+    <BaseCenterModal
+      onClose={onClose}
+      keyboardAvoidingClassName={keyboardAvoidingClassName}
+      containerClassName="lg:w-[50rem] xl:w-[60rem] max-w-[95vw]"
+    >
+      <ScrollView
+        className="max-h-[80vh]"
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? 16 : 0 }}
+      >
+        {content}
+      </ScrollView>
     </BaseCenterModal>
   )
 }

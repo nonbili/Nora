@@ -4,6 +4,7 @@ import { useValue } from '@legendapp/state/react'
 import { t } from 'i18next'
 import { NouText } from '../NouText'
 import { clsx } from '@/lib/utils'
+import type { CustomUserScript } from '@/lib/user-styles'
 import { userStyles$ } from '@/states/user-styles'
 import { ui$ } from '@/states/ui'
 import { UserStyleEditModal } from './UserStyleEditModal'
@@ -22,7 +23,7 @@ const formatHostGlobs = (hostGlobs: string[]) => hostGlobs.join(', ')
 
 export const SettingsUserStylesContent = () => {
   const customStyles = useValue(userStyles$.customStyles)
-  const customScripts = useValue(userStyles$.customScripts)
+  const customScripts = useValue(userStyles$.customScripts).filter((script): script is CustomUserScript => Boolean(script))
   const userStyleModalOpen = useValue(ui$.userStyleModalOpen)
   const userScriptModalOpen = useValue(ui$.userScriptModalOpen)
   const hasStyles = customStyles.length > 0

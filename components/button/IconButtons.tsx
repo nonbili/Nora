@@ -1,5 +1,6 @@
 import { colors } from '@/lib/colors'
 import AntDesign from '@expo/vector-icons/AntDesign'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { ComponentProps } from 'react'
 import { useColorScheme } from 'react-native'
@@ -25,6 +26,22 @@ export const MaterialButton = ({ color, ...props }: ComponentProps<typeof Materi
   const isDark = colorScheme !== 'light'
   return (
     <MaterialIcons.Button
+      backgroundColor="transparent"
+      underlayColor={isDark ? colors.underlay : '#e5e7eb'}
+      iconStyle={{ marginRight: 0 }}
+      style={{ padding: 10 }}
+      size={24}
+      {...props}
+      color={color ?? (isDark ? colors.icon : colors.iconLightStrong)}
+    />
+  )
+}
+
+export const MaterialCommunityButton = ({ color, ...props }: ComponentProps<typeof MaterialCommunityIcons.Button>) => {
+  const colorScheme = useColorScheme()
+  const isDark = colorScheme !== 'light'
+  return (
+    <MaterialCommunityIcons.Button
       backgroundColor="transparent"
       underlayColor={isDark ? colors.underlay : '#e5e7eb'}
       iconStyle={{ marginRight: 0 }}
