@@ -33,6 +33,7 @@ export interface Tab {
   title?: string
   icon?: string
   isLoading?: boolean
+  isPaused?: boolean
   desktopMode?: boolean
   profile?: string
   profileMode?: ProfileMode
@@ -63,6 +64,7 @@ interface Store {
   reopenClosedTab: (tabId: string) => string | undefined
   updateTabUrl: (url: string, index?: number) => void
   setTabLoading: (loading: boolean, index?: number) => void
+  setTabPaused: (paused: boolean, index?: number) => void
   setActiveTabIndex: (index: number, reason?: TabActivationReason) => void
   setActiveTabById: (tabId: string, reason?: TabActivationReason) => void
   handleBackPress: () => boolean
@@ -561,6 +563,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       }
       tab$.url.set(url)
       tab$.isLoading.set(Boolean(url))
+      tab$.isPaused.set(false)
       if (!previousUrl && url) {
         tab$.backToNewTab.set(true)
       }
@@ -576,6 +579,17 @@ export const tabs$: Observable<Store> = observable<Store>({
     const tab$ = tabs$.tabs[targetIndex]
     if (tab$.get()) {
       tab$.isLoading.set(loading)
+    }
+  },
+
+  setTabPaused: (paused, index) => {
+    const targetIndex = index ?? tabs$.activeTabIndex.get()
+    const tab$ = tabs$.tabs[targetIndex]
+    if (tab$.get()) {
+      tab$.isPaused.set(paused)
+      if (paused) {
+        tab$.isLoading.set(false)
+      }
     }
   },
 

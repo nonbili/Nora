@@ -30,6 +30,18 @@ export const TabRow = memo<{
   })
   const profileColor = getProfileColor(tab.profile)
   const tabLabel = getTabLabel(tab)
+  const favicon = (
+    <View className="relative">
+      <View className={clsx(tab.isPaused && 'opacity-40')}>
+        <ServiceIcon url={tab.url} icon={tab.icon} />
+      </View>
+      {tab.isPaused ? (
+        <View className="absolute -bottom-1 -right-1 rounded-full bg-zinc-100 dark:bg-zinc-700">
+          <MaterialIcons name="pause-circle-filled" size={10} color="#a1a1aa" />
+        </View>
+      ) : null}
+    </View>
+  )
   const row = collapsed ? (
     <div className="group relative">
       <Pressable
@@ -45,7 +57,7 @@ export const TabRow = memo<{
         }}
       >
         <View style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} />
-        <ServiceIcon url={tab.url} icon={tab.icon} />
+        {favicon}
       </Pressable>
       <div
         title={t('menus.close')}
@@ -76,12 +88,14 @@ export const TabRow = memo<{
       }}
     >
       <View className="h-4 w-1 shrink-0 rounded-full" style={{ backgroundColor: profileColor }} />
-      <View className="h-4 w-4 shrink-0 items-center justify-center">
-        <ServiceIcon url={tab.url} icon={tab.icon} />
-      </View>
+      <View className="h-4 w-4 shrink-0 items-center justify-center">{favicon}</View>
       <View className="min-w-0 flex-1">
         <NouText
-          className={clsx('text-xs font-medium', isActive ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-800 dark:text-zinc-200')}
+          className={clsx(
+            'text-xs font-medium',
+            isActive ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-800 dark:text-zinc-200',
+            tab.isPaused && 'italic opacity-60',
+          )}
           numberOfLines={1}
         >
           {getTabLabel(tab)}

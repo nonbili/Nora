@@ -4,13 +4,14 @@ import { useObserveEffect, useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { settings$ } from '@/states/settings'
-import { ActivityIndicator, Appearance, StyleSheet, View, useColorScheme } from 'react-native'
+import { ActivityIndicator, Appearance, Pressable, StyleSheet, View, useColorScheme } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
 import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { MaterialButton } from '../button/IconButtons'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { NouText } from '../NouText'
 import { ServiceIcon } from '../service/Services'
 import { getUserAgent } from '@/lib/useragent'
@@ -21,7 +22,7 @@ import { handleShortcuts } from '@/desktop/src/renderer/lib/shortcuts'
 import { t } from 'i18next'
 import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
-import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly, registerTabWebview } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { getEnabledUserScripts } from '@/lib/user-styles'
 import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
@@ -201,7 +202,7 @@ export const NoraTab: React.FC<{
   const theme = useValue(settings$.theme)
   const colorScheme = useColorScheme()
   const nativeRef = useRef<any>(null)
-  const webviewRef = useRef<WebviewTag>(null)
+  const webviewRef = useRef<WebviewTag | null>(null)
   const pageUrlRef = useRef('')
   const loadingWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [canGoBack, setCanGoBack] = useState(false)
@@ -286,10 +287,22 @@ export const NoraTab: React.FC<{
   )
 
   const noraViewRef = useCallback(
-    (webview: WebviewTag) => {
+    (webview: WebviewTag | null) => {
+      registerTabWebview(tab.id, webview)
       webviewRef.current = webview
       if (!webview) {
         return
+      }
+
+      // Load the URL as soon as the webview mounts. This also covers resuming a paused
+      // tab: pausing unmounts the webview, so on resume a fresh element mounts here and
+      // must reload. Read the URL from the store (not the captured prop) so a resume
+      // after a navigation still loads the right page, and seed pageUrlRef so the
+      // tab.url effect below doesn't double-load.
+      const currentUrl = tabs$.tabs.get().find((currentTab) => currentTab?.id === tab.id)?.url
+      if (currentUrl) {
+        webview.src = currentUrl
+        pageUrlRef.current = currentUrl
       }
 
       webview.addEventListener('dom-ready', () => {
@@ -447,13 +460,14 @@ export const NoraTab: React.FC<{
         clearTimeout(loadingWatchdogRef.current)
         loadingWatchdogRef.current = null
       }
+      registerTabWebview(tab.id, null)
       const native = nativeRef.current
       clearActiveNativeWebview(native)
       if (isActive && ui$.webview.get() === native) {
         ui$.activeCanGoBack.set(false)
       }
     }
-  }, [clearActiveNativeWebview, isActive])
+  }, [clearActiveNativeWebview, isActive, tab.id])
 
   const onNativeRef = useCallback(
     (ref: any) => {
@@ -461,11 +475,13 @@ export const NoraTab: React.FC<{
       nativeRef.current = ref
       if (!ref) {
         clearActiveNativeWebview(prevRef)
+        registerTabWebview(tab.id, null)
         return
       }
+      registerTabWebview(tab.id, ref)
       setActiveNativeWebview(ref)
     },
-    [clearActiveNativeWebview, setActiveNativeWebview],
+    [clearActiveNativeWebview, setActiveNativeWebview, tab.id],
   )
 
   const webview = webviewRef.current || nativeRef.current
@@ -601,8 +617,13 @@ export const NoraTab: React.FC<{
               {slotSwitcher || (
                 <div title={tab.url || undefined} style={{ display: 'flex', minWidth: 0, maxWidth: '100%' }}>
                   <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
-                    <View className="shrink-0" style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
-                      {tab.isLoading ? (
+                    <View
+                      className="shrink-0"
+                      style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      {tab.isPaused ? (
+                        <MaterialIcons name="pause-circle-filled" size={16} color="#a1a1aa" />
+                      ) : tab.isLoading ? (
                         <ActivityIndicator size="small" color="#a1a1aa" />
                       ) : (
                         <ServiceIcon url={tab.url} icon={tab.icon} />
@@ -626,15 +647,36 @@ export const NoraTab: React.FC<{
             </View>
           </View>
         </NouContextMenu>
-        <NoraView
-          className={clsx('flex-1', !tab.url && 'hidden')}
-          ref={noraViewRef}
-          partition={`persist:${tab.profile || 'default'}`}
-          useragent={getUserAgent(window.electron.process.platform, true)}
-          inspectable={inspectable}
-          allowpopups="true"
-          key={viewInstanceKey}
-        />
+        {tab.isPaused ? (
+          <View className="flex-1 min-h-0 items-center justify-center gap-3 px-6">
+            <MaterialIcons name="pause-circle-outline" size={40} color="#a1a1aa" />
+            <NouText className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+              {t('tabs.paused')}
+            </NouText>
+            <NouText className="text-center text-xs text-zinc-500 dark:text-zinc-400">
+              {t('tabs.pausedHint')}
+            </NouText>
+            <Pressable
+              className="mt-2 flex-row items-center gap-1 rounded-full bg-indigo-500 px-4 py-2 hover:bg-indigo-600 active:bg-indigo-600"
+              onPress={() => tabs$.setTabPaused(false, index)}
+            >
+              <MaterialIcons name="play-arrow" size={16} color="#ffffff" />
+              <NouText className="text-xs font-semibold" style={{ color: '#ffffff' }}>
+                {t('tabs.resume')}
+              </NouText>
+            </Pressable>
+          </View>
+        ) : (
+          <NoraView
+            className={clsx('flex-1', !tab.url && 'hidden')}
+            ref={noraViewRef}
+            partition={`persist:${tab.profile || 'default'}`}
+            useragent={getUserAgent(window.electron.process.platform, true)}
+            inspectable={inspectable}
+            allowpopups="true"
+            key={viewInstanceKey}
+          />
+        )}
         {nIf(
           !tab.url,
           <View className="flex-1 min-h-0">

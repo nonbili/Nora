@@ -8,7 +8,8 @@ import { createDesktopTabGroupFromTab, tabGroups$ } from '@/states/tab-groups'
 import { ui$ } from '@/states/ui'
 import { addBookmark } from '@/lib/bookmark'
 import { share } from '@/lib/share'
-import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { getTabWebview, pauseWebview, executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { isWeb } from '@/lib/utils'
 import { clearHostData } from '@/lib/profile-data'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { showToast } from '@/lib/toast'
@@ -54,6 +55,26 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
     )
   }
 
+  const togglePause = () => {
+    const index = tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id)
+    const nextPaused = !tab.isPaused
+    if (index !== -1) {
+      tabs$.setTabPaused(nextPaused, index)
+    }
+
+    // On desktop, flipping isPaused unmounts the webview (a real discard that frees
+    // CPU/memory and is reloaded on resume). On native we can't discard cleanly, so
+    // fall back to stopping the load and pausing any playing media.
+    if (nextPaused && !isWeb) {
+      const tabWebview = getTabWebview(tab.id)
+      if (tabWebview) {
+        pauseWebview(tabWebview)
+      } else {
+        options.runWebviewAction(pauseWebview)
+      }
+    }
+  }
+
   const items: ContextItem[] = [
     {
       label: t('menus.reload'),
@@ -66,6 +87,13 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
             void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
           }
         }),
+    },
+    {
+      label: tab.isPaused ? t('menus.resume') : t('menus.pause'),
+      icon: (
+        <MaterialIcons name={tab.isPaused ? 'play-arrow' : 'pause'} size={16} color={menuIconColor} />
+      ),
+      handler: togglePause,
     },
     {
       label: t('menus.editUrl'),

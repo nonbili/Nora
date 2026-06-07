@@ -80,6 +80,8 @@
     "editUrl": "Edit tab URL",
     "more": "More",
     "openInProfile": "Open in profile",
+    "pause": "Pause tab",
+    "resume": "Resume tab",
     "reload": "Reload",
     "scroll": "Scroll to top",
     "share": "Share",
@@ -334,7 +336,10 @@
   "tabs": {
     "new": "New tab",
     "recentlyClosed": "Recently closed",
-    "noRecentlyClosed": "No recently closed tabs"
+    "noRecentlyClosed": "No recently closed tabs",
+    "paused": "Tab is paused",
+    "pausedHint": "Its content was unloaded to save resources.",
+    "resume": "Resume"
   },
   "newTab": {
     "presets": {
