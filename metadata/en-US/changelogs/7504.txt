@@ -1,0 +1,4 @@
+- Pin user scripts to toolbar
+- Support syncing user styles and scripts
+- Add experimental Facebook notification poller
+- Support new locales: German, Estonian, Portuguese, and Vietnamese

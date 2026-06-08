@@ -1,34 +1,42 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import arText from '@/locales/ar.json'
+import deText from '@/locales/de.json'
 import elText from '@/locales/el.json'
 import enText from '@/locales/en.json'
 import esText from '@/locales/es.json'
+import etText from '@/locales/et.json'
 import frText from '@/locales/fr.json'
 import itText from '@/locales/it.json'
 import koText from '@/locales/ko.json'
 import lvText from '@/locales/lv.json'
 import plText from '@/locales/pl.json'
+import ptText from '@/locales/pt.json'
 import ptBRText from '@/locales/pt_BR.json'
 import svText from '@/locales/sv.json'
 import trText from '@/locales/tr.json'
+import viText from '@/locales/vi.json'
 import zhHansText from '@/locales/zh_Hans.json'
 import zhHantText from '@/locales/zh_Hant.json'
 import type { Locale } from 'expo-localization'
 
 export const supportedI18nLanguages = [
   'ar',
+  'de',
   'el',
   'en',
   'es',
+  'et',
   'fr',
   'it',
   'ko',
   'lv',
   'pl',
+  'pt',
   'pt_BR',
   'sv',
   'tr',
+  'vi',
   'zh_Hans',
   'zh_Hant',
 ] as const
@@ -38,6 +46,9 @@ const resources: Record<SupportedI18nLanguage, { translation: any }> = {
   ar: {
     translation: arText,
   },
+  de: {
+    translation: deText,
+  },
   el: {
     translation: elText,
   },
@@ -46,6 +57,9 @@ const resources: Record<SupportedI18nLanguage, { translation: any }> = {
   },
   es: {
     translation: esText,
+  },
+  et: {
+    translation: etText,
   },
   fr: {
     translation: frText,
@@ -62,6 +76,9 @@ const resources: Record<SupportedI18nLanguage, { translation: any }> = {
   pl: {
     translation: plText,
   },
+  pt: {
+    translation: ptText,
+  },
   pt_BR: {
     translation: ptBRText,
   },
@@ -70,6 +87,9 @@ const resources: Record<SupportedI18nLanguage, { translation: any }> = {
   },
   tr: {
     translation: trText,
+  },
+  vi: {
+    translation: viText,
   },
   zh_Hans: {
     translation: zhHansText,
@@ -97,7 +117,8 @@ export const resolveI18nLanguageFromExpoLocale = (locale?: Locale): SupportedI18
   }
 
   if (locale.languageCode === 'pt') {
-    return 'pt_BR'
+    const region = locale.regionCode?.toUpperCase()
+    return region === 'BR' ? 'pt_BR' : 'pt'
   }
 
   return isSupportedLanguage(locale.languageCode) ? locale.languageCode : undefined

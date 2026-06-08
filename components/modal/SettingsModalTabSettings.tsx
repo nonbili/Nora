@@ -69,16 +69,21 @@ const normalizeHost = (host: string) => host.replace(/^\*\./, '').replace(/^www\
 const isDesktop = isWeb && typeof window !== 'undefined' && !!(window as any).electron
 const languageNativeNames: Record<string, string> = {
   ar: 'العربية',
+  de: 'Deutsch',
   el: 'Ελληνικά',
   en: 'English',
   es: 'Español',
+  et: 'Eesti',
   fr: 'Français',
   it: 'Italiano',
   ko: '한국어',
   lv: 'Latviešu',
   pl: 'Polski',
+  pt: 'Português',
+  pt_BR: 'Português (Brasil)',
   sv: 'Svenska',
   tr: 'Türkçe',
+  vi: 'Tiếng Việt',
   zh_Hans: '简体中文',
   zh_Hant: '繁體中文',
 }
