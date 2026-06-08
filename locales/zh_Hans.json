@@ -38,10 +38,15 @@
     "editUrl": "编辑标签页网址",
     "viewInSplitView": "在分屏视图中查看",
     "more": "更多",
-    "openInProfile": "在配置文件中打开"
+    "openInProfile": "在配置文件中打开",
+    "clearSiteData": "清除网站数据",
+    "clearSiteDataConfirm": "清除“{{host}}”的所有 Cookie 和网站数据？这会让您退出登录此网站。",
+    "pause": "暂停标签页",
+    "resume": "恢复标签页"
   },
   "modals": {
-    "downloadVideo": "下载视频"
+    "downloadVideo": "下载视频",
+    "downloadOnCobalt": "在 cobalt.tools 下载视频"
   },
   "native": {
     "menu_saveImage": "保存图片",
@@ -217,7 +222,10 @@
         "runFailed": "脚本运行失败",
         "validation": {
           "js": "请在保存前添加 JavaScript"
-        }
+        },
+        "pinToHeader": "固定到工具栏",
+        "pinToHeaderHint": "在匹配的网站上将此脚本显示为工具栏操作。",
+        "pinnedScripts": "已固定脚本"
       }
     },
     "showReloadButton": "显示重新加载按钮",
@@ -229,19 +237,25 @@
     "mentionNotifications": "提及和私信通知",
     "mentionNotificationsHint": "由于操作系统后台限制，通知送达可能会延迟且无法保证。",
     "oneProfilePerSite": "每个网站一个配置文件",
-    "oneProfilePerSiteHint": "为每个网站使用独立的自动会话。从某个网站打开的链接将保留该网站的配置文件。"
+    "oneProfilePerSiteHint": "为每个网站使用独立的自动会话。从某个网站打开的链接将保留该网站的配置文件。",
+    "enterInsertsNewline": "Enter 插入新行（Shift+Enter）"
   },
   "tabs": {
     "new": "新标签页",
     "recentlyClosed": "最近关闭",
-    "noRecentlyClosed": "没有最近关闭的标签页"
+    "noRecentlyClosed": "没有最近关闭的标签页",
+    "paused": "标签页已暂停",
+    "pausedHint": "其内容已被卸载以节省资源。",
+    "resume": "恢复"
   },
   "toast": {
     "pinned": "已固定到新标签页页面",
     "blocklistUpdated": "屏蔽列表已更新",
     "pressBackAgainToExit": "再次按返回退出",
     "profileDataClearFailed": "无法清除配置文件数据",
-    "profileDataCleared": "配置文件数据已清除"
+    "profileDataCleared": "配置文件数据已清除",
+    "siteDataClearFailed": "无法清除网站数据",
+    "siteDataCleared": "网站数据已清除"
   },
   "profiles": {
     "label": "配置文件",

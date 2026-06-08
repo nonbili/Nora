@@ -1,0 +1,66 @@
+{
+  "about": {
+    "label": "Rakenduse teave",
+    "code": "Lähtekood",
+    "donate": "Toeta arendajat",
+    "hint": "Versiooniteave, lähtekood ja toetuse võimalused."
+  },
+  "changelog": {
+    "label": "Muudatuste logi"
+  },
+  "common": {
+    "about": "Teave",
+    "edit": "Muuda",
+    "off": "Väljas",
+    "on": "Sees",
+    "reset": "Lähtesta",
+    "save": "Salvesta",
+    "theme": "Kujundus"
+  },
+  "views": {
+    "rename": "Muuda vaate nime",
+    "namePlaceholder": "Vaate nimi",
+    "desktop": {
+      "blankTab": "Tühi vahekaart"
+    }
+  },
+  "buttons": {
+    "cancel": "Katkesta",
+    "closeAll": "Sulge kõik",
+    "confirm": "Kinnita",
+    "continue": "Jätka",
+    "openUrl": "Ava võrguaadress",
+    "open": "Ava",
+    "reopenLastClosedTab": "Ava viimatisuletud vahekaart uuesti",
+    "restoreTabs": "Hiljuti suletud vahekaardid",
+    "save": "Salvesta",
+    "toggleSidebar": "Külgpaan sisse/välja"
+  },
+  "menus": {
+    "clearSiteData": "Eemalda saidi andmed",
+    "close": "Sulge",
+    "delete": "Kustuta",
+    "viewInSplitView": "Vaata jagatud vaates"
+  },
+  "modals": {
+    "downloadVideo": "Laadi video alla"
+  },
+  "native": {
+    "menu_saveImage": "Salvesta pilt",
+    "menu_copyImageLink": "Kopeeri pildi link",
+    "menu_copyLink": "Kopeeri link",
+    "menu_openInProfile": "Ava profiili lehel",
+    "menu_openInNewTab": "Ava uuel vahekaardil",
+    "menu_openImageInNewTab": "Ava pilt uuel vahekaardil",
+    "toast_downloadStarted": "Allalaadimine algas, kontrolli süsteemi teavitusi",
+    "toast_downloadSucceeded": "Salvestatud allalaadimiste kausta",
+    "toast_downloadFailed": "Allalaadimine ei õnnestunud"
+  },
+  "profiles": {
+    "add": "Lisa",
+    "edit": "Muuda",
+    "save": "Salvesta",
+    "namePlaceholder": "Profiili nimi",
+    "clearData": "Kustuta andmed"
+  }
+}
