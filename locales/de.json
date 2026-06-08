@@ -1,0 +1,416 @@
+{
+  "about": {
+    "label": "Über",
+    "code": "Quellcode",
+    "donate": "Spenden",
+    "hint": "Versionsinfo, Quellcode und Support-Links."
+  },
+  "changelog": {
+    "label": "Versionsverlauf",
+    "hint": "Aktuelle Veröffentlichungen und Reparaturen von GitHub.",
+    "loading": "Lade Versionsinfos...",
+    "error": "Laden der Versionsinfos gescheitert.",
+    "retry": "Wiederversuch",
+    "empty": "Keine Versionsinfos gefunden.",
+    "current": "Aktuell",
+    "noNotes": "Für diese Version werden keine Versionsinfos zur Verfügung gestellt."
+  },
+  "common": {
+    "about": "Über",
+    "edit": "Bearbeiten",
+    "off": "Aus",
+    "on": "An",
+    "reset": "Zurücksetzen",
+    "save": "Speichern",
+    "theme": "Thema"
+  },
+  "views": {
+    "rename": "Ansicht umbenennen",
+    "namePlaceholder": "Zeige Name",
+    "desktop": {
+      "blankTab": "Leerer Tab",
+      "deck": "Deck",
+      "groupNamePlaceholder": "Gruppenname",
+      "newDeckView": "Neue Deck-Ansicht",
+      "newGroupFromTab": "Neue Gruppe aus dem Tab erstellen",
+      "newSplitView": "Neue geteilte Ansicht",
+      "newGridView": "Neue Tabellenansicht",
+      "renameGroup": "Gruppe umbenennen",
+      "ungrouped": "Ungruppiert",
+      "chooseTabToAdd": "Ein Tab auswählen, das zu {{layout}} hinzugefügt werden soll",
+      "createBlankTabInSlot": "Erstelle einen neuen leeren Tab in diesem Slot",
+      "layout": {
+        "deck": "Deck-Ansicht",
+        "split": "Geteilte Ansicht",
+        "grid": "Tabellenansicht",
+        "gridFour": "4-Tabs-Raster"
+      },
+      "tabCount": "Tab {{count}}",
+      "tabCount_plural": "Tabs {{count}}"
+    }
+  },
+  "blocklist": {
+    "label": "Netzwerk Blockierliste",
+    "description": "Blocke Ads und Tacker mit EasyList und EasyPrivacy Host-Regeln",
+    "enable": "Aktiviere Netzwerk-Blockierliste",
+    "statusFetching": "Hole Blockierliste",
+    "lastUpdated": "Letztes Update: {{value}}",
+    "refreshNow": "Update Blockierliste"
+  },
+  "buttons": {
+    "cancel": "Stornieren",
+    "closeAll": "Alles schließen",
+    "confirm": "Bestätigen",
+    "continue": "Fortsetzen",
+    "openUrl": "Öffne URL",
+    "open": "Öffnen",
+    "reopenLastClosedTab": "Letzten geschlossenen Tab wieder öffnen",
+    "restoreTabs": "Zuletzt geschlossene Tabs",
+    "save": "Speichern",
+    "toggleSidebar": "Sidebar umschalten"
+  },
+  "menus": {
+    "clearSiteData": "Seiten-Daten löschen",
+    "close": "Schließen",
+    "delete": "Löschen",
+    "desktop": "Desktop-Seite",
+    "duplicate": "Tab duplizieren",
+    "addBookmark": "Lesezeichen hinzufügen",
+    "editUrl": "TAB-URL bearbeiten",
+    "more": "Mehr",
+    "openInProfile": "Im Profil öffnen",
+    "reload": "Neu laden",
+    "scroll": "Nach oben scrollen",
+    "share": "Teilen",
+    "signOut": "Austragen",
+    "tools": "Werkzeuge",
+    "viewInSplitView": "In geteilter Ansicht anzeigen",
+    "clearSiteDataConfirm": "Alle Cookies und Website-Daten für „{{host}}“ löschen? Dadurch werden Sie von dieser Website abgemeldet.",
+    "pause": "Pause-Tab",
+    "resume": "Tab Wieder aufnehmen"
+  },
+  "modals": {
+    "downloadVideo": "Video herunterladen",
+    "downloadOnCobalt": "Video auf cobalt.tools herunterladen"
+  },
+  "native": {
+    "menu_saveImage": "Bild speichern",
+    "menu_copyImageLink": "Bildlink kopieren",
+    "menu_copyLink": "Link kopieren",
+    "menu_openInProfile": "Im Profil öffnen",
+    "menu_openInNewTab": "In neuem Tab öffnen",
+    "menu_openImageInNewTab": "Bild in neuem Tab öffnen",
+    "toast_downloadStarted": "Herunterladen gestartet, System-Benachrichtigung prüfen",
+    "toast_downloadSucceeded": "Gespeichert im Ordner „Downloads“",
+    "toast_downloadFailed": "Herunterladen gescheitert",
+    "httpBlocked_title": "HTTP Webseite blockiert",
+    "httpBlocked_body": "Diese Webseite verwendet eine unsichere HTTP-Verbindung. Um HTTP Webseiten zu erlauben, \"Erlaube HTTP Webseiten\" in den Einstellungen aktivieren."
+  },
+  "profiles": {
+    "label": "Profile",
+    "auto": "Automatisch",
+    "autoProfiles": "Automatische Profile",
+    "autoProfilesEmpty": "Bisher keine automatischen Profile.",
+    "openLinkInProfile": "Link im Profil öffnen",
+    "autoProfileLastUsed": "Zuletzt verwendet: {{value}}",
+    "autoProfileLastUsedLabel": "Zuletzt verwendet",
+    "manageAutoProfiles": "Automatische Profile organisieren ({{count}})",
+    "deleteAllAutoProfiles": "Alles löschen",
+    "deleteStaleAutoProfiles": "Lösche die ungenutzten 14 Tage",
+    "add": "Hinzufügen",
+    "edit": "Bearbeiten",
+    "save": "Speichern",
+    "namePlaceholder": "Profilname",
+    "clearData": "Daten löschen",
+    "deleteAutoProfileConfirm": "Autoprofil für {{site}} löschen? Dadurch werden die gespeicherten Browserdaten gelöscht und die Tabs geschlossen, die dieses Profil verwenden.",
+    "deleteAllAutoProfilesConfirm": "Alle {{count}} automatischen Profile löschen? Dadurch werden die gespeicherten Browserdaten gelöscht und die Tabs geschlossen, die diese Profile verwenden.",
+    "deleteStaleAutoProfilesConfirm": "Sollten {{count}} Autoprofile gelöscht werden, die in den letzten 14 Tagen nicht verwendet wurden? Dadurch werden die gespeicherten Browserdaten gelöscht und die Tabs geschlossen, in denen sie verwendet werden.",
+    "clearDataConfirm": "Alle Browserdaten für „{{name}}“ löschen? Dadurch wirst du abgemeldet und die Tabs, die dieses Profil verwenden, werden geschlossen.",
+    "deleteConfirm": "„{{name}}“ löschen? Dadurch werden die gespeicherten Browserdaten gelöscht und die Tabs, die dieses Profil verwenden, geschlossen."
+  },
+  "settings": {
+    "label": "Einstellungen",
+    "openExternalLink": "Externen Link im System-Browser öffnen",
+    "redirectToOldReddit": "Zum alten Reddit weiterleiten",
+    "allowHttpWebsite": "HTTP Webseiten erlauben",
+    "oneProfilePerSite": "Ein Profil je Seite",
+    "oneProfilePerSiteHint": "Für jede Website eine eigene automatische Sitzung verwenden. Links, die von einer Website aus geöffnet werden, behalten das Profil dieser Website bei.",
+    "hideHeader": "Symbolleiste je nach Scrollrichtung ein- und ausblenden",
+    "hideToolbarWhenScrolled": "Symbolleiste ausblenden, wenn die Seite nicht im Vordergrund ist",
+    "xHomeTimeline": {
+      "label": "Standardszeitleiste",
+      "forYou": "Für Dich",
+      "following": "Folgen"
+    },
+    "mentionNotifications": "Erwähnungen und DM-Benachrichtigungen",
+    "mentionNotificationsHint": "Aufgrund von Einschränkungen des Betriebssystems kann sich die Zustellung verzögern und kann nicht garantiert werden.",
+    "sections": {
+      "general": "Generell",
+      "accounts": "Konten & Daten",
+      "bookmarksSearch": "Lesezeichen & Suche",
+      "notifications": "Benachrichtigungen",
+      "advanced": "Erweitert",
+      "about": "Über"
+    },
+    "pages": {
+      "browsing": "Einstellungen",
+      "appearance": "Aussehen",
+      "services": "Dienstleistungen",
+      "profiles": "Profile & Sitzungen",
+      "bookmarks": "Lesezeichen",
+      "search": "Suche"
+    },
+    "browsing": {
+      "descriptionNative": "Funktionsschalter.",
+      "descriptionWeb": "Netzwerkblockierung und erweiterte Browsersteuerung.",
+      "features": "Funktionen"
+    },
+    "appearance": {
+      "description": "Themen- und Symbolleisten-Einstellungen.",
+      "theme": "Thema",
+      "deckTabWidth": "Deck-Tabbreite",
+      "deckTabWidthHint": "Aktuell: {{value}}px",
+      "toolbar": "Symbolleiste"
+    },
+    "profiles": {
+      "description": "Mehrere Konten mit separaten Cookies und eigenem Browsing-Status.",
+      "sessionMode": "Sitzungsmodus",
+      "injectCookie": "Cookie einfügen",
+      "injectCookieHint": "Fügen Sie einen Cookie-Header aus einem anderen Browser ein, um eine Sitzung manuell wiederherzustellen."
+    },
+    "bookmarks": {
+      "description": "Angeheftete Websites verwalten.",
+      "saved": "Gespeicherte Lesezeichen",
+      "empty": "Noch keine Lesezeichen."
+    },
+    "services": {
+      "title": "Integrierte Dienste",
+      "description": "Integrierte Dienste verwalten."
+    },
+    "search": {
+      "description": "Suchanbieter verwalten.",
+      "builtin": "Integrierte Suchanbieter",
+      "builtinHint": "Anbieter aktivieren, die im Suchmenü des neuen Tabs angezeigt werden sollen.",
+      "custom": "Benutzerdefinierte Suchanbieter",
+      "empty": "Noch keine benutzerdefinierten Suchanbieter vorhanden.",
+      "urlHint": "Direkte URL-Eingabe jederzeit möglich.",
+      "addTitle": "Benutzerdefinierte Suche hinzufügen",
+      "editTitle": "Benutzerdefinierte Suche bearbeiten",
+      "addAction": "Suche hinzufügen",
+      "templateHint": "`%s` an der Stelle ersetzen, an der die Abfrage eingefügt werden soll.",
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "Beispielsuche",
+        "template": "Suche URL-Vorlage",
+        "templatePlaceholder": "https://example.com/search?q=%s"
+      },
+      "validation": {
+        "name": "Suchanbieter hinzufügen",
+        "template": "Eine gültige http(s)-Vorlagen-URL verwenden, die `%s` enthält",
+        "duplicateName": "Es gibt bereits einen benutzerdefinierten Suchanbieter mit diesem Namen"
+      },
+      "deleteConfirm": "Möchten Sie diese benutzerdefinierte Suche wirklich löschen?"
+    },
+    "userStyles": {
+      "label": "Benutzerstile und Skripte",
+      "hint": "Schalten Sie integrierte CSS-Anpassungen ein oder aus und fügen Sie Ihre eigenen hostbasierten Stile und Skripte hinzu.",
+      "customHint": "Passen Sie jede Website mit CSS oder JavaScript an.",
+      "copyCss": "CSS kopieren",
+      "cssCopied": "CSS kopiert",
+      "copyFailed": "Kopieren von CSS fehlgeschlagen",
+      "importCss": "CSS importieren",
+      "importFailed": "Import von CSS fehlgeschlagen",
+      "preview": "Vorschau",
+      "previewApplied": "Vorschau angewendet",
+      "noActiveTab": "Kein aktiver Tab",
+      "add": "Stil hinzufügen",
+      "addTitle": "Benutzerdefinierten Stil hinzufügen",
+      "editTitle": "Benutzerdefinierten Stil bearbeiten",
+      "deleteConfirm": "Möchten Sie diesen benutzerdefinierten Stil wirklich löschen?",
+      "nameLabel": "Name",
+      "namePlaceholder": "Stilname",
+      "hostGlobs": {
+        "label": "Host-Globs",
+        "placeholder": "*.reddit.com, x.com (durch Kommas getrennt)"
+      },
+      "validation": {
+        "hostGlobs": "Fügen Sie mindestens einen gültigen Host-Glob hinzu",
+        "css": "CSS vor dem Speichern hinzufügen"
+      },
+      "builtin": {
+        "label": "Vordefinierte Stile",
+        "hideRedditGame": {
+          "label": "Reddit-Spielbeiträge ausblenden"
+        },
+        "compactTiktokLayout": {
+          "label": "Kompaktes TikTok-Layout verwenden"
+        },
+        "hideXBottomNav": {
+          "label": "X-Navigationsleiste unten beim Scrollen ausblenden"
+        },
+        "hideXHomeTabs": {
+          "label": "X-Startseite-Registerkarten ausblenden"
+        }
+      },
+      "custom": {
+        "label": "Benutzerdefinierte Stile",
+        "empty": "Noch keine benutzerdefinierten Stile. Füge einen hinzu, um dein eigenes CSS auf den entsprechenden Hosts einzubinden."
+      },
+      "scripts": {
+        "label": "Benutzerdefinierte Skripte",
+        "add": "Skript hinzufügen",
+        "addTitle": "Benutzerdefiniertes Skript hinzufügen",
+        "editTitle": "Benutzerdefiniertes Skript bearbeiten",
+        "deleteConfirm": "Möchten Sie dieses benutzerdefinierte Skript wirklich löschen?",
+        "empty": "Noch keine benutzerdefinierten Skripte. Füge eines hinzu, um dein eigenes JavaScript auf den entsprechenden Hosts auszuführen.",
+        "namePlaceholder": "Skriptname",
+        "import": "Importieren",
+        "importFailed": "Skript konnte nicht importiert werden",
+        "run": "Ausführen",
+        "runComplete": "Skript ausgeführt",
+        "runFailed": "Skript fehlgeschlagen",
+        "validation": {
+          "js": "JavaScript vor dem Speichern hinzufügen"
+        },
+        "pinToHeader": "An Symbolleiste anheften",
+        "pinToHeaderHint": "Dieses Skript als Symbolleistenaktion auf entsprechenden Websites anzeigen.",
+        "pinnedScripts": "Angepinnte Skripte"
+      }
+    },
+    "headerPosition": {
+      "label": "Position der Symbolleiste",
+      "top": "Oben",
+      "bottom": "Unten"
+    },
+    "showNewTabButton": "Schaltfläche „Neuen Tab anzeigen“",
+    "showBackButton": "\"Zurück\" -Schaltfläche anzeigen",
+    "showForwardButton": "Schaltfläche „Weiter“ anzeigen",
+    "showReloadButton": "Schaltfläche „Neu laden“ anzeigen",
+    "showScrollButton": "Schaltfläche „Nach oben scrollen“ anzeigen",
+    "oneHandMode": "Einhandmodus",
+    "oneTabPerSite": "Ein Tab pro Website beim Öffnen eines geteilten Links",
+    "theme": {
+      "label": "Thema",
+      "system": "System",
+      "dark": "Dunkel",
+      "light": "Hell",
+      "hint": "Thema für App und Webview. Sollte eine Seite nicht sofort aktualisiert werden, laden Sie die Registerkarte neu."
+    },
+    "language": {
+      "label": "Sprache",
+      "system": "System",
+      "hint": "Eine Sprache auswählen oder die Systemsprache verwenden."
+    },
+    "injectCookie": "Inject cookie",
+    "inspectable": "Webview für die Inspektion freigeben",
+    "videoEdgeLongPressTo2x": "Langes Drücken am Rand für 2-fache Wiedergabe",
+    "enterInsertsNewline": "Mit Enter wird eine neue Zeile eingefügt (Umschalt+Enter)",
+    "doubleBackToExitApp": "Zweimal zurück, um die App zu verlassen"
+  },
+  "sync": {
+    "label": "Synchronisieren",
+    "hint": "Lesezeichen und Einstellungen werden geräteübergreifend synchronisiert.",
+    "upgradeHint": "Upgrade durchführen, um Lesezeichen und Einstellungen auf allen Geräten zu synchronisieren.",
+    "currentPlan": "Aktueller Plan",
+    "managePlan": "Plan verwalten",
+    "deleteAccount": "Account löschen",
+    "buy": "Über den App Store abonnieren",
+    "restore": "Käufe wiederherstellen",
+    "manageIos": "‚Im App Store verwalten",
+    "purchaseTitle": "Abonnement binden",
+    "purchaseConfirm": "Dieses Abonnement wird mit {{email}} verknüpft und ermöglicht die Synchronisierung überall dort, wo Sie sich bei diesem Nora-Konto anmelden.",
+    "priceLoading": "App Store-Preis wird geladen...",
+    "activeViaIos": "Über den App Store verfügbar",
+    "freePlan": "Kostenlos",
+    "purchasePending": "Kauf steht noch unter Vorbehalt.",
+    "restoreConflict": "Dieses App Store-Abonnement ist bereits mit {{email}} verknüpft.",
+    "signOutSwitch": "Abmelden und Konto wechseln",
+    "signedInAs": "Angemeldet als {{email}}",
+    "productUnavailable": "Die App ist im App Store noch nicht verfügbar.",
+    "expiresAt": "Verlängert sich oder läuft ab: {{value}}",
+    "legalNotice": "Abonnements verlängern sich automatisch, sofern sie nicht gekündigt werden. Mit dem Abschluss eines Abonnements erklären Sie sich mit den Nutzungsbedingungen (EULA) und der Datenschutzerklärung einverstanden.",
+    "termsOfUse": "Nutzungsbedingungen (EULA)",
+    "privacyPolicy": "Datenschutzerklärung",
+    "signInRequired": "Anmelden, um fortzufahren."
+  },
+  "tabs": {
+    "new": "Neuer Tab",
+    "recentlyClosed": "Kürzlich geschlossen",
+    "noRecentlyClosed": "Keine kürzlich geschlossenen Tabs",
+    "paused": "Tab ist pausiert",
+    "pausedHint": "Um Ressourcen zu sparen, wurde der Inhalt entladen.",
+    "resume": "Wiederaufnahme"
+  },
+  "newTab": {
+    "presets": {
+      "open": "Voreingestellte Lesezeichen hinzufügen",
+      "title": "Voreingestellte Lesezeichen"
+    },
+    "search": {
+      "urlPlaceholder": "URL eingeben",
+      "searchPlaceholder": "Websuche"
+    }
+  },
+  "toast": {
+    "pinned": "An neue Tab-Seite angeheftet",
+    "blocklistUpdated": "Sperrliste aktualisiert",
+    "profileDataCleared": "Profildaten gelöscht",
+    "profileDataClearFailed": "Profil-Daten konnten nicht gelöscht werden",
+    "siteDataCleared": "Website-Daten gelöscht",
+    "siteDataClearFailed": "Website-Daten konnten nicht gelöscht werden",
+    "pressBackAgainToExit": "Zum Beenden erneut zurückdrücken"
+  },
+  "usageLimits": {
+    "label": "Nutzungsbeschränkungen",
+    "description": "Tägliche Zeitlimits für ausgewählte Dienste oder die gesamte App festlegen.",
+    "limits": "Beschränkungen",
+    "empty": "Bisher keine Nutzungsbeschränkungen.",
+    "emptyHint": "Ein Limit festlegen, um die tägliche Nutzungszeit zu erfassen.",
+    "usageLine": "Heute: {{used}} von {{limit}}",
+    "deleteConfirm": "Diese Nutzungsbeschränkung löschen?",
+    "scope": {
+      "all": "Gesamte App",
+      "none": "Keine Dienste ausgewählt"
+    },
+    "editor": {
+      "addTitle": "Nutzungslimit hinzufügen",
+      "editTitle": "Nutzungslimit bearbeiten",
+      "name": "Name",
+      "namePlaceholder": "z.B. soziale Medien",
+      "defaultName": "Grenzwert",
+      "dailyLimit": "Tageslimit",
+      "hours": "Stunden",
+      "minutes": "Minuten",
+      "scope": "Gelten für",
+      "add": "Hinzufügen",
+      "errorMinutes": "Tägliches Limit von mindestens 1 Minute festlegen",
+      "errorScope": "Mindestens einen Dienst auswählen oder auf die gesamte App anwenden"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "Eine PIN ist erforderlich, um Limits zu verwalten und das Konto zu entsperren, wenn ein Limit erreicht ist. Das Limit wird um Mitternacht (Ortszeit) zurückgesetzt.",
+      "set": "PIN ist festgelegt",
+      "notSet": "keine PIN festgelegt",
+      "setAction": "PIN festlegen",
+      "change": "Ändern",
+      "remove": "Entfernen",
+      "currentPlaceholder": "Aktuelle PIN",
+      "newPlaceholder": "Neue PIN",
+      "confirmPlaceholder": "Neue PIN bestätigen",
+      "errorEmpty": "PIN darf nicht leer sein",
+      "errorMismatch": "PINs stimmen nicht überein",
+      "errorIncorrect": "Falsche PIN",
+      "requiredFirst": "Zunächst PIN festlegen",
+      "confirmEdit": "PIN zum Bearbeiten eingeben",
+      "confirmDelete": "PIN zum Löschen eingeben"
+    },
+    "lockout": {
+      "title": "Die Zeit ist heute um",
+      "body": "Sie haben {{used}} Ihres täglichen Limits von {{limit}} für {{name}} aufgebraucht.",
+      "pinPlaceholder": "PIN zum Entsperren eingeben",
+      "pinIncorrect": "Falsche PIN",
+      "unlock": "Freischalten für heute",
+      "noPinHint": "Lege unter „Einstellungen“ → „Nutzungslimits“ eine PIN fest, um das Gerät vorzeitig zu entsperren."
+    }
+  }
+}

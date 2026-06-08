@@ -1,1 +1,137 @@
-{}
+{
+  "about": {
+    "label": "Sobre",
+    "code": "Código-fonte",
+    "donate": "Doar",
+    "hint": "Informação de Versão, Código-fonte e ligações de apoio."
+  },
+  "changelog": {
+    "label": "Registo de alterações",
+    "hint": "Lançamentos e correções recentes do GitHub.",
+    "loading": "A carregar notas de lançamento...",
+    "error": "Falha em carregar notas de lançamento.",
+    "retry": "Repetir",
+    "empty": "Não encontrado notas de lançamento.",
+    "current": "Atual",
+    "noNotes": "Nenhuma nota de lançamento foi fornecida para esta versão."
+  },
+  "common": {
+    "about": "Sobre",
+    "edit": "Editar",
+    "off": "Desligar",
+    "on": "Ligar",
+    "reset": "Reiniciar",
+    "save": "Gravar",
+    "theme": "Tema"
+  },
+  "views": {
+    "rename": "Renomear visualização",
+    "namePlaceholder": "Ver nome",
+    "desktop": {
+      "blankTab": "Guia em branco",
+      "newSplitView": "Nova visão dividida",
+      "newGridView": "Nova visão de grade",
+      "chooseTabToAdd": "Escolha uma guia para adicionar a {{layout}}",
+      "createBlankTabInSlot": "Crie uma nova guia em branco neste slot",
+      "layout": {
+        "gridFour": "Grade de 4 guias",
+        "grid": "Visão de grade"
+      },
+      "groupNamePlaceholder": "Nome do grupo",
+      "newGroupFromTab": "Novo grupo da guia",
+      "renameGroup": "Renomear grupo",
+      "ungrouped": "Desagrupado"
+    }
+  },
+  "blocklist": {
+    "label": "Lista de bloqueio da rede",
+    "description": "Bloqueie anúncios e rastreadores com as regras de host do EasyList e EasyPrivacy.",
+    "enable": "Ativar a lista de bloqueio da rede",
+    "statusFetching": "Buscar lista de bloqueio",
+    "lastUpdated": "Última atualização: {{value}}",
+    "refreshNow": "Atualizar Lista de bloqueio"
+  },
+  "buttons": {
+    "cancel": "Cancelar",
+    "closeAll": "Fechar todos",
+    "confirm": "Confirmar",
+    "continue": "Continuar",
+    "openUrl": "Abrir URL",
+    "open": "Aberto",
+    "save": "Gravar",
+    "reopenLastClosedTab": "Reabrir a última guia fechada",
+    "restoreTabs": "Guias recentemente fechadas",
+    "toggleSidebar": "Alternar a barra lateral"
+  },
+  "menus": {
+    "close": "Fechar",
+    "delete": "Apagar",
+    "desktop": "Site em Modo desktop",
+    "addBookmark": "Adicionar marcador",
+    "editUrl": "URL da guia Editar",
+    "reload": "Recarregar",
+    "scroll": "Voltar ao topo",
+    "share": "Partilhar",
+    "signOut": "Sair",
+    "tools": "Ferramentas",
+    "clearSiteData": "Limpar dados do site"
+  },
+  "modals": {
+    "downloadVideo": "Descarregar vídeo"
+  },
+  "native": {
+    "menu_saveImage": "Gravar imagem",
+    "menu_copyImageLink": "Copiar ligação da imagem",
+    "menu_copyLink": "Copiar ligação",
+    "menu_openInNewTab": "Abrir em nova guia",
+    "menu_openImageInNewTab": "Abrir imagem em nova guia",
+    "toast_downloadStarted": "A descarga foi iniciado, verifique o sistema de notificação",
+    "toast_downloadSucceeded": "Gravado na pasta Downloads",
+    "toast_downloadFailed": "Falha ao descarregar",
+    "httpBlocked_title": "Site HTTP bloqueado",
+    "httpBlocked_body": "Este site utiliza uma conexão HTTP insegura. Para permitir o carregamento de sites HTTP, ative a opção \"Permitir sites HTTP\" nas Configurações."
+  },
+  "profiles": {
+    "label": "Perfis",
+    "add": "Adicionar",
+    "edit": "Editar",
+    "save": "Gravar",
+    "namePlaceholder": "Nome do Perfil"
+  },
+  "settings": {
+    "label": "Configurações",
+    "openExternalLink": "Abrir ligação externa no navegador do sistema",
+    "redirectToOldReddit": "Redirecionar para o Reddit antigo",
+    "allowHttpWebsite": "Permitir sites HTTP",
+    "inspectable": "Fazer a visualização da web inspecionável",
+    "videoEdgeLongPressTo2x": "Pressione e segure a borda para reproduzir em 2x",
+    "doubleBackToExitApp": "Volte duas vezes para sair da app",
+    "hideHeader": "Ocultar e exibir a barra de ferramentas na direção da rolagem",
+    "hideToolbarWhenScrolled": "Ocultar a barra de ferramentas quando a página não estiver no topo",
+    "xHomeTimeline": {
+      "label": "Linha do tempo inicial padrão",
+      "forYou": "Para você",
+      "following": "A seguir"
+    },
+    "sections": {
+      "general": "Geral",
+      "accounts": "Contas e dados",
+      "bookmarksSearch": "Favoritos e pesquisa",
+      "advanced": "Avançada",
+      "about": "Sobre"
+    },
+    "pages": {
+      "browsing": "Preferências",
+      "appearance": "Aparência",
+      "services": "Serviços",
+      "profiles": "Perfis e Sessões",
+      "bookmarks": "Favoritos",
+      "search": "Procurar"
+    },
+    "browsing": {
+      "descriptionNative": "Alternância de funcionalidades.",
+      "descriptionWeb": "Bloqueio de rede e controlos de navegação avançados.",
+      "features": "Características"
+    }
+  }
+}

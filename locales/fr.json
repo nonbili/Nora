@@ -6,7 +6,16 @@
     "hint": "Informations sur la version, code source et liens d’assistance."
   },
   "buttons": {
-    "closeAll": "Tout fermer"
+    "closeAll": "Tout fermer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "continue": "Continuer",
+    "openUrl": "Ouvrir l'URL",
+    "open": "Ouvrir",
+    "reopenLastClosedTab": "Réouvrir l'onglet fermé récemment",
+    "restoreTabs": "Onglets récemment fermés",
+    "save": "Enregister",
+    "toggleSidebar": "Afficher/Masquer la barre latérale"
   },
   "bookmarks": {
     "label": "Marque-pages",
@@ -20,14 +29,26 @@
     "desktopOff": "Désactivée",
     "reload": "Recharger",
     "scroll": "Aller en-haut",
-    "share": "Partager"
+    "share": "Partager",
+    "clearSiteData": "Effacer les données du site",
+    "clearSiteDataConfirm": "Effacer tous les cookies et les données du site pour \"{{host}}\" ? Cela vous déconnecte de ce site.",
+    "duplicate": "Dupliquer l'onglet",
+    "addBookmark": "Ajouter un signet",
+    "editUrl": "Éditer l'URL de l'onglet",
+    "more": "Plus",
+    "openInProfile": "Ouvrir dans le profil",
+    "pause": "Suspendre l'onglet",
+    "resume": "Réactiver l'onglet",
+    "signOut": "Déconnexion",
+    "tools": "Outils",
+    "viewInSplitView": "Voir en mode divisé"
   },
   "settings": {
     "label": "Paramètres",
     "openExternalLink": "Ouvrir le lien externe dans le navigateur du système",
-    "hideHeader": "Masquer l'en-tête pendant le défilement",
+    "hideHeader": "Masquer et afficher la barre d'outils en fonction de la direction du défilement",
     "headerPosition": {
-      "label": "Position de l'en-tête",
+      "label": "Position de la barre d'outils",
       "top": "Haut",
       "bottom": "Bas"
     },
@@ -38,12 +59,364 @@
       "system": "Système",
       "dark": "Sombre",
       "light": "Clair",
-      "hint": "Redémarrer manuellement si le changement n'est pas reflété dans webview."
+      "hint": "Thème de l'application et du WebView. Si une page ne se met pas à jour immédiatement, recharger l'onglet."
     },
-    "injectCookie": "Injecter un cookie"
+    "injectCookie": "Injecter un cookie",
+    "redirectToOldReddit": "Rediriger vers l'ancien Reddit",
+    "allowHttpWebsite": "Autoriser les sites Web HTTP",
+    "inspectable": "Rendre WebView inspectable",
+    "videoEdgeLongPressTo2x": "Appui long sur le bord pour une lecture x2",
+    "enterInsertsNewline": "Entrée insère une nouvelle ligne (Shift+Entrée)",
+    "doubleBackToExitApp": "Double retour pour quitter l'app",
+    "oneProfilePerSite": "Un profil par site",
+    "oneProfilePerSiteHint": "Utilisez une session automatique distincte pour chaque site. Les liens ouverts à partir d'un site conservent le profil de ce site.",
+    "hideToolbarWhenScrolled": "Cacher la barre d'outils lorsque la page n'est pas en haut",
+    "xHomeTimeline": {
+      "label": "Fil d'accueil par défaut",
+      "forYou": "Pour vous",
+      "following": "Abonnements"
+    },
+    "mentionNotifications": "Notifications des mentions et DM",
+    "mentionNotificationsHint": "En raison des limites du système d'exploitation, la notification peut être retardée et n'est pas garantie.",
+    "sections": {
+      "general": "Général",
+      "accounts": "Comptes & Données",
+      "bookmarksSearch": "Signets & Recherche",
+      "notifications": "Notifications",
+      "advanced": "Avancé",
+      "about": "À propos"
+    },
+    "pages": {
+      "browsing": "Préférences",
+      "appearance": "Apparence",
+      "services": "Services",
+      "profiles": "Profils et sessions",
+      "bookmarks": "Signets",
+      "search": "Recherche"
+    },
+    "browsing": {
+      "descriptionNative": "Commutateurs de fonctionnalités.",
+      "descriptionWeb": "Blocage du réseau et contrôles de navigation avancés.",
+      "features": "Fonctionnalités"
+    },
+    "appearance": {
+      "description": "Paramètres du thème et de la barre d'outils.",
+      "theme": "Thème",
+      "toolbar": "Barre d'outils",
+      "deckTabWidth": "Largeur des onglets du Deck",
+      "deckTabWidthHint": "Actuel : {{value}}px"
+    },
+    "profiles": {
+      "description": "Plusieurs comptes avec des cookies distincts et un état de navigation séparé.",
+      "sessionMode": "Mode session",
+      "injectCookie": "Injecter un cookie",
+      "injectCookieHint": "Coller un en-tête de Cookie à partir d'un autre navigateur pour restaurer manuellement une session."
+    },
+    "bookmarks": {
+      "description": "Gérer les sites épinglés.",
+      "saved": "Signets enregistrés",
+      "empty": "Aucun signet pour le moment."
+    },
+    "services": {
+      "title": "Services intégrés",
+      "description": "Gérer les services intégrés."
+    },
+    "search": {
+      "description": "Gérer les fournisseurs de recherche.",
+      "builtin": "Moteurs de recherche intégrés",
+      "builtinHint": "Activez les moteurs de recherche que vous souhaitez afficher dans le menu de recherche du nouvel onglet.",
+      "custom": "Fournisseurs de recherche personnalisés",
+      "empty": "Aucun fournisseur de recherche personnalisé pour le moment.",
+      "urlHint": "Toujours disponible pour une saisie d'URL directe.",
+      "addTitle": "Ajouter une recherche personnalisée",
+      "editTitle": "Modifier la recherche personnalisée",
+      "addAction": "Ajouter une recherche",
+      "templateHint": "Utilisez `%s` là où la requête doit être insérée.",
+      "fields": {
+        "name": "Nom",
+        "namePlaceholder": "Exemple de recherche",
+        "template": "Modèle d'URL de recherche",
+        "templatePlaceholder": "https://example.com/search?q=%s"
+      },
+      "validation": {
+        "name": "Ajouter un nom de fournisseur de recherche",
+        "template": "Utilisez une URL de modèle http(s) valide contenant `%s`",
+        "duplicateName": "Un fournisseur de recherche personnalisé portant ce nom existe déjà"
+      },
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette recherche personnalisée ?"
+    },
+    "userStyles": {
+      "label": "Styles et scripts utilisateur",
+      "hint": "Activer/désactiver les ajustements CSS intégrés et ajouter vos propres styles et scripts basés sur l'hôte.",
+      "customHint": "Personnalisez n'importe quel site Web avec CSS ou JavaScript.",
+      "copyCss": "Copier le CSS",
+      "cssCopied": "CSS copié",
+      "copyFailed": "Échec de la copie du CSS",
+      "importCss": "Importer CSS",
+      "importFailed": "Échec de l'importation du CSS",
+      "preview": "Aperçu",
+      "previewApplied": "Aperçu appliqué",
+      "noActiveTab": "Aucun onglet actif",
+      "add": "Ajouter un style",
+      "addTitle": "Ajouter un style personnalisé",
+      "editTitle": "Modifier le style personnalisé",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce style personnalisé ?",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Nom du style",
+      "hostGlobs": {
+        "label": "Globs d'hôte",
+        "placeholder": "*.reddit.com, x.com (séparés par des virgules)"
+      },
+      "validation": {
+        "hostGlobs": "Ajoutez au moins un glob d'hôte valide",
+        "css": "Ajouter le CSS avant de sauvegarder"
+      },
+      "builtin": {
+        "label": "Styles intégrés",
+        "hideRedditGame": {
+          "label": "Masquer les publications de jeux Reddit"
+        },
+        "compactTiktokLayout": {
+          "label": "Utiliser la mise en page compacte de TikTok"
+        },
+        "hideXBottomNav": {
+          "label": "Cacher la barre de navigation inférieure de X lors du défilement"
+        },
+        "hideXHomeTabs": {
+          "label": "Masquer les onglets du fil d'accueil de X"
+        }
+      },
+      "custom": {
+        "label": "Styles personnalisés",
+        "empty": "Pas encore de styles personnalisés. Ajoutez-en un pour injecter votre propre CSS sur les hôtes correspondants."
+      },
+      "scripts": {
+        "label": "Scripts personnalisés",
+        "add": "Ajouter un script",
+        "addTitle": "Ajouter un script personnalisé",
+        "editTitle": "Modifier le script personnalisé",
+        "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce script personnalisé ?",
+        "empty": "Pas encore de scripts personnalisés. Ajoutez-en un pour exécuter votre propre JavaScript sur les hôtes correspondants.",
+        "namePlaceholder": "Nom du script",
+        "import": "Importer",
+        "importFailed": "Échec de l'importation du script",
+        "pinToHeader": "Épingler à la barre d'outils",
+        "pinToHeaderHint": "Afficher ce script sous forme d'action dans la barre d'outils sur les sites correspondants.",
+        "pinnedScripts": "Scripts épinglés",
+        "run": "Exécuter",
+        "runComplete": "Script exécuté",
+        "runFailed": "Échec du script",
+        "validation": {
+          "js": "Ajouter JavaScript avant de sauvegarder"
+        }
+      }
+    },
+    "showNewTabButton": "Afficher le bouton de nouvel onglet",
+    "showForwardButton": "Afficher le bouton Avancer",
+    "showReloadButton": "Afficher le bouton Actualiser",
+    "oneHandMode": "Mode à une main",
+    "oneTabPerSite": "Un onglet par site lors de l'ouverture d'un lien partagé",
+    "language": {
+      "label": "Langue",
+      "system": "Système",
+      "hint": "Choisissez une langue ou suivez la langue du système."
+    }
   },
   "changelog": {
     "label": "Journal des modifs",
-    "hint": "Versions récentes et correctifs de GitHub."
+    "hint": "Versions récentes et correctifs de GitHub.",
+    "loading": "Chargement des notes de version...",
+    "error": "Échec du chargement des notes de version.",
+    "retry": "Réessayer",
+    "empty": "Aucune note de version trouvée.",
+    "current": "Actuel",
+    "noNotes": "Aucune note de version n'a été fournie pour cette version."
+  },
+  "common": {
+    "about": "À propos",
+    "edit": "Éditer",
+    "off": "Désactivé",
+    "on": "Activé",
+    "reset": "Réinitialiser",
+    "save": "Enregistrer",
+    "theme": "Thème"
+  },
+  "views": {
+    "rename": "Renommer la vue",
+    "namePlaceholder": "Nom de la vue",
+    "desktop": {
+      "blankTab": "Onglet vierge",
+      "deck": "Deck",
+      "groupNamePlaceholder": "Nom du groupe",
+      "newDeckView": "Nouvelle vue Deck",
+      "newGroupFromTab": "Nouveau groupe à partir de l'onglet",
+      "newSplitView": "Nouvelle vue divisée",
+      "newGridView": "Nouvelle vue en grille",
+      "renameGroup": "Renommer le groupe",
+      "tabCount": "{{count}} onglet",
+      "tabCount_plural": "{{count}} onglets",
+      "ungrouped": "Sans groupe",
+      "chooseTabToAdd": "Choisissez un onglet à ajouter à {{layout}}",
+      "createBlankTabInSlot": "Créez un nouvel onglet vierge dans cet emplacement",
+      "layout": {
+        "deck": "Vue Deck",
+        "split": "Vue divisée",
+        "grid": "Vue en grille",
+        "gridFour": "Grille à 4 onglets"
+      }
+    }
+  },
+  "blocklist": {
+    "label": "Liste de blocage réseau",
+    "description": "Bloquez les publicités et les traqueurs avec les règles d'hôte EasyList et EasyPrivacy.",
+    "enable": "Activer la liste de blocage réseau",
+    "statusFetching": "Récupération de la liste de blocage",
+    "lastUpdated": "Dernière mise à jour : {{value}}",
+    "refreshNow": "Mettre à jour la liste de blocage"
+  },
+  "modals": {
+    "downloadVideo": "Télécharger la vidéo",
+    "downloadOnCobalt": "Télécharger une vidéo sur cobalt.tools"
+  },
+  "native": {
+    "menu_saveImage": "Enregistrer l'image",
+    "menu_copyImageLink": "Copier le lien de l'image",
+    "menu_copyLink": "Copier le lien",
+    "menu_openInProfile": "Ouvrir dans le profil",
+    "menu_openInNewTab": "Ouvrir dans un nouvel onglet",
+    "menu_openImageInNewTab": "Ouvrir l'image dans un nouvel onglet",
+    "toast_downloadStarted": "Téléchargement en cours, vérifiez la notification système",
+    "toast_downloadSucceeded": "Enregistré dans le dossier Téléchargements",
+    "toast_downloadFailed": "Échec du téléchargement",
+    "httpBlocked_title": "Site Web HTTP bloqué",
+    "httpBlocked_body": "Ce site Web utilise une connexion HTTP non sécurisée. Pour permettre le chargement de sites Web HTTP, activez \"Autoriser les sites Web HTTP\" dans les paramètres."
+  },
+  "profiles": {
+    "label": "Profils",
+    "auto": "Auto",
+    "autoProfiles": "Profils automatiques",
+    "autoProfilesEmpty": "Pas encore de profils automatiques.",
+    "openLinkInProfile": "Ouvrir le lien dans le profil",
+    "autoProfileLastUsed": "Dernière utilisation : {{value}}",
+    "autoProfileLastUsedLabel": "Dernière utilisation",
+    "manageAutoProfiles": "Gérer les profils automatiques ({{count}})",
+    "deleteAutoProfileConfirm": "Supprimer le profil automatique pour {{site}} ? Cela supprime ses données de navigation stockées et ferme les onglets qui l'utilisent.",
+    "deleteAllAutoProfiles": "Tout supprimer",
+    "deleteAllAutoProfilesConfirm": "Supprimer tous les {{count}} profils automatiques ? Cela supprime leurs données de navigation enregistrées et ferme les onglets qui les utilisent.",
+    "deleteStaleAutoProfiles": "Supprimer les éléments inutilisés après 14 jours",
+    "deleteStaleAutoProfilesConfirm": "Supprimer {{count}} profils automatiques non utilisés au cours des 14 derniers jours ? Cela supprime leurs données de navigation stockées et ferme les onglets qui les utilisent.",
+    "add": "Ajouter",
+    "edit": "Éditer",
+    "save": "Enregistrer",
+    "namePlaceholder": "Nom du profil",
+    "clearData": "Effacer les données",
+    "clearDataConfirm": "Effacer toutes les données de navigation pour \"{{name}}\" ? Cela vous déconnecte et ferme les onglets qui utilisent ce profil.",
+    "deleteConfirm": "Supprimer \"{{name}}\" ? Cela effacera ses données de navigation enregistrées et fermera les onglets qui utilisent ce profil."
+  },
+  "sync": {
+    "label": "Synchro",
+    "hint": "Les signets et les paramètres sont synchronisés sur tous les appareils.",
+    "upgradeHint": "Mettre à niveau pour synchroniser les signets et les paramètres sur tous les appareils.",
+    "currentPlan": "Abonnement actuel",
+    "managePlan": "Gérer le forfait",
+    "deleteAccount": "Supprimer le compte",
+    "buy": "S'abonner sur l'App Store",
+    "restore": "Restaurer les achats",
+    "manageIos": "Gérez dans l'App Store",
+    "purchaseTitle": "Lier l'abonnement",
+    "purchaseConfirm": "Cet abonnement sera lié à {{email}} et débloquera la synchronisation partout où vous vous connecterez à ce compte Nora.",
+    "priceLoading": "Chargement du prix de l'App Store...",
+    "activeViaIos": "Actif via l'App Store",
+    "freePlan": "Gratuit",
+    "purchasePending": "Achat en attente d'approbation.",
+    "restoreConflict": "Cet abonnement de l'App Store est déjà lié à {{email}}.",
+    "signOutSwitch": "Déconnectez-vous et basculez vers un autre compte",
+    "signedInAs": "Connecté en tant que {{email}}",
+    "productUnavailable": "Le produit de l'App Store n'est pas encore disponible.",
+    "expiresAt": "Renouvelle ou expire : {{value}}",
+    "legalNotice": "Les abonnements se renouvellent automatiquement à moins que vous ne les annuliez. En souscrivant, vous acceptez les Conditions d'utilisation (EULA) et la Politique de confidentialité.",
+    "termsOfUse": "Conditions d'utilisation (EULA)",
+    "privacyPolicy": "Politique de confidentialité",
+    "signInRequired": "Se connecter pour continuer."
+  },
+  "tabs": {
+    "new": "Nouvel onglet",
+    "recentlyClosed": "Récemment fermés",
+    "noRecentlyClosed": "Aucun onglets récemment fermés",
+    "paused": "L'onglet est en pause",
+    "pausedHint": "Son contenu a été vidé pour économiser des ressources.",
+    "resume": "Réactiver"
+  },
+  "newTab": {
+    "presets": {
+      "open": "Ajouter des signets prédéfinis",
+      "title": "Signets prédéfinis"
+    },
+    "search": {
+      "urlPlaceholder": "Entrez une URL",
+      "searchPlaceholder": "Rechercher sur le web"
+    }
+  },
+  "toast": {
+    "pinned": "Épinglé au nouvel onglet",
+    "blocklistUpdated": "Liste de blocage mise à jour",
+    "profileDataCleared": "Données de profil effacées",
+    "profileDataClearFailed": "Échec de l'effacement des données de profil",
+    "siteDataCleared": "Données du site effacées",
+    "siteDataClearFailed": "Échec de l'effacement des données du site",
+    "pressBackAgainToExit": "Appuyez à nouveau pour quitter"
+  },
+  "usageLimits": {
+    "label": "Limites d'utilisation",
+    "description": "Fixez des limites de temps quotidiennes pour les services sélectionnés ou l'ensemble de l'application.",
+    "limits": "Limites",
+    "empty": "Pas encore de limites d'utilisation.",
+    "emptyHint": "Ajoutez une limite pour commencer à suivre le temps de navigation quotidien.",
+    "usageLine": "Aujourd'hui : {{used}} sur {{limit}}",
+    "deleteConfirm": "Supprimer cette limite d'utilisation ?",
+    "scope": {
+      "all": "Toute l'application",
+      "none": "Aucun service sélectionné"
+    },
+    "editor": {
+      "addTitle": "Ajouter une limite d'utilisation",
+      "editTitle": "Modifier la limite d'utilisation",
+      "name": "Nom",
+      "namePlaceholder": "ex. : Réseaux sociaux",
+      "defaultName": "Limite",
+      "dailyLimit": "Limite quotidienne",
+      "hours": "Heures",
+      "minutes": "Minutes",
+      "scope": "S'applique à",
+      "add": "Ajouter",
+      "errorMinutes": "Fixez une limite quotidienne d'au moins 1 minute",
+      "errorScope": "Sélectionnez au moins un service ou appliquez à l'ensemble de l'application"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "Un code PIN est requis pour gérer les limites et pour débloquer lorsque la limite est atteinte. Réinitialisé à minuit heure locale.",
+      "set": "Le code PIN est défini",
+      "notSet": "Aucun code PIN défini",
+      "setAction": "Définir le code PIN",
+      "change": "Changer",
+      "remove": "Supprimer",
+      "currentPlaceholder": "Code PIN actuel",
+      "newPlaceholder": "Nouveau code PIN",
+      "confirmPlaceholder": "Confirmer le nouveau code PIN",
+      "errorEmpty": "Le code PIN ne peut pas être vide",
+      "errorMismatch": "Les codes PIN ne correspondent pas",
+      "errorIncorrect": "Code PIN incorrect",
+      "requiredFirst": "Définissez d'abord un code PIN",
+      "confirmEdit": "Entrer le code PIN pour modifier",
+      "confirmDelete": "Entrer le code PIN pour supprimer"
+    },
+    "lockout": {
+      "title": "Temps écoulé pour aujourd'hui",
+      "body": "Vous avez utilisé {{used}} sur votre limite quotidienne de {{limit}} pour {{name}}.",
+      "pinPlaceholder": "Entrer le code PIN pour déverrouiller",
+      "pinIncorrect": "Code PIN incorrect",
+      "unlock": "Débloquer pour aujourd'hui",
+      "noPinHint": "Définissez un code PIN dans Paramètres → Limites d'utilisation pour débloquer plus tôt."
+    }
   }
 }

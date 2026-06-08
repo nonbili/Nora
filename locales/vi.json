@@ -1,0 +1,44 @@
+{
+  "about": {
+    "label": "Giới thiệu",
+    "donate": "Ủng hộ",
+    "hint": "Thông tin phiên bản, mã nguồn và liên kết hỗ trợ."
+  },
+  "changelog": {
+    "label": "Nhật ký thay đổi",
+    "hint": "Các bản phát hành và sửa lỗi gần đây trên GitHub.",
+    "loading": "Đang tải ghi chú phát hành...",
+    "error": "Không thể tải ghi chú phát hành.",
+    "retry": "Thử lại",
+    "empty": "Không tìm thấy ghi chú phát hành.",
+    "current": "Phiên bản mới nhất",
+    "noNotes": "Không có ghi chú phát hành nào được cung cấp cho phiên bản này."
+  },
+  "common": {
+    "about": "Giới thiệu",
+    "save": "Lưu",
+    "edit": "Sửa"
+  },
+  "buttons": {
+    "save": "Lưu",
+    "confirm": "Xác nhận",
+    "continue": "Tiếp tục"
+  },
+  "menus": {
+    "more": "Xem thêm",
+    "signOut": "Đăng xuất",
+    "share": "Chia sẻ"
+  },
+  "native": {
+    "menu_saveImage": "Tải ảnh",
+    "menu_copyLink": "Sao chép liên kết",
+    "menu_copyImageLink": "Sao chép link ảnh",
+    "menu_openInNewTab": "Mở ở tab mới"
+  },
+  "profiles": {
+    "deleteAllAutoProfiles": "Xóa tất cả"
+  },
+  "settings": {
+    "label": "Thiết lập"
+  }
+}
