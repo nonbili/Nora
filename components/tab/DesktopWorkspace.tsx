@@ -1,16 +1,14 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { DndContext, PointerSensor, closestCenter, rectIntersection, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { DndContext, PointerSensor, rectIntersection, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, rectSortingStrategy } from '@dnd-kit/sortable'
 import { useValue } from '@legendapp/state/react'
 import { Pressable } from 'react-native'
 import { clsx } from '@/lib/utils'
-import { settings$ } from '@/states/settings'
 import { tabGroups$, type TabGroupLayout } from '@/states/tab-groups'
 import { getOrderedTabIds, openDesktopTab, sortTabsByOrder, tabs$ } from '@/states/tabs'
 import { GroupEmptySlot } from './desktop/GroupEmptySlot'
 import { SortableDesktopTab } from './desktop/SortableDesktopTab'
-import { SLOT_GAP } from './desktop/desktopWorkspaceShared'
 import { desktopWorkspaceState$ } from './desktop/desktopWorkspaceState'
 
 export const DesktopWorkspace: React.FC = () => {
@@ -46,13 +44,6 @@ export const DesktopWorkspace: React.FC = () => {
   const viewLayout: TabGroupLayout = activeGroup?.layout || 'deck'
   const isDeck = viewLayout === 'deck' && !isSingle
   const isSplit = viewLayout === 'split-view' && !isSingle
-  const deckTabWidth = useValue(settings$.deckTabWidth)
-
-  const hiddenTabWidth = useMemo(() => {
-    if (isSingle) return '100%'
-    if (isSplit) return `calc((100% - ${SLOT_GAP}px) / 2)`
-    return deckTabWidth
-  }, [isSingle, isSplit, deckTabWidth])
 
   useEffect(() => {
     if (isDeck && tabs.length > prevTabCountRef.current && deckScrollRef.current) {
@@ -165,7 +156,6 @@ export const DesktopWorkspace: React.FC = () => {
               return (
                 <SortableDesktopTab
                   key={tab.id}
-                  hiddenTabWidth={hiddenTabWidth}
                   index={index}
                   isActive={activeTabId === tab.id}
                   isDeck={isDeck}

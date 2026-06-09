@@ -203,13 +203,25 @@ export const NoraTab: React.FC<{
   const colorScheme = useColorScheme()
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag | null>(null)
+  const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
   const pageUrlRef = useRef('')
   const loadingWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [canGoBack, setCanGoBack] = useState(false)
   const contentJs = useContentJs()
+  const contentJsRef = useRef(contentJs)
+  const isActiveRef = useRef(isActive)
   const profileColor = getProfileColor(tab.profile)
   const viewKey = getProfileViewKey(tab)
   const viewInstanceKey = `${viewKey}:${tab.url ? 'page' : 'blank'}`
+
+  useEffect(() => {
+    contentJsRef.current = contentJs
+  }, [contentJs])
+
+  useEffect(() => {
+    isActiveRef.current = isActive
+  }, [isActive])
+
   const refreshCanGoBack = useCallback(
     async (target?: any) => {
       const webview = target || webviewRef.current || nativeRef.current
@@ -228,11 +240,11 @@ export const NoraTab: React.FC<{
       }
 
       setCanGoBack(nextCanGoBack)
-      if (isActive) {
+      if (isActiveRef.current) {
         ui$.activeCanGoBack.set(nextCanGoBack)
       }
     },
-    [isActive],
+    [],
   )
 
   const setPageUrl = useCallback(
@@ -285,6 +297,11 @@ export const NoraTab: React.FC<{
     },
     [tab.url, videoEdgeLongPressTo2x, xDefaultHomeTimeline],
   )
+  const applyContentStateRef = useRef(applyContentState)
+
+  useEffect(() => {
+    applyContentStateRef.current = applyContentState
+  }, [applyContentState])
 
   const noraViewRef = useCallback(
     (webview: WebviewTag | null) => {
@@ -300,18 +317,23 @@ export const NoraTab: React.FC<{
       // after a navigation still loads the right page, and seed pageUrlRef so the
       // tab.url effect below doesn't double-load.
       const currentUrl = tabs$.tabs.get().find((currentTab) => currentTab?.id === tab.id)?.url
-      if (currentUrl) {
+      if (currentUrl && currentUrl !== pageUrlRef.current) {
         webview.src = currentUrl
         pageUrlRef.current = currentUrl
       }
 
+      if (attachedWebviewsRef.current.has(webview)) {
+        return
+      }
+      attachedWebviewsRef.current.add(webview)
+
       webview.addEventListener('dom-ready', () => {
-        if (isActive || !ui$.webview.get()) {
+        if (isActiveRef.current || !ui$.webview.get()) {
           ui$.webview.set(ObservableHint.opaque(webview))
         }
-        void executeWebviewJavaScript(webview, contentJs)
+        void executeWebviewJavaScript(webview, contentJsRef.current)
           .catch(() => {})
-          .finally(() => applyContentState(webview))
+          .finally(() => applyContentStateRef.current(webview))
         void refreshCanGoBack(webview)
       })
       webview.addEventListener('did-start-loading', () => {
@@ -339,12 +361,12 @@ export const NoraTab: React.FC<{
       })
       webview.addEventListener('did-navigate', (e) => {
         setPageUrl(e.url)
-        applyContentState(webview, e.url)
+        applyContentStateRef.current(webview, e.url)
         void refreshCanGoBack(webview)
       })
       webview.addEventListener('did-navigate-in-page', (e) => {
         setPageUrl(e.url)
-        applyContentState(webview, e.url)
+        applyContentStateRef.current(webview, e.url)
         setTabLoading(false)
         void refreshCanGoBack(webview)
       })
@@ -357,7 +379,11 @@ export const NoraTab: React.FC<{
       webview.addEventListener('before-input-event', ((e: Electron.Event & { input: Electron.Input }) => {
         if (e.input.type === 'keyDown') {
           if ((e.input.meta || e.input.control) && e.input.key.toLowerCase() === 'r') {
-            reloadPage()
+            if (typeof webview.reload === 'function') {
+              webview.reload()
+            } else {
+              void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+            }
           } else {
             handleShortcuts(e.input)
           }
@@ -368,7 +394,7 @@ export const NoraTab: React.FC<{
         ui$.hoverLinkUrl.set(e.url || '')
       })
     },
-    [applyContentState, contentJs, index, refreshCanGoBack, setPageUrl, setTabLoading, tab.id],
+    [refreshCanGoBack, setPageUrl, setTabLoading, tab.id],
   )
 
   const setActiveNativeWebview = useCallback(
@@ -484,23 +510,8 @@ export const NoraTab: React.FC<{
     [clearActiveNativeWebview, setActiveNativeWebview, tab.id],
   )
 
-  const webview = webviewRef.current || nativeRef.current
-  const goBack = () => webview?.goBack?.()
-  const editTabUrl = () => {
-    ui$.assign({
-      urlModalOpen: true,
-      urlModalMode: 'editTab',
-      urlModalTargetTabId: tab.id,
-    })
-  }
-  const reloadPage = () => {
-    if (!webview) return
-    if (typeof webview.reload === 'function') {
-      webview.reload()
-    } else {
-      void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
-    }
-  }
+  const getCurrentWebview = () => webviewRef.current || nativeRef.current
+  const goBack = () => getCurrentWebview()?.goBack?.()
   const toolbarButtonStyle = { padding: 4, height: 28 }
 
   const onLoad = async (e: { nativeEvent: any }) => {
@@ -559,7 +570,7 @@ export const NoraTab: React.FC<{
         }
         break
       case 'save-file':
-        webview?.saveFile(data.content, data.fileName, data.mimeType)
+        getCurrentWebview()?.saveFile(data.content, data.fileName, data.mimeType)
         break
       case 'scroll':
         onScroll({ dy: data.dy, y: data.y, autoHideHeader, hideToolbarWhenScrolled })

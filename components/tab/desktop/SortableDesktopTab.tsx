@@ -8,7 +8,6 @@ import { NoraTab } from '@/components/tab/NoraTab'
 import { getHiddenTabStyle, getSlotStyle } from './desktopWorkspaceShared'
 
 export const SortableDesktopTab: React.FC<{
-  hiddenTabWidth: number | string
   index: number
   isActive: boolean
   isDeck: boolean
@@ -22,7 +21,6 @@ export const SortableDesktopTab: React.FC<{
   viewLayout: TabGroupLayout
 }> = React.memo(
   ({
-    hiddenTabWidth,
     index,
     isActive,
     isDeck,
@@ -66,7 +64,7 @@ export const SortableDesktopTab: React.FC<{
     } else if (isVisible && viewLayout !== 'deck' && slotIndex != null) {
       style = getSlotStyle(viewLayout, slotIndex)
     } else {
-      style = getHiddenTabStyle(hiddenTabWidth)
+      style = getHiddenTabStyle()
     }
 
     const isDraggable = isVisible && (isDeck || isSplit || isGrid)
@@ -95,7 +93,7 @@ export const SortableDesktopTab: React.FC<{
           tab={tab}
           index={index}
           isActive={isActive}
-          desktopVariant={isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
+          desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
           slotSwitcher={slotSwitcher}
         />
       </div>

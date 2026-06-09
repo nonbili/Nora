@@ -5,11 +5,10 @@ import type { Tab } from '@/states/tabs'
 
 export const SLOT_GAP = 8
 
-export const getHiddenTabStyle = (width: number | string): CSSProperties => ({
+export const getHiddenTabStyle = (): CSSProperties => ({
   position: 'absolute',
-  left: '-200vw',
-  top: 0,
-  width,
+  inset: 0,
+  width: '100%',
   height: '100%',
   opacity: 0,
   pointerEvents: 'none',
