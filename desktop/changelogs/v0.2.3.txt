@@ -1,0 +1,5 @@
+- Block cosmetic ad elements
+- Support clearing site data for current tab's host
+- Pin user scripts to toolbar
+- Sync user styles and scripts
+- Support pausing a tab

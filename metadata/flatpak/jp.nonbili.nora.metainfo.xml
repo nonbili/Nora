@@ -60,6 +60,17 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.3" date="2026-06-09">
+      <description>
+        <ul>
+          <li>Block cosmetic ad elements</li>
+          <li>Support clearing site data for current tab's host</li>
+          <li>Pin user scripts to toolbar</li>
+          <li>Sync user styles and scripts</li>
+          <li>Support pausing a tab</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.2" date="2026-05-20">
       <description>
         <ul>
