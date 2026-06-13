@@ -11,9 +11,7 @@ import {
   stripUserscriptMetadata,
 } from './user-styles'
 
-const withBuiltinEnabled = (
-  id: 'compact-tiktok-layout' | 'hide-reddit-game' | 'hide-x-bottom-nav' | 'hide-x-home-tabs',
-) =>
+const withBuiltinEnabled = (id: 'hide-reddit-game' | 'hide-x-bottom-nav' | 'hide-x-home-tabs') =>
   normalizeUserStyles({
     builtins: {
       [id]: { enabled: true },
@@ -67,7 +65,6 @@ describe('normalizeUserStyles', () => {
     })
 
     expect(snapshot.builtins['hide-reddit-game'].enabled).toBe(false)
-    expect(snapshot.builtins['compact-tiktok-layout'].enabled).toBe(true)
     expect(snapshot.builtins['hide-x-bottom-nav'].enabled).toBe(true)
     expect(snapshot.builtins['hide-x-home-tabs'].enabled).toBe(false)
     expect(snapshot.customStyles).toHaveLength(1)
@@ -196,7 +193,6 @@ describe('user style css composition', () => {
     const snapshot = normalizeUserStyles({
       builtins: {
         'hide-reddit-game': { enabled: false },
-        'compact-tiktok-layout': { enabled: false },
         'hide-x-bottom-nav': { enabled: false },
         'hide-x-home-tabs': { enabled: false },
       },
@@ -209,32 +205,10 @@ describe('user style css composition', () => {
     expect(css).not.toContain("ssr-post-content-header")
   })
 
-  it('keeps always-on tiktok css even when user styles are disabled', () => {
-    const snapshot = normalizeUserStyles({
-      builtins: {
-        'hide-reddit-game': { enabled: false },
-        'compact-tiktok-layout': { enabled: false },
-        'hide-x-bottom-nav': { enabled: false },
-        'hide-x-home-tabs': { enabled: false },
-      },
-      customStyles: [],
-    })
-
-    const css = getInjectedCss('www.tiktok.com', {}, snapshot)
-    expect(css).toContain("SectionActionBarContainer")
-    expect(css).not.toContain("DivSideNavPlaceholderContainer")
-  })
-
   it('includes x home tab css when the builtin is enabled', () => {
     const snapshot = withBuiltinEnabled('hide-x-home-tabs')
 
     expect(getEnabledUserStyleCss('x.com', snapshot)).toContain("[role='tablist']")
-  })
-
-  it('includes tiktok layout css when the builtin is enabled', () => {
-    const snapshot = withBuiltinEnabled('compact-tiktok-layout')
-
-    expect(getEnabledUserStyleCss('www.tiktok.com', snapshot)).toContain("DivSideNavPlaceholderContainer")
   })
 })
 

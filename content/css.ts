@@ -11,7 +11,6 @@ export const hostHomes: Record<string, string> = {
   'old.reddit.com': 'reddit',
   'www.reddit.com': 'reddit',
   'www.threads.com': 'threads',
-  'www.tiktok.com': 'tiktok',
   'www.tumblr.com': 'tumblr',
   'm.vk.com': 'vk',
   'x.com': 'x',
@@ -86,17 +85,6 @@ const styles: Record<string, (settings: any) => string> = {
     /* Suggested for you */
     .x16xn7b0.xwib8y2 {
       display: none !important;
-    }
-  `,
-
-  tiktok: (settings) => css`
-    section[class*='SectionActionBarContainer'] {
-      position: fixed !important;
-      right: 0 !important;
-      top: 0 !important;
-      background: #ffffff33;
-      border-radius: 12px;
-      transform: scale(0.9);
     }
   `,
 

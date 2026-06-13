@@ -4,7 +4,6 @@ export const USER_STYLES_SCHEMA_VERSION = 1
 
 export const builtinUserStyleIds = [
   'hide-reddit-game',
-  'compact-tiktok-layout',
   'hide-x-bottom-nav',
   'hide-x-home-tabs',
 ] as const
@@ -73,40 +72,6 @@ export const builtinUserStyleDefinitions: BuiltinUserStyleDefinition[] = [
     `,
   },
   {
-    id: 'compact-tiktok-layout',
-    labelKey: 'settings.userStyles.builtin.compactTiktokLayout.label',
-    hostGlobs: ['www.tiktok.com'],
-    css: css`
-      /* Compact sidebar */
-      div[class*='DivSideNavPlaceholderContainer'] {
-        width: 4rem !important;
-      }
-
-      div[class*='DivSideNavContainer'] {
-        width: 4rem !important;
-      }
-
-      main#main-content-homepage_hot {
-        min-width: 0 !important;
-      }
-
-      div[class*='DivColumnListContainer'] {
-        padding-inline-end: 0 !important;
-      }
-
-      section[class*='SectionMediaCardContainer'] {
-        width: calc(100vw - 4rem);
-        min-width: 0;
-      }
-
-      /* Videos|Favorites|Liked tabs */
-      .css-1vk63hd-7937d88b--DivVideoFeedTab.ej9r3wt0 p {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-      }
-    `,
-  },
-  {
     id: 'hide-x-bottom-nav',
     labelKey: 'settings.userStyles.builtin.hideXBottomNav.label',
     hostGlobs: ['x.com'],
@@ -168,7 +133,6 @@ export const builtinUserStyleDefinitionById = builtinUserStyleDefinitions.reduce
 
 export const createDefaultBuiltinUserStyles = (): Record<BuiltinUserStyleId, BuiltinUserStyleState> => ({
   'hide-reddit-game': { enabled: false },
-  'compact-tiktok-layout': { enabled: true },
   'hide-x-bottom-nav': { enabled: true },
   'hide-x-home-tabs': { enabled: false },
 })
