@@ -218,7 +218,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
       ) : null}
 
       {nIf(
-        isAndroid,
+        !isWeb,
         <View className="mt-10">
           <NouText className={subheaderCls}>{t('settings.proxy.label')}</NouText>
           <View className={surfaceCls}>

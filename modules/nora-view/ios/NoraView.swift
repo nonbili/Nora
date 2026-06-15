@@ -1,5 +1,6 @@
 import ExpoModulesCore
 import WebKit
+import Network
 
 let uaMac = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
 
@@ -52,14 +53,43 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   }
 
   private static func dataStore(for profile: String) -> WKWebsiteDataStore {
+    let store: WKWebsiteDataStore
     if profile == "default" {
-      return WKWebsiteDataStore.default()
+      store = WKWebsiteDataStore.default()
+    } else if #available(iOS 17.0, *) {
+      let identifier = profileIdentifier(for: profile)
+      store = WKWebsiteDataStore(forIdentifier: identifier)
+    } else {
+      store = WKWebsiteDataStore.default()
     }
     if #available(iOS 17.0, *) {
-      let identifier = profileIdentifier(for: profile)
-      return WKWebsiteDataStore(forIdentifier: identifier)
+      applyProxy(to: store)
+    }
+    return store
+  }
+
+  @available(iOS 17.0, *)
+  static func applyProxy(to store: WKWebsiteDataStore) {
+    let settings = NouController.shared.settings
+    if settings.proxyEnabled && !settings.proxyHost.isEmpty {
+      let portValue = UInt16(settings.proxyPort) ?? 0
+      guard let port = NWEndpoint.Port(rawValue: portValue) else {
+        NouController.shared.log("iOS Proxy error: Invalid port \(settings.proxyPort)")
+        return
+      }
+      let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(settings.proxyHost), port: port)
+      let proxyConfig: ProxyConfiguration
+      if settings.proxyType == "socks" {
+        proxyConfig = ProxyConfiguration(socksv5Proxy: endpoint)
+      } else {
+        proxyConfig = ProxyConfiguration(httpCONNECTProxy: endpoint)
+      }
+
+      store.proxyConfigurations = [proxyConfig]
+      NouController.shared.log("iOS Proxy applied: \(settings.proxyType)://\(settings.proxyHost):\(settings.proxyPort)")
     } else {
-      return WKWebsiteDataStore.default()
+      store.proxyConfigurations = []
+      NouController.shared.log("iOS Proxy cleared")
     }
   }
 

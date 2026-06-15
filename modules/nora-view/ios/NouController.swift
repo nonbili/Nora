@@ -1,5 +1,6 @@
 import ExpoModulesCore
 import WebKit
+import Network
 
 struct NoraSettings: Record {
   @Field
@@ -10,6 +11,18 @@ struct NoraSettings: Record {
 
   @Field
   var internalHosts: [String] = []
+
+  @Field
+  var proxyEnabled: Bool = false
+
+  @Field
+  var proxyType: String = "http"
+
+  @Field
+  var proxyHost: String = ""
+
+  @Field
+  var proxyPort: String = ""
 }
 
 struct NoraBlocklist: Record {
@@ -68,7 +81,30 @@ class NouController {
   private let cosmeticTokens = ["##", "#@#", "#$#", "#?#", "#%#"]
   private let invalidRuleTokens = ["*", "?", "/", "=", ",", "~"]
 
-  var settings = NoraSettings()
+  var settings = NoraSettings() {
+    didSet {
+      applyProxy()
+    }
+  }
+
+  private func applyProxy() {
+    if #available(iOS 17.0, *) {
+      runOnMain { [weak self] in
+        guard let self = self else { return }
+        var stores = Set<WKWebsiteDataStore>()
+        for view in self.registeredViews.allObjects {
+          if let store = view.webView?.configuration.websiteDataStore {
+            stores.insert(store)
+          }
+        }
+        stores.insert(WKWebsiteDataStore.default())
+        for store in stores {
+          NoraView.applyProxy(to: store)
+        }
+      }
+    }
+  }
+
   var blocklist = NoraBlocklist()
   var i18nStrings: [String: String] = [:]
   var logFn: ((String) -> Void)?
