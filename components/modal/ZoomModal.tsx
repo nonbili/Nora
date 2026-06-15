@@ -88,8 +88,8 @@ export const ZoomModal = () => {
         </View>
 
         {isCustomized ? (
-          <Pressable onPress={handleReset} hitSlop={12} className="px-4 py-2">
-            <NouText className="text-sm font-semibold text-indigo-500 hover:text-indigo-600 active:text-indigo-600">
+          <Pressable onPress={handleReset} hitSlop={12} className="px-4 py-2 active:opacity-60">
+            <NouText pointerEvents="none" className="text-sm font-semibold text-indigo-500">
               {t('common.reset') || 'Reset'}
             </NouText>
           </Pressable>

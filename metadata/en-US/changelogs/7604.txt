@@ -1,0 +1,3 @@
+- Support global and per-site page zoom settings
+- Support HTTP and SOCKS proxy 
+- Support Russian language
