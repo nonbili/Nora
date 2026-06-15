@@ -17,7 +17,7 @@ export const UrlModal = () => {
   const urlModalTargetTabId = useValue(ui$.urlModalTargetTabId)
   const tabs = useValue(tabs$.tabs)
   const [url, setUrl] = useState('')
-  const targetTabIndex = tabs.findIndex((tab) => tab.id === urlModalTargetTabId)
+  const targetTabIndex = urlModalTargetTabId == null ? -1 : tabs.findIndex((tab) => tab?.id === urlModalTargetTabId)
   const targetTab = targetTabIndex === -1 ? null : tabs[targetTabIndex]
   const isEditingTab = urlModalMode === 'editTab' && targetTab != null
   const onClose = () => {
