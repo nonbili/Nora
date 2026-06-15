@@ -81,6 +81,7 @@ const languageNativeNames: Record<string, string> = {
   pl: 'Polski',
   pt: 'Português',
   pt_BR: 'Português (Brasil)',
+  ru: 'Русский',
   sv: 'Svenska',
   tr: 'Türkçe',
   vi: 'Tiếng Việt',

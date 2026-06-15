@@ -13,7 +13,7 @@ class SettingsSyncer extends BaseSyncer<Settings> {
   getValue() {
     // siteZoom is device-local; never push it to the remote.
     const { siteZoom: _siteZoom, ...rest } = settings$.get()
-    return rest as Settings
+    return rest as unknown as Settings
   }
 
   setValue(value: Settings) {

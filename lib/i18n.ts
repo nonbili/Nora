@@ -13,6 +13,7 @@ import lvText from '@/locales/lv.json'
 import plText from '@/locales/pl.json'
 import ptText from '@/locales/pt.json'
 import ptBRText from '@/locales/pt_BR.json'
+import ruText from '@/locales/ru.json'
 import svText from '@/locales/sv.json'
 import trText from '@/locales/tr.json'
 import viText from '@/locales/vi.json'
@@ -34,6 +35,7 @@ export const supportedI18nLanguages = [
   'pl',
   'pt',
   'pt_BR',
+  'ru',
   'sv',
   'tr',
   'vi',
@@ -81,6 +83,9 @@ const resources: Record<SupportedI18nLanguage, { translation: any }> = {
   },
   pt_BR: {
     translation: ptBRText,
+  },
+  ru: {
+    translation: ruText,
   },
   sv: {
     translation: svText,
