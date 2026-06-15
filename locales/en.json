@@ -87,6 +87,7 @@
     "share": "Share",
     "signOut": "Sign out",
     "tools": "Tools",
+    "zoom": "Zoom",
     "viewInSplitView": "View in split view"
   },
   "modals": {
@@ -130,6 +131,13 @@
   },
   "settings": {
     "label": "Settings",
+    "zoom": {
+      "label": "Page zoom",
+      "defaultLabel": "Default zoom",
+      "defaultHint": "Set the default zoom level for all web pages.",
+      "siteZoomLabel": "Per-site zoom",
+      "usingDefault": "Using default zoom"
+    },
     "openExternalLink": "Open external link in system browser",
     "redirectToOldReddit": "Redirect to Old Reddit",
     "allowHttpWebsite": "Allow HTTP websites",

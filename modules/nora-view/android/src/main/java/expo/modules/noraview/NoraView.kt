@@ -930,6 +930,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     profileSet = true
   }
 
+  fun setTextZoom(zoom: Int) {
+    webView.settings.textZoom = zoom
+  }
+
   fun setScriptOnStart(script: String) {
     scriptOnStart = script
   }

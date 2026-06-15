@@ -6,7 +6,7 @@ import { services } from '../service/Services'
 import { clsx, isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
-import { settings$ } from '@/states/settings'
+import { settings$, ZOOM_PRESETS } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
 import { bookmarks$ } from '@/states/bookmarks'
 import { Image } from 'expo-image'
@@ -479,6 +479,64 @@ export const SettingsAppearanceContent = () => {
           </View>
         </View>
       </View>
+
+      <NouText className="mt-8 mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500">
+        {t('settings.zoom.label') || 'Page Zoom'}
+      </NouText>
+      <View className={surfaceCls}>
+        <View className={clsx('items-center flex-row justify-between', rowCls)}>
+          <View className="flex-1 pr-3">
+            <NouText className="font-medium">{t('settings.zoom.defaultLabel') || 'Default zoom'}</NouText>
+            <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
+              {t('settings.zoom.defaultHint') || 'Set the default zoom level for all web pages.'}
+            </NouText>
+          </View>
+          <NouMenu
+            trigger={
+              <NouButton size="1" variant="outline" onPress={() => {}}>
+                {settings.defaultZoom}%
+              </NouButton>
+            }
+            items={ZOOM_PRESETS.map((zoom) => ({
+              label: `${zoom}%`,
+              handler: () => settings$.setDefaultZoom(zoom),
+              metaLabel: settings.defaultZoom === zoom ? '✓' : undefined,
+            }))}
+          />
+        </View>
+      </View>
+
+      {Object.keys(settings.siteZoom || {}).length > 0 ? (
+        <>
+          <NouText className="mt-8 mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500">
+            {t('settings.zoom.siteZoomLabel') || 'Per-site zoom'}
+          </NouText>
+          <View className={surfaceCls}>
+            {Object.entries(settings.siteZoom || {}).map(([site, zoom], index, arr) => (
+              <View
+                key={site}
+                className={clsx(
+                  'items-center flex-row justify-between',
+                  rowCls,
+                  index < arr.length - 1 && rowBorderCls,
+                )}
+              >
+                <View className="flex-1 pr-3">
+                  <NouText className="font-medium">{site}</NouText>
+                  <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    {zoom}%
+                  </NouText>
+                </View>
+                <MaterialButton
+                  name="close"
+                  color={isDark ? colors.icon : colors.iconLightStrong}
+                  onPress={() => settings$.setSiteZoom(site, null)}
+                />
+              </View>
+            ))}
+          </View>
+        </>
+      ) : null}
     </View>
   )
 }

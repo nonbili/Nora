@@ -16,3 +16,11 @@ export const nIf = (condition: any, node: ReactNode) => (condition ? node : null
 export function genId(size = 6) {
   return nanoid(size)
 }
+
+export const getHostFromUrl = (url: string) => {
+  try {
+    return new URL(url).host
+  } catch {
+    return ''
+  }
+}

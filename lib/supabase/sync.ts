@@ -15,7 +15,8 @@ const canSync = () => {
 }
 
 const getSettingsSnapshot = (value: any = settings$.get()) => {
-  const { toggleService, addProfile, updateProfile, deleteProfile, ...data } = value
+  // siteZoom is device-local and intentionally excluded from sync.
+  const { toggleService, addProfile, updateProfile, deleteProfile, siteZoom, ...data } = value
   return data
 }
 

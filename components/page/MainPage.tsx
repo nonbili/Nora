@@ -15,6 +15,7 @@ import { ProfileEditModal } from '../modal/ProfileEditModal'
 import { ProfileLinkModal } from '../modal/ProfileLinkModal'
 import { RenameViewModal } from '../modal/RenameViewModal'
 import { RenameGroupModal } from '../modal/RenameGroupModal'
+import { ZoomModal } from '../modal/ZoomModal'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { useLocales } from 'expo-localization'
 import i18n from 'i18next'
@@ -68,6 +69,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <ProfileLinkModal />
         <RenameGroupModal />
         <RenameViewModal />
+        <ZoomModal />
         {nIf(
           !isWeb,
           <>

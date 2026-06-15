@@ -25,6 +25,7 @@ interface Store {
   settingsModalOpen: boolean
   tabModalOpen: boolean
   toolsModalOpen: boolean
+  zoomModalOpen: boolean
   urlModalOpen: boolean
   userStyleModalOpen: boolean
   editingUserStyleId: string | null
@@ -62,6 +63,7 @@ export const ui$ = observable<Store>({
   settingsModalOpen: false,
   tabModalOpen: false,
   toolsModalOpen: false,
+  zoomModalOpen: false,
   urlModalOpen: false,
   userStyleModalOpen: false,
   editingUserStyleId: null,

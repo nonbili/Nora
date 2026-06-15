@@ -11,6 +11,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   var webView: WKWebView!
   var scriptOnStart: String = ""
   var userAgent: String?
+  var textZoom: Int = 100
   var lastTranslationY: CGFloat = 0
   var lastContextMenuLocation: CGPoint?
   var currentProfile: String = "default"
@@ -197,6 +198,10 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
     addSubview(webView)
     applyBlocklist(NouController.shared.blocklistRuleList)
+    
+    if #available(iOS 14.0, *) {
+      webView.pageZoom = CGFloat(textZoom) / 100.0
+    }
 
     // Observe title and URL changes
     webView.addObserver(self, forKeyPath: "title", options: .new, context: nil)
@@ -284,6 +289,13 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     if profile == currentProfile { return }
     currentProfile = profile
     setupWebView(profile: profile)
+  }
+
+  func setTextZoom(_ zoom: Int) {
+    self.textZoom = zoom
+    if #available(iOS 14.0, *) {
+      webView.pageZoom = CGFloat(zoom) / 100.0
+    }
   }
 
   func applyBlocklist(_ ruleList: WKContentRuleList?) {

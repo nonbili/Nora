@@ -31,8 +31,15 @@ class NoraViewModule : Module() {
     sendEvent("log", mapOf("msg" to msg))
   }
 
+  private var lastProxyKey: String? = null
+
   private fun applyProxy(settings: NoraSettings) {
     if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) {
+      val proxyKey = "${settings.proxyEnabled}|${settings.proxyType}|${settings.proxyHost}|${settings.proxyPort}"
+      if (proxyKey == lastProxyKey) {
+        return
+      }
+      lastProxyKey = proxyKey
       val executor = java.util.concurrent.Executor { command -> command.run() }
       if (settings.proxyEnabled && settings.proxyHost.isNotEmpty()) {
         val type = if (settings.proxyType == "socks") "socks" else "http"
@@ -220,6 +227,10 @@ class NoraViewModule : Module() {
 
       Prop("profile") { view: NoraView, profile: String ->
         view.setProfile(profile)
+      }
+
+      Prop("textZoom") { view: NoraView, zoom: Int ->
+        view.setTextZoom(zoom)
       }
 
       Prop("inspectable") { _: NoraView, inspectable: Boolean ->

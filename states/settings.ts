@@ -65,6 +65,9 @@ export interface Settings {
   deckTabWidth: number
   sidebarCollapsed: boolean
 
+  defaultZoom: number
+  siteZoom: Record<string, number>
+
   disabledServicesArr: string[]
   enabledSearchProviderIds: string[]
   selectedSearchProviderId: string
@@ -83,6 +86,8 @@ interface Store extends Settings {
   addProfile: (name: string, color: string) => void
   updateProfile: (id: string, name: string, color: string) => void
   deleteProfile: (id: string) => void
+  setDefaultZoom: (zoom: number) => void
+  setSiteZoom: (site: string, zoom: number | null) => void
 }
 
 export const normalizeSettings = <T extends Partial<Settings> | undefined>(data: T) => {
@@ -147,6 +152,12 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.proxyPort !== 'string') {
     data.proxyPort = ''
   }
+  if (typeof data.defaultZoom !== 'number') {
+    data.defaultZoom = 100
+  }
+  if (!data.siteZoom || typeof data.siteZoom !== 'object') {
+    data.siteZoom = {}
+  }
   return data
 }
 
@@ -183,6 +194,9 @@ export const settings$: Observable<Store> = observable<Store>({
   deckTabWidth: 400,
   sidebarCollapsed: false,
 
+  defaultZoom: 100,
+  siteZoom: {},
+
   disabledServicesArr: [],
   enabledSearchProviderIds: ['url', 'duckduckgo', 'google'],
   selectedSearchProviderId: 'url',
@@ -190,6 +204,16 @@ export const settings$: Observable<Store> = observable<Store>({
   profiles: [DEFAULT_PROFILE],
   setLanguage: (language) => {
     settings$.language.set(normalizeI18nLanguage(language))
+  },
+  setDefaultZoom: (zoom) => {
+    settings$.defaultZoom.set(zoom)
+  },
+  setSiteZoom: (site, zoom) => {
+    if (zoom === null) {
+      settings$.siteZoom[site].delete()
+    } else {
+      settings$.siteZoom[site].set(zoom)
+    }
   },
   toggleService: (service) => {
     const index = settings$.disabledServicesArr.indexOf(service)
@@ -314,3 +338,11 @@ syncObservable(settings$, {
     },
   },
 })
+
+export const ZOOM_PRESETS = [50, 75, 90, 100, 110, 125, 150, 175, 200, 250, 300]
+
+export const resolveZoom = (
+  host: string,
+  siteZoom: Record<string, number> | undefined,
+  defaultZoom: number | undefined,
+) => (host ? siteZoom?.[host] : undefined) ?? defaultZoom ?? 100

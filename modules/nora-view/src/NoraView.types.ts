@@ -22,6 +22,7 @@ export type NoraViewProps = {
   allowpopups?: string
   src?: string
   scriptOnStart?: string
+  textZoom?: number
   onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
   onMessage?: (event: { nativeEvent: OnMessageEventPayload }) => void
 }

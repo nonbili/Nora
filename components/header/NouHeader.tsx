@@ -7,7 +7,7 @@ import { useValue, useObserve } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 import { removeTrackingParams } from '@/lib/page'
-import { settings$ } from '@/states/settings'
+import { settings$, resolveZoom } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
@@ -98,12 +98,17 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const flingStart = useSharedValueSafe(0)
   const panStart = useSharedValueSafe(0)
   let hostname = '',
+    host = '',
     canDownload = false
+
+  const defaultZoom = useValue(settings$.defaultZoom)
+  const siteZoom = useValue(settings$.siteZoom)
 
   if (currentTab?.url) {
     try {
       const url = new URL(currentTab.url)
       hostname = url.hostname
+      host = url.host
       canDownload = isDirectlyDownloadable(currentTab.url)
     } catch (e) {}
   }
@@ -394,6 +399,13 @@ export const NouHeader: React.FC<{}> = ({}) => {
                             },
                           },
                         ]),
+                    {
+                      label: t('menus.zoom') || 'Zoom',
+                      icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,
+                      systemImage: 'plus.magnifyingglass',
+                      metaLabel: `${resolveZoom(host, siteZoom, defaultZoom)}%`,
+                      handler: () => ui$.zoomModalOpen.set(true),
+                    },
                     {
                       label: t('menus.addBookmark'),
                       icon: <MaterialIcons name="bookmark-add" size={18} color={headerControlColor} />,

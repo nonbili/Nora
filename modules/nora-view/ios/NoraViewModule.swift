@@ -162,6 +162,10 @@ public class NoraViewModule: Module {
         view.setProfile(profile)
       }
 
+      Prop("textZoom") { (view: NoraView, zoom: Int) in
+        view.setTextZoom(zoom)
+      }
+
       Prop("inspectable") { (view: NoraView, inspectable: Bool) in
         view.setInspectable(inspectable)
       }

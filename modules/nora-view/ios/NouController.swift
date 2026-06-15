@@ -87,8 +87,15 @@ class NouController {
     }
   }
 
+  private var lastProxyKey: String?
+
   private func applyProxy() {
     if #available(iOS 17.0, *) {
+      let proxyKey = "\(settings.proxyEnabled)|\(settings.proxyType)|\(settings.proxyHost)|\(settings.proxyPort)"
+      if proxyKey == lastProxyKey {
+        return
+      }
+      lastProxyKey = proxyKey
       runOnMain { [weak self] in
         guard let self = self else { return }
         var stores = Set<WKWebsiteDataStore>()

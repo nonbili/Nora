@@ -3,11 +3,11 @@ import { NoraView } from '@/modules/nora-view'
 import { useObserveEffect, useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { settings$ } from '@/states/settings'
+import { settings$, resolveZoom } from '@/states/settings'
 import { ActivityIndicator, Appearance, Pressable, StyleSheet, View, useColorScheme } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
-import { clsx, isWeb, isIos, nIf } from '@/lib/utils'
+import { clsx, isWeb, isIos, nIf, getHostFromUrl } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { MaterialButton } from '../button/IconButtons'
@@ -146,14 +146,6 @@ const parseWebviewMeta = (value?: string | null) => {
 
 const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 
-const getHostFromUrl = (url: string) => {
-  try {
-    return new URL(url).host
-  } catch {
-    return ''
-  }
-}
-
 const buildUserScriptRunner = (host: string) => {
   const scripts = getEnabledUserScripts(host, getUserStylesSnapshot())
   if (!scripts.length) {
@@ -201,6 +193,10 @@ export const NoraTab: React.FC<{
   const xDefaultHomeTimeline = useValue(settings$.xDefaultHomeTimeline)
   const theme = useValue(settings$.theme)
   const colorScheme = useColorScheme()
+  const host = tab.url ? getHostFromUrl(tab.url) : ''
+  const defaultZoom = useValue(settings$.defaultZoom)
+  const siteZoom = useValue(settings$.siteZoom)
+  const resolvedZoom = resolveZoom(host, siteZoom, defaultZoom)
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag | null>(null)
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
@@ -686,6 +682,7 @@ export const NoraTab: React.FC<{
             inspectable={inspectable}
             allowpopups="true"
             key={viewInstanceKey}
+            textZoom={resolvedZoom}
           />
         )}
         {nIf(
@@ -728,6 +725,7 @@ export const NoraTab: React.FC<{
         onLoad={onLoad}
         onMessage={onMessage}
         inspectable={inspectable}
+        textZoom={resolvedZoom}
       />
       {nIf(!tab.url && isActive, <NavModalContent index={index} />)}
     </View>

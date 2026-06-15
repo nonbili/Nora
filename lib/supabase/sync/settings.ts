@@ -11,11 +11,15 @@ class SettingsSyncer extends BaseSyncer<Settings> {
   isPersistLoaded = () => when(syncState(settings$).isPersistLoaded)
 
   getValue() {
-    return settings$.get()
+    // siteZoom is device-local; never push it to the remote.
+    const { siteZoom: _siteZoom, ...rest } = settings$.get()
+    return rest as Settings
   }
 
   setValue(value: Settings) {
-    settings$.assign(normalizeSettings(value))
+    // Preserve the device-local siteZoom when applying remote settings.
+    const siteZoom = settings$.siteZoom.get()
+    settings$.assign(normalizeSettings({ ...value, siteZoom }))
   }
 
   hasMeaningfulLocalValue() {
