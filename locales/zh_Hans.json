@@ -234,7 +234,7 @@
       "system": "系统",
       "hint": "选择一种语言或使用系统语言。"
     },
-    "mentionNotifications": "提及和私信通知",
+    "mentionNotifications": "社交通知",
     "mentionNotificationsHint": "由于操作系统后台限制，通知送达可能会延迟且无法保证。",
     "oneProfilePerSite": "每个网站一个配置文件",
     "oneProfilePerSiteHint": "为每个网站使用独立的自动会话。从某个网站打开的链接将保留该网站的配置文件。",
