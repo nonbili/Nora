@@ -48,6 +48,11 @@ export interface Settings {
   doubleBackToExitApp: boolean
   mentionNotificationsEnabled: boolean
 
+  proxyEnabled: boolean
+  proxyType: 'http' | 'socks'
+  proxyHost: string
+  proxyPort: string
+
   showNewTabButtonInHeader: boolean
   showBackButtonInHeader: boolean
   showForwardButtonInHeader: boolean
@@ -130,6 +135,18 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.oneProfilePerSite !== 'boolean') {
     data.oneProfilePerSite = false
   }
+  if (typeof data.proxyEnabled !== 'boolean') {
+    data.proxyEnabled = false
+  }
+  if (data.proxyType !== 'http' && data.proxyType !== 'socks') {
+    data.proxyType = 'http'
+  }
+  if (typeof data.proxyHost !== 'string') {
+    data.proxyHost = ''
+  }
+  if (typeof data.proxyPort !== 'string') {
+    data.proxyPort = ''
+  }
   return data
 }
 
@@ -148,6 +165,11 @@ export const settings$: Observable<Store> = observable<Store>({
   videoEdgeLongPressTo2x: true,
   doubleBackToExitApp: false,
   mentionNotificationsEnabled: false,
+
+  proxyEnabled: false,
+  proxyType: 'http',
+  proxyHost: '',
+  proxyPort: '',
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,

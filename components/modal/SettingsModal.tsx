@@ -1,9 +1,9 @@
-import { BackHandler, Linking, Pressable, ScrollView, View, useColorScheme, useWindowDimensions } from 'react-native'
+import { BackHandler, Keyboard, KeyboardAvoidingView, Linking, Pressable, ScrollView, View, useColorScheme, useWindowDimensions } from 'react-native'
 import { NouText } from '../NouText'
 import { version } from '../../package.json'
 import { version as desktopVersion } from '../../desktop/package.json'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { clsx, isWeb } from '@/lib/utils'
+import { clsx, isIos, isWeb } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { ui$ } from '@/states/ui'
@@ -120,11 +120,19 @@ export const SettingsModal = () => {
   const isDark = colorScheme !== 'light'
   const { width } = useWindowDimensions()
   const [pageStack, setPageStack] = useState<SettingsPage[]>(['home'])
+  const [keyboardInset, setKeyboardInset] = useState(0)
   const scrollRef = useRef<ScrollView>(null)
   const scrollPositionsRef = useRef<Partial<Record<SettingsPage, number>>>({ home: 0 })
 
+  const scrollToEnd = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true })
+    }, 150)
+  }
+
   const isNarrowNative = !isWeb && width < 768
   const currentPage = pageStack[pageStack.length - 1]
+  const scrollKeyboardInset = !isWeb && !isIos ? keyboardInset : 0
   const canGoBack = pageStack.length > 1
   const appVersion = isWeb ? desktopVersion : version
   const planLabel = formatPlanLabel(plan)
@@ -222,6 +230,25 @@ export const SettingsModal = () => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', handleBack)
     return () => subscription.remove()
   }, [handleBack, settingsModalOpen])
+
+  useEffect(() => {
+    if (!settingsModalOpen || isWeb || isIos) {
+      setKeyboardInset(0)
+      return
+    }
+
+    const showSub = Keyboard.addListener('keyboardDidShow', (event) => {
+      setKeyboardInset(event.endCoordinates.height)
+    })
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardInset(0)
+    })
+
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [settingsModalOpen])
 
   useEffect(() => {
     if (!settingsModalOpen || !isWeb || typeof window === 'undefined' || !window.addEventListener) {
@@ -360,7 +387,7 @@ export const SettingsModal = () => {
       )
     }
 
-    if (currentPage === 'browsing') return <SettingsBrowsingContent />
+    if (currentPage === 'browsing') return <SettingsBrowsingContent onFocusInput={scrollToEnd} />
     if (currentPage === 'styles') return <SettingsUserStylesContent />
     if (currentPage === 'appearance') return <SettingsAppearanceContent />
     if (currentPage === 'services') return <SettingsServicesContent />
@@ -421,6 +448,9 @@ export const SettingsModal = () => {
         ref={scrollRef}
         className="flex-1"
         showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={scrollKeyboardInset > 0 ? { paddingBottom: scrollKeyboardInset } : undefined}
         scrollEventThrottle={16}
         onScroll={(e) => {
           scrollPositionsRef.current[currentPage] = e.nativeEvent.contentOffset.y
@@ -449,7 +479,9 @@ export const SettingsModal = () => {
   return isNarrowNative ? (
     <View className="absolute inset-0 z-10 bg-zinc-100 dark:bg-zinc-950">
       <SafeAreaView className="flex-1" edges={['top']}>
-        {content}
+        <KeyboardAvoidingView className="flex-1" behavior={isIos ? 'padding' : 'height'}>
+          {content}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   ) : (

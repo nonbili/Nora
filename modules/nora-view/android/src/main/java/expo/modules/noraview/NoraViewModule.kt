@@ -11,6 +11,8 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.webkit.ProfileStore
+import androidx.webkit.ProxyConfig
+import androidx.webkit.ProxyController
 import androidx.webkit.WebViewFeature
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.jni.JavaScriptObject
@@ -27,6 +29,35 @@ import java.io.FileWriter
 class NoraViewModule : Module() {
   fun log(msg: String) {
     sendEvent("log", mapOf("msg" to msg))
+  }
+
+  private fun applyProxy(settings: NoraSettings) {
+    if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) {
+      val executor = java.util.concurrent.Executor { command -> command.run() }
+      if (settings.proxyEnabled && settings.proxyHost.isNotEmpty()) {
+        val type = if (settings.proxyType == "socks") "socks" else "http"
+        val portStr = if (settings.proxyPort.isNotEmpty()) ":${settings.proxyPort}" else ""
+        val proxyRule = "$type://${settings.proxyHost}$portStr"
+        val proxyConfig = ProxyConfig.Builder()
+          .addProxyRule(proxyRule)
+          .build()
+        try {
+          ProxyController.getInstance().setProxyOverride(proxyConfig, executor, Runnable {
+            log("proxy override applied: $proxyRule")
+          })
+        } catch (e: Exception) {
+          log("setProxyOverride failed: ${e.message}")
+        }
+      } else {
+        try {
+          ProxyController.getInstance().clearProxyOverride(executor, Runnable {
+            log("proxy override cleared")
+          })
+        } catch (e: Exception) {
+          log("clearProxyOverride failed: ${e.message}")
+        }
+      }
+    }
   }
 
   init {
@@ -79,6 +110,7 @@ class NoraViewModule : Module() {
 
     Function("setSettings") { settings: NoraSettings ->
       nouController.settings = settings
+      applyProxy(settings)
     }
 
     Function("setBlocklist") { blocklist: NoraBlocklist ->

@@ -28,6 +28,18 @@ class NoraSettings : Record {
 
   @Field
   val internalHosts: List<String> = emptyList()
+
+  @Field
+  val proxyEnabled: Boolean = false
+
+  @Field
+  val proxyType: String = "http"
+
+  @Field
+  val proxyHost: String = ""
+
+  @Field
+  val proxyPort: String = ""
 }
 
 class NoraBlocklist : Record {

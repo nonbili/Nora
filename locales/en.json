@@ -134,6 +134,15 @@
     "redirectToOldReddit": "Redirect to Old Reddit",
     "allowHttpWebsite": "Allow HTTP websites",
     "inspectable": "Make webview inspectable",
+    "proxy": {
+      "label": "Proxy",
+      "enabled": "Enable proxy",
+      "type": "Proxy type",
+      "host": "Proxy host",
+      "port": "Proxy port",
+      "hostPlaceholder": "e.g. 127.0.0.1 or proxy.example.com",
+      "portPlaceholder": "e.g. 1080"
+    },
     "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
     "enterInsertsNewline": "Enter inserts a new line (Shift+Enter)",
     "doubleBackToExitApp": "Double back to exit app",

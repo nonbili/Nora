@@ -88,7 +88,7 @@ const languageNativeNames: Record<string, string> = {
   zh_Hant: '繁體中文',
 }
 
-export const SettingsBrowsingContent: React.FC = () => {
+export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = ({ onFocusInput }) => {
   const settings = useValue(settings$)
   const builtinScripts = useValue(userStyles$.builtinScripts)
 
@@ -216,6 +216,61 @@ export const SettingsBrowsingContent: React.FC = () => {
           </View>
         </View>
       ) : null}
+
+      {nIf(
+        isAndroid,
+        <View className="mt-10">
+          <NouText className={subheaderCls}>{t('settings.proxy.label')}</NouText>
+          <View className={surfaceCls}>
+            <View className={clsx(rowCls, settings.proxyEnabled && rowBorderCls)}>
+              <NouSwitch
+                label={<NouText className="font-medium">{t('settings.proxy.enabled')}</NouText>}
+                value={settings.proxyEnabled}
+                onPress={() => settings$.proxyEnabled.toggle()}
+              />
+            </View>
+            {settings.proxyEnabled && (
+              <>
+                <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
+                  <NouText className="font-medium">{t('settings.proxy.type')}</NouText>
+                  <Segemented
+                    options={['HTTP', 'SOCKS']}
+                    selectedIndex={settings.proxyType === 'socks' ? 1 : 0}
+                    size={1}
+                    onChange={(index) => settings$.proxyType.set(index === 1 ? 'socks' : 'http')}
+                  />
+                </View>
+                <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
+                  <NouText className="font-medium w-24">{t('settings.proxy.host')}</NouText>
+                  <TextInput
+                    className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white text-right"
+                    value={settings.proxyHost}
+                    onChangeText={(text) => settings$.proxyHost.set(text)}
+                    placeholder={t('settings.proxy.hostPlaceholder')}
+                    placeholderTextColor="#71717a"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    onFocus={onFocusInput}
+                  />
+                </View>
+                <View className={clsx(rowCls, 'flex-row items-center justify-between gap-3')}>
+                  <NouText className="font-medium w-24">{t('settings.proxy.port')}</NouText>
+                  <TextInput
+                    className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white w-32 text-right"
+                    value={settings.proxyPort}
+                    onChangeText={(text) => settings$.proxyPort.set(text)}
+                    placeholder={t('settings.proxy.portPlaceholder')}
+                    placeholderTextColor="#71717a"
+                    keyboardType="numeric"
+                    returnKeyType="done"
+                    onFocus={onFocusInput}
+                  />
+                </View>
+              </>
+            )}
+          </View>
+        </View>,
+      )}
     </View>
   )
 }
