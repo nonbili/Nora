@@ -13,7 +13,13 @@
     "closeAll": "Cerrar Todo",
     "download": "Descargar",
     "openUrl": "Abrir URL",
-    "open": "Abrir"
+    "open": "Abrir",
+    "confirm": "Confirmar",
+    "continue": "Continuar",
+    "reopenLastClosedTab": "Reabrir la última pestaña cerrada",
+    "restoreTabs": "Pestañas cerradas recientemente",
+    "save": "Guardar",
+    "toggleSidebar": "Alternar barra lateral"
   },
   "menus": {
     "close": "Cerrar",
@@ -27,10 +33,20 @@
     "tools": "Herramientas",
     "signOut": "Cerrar sesión",
     "scroll": "Deslizar hasta arriba",
-    "pin": "Anclar a la página de nueva pestaña"
+    "pin": "Anclar a la página de nueva pestaña",
+    "clearSiteData": "Limpiar datos del sitio",
+    "clearSiteDataConfirm": "¿Limpiar todas las cookies y los datos del sitio para \"{{host}}\"? Esto cerrará su sesión en este sitio.",
+    "duplicate": "Duplicar pestaña",
+    "editUrl": "Editar URL de la pestaña",
+    "more": "Más",
+    "openInProfile": "Abrir en perfil",
+    "pause": "Pausar pestaña",
+    "resume": "Reanudar pestaña",
+    "viewInSplitView": "Ver en vista dividida"
   },
   "modals": {
-    "downloadVideo": "Descargar vídeo"
+    "downloadVideo": "Descargar vídeo",
+    "downloadOnCobalt": "Descargar vídeo en cobalt.tools"
   },
   "native": {
     "menu_saveImage": "Guardar imagen",
@@ -38,7 +54,12 @@
     "menu_copyLink": "Copiar enlace",
     "toast_downloadSucceeded": "Guardado en la carpeta de Descargas",
     "toast_downloadStarted": "Descarga iniciada, checa el sistema de notificaciones",
-    "toast_downloadFailed": "Descarga fallida"
+    "toast_downloadFailed": "Descarga fallida",
+    "menu_openImageInNewTab": "Abrir imagen en nueva pestaña",
+    "menu_openInNewTab": "Abrir en nueva pestaña",
+    "menu_openInProfile": "Abrir en perfil",
+    "httpBlocked_title": "Web HTTP bloqueada",
+    "httpBlocked_body": "Esta web utiliza una conexión HTTP no segura. Para permitir la carga de sitios web HTTP, active la opción \"Permitir sitios web HTTP\" en la configuración."
   },
   "settings": {
     "label": "Ajustes",
@@ -60,19 +81,202 @@
     "openExternalLink": "Abrir enlace externo en el navegador del sistema",
     "showNewTabButton": "Mostrar el botón de nueva pestaña",
     "showBackButton": "Mostrar el botón de ir atrás",
-    "showScrollButton": "Mostrar el deslizamiento para ir arriba"
+    "showScrollButton": "Mostrar el deslizamiento para ir arriba",
+    "xHomeTimeline": {
+      "forYou": "Para ti",
+      "following": "Siguiendo"
+    },
+    "language": {
+      "label": "Idioma",
+      "system": "Sistema",
+      "hint": "Elige un idioma o sigue el idioma del sistema."
+    },
+    "pages": {
+      "appearance": "Apariencia",
+      "services": "Servicios",
+      "profiles": "Perfiles y Sesiones",
+      "bookmarks": "Marcadores",
+      "search": "Búsqueda",
+      "browsing": "Preferencias"
+    },
+    "allowHttpWebsite": "Permitir webs HTTP",
+    "inspectable": "Hacer que la vista web sea inspeccionable",
+    "videoEdgeLongPressTo2x": "Mantén pulsado el borde para reproducir al doble de velocidad",
+    "enterInsertsNewline": "Intro inserta una nueva línea (Mayús+Intro)",
+    "doubleBackToExitApp": "Doble atrás para salir de la app",
+    "appearance": {
+      "theme": "Tema",
+      "toolbar": "Barra de herramientas",
+      "description": "Configuración del tema y la barra de herramientas.",
+      "deckTabWidthHint": "Actual: {{value}}px"
+    },
+    "redirectToOldReddit": "Redireccionar al Antiguo Reddit",
+    "oneProfilePerSite": "Un perfil por sitio",
+    "oneProfilePerSiteHint": "Usar una sesión automática independiente para cada sitio. Los enlaces que se abren desde un sitio web conservan el perfil de ese sitio.",
+    "hideToolbarWhenScrolled": "Ocultar la barra de herramientas cuando la página no esté en la parte superior",
+    "mentionNotifications": "Notificaciones sociales",
+    "mentionNotificationsHint": "Debido a limitaciones en segundo plano del SO, la entrega puede sufrir retrasos y no está garantizada.",
+    "sections": {
+      "general": "General",
+      "accounts": "Cuentas y Datos",
+      "bookmarksSearch": "Marcadores y Búsqueda",
+      "notifications": "Notificaciones",
+      "advanced": "Avanzado",
+      "about": "Acerca de"
+    },
+    "browsing": {
+      "descriptionWeb": "Bloqueo de red y controles de navegación avanzados.",
+      "features": "Características"
+    },
+    "profiles": {
+      "description": "Varias cuentas con cookies y estado de navegación independientes.",
+      "sessionMode": "Modo de sesión",
+      "injectCookie": "Inyectar Cookie",
+      "injectCookieHint": "Para restaurar una sesión manualmente, pegue la cabecera de una Cookie de otro navegador."
+    },
+    "bookmarks": {
+      "description": "Administrar webs ancladas.",
+      "saved": "Marcadores guardados",
+      "empty": "Aún no hay marcadores."
+    },
+    "services": {
+      "title": "Servicios integrados",
+      "description": "Gestionar servicios integrados."
+    },
+    "search": {
+      "description": "Gestionar proveedores de búsqueda.",
+      "builtin": "Proveedores de búsqueda integrados",
+      "builtinHint": "Active los proveedores que desea que aparezcan en el menú de búsqueda de la nueva pestaña.",
+      "custom": "Proveedor de búsqueda personalizado",
+      "empty": "Todavía no hay proveedores de búsqueda personalizados.",
+      "urlHint": "Siempre disponible para entrada directa mediante URL.",
+      "addTitle": "Agregar Búsqueda Personalizada",
+      "editTitle": "Editar Búsqueda Personalizada",
+      "addAction": "Añadir Búsqueda",
+      "templateHint": "Utilice `%s` donde se deba insertar la consulta.",
+      "fields": {
+        "name": "Nombre",
+        "namePlaceholder": "Ejemplo de búsqueda",
+        "template": "Plantilla de URL de búsqueda",
+        "templatePlaceholder": "https://example.com/search?q=%s"
+      },
+      "validation": {
+        "name": "Agregar un nombre de proveedor de búsqueda",
+        "template": "Utilice una plantilla de URL http(s) válida que contenga `%s`",
+        "duplicateName": "Ya existe un proveedor de búsqueda personalizado con ese nombre"
+      },
+      "deleteConfirm": "¿Estás seguro de que quieres borrar esta búsqueda personalizada?"
+    },
+    "userStyles": {
+      "label": "Estilos de Usuario y Scripts",
+      "hint": "Activa o desactiva los ajustes CSS integrados y añade tus propios estilos y scripts basados en host.",
+      "customHint": "Personaliza cualquier web con CSS o JavaScript.",
+      "copyCss": "Copiar CSS",
+      "cssCopied": "CSS Copiado",
+      "copyFailed": "Error al copiar el CSS",
+      "importCss": "Importar CSS",
+      "importFailed": "Error al importar CSS",
+      "editTitle": "Editar estilo personalizado",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar este estilo personalizado?",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Nombre de estilo",
+      "hostGlobs": {
+        "placeholder": "*.reddit.com, x.com (separados por coma)"
+      },
+      "validation": {
+        "css": "Añade CSS antes de guardar"
+      },
+      "builtin": {
+        "label": "Estilos integrados",
+        "hideRedditGame": {
+          "label": "Ocultar publicaciones de juegos de Reddit"
+        },
+        "compactTiktokLayout": {
+          "label": "Utiliza el diseño compacto de TikTok"
+        },
+        "hideXBottomNav": {
+          "label": "Ocultar la barra de navegación inferior X al desplazarse"
+        },
+        "hideXHomeTabs": {
+          "label": "Ocultar pestañas de la línea de tiempo de inicio de X"
+        }
+      },
+      "custom": {
+        "label": "Estilos personalizados",
+        "empty": "Aún no hay estilos personalizados. Añade uno para insertar tu propio CSS en hosts compatibles."
+      },
+      "scripts": {
+        "label": "Scripts personalizados",
+        "add": "Añadir script",
+        "addTitle": "Añadir script personalizado",
+        "editTitle": "Editar script personalizado",
+        "deleteConfirm": "¿Estás seguro de que quieres eliminar este script personalizado?",
+        "empty": "Aún no hay scripts personalizados. Añade uno para ejecutar tu propio JavaScript en los hosts compatibles.",
+        "namePlaceholder": "Nombre de script",
+        "import": "Importar",
+        "importFailed": "Error al importar el script",
+        "pinToHeader": "Anclar a la barra de herramientas",
+        "pinToHeaderHint": "Mostrar este script como una acción en la barra de herramientas de los sitios web coincidentes.",
+        "pinnedScripts": "Scripts anclados",
+        "run": "Ejecutar",
+        "runComplete": "Script ejecutado",
+        "runFailed": "Error de script",
+        "validation": {
+          "js": "Añade JavaScript antes de guardar"
+        }
+      },
+      "preview": "Vista previa",
+      "previewApplied": "Vista previa aplicada",
+      "noActiveTab": "No hay pestaña activa",
+      "add": "Añadir estilo",
+      "addTitle": "Añadir estilo personalizado"
+    },
+    "showReloadButton": "Mostrar botón de recarga",
+    "oneTabPerSite": "Una pestaña por sitio al abrir un enlace compartido",
+    "showForwardButton": "Mostrar botón de avance"
   },
   "sync": {
     "label": "Sincronizar",
     "currentPlan": "Plan actual",
     "managePlan": "Administrar plan",
-    "hint": "Sincronizar los marcadores y la configuración entre tus teléfonos y computadoras como usuario premium."
+    "hint": "Sincronizar los marcadores y la configuración entre tus teléfonos y computadoras como usuario premium.",
+    "upgradeHint": "Actualiza para sincronizar marcadores y ajustes en todos tus dispositivos.",
+    "deleteAccount": "Eliminar cuenta",
+    "buy": "Suscríbete con App Store",
+    "restore": "Restaurar compras",
+    "manageIos": "Gestionar en la App Store",
+    "purchaseTitle": "Vincular suscripción",
+    "purchaseConfirm": "Esta suscripción estará vinculada a {{email}} y desbloqueará la sincronización en cualquier lugar donde inicies sesión en esta cuenta de Nora.",
+    "priceLoading": "Cargando precio en la App Store...",
+    "activeViaIos": "Activar vía App Store",
+    "freePlan": "Gratis",
+    "purchasePending": "Compra pendiente de aprobación.",
+    "restoreConflict": "Esta suscripción a la App Store ya está vinculada a {{email}}.",
+    "signOutSwitch": "Cerrar sesión y cambiar de cuenta",
+    "signedInAs": "Sesión iniciada como {{email}}",
+    "productUnavailable": "El producto aún no está disponible en la App Store.",
+    "expiresAt": "Se renueva o expira: {{value}}",
+    "legalNotice": "Las suscripciones se renuevan automáticamente a menos que se cancelen. Al suscribirse, acepta los Términos de uso (EULA) y la Política de privacidad.",
+    "termsOfUse": "Términos de Uso (EULA)",
+    "privacyPolicy": "Política de Privacidad",
+    "signInRequired": "Inicia sesión para continuar."
   },
   "tabs": {
-    "new": "Nueva pestaña"
+    "new": "Nueva pestaña",
+    "resume": "Restaurar",
+    "recentlyClosed": "Cerrado recientemente",
+    "noRecentlyClosed": "No hay pestañas cerradas recientemente",
+    "paused": "La pestaña está en pausa",
+    "pausedHint": "Su contenido se descargó para ahorrar recursos."
   },
   "toast": {
-    "pinned": "Anclado a la página de nueva pestaña"
+    "pinned": "Anclado a la página de nueva pestaña",
+    "blocklistUpdated": "Lista de bloqueo actualizada",
+    "profileDataCleared": "Datos de perfil borrados",
+    "profileDataClearFailed": "No se pudieron borrar los datos del perfil",
+    "siteDataCleared": "Datos del sitio borrados",
+    "siteDataClearFailed": "No se pudieron borrar los datos del sitio",
+    "pressBackAgainToExit": "Vuelva a pulsar atrás para salir"
   },
   "changelog": {
     "label": "Registro de cambios",
@@ -105,8 +309,108 @@
       "createBlankTabInSlot": "Crear una nueva pestaña en blanco en esta ranura",
       "layout": {
         "split": "vista dividida",
-        "grid": "vista de cuadrícula"
-      }
+        "grid": "vista de cuadrícula",
+        "gridFour": "Cuadrícula de 4 pestañas"
+      },
+      "tabCount": "{{count}} pestaña",
+      "tabCount_plural": "{{count}} pestañas",
+      "ungrouped": "Sin agrupar",
+      "groupNamePlaceholder": "Nombre de grupo",
+      "renameGroup": "Renombrar grupo",
+      "newGroupFromTab": "Nuevo grupo desde pestaña"
+    }
+  },
+  "profiles": {
+    "add": "Añadir",
+    "edit": "Editar",
+    "save": "Guardar",
+    "namePlaceholder": "Nombre de perfil",
+    "clearData": "Limpiar datos",
+    "label": "Perfiles",
+    "auto": "Auto",
+    "autoProfiles": "Perfiles auto",
+    "autoProfilesEmpty": "Aún no hay perfiles automáticos.",
+    "openLinkInProfile": "Abrir enlace en perfil",
+    "autoProfileLastUsed": "Último uso: {{value}}",
+    "autoProfileLastUsedLabel": "Último uso",
+    "manageAutoProfiles": "Administrar perfiles automáticos ({{count}})",
+    "deleteAutoProfileConfirm": "¿Eliminar el perfil automático para {{site}}? Esto borra los datos de navegación almacenados y cierra las pestañas que lo utilizan.",
+    "deleteAllAutoProfiles": "Borrar todos",
+    "deleteAllAutoProfilesConfirm": "¿Borrar todos los {{count}} perfiles automáticos? Esto borra los datos de navegación almacenados y cierra las pestañas que los utilizan.",
+    "deleteStaleAutoProfiles": "Eliminar no utilizados en 14 días",
+    "deleteStaleAutoProfilesConfirm": "¿Borrar {{count}} perfiles automáticos que no se hayan utilizado en los últimos 14 días? Esto borrará los datos de navegación almacenados y cerrará las pestañas que los utilicen.",
+    "clearDataConfirm": "¿Borrar todos los datos de navegación de \"{{name}}\"? Esto cerrará tu sesión y las pestañas que utilicen este perfil.",
+    "deleteConfirm": "¿Borrar\"{{name}}\"? Esto borra los datos de navegación almacenados y cierra las pestañas que utilizan este perfil."
+  },
+  "usageLimits": {
+    "editor": {
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "scope": "Aplicar a",
+      "add": "Añadir",
+      "name": "Nombre",
+      "addTitle": "Añadir límite de uso",
+      "editTitle": "Editar límite de uso",
+      "defaultName": "Límite",
+      "dailyLimit": "Límite diario",
+      "namePlaceholder": "p. ej., redes sociales",
+      "errorMinutes": "Establece un límite diario de al menos 1 minuto",
+      "errorScope": "Seleccione al menos un servicio o aplique a toda la app"
+    },
+    "label": "Límites de uso",
+    "description": "Establece límites de tiempo diarios para servicios seleccionados o para toda la aplicación.",
+    "limits": "Límites",
+    "empty": "Aún no hay límites de uso.",
+    "emptyHint": "Añade un límite para empezar a registrar el tiempo de navegación diario.",
+    "usageLine": "Hoy: {{used}} de {{limit}}",
+    "deleteConfirm": "¿Borrar este límite de uso?",
+    "scope": {
+      "all": "Toda la app",
+      "none": "No se han seleccionado servicios"
+    },
+    "lockout": {
+      "body": "Has utilizado {{used}} de tu límite diario de {{limit}} para {{name}}.",
+      "title": "Se acabó el tiempo por hoy",
+      "pinPlaceholder": "Introduce tu PIN para desbloquear",
+      "pinIncorrect": "PIN incorrecto",
+      "unlock": "Desbloquear por hoy",
+      "noPinHint": "Establece un PIN en Ajustes → Límites de uso para desbloquear antes."
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "Se requiere un PIN para gestionar los límites y para desbloquear el sistema cuando se alcanza uno. Se restablece a medianoche, hora local.",
+      "set": "El PIN está configurado",
+      "notSet": "No se ha configurado ningún PIN",
+      "setAction": "Establecer PIN",
+      "change": "Cambiar",
+      "remove": "Eliminar",
+      "currentPlaceholder": "PIN actual",
+      "newPlaceholder": "Nuevo PIN",
+      "confirmPlaceholder": "Confirme nuevo PIN",
+      "errorEmpty": "El PIN no puede esta vacío",
+      "errorMismatch": "Los PIN no coinciden",
+      "errorIncorrect": "PIN incorrecto",
+      "requiredFirst": "Primero, establece un PIN",
+      "confirmEdit": "Introduce el PIN para editar",
+      "confirmDelete": "Introduce el PIN para eliminar"
+    }
+  },
+  "blocklist": {
+    "label": "Lista de bloqueo de red",
+    "description": "Bloquea los anuncios y rastreadores con las reglas de host de EasyList y EasyPrivacy.",
+    "enable": "Habilitar la lista de bloqueo de red",
+    "statusFetching": "Obteniendo la lista de bloqueo",
+    "lastUpdated": "Última actualización: {{value}}",
+    "refreshNow": "Actualizar la lista de bloqueo"
+  },
+  "newTab": {
+    "presets": {
+      "open": "Agregar marcadores preestablecidos",
+      "title": "Marcadores preestablecidos"
+    },
+    "search": {
+      "urlPlaceholder": "Introduzca una URL",
+      "searchPlaceholder": "Buscar en la web"
     }
   }
 }

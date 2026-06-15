@@ -6,7 +6,14 @@
     "hint": "Versiooniteave, lähtekood ja toetuse võimalused."
   },
   "changelog": {
-    "label": "Muudatuste logi"
+    "label": "Muudatuste logi",
+    "hint": "Viimased versioonid koos veaparandustega GitHubist.",
+    "loading": "Laadin versiooniteavet…",
+    "error": "Versiooniteabe laadimine ei õnnestunud.",
+    "retry": "Proovi uuesti",
+    "empty": "Versiooniteavet ei leidunud.",
+    "current": "Praegune",
+    "noNotes": "Selle versiooni jaoks pole teavet lisatud."
   },
   "common": {
     "about": "Teave",
@@ -21,7 +28,20 @@
     "rename": "Muuda vaate nime",
     "namePlaceholder": "Vaate nimi",
     "desktop": {
-      "blankTab": "Tühi vahekaart"
+      "blankTab": "Tühi vahekaart",
+      "groupNamePlaceholder": "Grupi nimi",
+      "newGroupFromTab": "Uus grupp vahekaardist",
+      "newSplitView": "Uus jagatud vaade",
+      "newGridView": "Uus ruudustikuvaade",
+      "renameGroup": "Muuda grupi nime",
+      "tabCount": "{{count}} vahekaart",
+      "tabCount_plural": "{{count}} vahekaarti",
+      "ungrouped": "Grupeerimata",
+      "layout": {
+        "split": "Jagatud vaade",
+        "grid": "Ruudustikuvaade",
+        "gridFour": "4-vahekaardiline ruudustik"
+      }
     }
   },
   "buttons": {
@@ -40,10 +60,24 @@
     "clearSiteData": "Eemalda saidi andmed",
     "close": "Sulge",
     "delete": "Kustuta",
-    "viewInSplitView": "Vaata jagatud vaates"
+    "viewInSplitView": "Vaata jagatud vaates",
+    "desktop": "Arvutivaade",
+    "duplicate": "Tee vahekaardist koopia",
+    "addBookmark": "Lisa järjehoidja",
+    "editUrl": "Muuda vahekaardi võrguaadressi",
+    "more": "Veel",
+    "openInProfile": "Ava profiili lehel",
+    "pause": "Peata vahekaart",
+    "resume": "Jätka vahekaardi tööd",
+    "reload": "Laadi uuesti",
+    "scroll": "Keri loendi algusesse",
+    "share": "Jaga",
+    "signOut": "Logi välja",
+    "tools": "Tarvikud"
   },
   "modals": {
-    "downloadVideo": "Laadi video alla"
+    "downloadVideo": "Laadi video alla",
+    "downloadOnCobalt": "Laadi video alla teenusega cobalt.tools"
   },
   "native": {
     "menu_saveImage": "Salvesta pilt",
@@ -54,13 +88,220 @@
     "menu_openImageInNewTab": "Ava pilt uuel vahekaardil",
     "toast_downloadStarted": "Allalaadimine algas, kontrolli süsteemi teavitusi",
     "toast_downloadSucceeded": "Salvestatud allalaadimiste kausta",
-    "toast_downloadFailed": "Allalaadimine ei õnnestunud"
+    "toast_downloadFailed": "Allalaadimine ei õnnestunud",
+    "httpBlocked_title": "HTTP-veebisait on blokeeritud",
+    "httpBlocked_body": "See veebisait kasutab ebaturvalist HTTP-ühendust. Kui soovid selliste saitide kasutamist, siis palun ava seadistused ja lülita seal sisse valik „Luba HTTP-veebisaidid“."
   },
   "profiles": {
     "add": "Lisa",
     "edit": "Muuda",
     "save": "Salvesta",
     "namePlaceholder": "Profiili nimi",
-    "clearData": "Kustuta andmed"
+    "clearData": "Kustuta andmed",
+    "label": "Profiilid",
+    "auto": "Automaatne",
+    "autoProfiles": "Automaatsed profiilid",
+    "autoProfilesEmpty": "Automaatseid profiile veel pole.",
+    "openLinkInProfile": "Ava link profiilis",
+    "autoProfileLastUsed": "Viimati kasutatud: {{value}}",
+    "autoProfileLastUsedLabel": "Viimati kasutatud",
+    "manageAutoProfiles": "Halda automaatseid profiile ({{count}})",
+    "deleteAutoProfileConfirm": "Kas kustutad {{site}} saidi automaatse profiili? Sellega kustutad ka salvestatud veebisirvimise andmed ja sulgeb neid kasutavad vahekaardid.",
+    "deleteAllAutoProfiles": "Kustuta kõik",
+    "deleteAllAutoProfilesConfirm": "Kas kustutad kõik {{count}} automaatset profiili? Sellega kustutad ka salvestatud veebisirvimise andmed ja sulgeb neid kasutavad vahekaardid."
+  },
+  "usageLimits": {
+    "deleteConfirm": "Kas kustutad kasutuspiirangu?",
+    "scope": {
+      "all": "Kogu rakendus",
+      "none": "Ühtegi teenust pole valitud"
+    },
+    "editor": {
+      "addTitle": "Lisa kasutuspiirang",
+      "editTitle": "Muuda kasutuspiirangut",
+      "name": "Nimi",
+      "namePlaceholder": "nt. Sotsiaalmeedia",
+      "defaultName": "Piirang",
+      "dailyLimit": "Päevane piirang",
+      "hours": "Tunnid",
+      "minutes": "Minutid",
+      "scope": "Kasuta järgnevalt",
+      "add": "Lisa",
+      "errorMinutes": "Lisa vähemalt 1-minutiline kasutuspiirang",
+      "errorScope": "Vali vähemalt üks teenus või kasuta kogu rakenduse jaoks"
+    },
+    "pin": {
+      "label": "PIN-kood",
+      "change": "Muuda",
+      "remove": "Eemalda",
+      "confirmDelete": "Kustutamiseks sisesta PIN-kood",
+      "confirmEdit": "Muutmiseks sisesta PIN-kood",
+      "requiredFirst": "Esmalt määratle PIN-kood",
+      "errorIncorrect": "Vigane PIN-kood",
+      "errorMismatch": "PIN-koodid ei klapi omavahel",
+      "errorEmpty": "PIN-kood ei tohi jääda tühjaks",
+      "confirmPlaceholder": "Kinnita uus PIN-kood",
+      "newPlaceholder": "Uus PIN-kood",
+      "currentPlaceholder": "Senine PIN-kood",
+      "setAction": "Määratle PIN-kood",
+      "notSet": "PIN-kood on veel seadistamata",
+      "set": "PIN-kood on seadistatud",
+      "hint": "Kasutuspiirangute haldamiseks ja piirangu tõttu tekkinud lukustuse avamiseks on vaja PIN-koodi. Lähtestub kohaliku aja järgikeskööl."
+    },
+    "limits": "Piirangud",
+    "lockout": {
+      "pinIncorrect": "Vigane PIN-kood",
+      "unlock": "Ava lukustus tänaseks",
+      "pinPlaceholder": "Likustuse avamiseks sisesta PIN-kood"
+    },
+    "usageLine": "Täna: {{used}} / {{limit}}"
+  },
+  "blocklist": {
+    "label": "Võrguühenduste keeluloend",
+    "description": "Blokeeri reklaame ja jälitajaid EasyListi ja EasyPrivacy serverireeglitega.",
+    "enable": "Kasuta võrguühenduste keeluloendit",
+    "statusFetching": "Laadin võrguühenduste keeluloendit",
+    "lastUpdated": "Viimati uuendatud: {{value}}",
+    "refreshNow": "Uuenda võrguühenduste keeluloend"
+  },
+  "settings": {
+    "label": "Seadistused",
+    "openExternalLink": "Ava väline link süsteemi veebibrauseris",
+    "sections": {
+      "general": "Üldseadistused",
+      "accounts": "Kasutajakontod ja andmed",
+      "bookmarksSearch": "Järjehoidjad ja otsing",
+      "notifications": "Teavitused",
+      "advanced": "Täiendavad seadistused",
+      "about": "Rakenduse teave"
+    },
+    "pages": {
+      "browsing": "Eelistused",
+      "appearance": "Välimus",
+      "services": "Teenused",
+      "profiles": "Profiilid ja sessioonid",
+      "bookmarks": "Järjehoidjad",
+      "search": "Otsing"
+    },
+    "appearance": {
+      "theme": "Kujundus",
+      "toolbar": "Tööriistariba",
+      "deckTabWidthHint": "Praegune: {{value}} px",
+      "description": "Kujundus ja tööriistariba seadistused."
+    },
+    "search": {
+      "fields": {
+        "name": "Nimi",
+        "templatePlaceholder": "https://toredomeen.com/search?q=%s",
+        "namePlaceholder": "Näidisotsing",
+        "template": "Otsinguks kasutatava võrguaadressi mall"
+      },
+      "description": "Halda otsinguteenuse pakkujaid.",
+      "builtin": "Sisseehitatud otsinguteenuste pakkujad",
+      "builtinHint": "Lülita sisse teenusepakkujad, mida tahad näha uue vahekaardi otsingumenüüs.",
+      "custom": "Sinu seadistatud otsinguteenuste pakkujad",
+      "empty": "Sinu seadistatud otsinguteenuste pakkujaid veel pole.",
+      "urlHint": "Alati saadaval võrguaadressi otsesisestuseks.",
+      "addTitle": "Lisa omaseadistatud otsinguteenuste pakkuja",
+      "editTitle": "Muuda omaseadistatud otsinguteenuste pakkujat",
+      "addAction": "Lisa otsing",
+      "templateHint": "Märgistamaks otsingusõna lisamise kohta kasuta „%s“ muutujat.",
+      "validation": {
+        "name": "Lisa otsinguteenuse nimi",
+        "template": "Kasuta korrektset http(s) võrguaadressi malli, milles leidub „%s“",
+        "duplicateName": "Sellise nimega otsinguteenus on juba olemas"
+      },
+      "deleteConfirm": "Kas oled kindel, et soovid selle omaseadistatud otsinguteenuse kustutada?"
+    },
+    "userStyles": {
+      "preview": "Eelvaade",
+      "nameLabel": "Nimi",
+      "scripts": {
+        "import": "Impordi",
+        "run": "Käivita",
+        "pinToHeader": "Kinnita tööriistaribale",
+        "pinToHeaderHint": "Näita sobivate saitide puhul seda skripti tööriistariba toimingute seas.",
+        "pinnedScripts": "Tööriistaribale kinnitatud skriptid",
+        "runComplete": "Skript toimis",
+        "runFailed": "Skript ei toiminud"
+      },
+      "cssCopied": "CSS on kopeeritud",
+      "copyCss": "Kopeeri CSS",
+      "copyFailed": "CSS-i kopeerimine ei õnnestunud",
+      "importCss": "Impordi CSS",
+      "importFailed": "CSS-i importimine ei õnnestunud",
+      "previewApplied": "Eelvaade on rakendatud",
+      "noActiveTab": "Ühtegi aktiivset vahekaarti pole",
+      "add": "Lisa stiil",
+      "addTitle": "Lisa kohandatud stiil",
+      "editTitle": "Muuda kohandatud stiili",
+      "deleteConfirm": "Kas oled kindel, et soovid selle kohandatud stiili kustutada?",
+      "namePlaceholder": "Stiili nimi"
+    },
+    "headerPosition": {
+      "top": "Ülal",
+      "bottom": "All"
+    },
+    "theme": {
+      "label": "Kujundus",
+      "system": "Süsteemi kujundus",
+      "dark": "Tume kujundus",
+      "light": "Hele kujundus"
+    },
+    "language": {
+      "label": "Keel",
+      "system": "Süsteemi keel",
+      "hint": "Vali soovitud keel või kasuta süsteemi keelt."
+    },
+    "xHomeTimeline": {
+      "forYou": "Sinu jaoks",
+      "following": "Järgitavad"
+    },
+    "mentionNotifications": "Teavitused sotsiaalvõrgust",
+    "browsing": {
+      "descriptionNative": "Funktsionaalsuse sisse/välja lülitamine."
+    },
+    "profiles": {
+      "sessionMode": "Sessioonirežiim",
+      "description": "Erinevad kasutajakontod erinevate sessiooniküpsistega ja sirvimiste olekutega."
+    },
+    "mentionNotificationsHint": "Operatsioonisüsteemi poolt taustateenuste piirangute tõttu võib kohaletoimetamine viibida ja pole tagatud.",
+    "doubleBackToExitApp": "Rakendusest väljumiseks klõpsa tagasivõtuklahvi kaks korda",
+    "enterInsertsNewline": "Sisestusklahv lisab uue rea (Shift+Enter)",
+    "videoEdgeLongPressTo2x": "Kahekordse taasesituskiiruse jaoks vajuta äärel pikalt",
+    "inspectable": "Lisa veebivaate lähtekoodi uurimise võimalus",
+    "allowHttpWebsite": "Luba HTTP-veebisaidid",
+    "redirectToOldReddit": "Suuna edasi vanasse Redditisse",
+    "oneProfilePerSite": "Üks profiil saidi kohta",
+    "bookmarks": {
+      "description": "Halda esiletõstetud veebisaite.",
+      "saved": "Salvestatud järjehoidjad",
+      "empty": "Ühtegi järjehoidjat veel pole."
+    },
+    "services": {
+      "title": "Sisseehitatud teenused",
+      "description": "Halda sisseehitatud teenuseid."
+    },
+    "showNewTabButton": "Näita uue vahekaardi nuppu",
+    "showBackButton": "Näita tagasi-nuppu",
+    "showForwardButton": "Näita edasi-nuppu",
+    "showReloadButton": "Näita uuesti laadimise nuppu"
+  },
+  "sync": {
+    "label": "Sünkrooni",
+    "freePlan": "Vaba",
+    "hint": "Järjehoidjate ja seadistuste sünkroonimine seadmete vahel.",
+    "upgradeHint": "Kui tahad kasutada järjehoidjate ja seadistuste sünkroonimist seadmete vahel, siis uuenda teenusepaketti.",
+    "currentPlan": "Praegune teenusepakett",
+    "managePlan": "Halda teenusepaketti",
+    "deleteAccount": "Kustuta kasutajakonto",
+    "buy": "Telli App Store'i vahendusel",
+    "restore": "Taasta ostud",
+    "manageIos": "Halda App Store'is",
+    "purchaseTitle": "Seo tellimus",
+    "purchaseConfirm": "Tellimus seotakse e-postiaadressiga {{email}} ja saad kasutada sünkroonimist kõikjal, kus kasutad Nora kontot."
+  },
+  "tabs": {
+    "resume": "Jätka"
   }
 }

@@ -16,7 +16,10 @@
     "open": "Aç",
     "save": "Kaydet",
     "confirm": "Onayla",
-    "continue": "Devam et"
+    "continue": "Devam et",
+    "reopenLastClosedTab": "Son kapatılan sekmeyi yeniden aç",
+    "restoreTabs": "Yakın zamanda kapatılan sekmeler",
+    "toggleSidebar": "Kenar çubuğunu aç/kapat"
   },
   "menus": {
     "close": "Kapat",
@@ -33,10 +36,17 @@
     "tools": "Araçlar",
     "editUrl": "Sekme URL'sini düzenle",
     "duplicate": "Yinelenen sekme",
-    "viewInSplitView": "Bölünmüş ekranda görüntüle"
+    "viewInSplitView": "Bölünmüş ekranda görüntüle",
+    "clearSiteData": "Site verilerini temizle",
+    "clearSiteDataConfirm": "\"{{host}}\" için tüm çerezler ve site verileri temizlensin mi? Bu işlem sizi bu siteden çıkış yaptıracaktır.",
+    "more": "Daha fazla",
+    "openInProfile": "Profilde aç",
+    "pause": "Sekmeyi duraklat",
+    "resume": "Sekmeyi devam ettir"
   },
   "modals": {
-    "downloadVideo": "Video indir"
+    "downloadVideo": "Video indir",
+    "downloadOnCobalt": "Videoyu cobalt.tools üzerinde indir"
   },
   "native": {
     "menu_saveImage": "Görseli kaydet",
@@ -70,7 +80,8 @@
     "deleteStaleAutoProfiles": "14 gün boyunca kullanılmayanları sil",
     "deleteStaleAutoProfilesConfirm": "Son 14 gün içinde kullanılmayan {{count}} otomatik profili silmek ister misiniz? Bu işlem, bu profillerde saklanan tarama verilerini siler ve bu profilleri kullanan sekmeleri kapatır.",
     "clearData": "Verileri sil",
-    "clearDataConfirm": "\"{{name}}\" için tüm tarama verilerini silmek istiyor musunuz? Bu işlem, oturumunuzu kapatır ve bu profili kullanan sekmeleri kapatır."
+    "clearDataConfirm": "\"{{name}}\" için tüm tarama verilerini silmek istiyor musunuz? Bu işlem, oturumunuzu kapatır ve bu profili kullanan sekmeleri kapatır.",
+    "deleteConfirm": "\"{{name}}\" silinsin mi? Bu işlem depolanan tarama verilerini temizler ve bu profili kullanan sekmeleri kapatır."
   },
   "settings": {
     "label": "Ayarlar",
@@ -144,8 +155,8 @@
       "empty": "Henüz yer imi yok."
     },
     "userStyles": {
-      "label": "Kullanıcı Stilleri",
-      "hint": "Yerleşik CSS ayarlamalarını açıp kapatın ve kendi site bazlı stillerinizi ekleyin.",
+      "label": "Kullanıcı Stilleri ve Betikleri",
+      "hint": "Dahili CSS ince ayarlarını değiştirin ve kendi sunucu tabanlı stillerinizi ve betiklerinizi ekleyin.",
       "copyCss": "CSS'yi kopyala",
       "cssCopied": "CSS kopyalandı",
       "copyFailed": "CSS kopyalanamadı",
@@ -184,7 +195,30 @@
         "label": "Özel Stiller",
         "empty": "Henüz özel stil yok. Eşleşen sitelere kendi CSS’inizi eklemek için bir tane oluşturun."
       },
-      "customHint": "Herhangi bir web sitesini CSS ile özelleştirin."
+      "customHint": "Herhangi bir web sitesini CSS veya JavaScript ile özelleştirin.",
+      "preview": "Önizleme",
+      "previewApplied": "Önizleme uygulandı",
+      "noActiveTab": "Aktif sekme yok",
+      "scripts": {
+        "label": "Özel Betikler",
+        "add": "Betik ekle",
+        "addTitle": "Özel betik ekle",
+        "editTitle": "Özel betiği düzenle",
+        "deleteConfirm": "Bu özel betiği silmek istediğinizden emin misiniz?",
+        "empty": "Henüz özel betik yok. Eşleşen sunucularda kendi JavaScript'inizi çalıştırmak için bir tane ekleyin.",
+        "namePlaceholder": "Betik adı",
+        "import": "İçe aktar",
+        "importFailed": "Betik içe aktarılamadı",
+        "pinToHeader": "Araç çubuğuna sabitle",
+        "pinToHeaderHint": "Bu betiği eşleşen sitelerde bir araç çubuğu eylemi olarak göster.",
+        "pinnedScripts": "Sabitlenmiş betikler",
+        "run": "Çalıştır",
+        "runComplete": "Betik çalıştı",
+        "runFailed": "Betik başarısız oldu",
+        "validation": {
+          "js": "Kaydetmeden önce JavaScript ekleyin"
+        }
+      }
     },
     "showForwardButton": "İleriye git düğmesini göster",
     "showReloadButton": "Yeniden yükle düğmesini göster",
@@ -226,8 +260,9 @@
     },
     "oneProfilePerSite": "Site başına bir profil",
     "oneProfilePerSiteHint": "Her site için ayrı bir otomatik oturum kullanın. Bir siteden açılan bağlantılar, o sitenin profilini korur.",
-    "mentionNotifications": "Etiketler ve DM bildirimleri",
-    "mentionNotificationsHint": "İşletim sisteminin arka plan sınırlamaları nedeniyle, bildirimler gecikebilir ve garanti edilemez."
+    "mentionNotifications": "Sosyal bildirimler",
+    "mentionNotificationsHint": "İşletim sisteminin arka plan sınırlamaları nedeniyle, bildirimler gecikebilir ve garanti edilemez.",
+    "enterInsertsNewline": "Enter yeni satıra geçer (Shift+Enter)"
   },
   "sync": {
     "label": "Senkronize et",
@@ -258,12 +293,19 @@
   "tabs": {
     "new": "Yeni sekme",
     "recentlyClosed": "Kısa süre önce kapatılanlar",
-    "noRecentlyClosed": "Son kapatılan sekme yok"
+    "noRecentlyClosed": "Son kapatılan sekme yok",
+    "paused": "Sekme duraklatıldı",
+    "pausedHint": "Kaynakları korumak için içeriği boşaltıldı.",
+    "resume": "Devam et"
   },
   "toast": {
     "pinned": "Yeni sekme sayfasına sabitlendi",
     "blocklistUpdated": "Engelleme listesi güncellendi",
-    "pressBackAgainToExit": "Çıkmak için geri tuşuna tekrar basın"
+    "pressBackAgainToExit": "Çıkmak için geri tuşuna tekrar basın",
+    "profileDataCleared": "Profil verileri temizlendi",
+    "profileDataClearFailed": "Profil verileri temizlenemedi",
+    "siteDataCleared": "Site verileri temizlendi",
+    "siteDataClearFailed": "Site verileri temizlenemedi"
   },
   "changelog": {
     "label": "Değişiklik günlüğü",
@@ -298,15 +340,24 @@
     "desktop": {
       "blankTab": "Boş sekme",
       "newBlankTab": "Yeni boş sekme",
-      "newSplitView": "Yeni bölünmüş ekran",
+      "newSplitView": "Yeni bölünmüş görünüm",
       "newGridView": "Yeni ızgara görünümü",
       "chooseTabToAdd": "{{layout}}'a eklemek için bir sekme seçin",
       "createBlankTabInSlot": "Bu slotta yeni bir boş sekme oluştur",
       "layout": {
-        "split": "Bölünmüş ekran",
+        "split": "Bölünmüş görünüm",
         "grid": "Izgara görünümü",
-        "gridFour": "4 sekmeli ızgara"
-      }
+        "gridFour": "4 sekmeli ızgara",
+        "deck": "Deste görünümü"
+      },
+      "groupNamePlaceholder": "Grup adı",
+      "newDeckView": "Yeni deste görünümü",
+      "deck": "Deste",
+      "newGroupFromTab": "Sekmeden yeni grup",
+      "renameGroup": "Grubun adını değiştir",
+      "tabCount": "{{count}} sekmesi",
+      "tabCount_plural": "{{count}} sekme",
+      "ungrouped": "Gruplanmamış"
     }
   },
   "newTab": {
