@@ -42,7 +42,8 @@
     "more": "Daha fazla",
     "openInProfile": "Profilde aç",
     "pause": "Sekmeyi duraklat",
-    "resume": "Sekmeyi devam ettir"
+    "resume": "Sekmeyi devam ettir",
+    "zoom": "Yakınlaştır"
   },
   "modals": {
     "downloadVideo": "Video indir",
@@ -262,7 +263,23 @@
     "oneProfilePerSiteHint": "Her site için ayrı bir otomatik oturum kullanın. Bir siteden açılan bağlantılar, o sitenin profilini korur.",
     "mentionNotifications": "Sosyal bildirimler",
     "mentionNotificationsHint": "İşletim sisteminin arka plan sınırlamaları nedeniyle, bildirimler gecikebilir ve garanti edilemez.",
-    "enterInsertsNewline": "Enter yeni satıra geçer (Shift+Enter)"
+    "enterInsertsNewline": "Enter yeni satıra geçer (Shift+Enter)",
+    "zoom": {
+      "label": "Sayfayı Yakınlaştır",
+      "defaultLabel": "Varsayılan Yakınlaştırma",
+      "defaultHint": "Tüm web sayfaları için varsayılan yakınlaştırma seviyesini ayarla.",
+      "siteZoomLabel": "Site bazlı yakınlaştırma",
+      "usingDefault": "Varsayılan yakınlaştırmayı kullan"
+    },
+    "proxy": {
+      "label": "Vekil sunucu",
+      "enabled": "Vekil sunucuyu etkinleştir",
+      "type": "Vekil sunucu türü",
+      "host": "Vekil sunucu ana bilgisayarı",
+      "port": "Vekil sunucu bağlantı noktası",
+      "hostPlaceholder": "Örn. 127.0.0.1 veya proxy.example.com",
+      "portPlaceholder": "Örn. 1080"
+    }
   },
   "sync": {
     "label": "Senkronize et",

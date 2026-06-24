@@ -1,0 +1,433 @@
+{
+  "about": {
+    "label": "Про програму",
+    "code": "Джерельний код",
+    "donate": "Пожертвувати",
+    "hint": "Версія, джерельний код і підтримка."
+  },
+  "changelog": {
+    "label": "Зміни",
+    "hint": "Недавні релізи і виправлення з GitHub.",
+    "retry": "Повторити",
+    "loading": "Завантаження допису релізу...",
+    "error": "Невдалось завантажити допис релізу.",
+    "empty": "Дописів релізу незнайдено.",
+    "current": "Поточна",
+    "noNotes": "Для цієї версії дописів релізу не представлено."
+  },
+  "common": {
+    "off": "Вимк",
+    "on": "Вкл",
+    "reset": "Скинути",
+    "save": "Зберегти",
+    "theme": "Тема",
+    "about": "Про програму",
+    "edit": "Редагувати"
+  },
+  "views": {
+    "desktop": {
+      "blankTab": "Пуста вкладка",
+      "groupNamePlaceholder": "Ім'я групи",
+      "tabCount": "{{count}} вкладка",
+      "tabCount_plural": "{{count}} вкладки",
+      "ungrouped": "Незгруповані",
+      "chooseTabToAdd": "Обрати вкладку і додати в {{layout}}",
+      "layout": {
+        "gridFour": "4 вкладки",
+        "deck": "Вид колоди",
+        "split": "Роздільний вид",
+        "grid": "Вид сітки"
+      },
+      "newGroupFromTab": "Нова група вкладок",
+      "renameGroup": "Переназвати групу",
+      "createBlankTabInSlot": "Створити нову пусту вкладку в слоті",
+      "deck": "Колода",
+      "newDeckView": "Вид новоі колоди",
+      "newSplitView": "Новий роздільний вид",
+      "newGridView": "Новий вид сітки"
+    },
+    "rename": "Переназвати вид",
+    "namePlaceholder": "Назва виду"
+  },
+  "blocklist": {
+    "enable": "Увімкнути мережевий блоклист",
+    "lastUpdated": "Останне оновлення: {{value}}",
+    "refreshNow": "Оновити блоклист",
+    "label": "Мережевий блоклист",
+    "description": "Блокувати рекламу і стеження за правилами EasyList і EasyPrivacy.",
+    "statusFetching": "Підтягування блоклиста"
+  },
+  "buttons": {
+    "cancel": "Відмінити",
+    "closeAll": "Закрити Все",
+    "confirm": "Підтвердити",
+    "continue": "Продовжити",
+    "openUrl": "Відкрити URL",
+    "open": "Відкрити",
+    "reopenLastClosedTab": "Відкрити останню закриту вкладку",
+    "restoreTabs": "Недавно закриті вкладки",
+    "save": "Зберегти",
+    "toggleSidebar": "Перемкнути бокову панель"
+  },
+  "menus": {
+    "clearSiteData": "Видалити дані сайту",
+    "clearSiteDataConfirm": "Видалити всі кукі та дані для \"{{host}}\"? Спричинить вихід з сайту.",
+    "close": "Закрити",
+    "delete": "Видалити",
+    "duplicate": "Дуплікація вкладки",
+    "addBookmark": "Додати закладку",
+    "editUrl": "Редагувати URL вкладки",
+    "more": "Більше",
+    "openInProfile": "Відкрити у профілі",
+    "reload": "Перезавантажити",
+    "scroll": "Нагору",
+    "share": "Поділитись",
+    "signOut": "Вийти",
+    "tools": "Розширення",
+    "zoom": "Зум",
+    "desktop": "Десктопний вид",
+    "pause": "Пауза",
+    "resume": "Відновити вкладку",
+    "viewInSplitView": "Перегляд в роздільному виді"
+  },
+  "modals": {
+    "downloadVideo": "Завантажити відео",
+    "downloadOnCobalt": "Завантажити відео з cobalt.tools"
+  },
+  "native": {
+    "menu_saveImage": "Зберегти зображення",
+    "menu_copyImageLink": "Копіювати посилання зображення",
+    "menu_copyLink": "Копіювати посилання",
+    "menu_openImageInNewTab": "Відкрити зображення у новій вкладці",
+    "toast_downloadStarted": "Почалось заввантаження, перевірте оповіщення системи",
+    "toast_downloadSucceeded": "Збережено в папку Downloads",
+    "toast_downloadFailed": "Невдалось завантажити",
+    "httpBlocked_body": "Цей вебсайт використовує ненадійне з'єднання HTTP. Увімкніть \"Дозволити HTTP вебсайти\" в Налаштуваннях, щоб дозволити завантаження HTTP вебсайтів.",
+    "menu_openInNewTab": "Відкрити в новій вкладці",
+    "httpBlocked_title": "HTTP вебсайт заблоковано",
+    "menu_openInProfile": "Відкрити в профілі"
+  },
+  "profiles": {
+    "label": "Профілі",
+    "autoProfileLastUsed": "Останне використання: {{value}}",
+    "autoProfileLastUsedLabel": "Останне використання",
+    "deleteAllAutoProfiles": "Видалити все",
+    "deleteStaleAutoProfiles": "Видалити невикористовувані за 14 днів",
+    "add": "Додати",
+    "edit": "Редагувати",
+    "save": "Зберегти",
+    "namePlaceholder": "Назва профілю",
+    "clearData": "Очистити дані",
+    "clearDataConfirm": "Видалити всі дані для \"{{name}}\"? Ви вийдете з профіля і владку буде закрито.",
+    "deleteConfirm": "Видалити \"{{name}}\"?Дані цього профіля будуть очищені а вкладки закриті.",
+    "deleteAllAutoProfilesConfirm": "Видалити всі {{count}} авто профілі? Всі збережені дані будуть очищені а вкладки закриті.",
+    "deleteStaleAutoProfilesConfirm": "Видалити {{count}} авто профілі невикористовувані за останні 14 днів? Всі збережені дані будуть очищені а вкладки закриті.",
+    "auto": "Авто",
+    "autoProfiles": "Авто профілі",
+    "autoProfilesEmpty": "Ще жодних авто профілів.",
+    "openLinkInProfile": "Відкрити посилання в профілі",
+    "manageAutoProfiles": "Керування авто профілів ({{count}})",
+    "deleteAutoProfileConfirm": "Видалити авто профіль для {{site}}? Збережені дані будуть очищені а вкладки закриті."
+  },
+  "settings": {
+    "label": "Налаштування",
+    "zoom": {
+      "label": "Зум сторінки",
+      "defaultLabel": "Стандартний зум",
+      "defaultHint": "Встановиит стандартний зум для всіх web сторінок.",
+      "usingDefault": "Викорстовувати стандартний зум",
+      "siteZoomLabel": "Зум на сайт"
+    },
+    "openExternalLink": "Відкрити зовнішне посилання в системному браузері",
+    "redirectToOldReddit": "Перенаправляти на Old Reddit",
+    "allowHttpWebsite": "Дозволити HTTP вебсайти",
+    "proxy": {
+      "label": "Проксі",
+      "enabled": "Увімкнути проксі",
+      "type": "Тип проксі",
+      "host": "Хост проксі",
+      "port": "Порт проксі",
+      "hostPlaceholder": "e.g. 127.0.0.1 or proxy.example.com",
+      "portPlaceholder": "e.g. 1080"
+    },
+    "videoEdgeLongPressTo2x": "Довгий натиск збоку - швидкість 2х",
+    "doubleBackToExitApp": "Подвійне натискання назад щоб вийти",
+    "oneProfilePerSite": "Один профіль на сайт",
+    "hideHeader": "Приховати панель, показувати при скролі",
+    "hideToolbarWhenScrolled": "Приховувати панель коли сторінка вгорі",
+    "xHomeTimeline": {
+      "forYou": "Для вас",
+      "following": "Підписки",
+      "label": "Стандартний час"
+    },
+    "mentionNotifications": "Сповіщення соцмереж",
+    "mentionNotificationsHint": "Через фонові обмеження ос, надсилання може затримуватись і не гарантоване.",
+    "sections": {
+      "general": "Загальне",
+      "accounts": "Акаунти і дані",
+      "bookmarksSearch": "Закладки і пошук",
+      "notifications": "Сповіщення",
+      "advanced": "Просунуті",
+      "about": "Про програму"
+    },
+    "pages": {
+      "browsing": "Бажане",
+      "appearance": "Вигляд",
+      "profiles": "Профілі та сесії",
+      "bookmarks": "Закладки",
+      "search": "Пошук",
+      "services": "Сервіс"
+    },
+    "browsing": {
+      "descriptionWeb": "Мережеве блокування и просунутий контроль браузингу.",
+      "features": "Особливості",
+      "descriptionNative": "Вмикачі функцій."
+    },
+    "appearance": {
+      "description": "Налаштування теми і панелі.",
+      "theme": "Тема",
+      "toolbar": "Панель",
+      "deckTabWidthHint": "Поточна : {{value}}px",
+      "deckTabWidth": "Ширина вкладки колода"
+    },
+    "bookmarks": {
+      "saved": "Збережені Закладки",
+      "empty": "Ще жодних закладок.",
+      "description": "Керувати закріпленими сайтами."
+    },
+    "services": {
+      "title": "Вбудовані сервіси",
+      "description": "Керування вбудованими сервісами."
+    },
+    "search": {
+      "description": "Керування провайдерами пошуку.",
+      "builtin": "Вбудовані провайдери пошуку",
+      "builtinHint": "Увімкнути показа бажаних провайдерів пошуку в меню пошуку нової вкладки.",
+      "custom": "Власні провайдери пошуку",
+      "empty": "Ще жодних власних провайдеріів пошуку.",
+      "addTitle": "Додати власний пошук",
+      "editTitle": "Редагувати власний пошук",
+      "addAction": "Додати пошук",
+      "fields": {
+        "name": "Назва",
+        "namePlaceholder": "Приклад пошуку",
+        "templatePlaceholder": "https://example.com/search?q=%s",
+        "template": "Пошук URL шаблона"
+      },
+      "validation": {
+        "name": "Додати назву провайдера пошуку",
+        "duplicateName": "Вланий провайдер пошуку з таким ім'я вже існує",
+        "template": "Використовувати валідний http(s) URL шаблон з `%s`"
+      },
+      "deleteConfirm": "Ви точно бажаєте видалити цей власний пошук?",
+      "urlHint": "Завжди дозволяти прямий URL перехід.",
+      "templateHint": "Використовувати `%s` де вимагається запит."
+    },
+    "userStyles": {
+      "customHint": "Кастомізація будь-яких вебсайтів з CSS і JavaScript.",
+      "copyCss": "Копіювати CSS",
+      "cssCopied": "CSS скопійовано",
+      "copyFailed": "Невдалось копіювати CSS",
+      "importCss": "Імпорт CSS",
+      "importFailed": "Невдалось імпортувати CSS",
+      "preview": "Прев'ю",
+      "noActiveTab": "Жодних активних вкладок",
+      "addTitle": "Додати власний стиль",
+      "editTitle": "Редагувати власний стиль",
+      "deleteConfirm": "Ви точно бажаєте видалити цей власний стиль?",
+      "nameLabel": "Назва",
+      "namePlaceholder": "Назва стилю",
+      "hostGlobs": {
+        "placeholder": "*.reddit.com, x.com (кома окремо)",
+        "label": "Маски хостів"
+      },
+      "validation": {
+        "css": "Додати CSS перед збереженням",
+        "hostGlobs": "Додайте хоча б одну дійсну маску хоста"
+      },
+      "builtin": {
+        "label": "Вбудовані стилі",
+        "compactTiktokLayout": {
+          "label": "Використовувати компактний вигляд TikTok"
+        },
+        "hideRedditGame": {
+          "label": "Приховати ігрові пости Reddit"
+        },
+        "hideXBottomNav": {
+          "label": "Приховати нижню панель Х при прокрутці"
+        },
+        "hideXHomeTabs": {
+          "label": "Приховати вкладки на головній сторінці Х"
+        }
+      },
+      "label": "Стилі і скрипти користувача",
+      "add": "Додати стиль",
+      "custom": {
+        "label": "Особисті стилі",
+        "empty": "Ще жодних особистих стилів. Додайте для використання власний CSS на підтримуваних сайтах."
+      },
+      "scripts": {
+        "label": "Особисті скрипти",
+        "editTitle": "Редагувати особистий скрипт",
+        "deleteConfirm": "Ви точно бажаєте видалити цей скрипт?",
+        "importFailed": "Невдалось імпортувати скрипт",
+        "pinToHeader": "Закріпити на панелі",
+        "validation": {
+          "js": "Додати JavaScript перед збереженням"
+        },
+        "run": "Запуск",
+        "runComplete": "Запустити скрипт",
+        "add": "Додати скрипт",
+        "addTitle": "Додати власний скрипт",
+        "empty": "Ще жодних особистих скриптів. Додайте для запуску власних JavaScript на підтримуваних сайтах.",
+        "namePlaceholder": "Назва скрипта",
+        "runFailed": "Помилка скрипта",
+        "import": "Імпорт",
+        "pinToHeaderHint": "Показувати цей скрип на панелі якщо підтримується сайтом.",
+        "pinnedScripts": "Закріплені скрипти"
+      },
+      "hint": "Перемкнути вбудованиі CSS і додати власні стилі і скрипти з хоста.",
+      "previewApplied": "Попередній перегляд"
+    },
+    "headerPosition": {
+      "label": "Розташування панелі",
+      "top": "Вгорі",
+      "bottom": "Внизу"
+    },
+    "showNewTabButton": "Показувати кнопку нова вкладка",
+    "showBackButton": "Показувати кнопку назад",
+    "showForwardButton": "Показувати кнопку вперед",
+    "showReloadButton": "Показувати кпонку перезавантаження",
+    "showScrollButton": "Показувати кнопку вгору",
+    "oneHandMode": "Режим однієї руки",
+    "profiles": {
+      "sessionMode": "Режим сеансу",
+      "injectCookie": "Ввести Кукі",
+      "injectCookieHint": "Ввести заголовок кукі з іншого браузера для ручного відновлення сеансу.",
+      "description": "Кілька акаунтів з окремим кукі та даними."
+    },
+    "theme": {
+      "system": "Система",
+      "dark": "Темна",
+      "light": "Світла",
+      "hint": "Тема застосунку і вебперегляду. Якщо сторінка не оновилась, перезавантажте вкладку.",
+      "label": "Тема"
+    },
+    "language": {
+      "label": "Мова",
+      "system": "Системна",
+      "hint": "Оберіть мову або залиште як в системі."
+    },
+    "injectCookie": "Ввести кукі",
+    "oneTabPerSite": "Одна вкладка на сайт при переході через посилання",
+    "enterInsertsNewline": "Enter додає рядок (Shift+Enter)",
+    "inspectable": "Дозволити перегляд Webview",
+    "oneProfilePerSiteHint": "Використовувати окрему автоматичну сесію для всіх сайтів. Посилання сайта відкриватимуться в цьому профілі."
+  },
+  "sync": {
+    "hint": "Синхронізація закладок і налаштувань всіх девайсів.",
+    "currentPlan": "Поточний план",
+    "buy": "Підписка через App Store",
+    "restore": "Відмінити покупку",
+    "priceLoading": "Завантаження ціни App Store...",
+    "restoreConflict": "Ця підписка App Store вже підв'язана до {{email}}.",
+    "productUnavailable": "Продукт поки не доступний в App Store.",
+    "termsOfUse": "Умови використання (EULA)",
+    "privacyPolicy": "Політика конфіденційності",
+    "signInRequired": "Увійдіть для продовження.",
+    "label": "Синхронізувати",
+    "upgradeHint": "Оновіть для синхронізації закладок і налаштувань між девайсами.",
+    "deleteAccount": "Видалити акаунт",
+    "purchaseTitle": "Підв'язати підписку",
+    "purchaseConfirm": "Ця підписка буде підв'язана до {{email}} і синхронізована на кожному девайсі де ви залогінетесь через Nora.",
+    "freePlan": "Безкоштовно",
+    "purchasePending": "Очікується підтвердження покупки.",
+    "signOutSwitch": "Вийти і змінити акаунт",
+    "signedInAs": "Увійти як {{email}}",
+    "expiresAt": "Оновлено чи вичерпається: {{value}}",
+    "legalNotice": "Підписки поновлюються автоматично, якщо не відмінені. Підписуючись ви погоджуєтесь з Умовами Користування (EULA) і Політикою Конфіденційності.",
+    "managePlan": "Керування тарифом",
+    "manageIos": "Керування в App Store",
+    "activeViaIos": "Активувати через App Store"
+  },
+  "tabs": {
+    "new": "Нова вкладка",
+    "recentlyClosed": "Недавно закриті",
+    "noRecentlyClosed": "Жодних закритих вкладок",
+    "paused": "Вкладка на паузі",
+    "pausedHint": "Контент вивантажено до збережених ресурсів.",
+    "resume": "Відновити"
+  },
+  "toast": {
+    "blocklistUpdated": "Блоклист оновлено",
+    "profileDataCleared": "Дані профіля очищено",
+    "profileDataClearFailed": "Невдалось очистити дані профіля",
+    "siteDataCleared": "Дані сайту очищено",
+    "siteDataClearFailed": "Невдалось очистити дані сайту",
+    "pressBackAgainToExit": "Натисніть ще раз щоб вийти",
+    "pinned": "Закріпити на новій вкладці"
+  },
+  "usageLimits": {
+    "label": "Ліміти користування",
+    "description": "Встановити добові ліміти часу для певних сервісів або всього застосунку.",
+    "limits": "Ліміти",
+    "empty": "Ще жодних лімітів.",
+    "emptyHint": "Додати ліміт для відстеження добового користування.",
+    "usageLine": "Сьогодні: {{used}} {{limit}}",
+    "deleteConfirm": "Видалити цей ліміт?",
+    "scope": {
+      "all": "Весь застосунок",
+      "none": "Сервісів не вибрано"
+    },
+    "editor": {
+      "addTitle": "Додати ліміт",
+      "editTitle": "Редагувати ліміт",
+      "name": "Назва",
+      "namePlaceholder": "e.g. Соцмережа",
+      "defaultName": "Ліміт",
+      "dailyLimit": "Добовий ліміт",
+      "hours": "Годин",
+      "minutes": "Хвилин",
+      "scope": "Примінити до",
+      "add": "Додати",
+      "errorMinutes": "Встановіть добовий ліміт хоча б на 1 хв",
+      "errorScope": "Оберіть хоча б один сервіс або весь застосунок"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "PIN треба для керування лімітами та розблокуання у разі їх досягнення. Скидається опівночі.",
+      "set": "PIN встановлено",
+      "notSet": "PIN не встановлено",
+      "setAction": "Встановити PIN",
+      "change": "Змінити",
+      "remove": "Прибрати",
+      "currentPlaceholder": "Поточний PIN",
+      "newPlaceholder": "Новий PIN",
+      "confirmPlaceholder": "Підтвердити новий PIN",
+      "errorEmpty": "PIN не може бути пустим",
+      "errorMismatch": "Неспівпадіння PIN",
+      "errorIncorrect": "Неправильний PIN",
+      "requiredFirst": "Спочатку встановіть PIN",
+      "confirmEdit": "Введіть PIN для редагування",
+      "confirmDelete": "Введіть PIN для видалення"
+    },
+    "lockout": {
+      "title": "Насьогодні час вичерпано",
+      "body": "Ви використали {{used}} вашого {{limit}} добового ліміту для {{name}}.",
+      "pinPlaceholder": "Введіть PIN для розблокування",
+      "pinIncorrect": "Неправильний PIN",
+      "unlock": "Розблокувати насьогодні",
+      "noPinHint": "Встановіть PIN в Налаштування → Раннє розблокування лімітів користування."
+    }
+  },
+  "newTab": {
+    "presets": {
+      "open": "Додати наявні закладки",
+      "title": "Наявні закладки"
+    },
+    "search": {
+      "urlPlaceholder": "Вести URL",
+      "searchPlaceholder": "Пошук в web"
+    }
+  }
+}

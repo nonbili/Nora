@@ -154,7 +154,8 @@
       "unlock": "Ava lukustus tänaseks",
       "pinPlaceholder": "Likustuse avamiseks sisesta PIN-kood"
     },
-    "usageLine": "Täna: {{used}} / {{limit}}"
+    "usageLine": "Täna: {{used}} / {{limit}}",
+    "label": "Kasutuspiirangud"
   },
   "blocklist": {
     "label": "Võrguühenduste keeluloend",
@@ -223,7 +224,15 @@
         "pinToHeaderHint": "Näita sobivate saitide puhul seda skripti tööriistariba toimingute seas.",
         "pinnedScripts": "Tööriistaribale kinnitatud skriptid",
         "runComplete": "Skript toimis",
-        "runFailed": "Skript ei toiminud"
+        "runFailed": "Skript ei toiminud",
+        "add": "Lisa skript",
+        "addTitle": "Lisa kohendatud skript",
+        "label": "Kohendatud skriptid",
+        "editTitle": "Muuda kohendatud skripti",
+        "deleteConfirm": "Kas oled kindel, et soovid selle kohendatud skripti kustutada?",
+        "namePlaceholder": "Skripti nimi",
+        "importFailed": "Skripti importimine ei õnnestunud",
+        "empty": "Kohendatud skripte pole. Lisa mõni, kui tahad kasutada sinu JavaScripti sobivate serverite puhul."
       },
       "cssCopied": "CSS on kopeeritud",
       "copyCss": "Kopeeri CSS",
@@ -236,11 +245,27 @@
       "addTitle": "Lisa kohandatud stiil",
       "editTitle": "Muuda kohandatud stiili",
       "deleteConfirm": "Kas oled kindel, et soovid selle kohandatud stiili kustutada?",
-      "namePlaceholder": "Stiili nimi"
+      "namePlaceholder": "Stiili nimi",
+      "hostGlobs": {
+        "placeholder": "*.reddit.com, x.com (eraldatud komadega)"
+      },
+      "validation": {
+        "css": "Enne salvestamist lisa CSS"
+      },
+      "builtin": {
+        "label": "Sisseehitatud stiilid",
+        "hideRedditGame": {
+          "label": "Peida Redditi mängupostitused"
+        },
+        "compactTiktokLayout": {
+          "label": "Kasuta TikToki kompaktset paigutust"
+        }
+      }
     },
     "headerPosition": {
       "top": "Ülal",
-      "bottom": "All"
+      "bottom": "All",
+      "label": "Tööriistariba asukoht"
     },
     "theme": {
       "label": "Kujundus",
@@ -255,7 +280,8 @@
     },
     "xHomeTimeline": {
       "forYou": "Sinu jaoks",
-      "following": "Järgitavad"
+      "following": "Järgitavad",
+      "label": "Avalehe vaikimisi ajajoon"
     },
     "mentionNotifications": "Teavitused sotsiaalvõrgust",
     "browsing": {
@@ -285,7 +311,29 @@
     "showNewTabButton": "Näita uue vahekaardi nuppu",
     "showBackButton": "Näita tagasi-nuppu",
     "showForwardButton": "Näita edasi-nuppu",
-    "showReloadButton": "Näita uuesti laadimise nuppu"
+    "showReloadButton": "Näita uuesti laadimise nuppu",
+    "proxy": {
+      "label": "Proksiserver",
+      "enabled": "Kasuta proksiserverit",
+      "type": "Proksiserveri tüüp",
+      "host": "Proksiserveri aadress",
+      "port": "Proksiserveri port",
+      "hostPlaceholder": "nt. 127.0.0.1 või proxy.toredomeen.ee",
+      "portPlaceholder": "nt. 1080"
+    },
+    "oneProfilePerSiteHint": "Kasuta iga saidi jaoks automaatset eraldi sessiooni. Saidist avatud lingid säilitavad selle saidi profiili.",
+    "showScrollButton": "Näita ülemisse äärde kerimise nuppu",
+    "oneHandMode": "Režiim kasutamiseks ühe käega",
+    "oneTabPerSite": "Lingi avamisel on kasutusel üks vahekaart saidi kohta",
+    "hideToolbarWhenScrolled": "Kui lehevaade pole ülal ääres, siis peida tööriistariba",
+    "hideHeader": "Peida või näita tööriistariba kerimissuunas",
+    "zoom": {
+      "usingDefault": "Kasuta vaikimisi suumi",
+      "siteZoomLabel": "Saidikohane suum",
+      "defaultHint": "Sisesta vaikimisi suum kõikide veebilehtede jaoks.",
+      "defaultLabel": "Vaikimisi suum",
+      "label": "Lehe suum"
+    }
   },
   "sync": {
     "label": "Sünkrooni",
@@ -299,9 +347,41 @@
     "restore": "Taasta ostud",
     "manageIos": "Halda App Store'is",
     "purchaseTitle": "Seo tellimus",
-    "purchaseConfirm": "Tellimus seotakse e-postiaadressiga {{email}} ja saad kasutada sünkroonimist kõikjal, kus kasutad Nora kontot."
+    "purchaseConfirm": "Tellimus seotakse e-postiaadressiga {{email}} ja saad kasutada sünkroonimist kõikjal, kus kasutad Nora kontot.",
+    "termsOfUse": "Kasutustingimused (EULA)",
+    "privacyPolicy": "Andmekaitsepõhimõtted",
+    "signOutSwitch": "Logi välja ja vaheta kasutajakontot",
+    "restoreConflict": "See rakendustepoe tellimus on juba seotud e-posti aadressiga {{email}}.",
+    "signedInAs": "Loginud sisse e-posti aadressiga {{email}}",
+    "productUnavailable": "See rakendustepoe toode pole veel saadaval.",
+    "expiresAt": "Uuendatakse või aegub: {{value}}",
+    "signInRequired": "Jätkamaks logi sisse."
   },
   "tabs": {
-    "resume": "Jätka"
+    "resume": "Jätka",
+    "paused": "Vahekaart on peatatud",
+    "new": "Uus vahekaart",
+    "recentlyClosed": "Hiljuti suletud",
+    "noRecentlyClosed": "Hiljuti suletud vahekaarte pole",
+    "pausedHint": "Ressursside säästmiseks tema sisu eemaldati."
+  },
+  "newTab": {
+    "search": {
+      "urlPlaceholder": "Sisesta võrguaadress",
+      "searchPlaceholder": "Otsi veebist"
+    },
+    "presets": {
+      "title": "Eelseadistatud järjehoidjad",
+      "open": "Lisa eelseadistatud järjehoidjaid"
+    }
+  },
+  "toast": {
+    "pinned": "Kinnitatud uue vahekaardi lehele",
+    "blocklistUpdated": "Keeluloend on uuendatud",
+    "profileDataCleared": "Profiili andmed on eemaldatud",
+    "profileDataClearFailed": "Profiili andmete eemaldamine ei õnnestunud",
+    "siteDataCleared": "Saidi andmed on eemaldatud",
+    "siteDataClearFailed": "Saidi andmete eemaldamine ei õnnestunud",
+    "pressBackAgainToExit": "Väljumiseks klõpsa uuesti Tagasi-nuppu"
   }
 }
