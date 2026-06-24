@@ -41,7 +41,8 @@
     "resume": "Réactiver l'onglet",
     "signOut": "Déconnexion",
     "tools": "Outils",
-    "viewInSplitView": "Voir en mode divisé"
+    "viewInSplitView": "Voir en mode divisé",
+    "zoom": "Zoom"
   },
   "settings": {
     "label": "Paramètres",
@@ -220,6 +221,22 @@
       "label": "Langue",
       "system": "Système",
       "hint": "Choisissez une langue ou suivez la langue du système."
+    },
+    "zoom": {
+      "label": "Zoom de la page",
+      "defaultLabel": "Zoom par défaut",
+      "defaultHint": "Définissez le niveau de zoom par défaut pour toutes les pages Web.",
+      "siteZoomLabel": "Zoom par site",
+      "usingDefault": "Utilisation du zoom par défaut"
+    },
+    "proxy": {
+      "label": "Proxy",
+      "enabled": "Activer le proxy",
+      "type": "Type de proxy",
+      "host": "Hôte proxy",
+      "port": "Port proxy",
+      "hostPlaceholder": "Par exemple : 127.0.0.1 ou proxy.example.com",
+      "portPlaceholder": "par ex. 1080"
     }
   },
   "changelog": {
