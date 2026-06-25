@@ -1,5 +1,7 @@
 # dependencies
 node_modules/
+vendor/
+.bundle/
 
 # Expo
 .expo/
@@ -38,3 +40,10 @@ modules/*/android/build/
 *-env.d.ts
 
 desktop/out
+
+# Fastlane
+fastlane/README.md
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/metadata/android/
+fastlane/metadata/ios/en-US/release_notes.txt

@@ -1,0 +1,2 @@
+json_key_file("") # Path to the service account JSON file
+package_name("jp.nonbili.nora")

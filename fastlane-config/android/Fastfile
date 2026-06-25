@@ -1,0 +1,44 @@
+default_platform(:android)
+
+platform :android do
+  desc "Upload a release AAB to Google Play"
+  lane :upload_aab do |options|
+    track = options[:track] || ENV["GOOGLE_PLAY_TRACK"] || "production"
+    package_name = options[:package_name] || ENV["ANDROID_PACKAGE_NAME"] || "jp.nonbili.nora"
+    aab_path = options[:aab] || ENV["AAB_PATH"] || File.expand_path("../../android/app/build/outputs/bundle/release/app-release.aab", __dir__)
+    metadata_path = options[:metadata_path] || ENV["GOOGLE_PLAY_METADATA_PATH"] || File.expand_path("../../fastlane/metadata/android", __dir__)
+    json_key = options[:json_key] || ENV["GOOGLE_PLAY_JSON_KEY"] || ENV["SUPPLY_JSON_KEY"]
+    json_key_data = options[:json_key_data] || ENV["GOOGLE_PLAY_JSON_KEY_DATA"] || ENV["SUPPLY_JSON_KEY_DATA"]
+    upload_metadata = ENV["GOOGLE_PLAY_UPLOAD_METADATA"] == "1"
+    upload_changelogs = ENV["GOOGLE_PLAY_UPLOAD_CHANGELOGS"] != "0"
+
+    UI.user_error!("AAB not found: #{aab_path}") unless File.exist?(aab_path)
+    UI.user_error!("Set GOOGLE_PLAY_JSON_KEY or SUPPLY_JSON_KEY to the service account JSON file path") if json_key.to_s.empty? && json_key_data.to_s.empty?
+
+    upload_to_play_store(
+      package_name: package_name,
+      json_key: json_key,
+      json_key_data: json_key_data,
+      aab: aab_path,
+      track: track,
+      metadata_path: metadata_path,
+      skip_upload_apk: true,
+      skip_upload_metadata: !upload_metadata,
+      skip_upload_changelogs: !upload_changelogs,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Upload screenshots to Google Play Store"
+  lane :upload_screenshots do
+    upload_to_play_store(
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: false,
+      metadata_path: File.expand_path("../../fastlane/metadata/android", __dir__)
+    )
+  end
+end
