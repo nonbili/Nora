@@ -3,7 +3,7 @@ import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { BLOCKLIST_SOURCE_IDS, BlocklistSnapshot, BlocklistSourceCache } from '@/lib/blocklist/types'
 
-const BLOCKLIST_SCHEMA_VERSION = 1
+const BLOCKLIST_SCHEMA_VERSION = 2
 
 function createSource(url = ''): BlocklistSourceCache {
   return {
