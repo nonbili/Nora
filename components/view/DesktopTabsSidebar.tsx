@@ -228,6 +228,11 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
             icon: <MaterialIcons name="restore" size={14} color={menuIconColor} />,
             handler: () => tabs$.reopenClosedTab(recentlyClosedTabs[0].id),
           },
+          {
+            label: t('tabs.clearRecentlyClosed'),
+            icon: <MaterialIcons name="delete-outline" size={14} color={menuIconColor} />,
+            handler: () => tabs$.clearRecentlyClosedTabs(),
+          },
         ] as ContextItem[])
       : []),
     { kind: 'separator' },

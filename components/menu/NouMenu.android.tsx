@@ -145,6 +145,7 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
                     ) : item.metaLabel ? (
                       <NouText className="shrink-0 text-xs text-zinc-600 dark:text-zinc-500">{item.metaLabel}</NouText>
                     ) : null}
+                    {item.trailing ? <View className="shrink-0">{item.trailing}</View> : null}
                   </Pressable>
                 )
               })}

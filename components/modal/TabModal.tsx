@@ -84,15 +84,35 @@ export const TabModal = () => {
       kind: 'label' as const,
     },
     ...(recentlyClosedTabs.length
-      ? recentlyClosedTabs.map((tab) => ({
-          label: getTabLabel(tab),
-          description: tab.title && tab.url && tab.title !== tab.url ? tab.url : undefined,
-          icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
-          handler: () => {
-            tabs$.reopenClosedTab(tab.id)
-            closeModal()
+      ? [
+          ...recentlyClosedTabs.map((tab) => ({
+            label: getTabLabel(tab),
+            description: tab.title && tab.url && tab.title !== tab.url ? tab.url : undefined,
+            icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
+            trailing: (
+              <TouchableOpacity
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('tabs.removeFromHistory')}
+                onPress={(e) => {
+                  e?.stopPropagation?.()
+                  tabs$.removeClosedTab(tab.id)
+                }}
+              >
+                <MaterialIcons name="close" size={16} color={colors.iconSubtle} />
+              </TouchableOpacity>
+            ),
+            handler: () => {
+              tabs$.reopenClosedTab(tab.id)
+              closeModal()
+            },
+          })),
+          {
+            label: t('tabs.clearRecentlyClosed'),
+            icon: <MaterialIcons name="delete-outline" size={18} color={colors.iconSubtle} />,
+            handler: () => tabs$.clearRecentlyClosedTabs(),
           },
-        }))
+        ]
       : [
           {
             label: t('tabs.noRecentlyClosed'),
@@ -224,27 +244,50 @@ export const TabModal = () => {
                   </Pressable>,
                 )}
                 {nIf(!isWeb, <View className="mx-3 my-1 h-px bg-zinc-300 dark:bg-zinc-800" />)}
-                <View className="px-4 pt-2 pb-1">
+                <View className="flex-row items-center justify-between px-4 pt-2 pb-1">
                   <Text className="text-[11px] uppercase tracking-[1px] text-zinc-600 dark:text-zinc-500">{t('tabs.recentlyClosed')}</Text>
+                  {recentlyClosedTabs.length ? (
+                    <TouchableOpacity
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('tabs.clearRecentlyClosed')}
+                      onPress={() => tabs$.clearRecentlyClosedTabs()}
+                    >
+                      <Text className="text-[11px] text-indigo-500 dark:text-indigo-400">{t('tabs.clearRecentlyClosed')}</Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
                 {recentlyClosedTabs.length ? (
                   recentlyClosedTabs.map((tab) => (
-                    <Pressable
+                    <View
                       key={tab.id}
-                      className="flex-row items-center gap-3 px-4 py-3 active:bg-zinc-200 dark:active:bg-zinc-800"
-                      onPress={() => {
-                        tabs$.reopenClosedTab(tab.id)
-                        setIosMenuOpen(false)
-                        closeModal()
-                      }}
+                      className="flex-row items-center active:bg-zinc-200 dark:active:bg-zinc-800"
                     >
-                      <ServiceIcon url={tab.url} icon={tab.icon} />
-                      <View className="flex-1 min-w-0">
-                        <Text className="text-sm text-zinc-900 dark:text-white" numberOfLines={1}>
-                          {getTabLabel(tab)}
-                        </Text>
-                      </View>
-                    </Pressable>
+                      <Pressable
+                        className="flex-1 min-w-0 flex-row items-center gap-3 pl-4 py-3"
+                        onPress={() => {
+                          tabs$.reopenClosedTab(tab.id)
+                          setIosMenuOpen(false)
+                          closeModal()
+                        }}
+                      >
+                        <ServiceIcon url={tab.url} icon={tab.icon} />
+                        <View className="flex-1 min-w-0">
+                          <Text className="text-sm text-zinc-900 dark:text-white" numberOfLines={1}>
+                            {getTabLabel(tab)}
+                          </Text>
+                        </View>
+                      </Pressable>
+                      <TouchableOpacity
+                        className="px-4 py-3"
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('tabs.removeFromHistory')}
+                        onPress={() => tabs$.removeClosedTab(tab.id)}
+                      >
+                        <MaterialIcons name="close" size={16} color={colors.iconSubtle} />
+                      </TouchableOpacity>
+                    </View>
                   ))
                 ) : (
                   <View className="px-4 py-4">

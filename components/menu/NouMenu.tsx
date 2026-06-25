@@ -12,6 +12,7 @@ export interface Item {
   kind?: 'item' | 'label' | 'separator'
   meta?: ReactNode
   metaLabel?: string
+  trailing?: ReactNode
 }
 
 export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string }> = ({ trigger, items }) => {
@@ -53,6 +54,7 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
           ) : item.metaLabel ? (
             <div className="shrink-0 text-xs text-zinc-600 dark:text-zinc-500">{item.metaLabel}</div>
           ) : null}
+          {item.trailing ? <div className="shrink-0">{item.trailing}</div> : null}
         </div>
       </DropdownMenu.Item>
     )

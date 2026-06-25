@@ -354,6 +354,8 @@
     "new": "New tab",
     "recentlyClosed": "Recently closed",
     "noRecentlyClosed": "No recently closed tabs",
+    "removeFromHistory": "Remove from history",
+    "clearRecentlyClosed": "Clear history",
     "paused": "Tab is paused",
     "pausedHint": "Its content was unloaded to save resources.",
     "resume": "Resume"

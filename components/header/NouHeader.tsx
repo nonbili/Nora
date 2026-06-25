@@ -324,12 +324,33 @@ export const NouHeader: React.FC<{}> = ({}) => {
           <Tooltip title={t('buttons.restoreTabs')}>
             <NouMenu
               trigger={<MaterialButton name="restore" color={headerControlColor} />}
-              items={recentlyClosedTabs.map((tab) => ({
-                label: tab.title || tab.url || t('tabs.new'),
-                description: tab.title && tab.url && tab.title !== tab.url ? tab.url : undefined,
-                icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
-                handler: () => tabs$.reopenClosedTab(tab.id),
-              }))}
+              items={[
+                ...recentlyClosedTabs.map((tab) => ({
+                  label: tab.title || tab.url || t('tabs.new'),
+                  description: tab.title && tab.url && tab.title !== tab.url ? tab.url : undefined,
+                  icon: <ServiceIcon url={tab.url} icon={tab.icon} />,
+                  trailing: (
+                    <TouchableOpacity
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('tabs.removeFromHistory')}
+                      onPress={(e) => {
+                        e?.stopPropagation?.()
+                        tabs$.removeClosedTab(tab.id)
+                      }}
+                    >
+                      <MaterialIcons name="close" size={16} color={colors.iconSubtle} />
+                    </TouchableOpacity>
+                  ),
+                  handler: () => tabs$.reopenClosedTab(tab.id),
+                })),
+                { label: '', handler: () => {}, kind: 'separator' as const },
+                {
+                  label: t('tabs.clearRecentlyClosed'),
+                  icon: <MaterialIcons name="delete-outline" size={18} color={colors.iconSubtle} />,
+                  handler: () => tabs$.clearRecentlyClosedTabs(),
+                },
+              ]}
             />
           </Tooltip>,
         )}

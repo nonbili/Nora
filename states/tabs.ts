@@ -62,6 +62,8 @@ interface Store {
   closeAll: () => void
   deleteProfileData: (profileId: string) => void
   reopenClosedTab: (tabId: string) => string | undefined
+  removeClosedTab: (tabId: string) => void
+  clearRecentlyClosedTabs: () => void
   updateTabUrl: (url: string, index?: number) => void
   setTabLoading: (loading: boolean, index?: number) => void
   setTabPaused: (paused: boolean, index?: number) => void
@@ -542,6 +544,20 @@ export const tabs$: Observable<Store> = observable<Store>({
 
     tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
     return reopenedTab.id
+  },
+
+  removeClosedTab: (tabId) => {
+    const recentlyClosedTabs = tabs$.recentlyClosedTabs.get()
+    const nextRecentlyClosedTabs = recentlyClosedTabs.filter((tab) => tab.id !== tabId)
+    if (nextRecentlyClosedTabs.length !== recentlyClosedTabs.length) {
+      tabs$.recentlyClosedTabs.set(nextRecentlyClosedTabs)
+    }
+  },
+
+  clearRecentlyClosedTabs: () => {
+    if (tabs$.recentlyClosedTabs.get().length) {
+      tabs$.recentlyClosedTabs.set([])
+    }
   },
 
   updateTabUrl: (url, index) => {
