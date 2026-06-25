@@ -1,0 +1,3 @@
+- Support clearing recently closed tabs history
+- Support Ukrainian language
+- Fix disabling blocklist

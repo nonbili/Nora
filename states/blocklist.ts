@@ -3,7 +3,7 @@ import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { BLOCKLIST_SOURCE_IDS, BlocklistSnapshot, BlocklistSourceCache } from '@/lib/blocklist/types'
 
-const BLOCKLIST_SCHEMA_VERSION = 2
+const BLOCKLIST_SCHEMA_VERSION = 1
 
 function createSource(url = ''): BlocklistSourceCache {
   return {
@@ -29,9 +29,9 @@ export function normalizeBlocklist<T extends Partial<BlocklistSnapshot> | undefi
     return data
   }
 
-  const currentSchemaVersion = typeof data.schemaVersion === 'number' ? data.schemaVersion : 0
-  const enabled =
-    currentSchemaVersion < 2 || typeof data.enabled !== 'boolean' ? true : data.enabled
+  // Respect a stored boolean; only default to enabled when the field is missing
+  // (e.g. snapshots saved before the `enabled` toggle existed).
+  const enabled = typeof data.enabled === 'boolean' ? data.enabled : true
   const hasSnapshot = typeof data.hasSnapshot === 'boolean' ? data.hasSnapshot : false
   const phase = data.phase === 'fetching' ? (hasSnapshot ? 'ready' : 'idle') : (data.phase || 'idle')
   const revision = typeof data.revision === 'number' ? data.revision : 0
