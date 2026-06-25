@@ -25,7 +25,7 @@ jobs:
           yarn expo prebuild -p android --clean --no-install
 
       - name: build apk
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --stacktrace
         working-directory: android
 
       # https://github.com/r0adkll/sign-android-release/issues/84#issuecomment-1889636075

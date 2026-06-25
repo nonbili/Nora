@@ -66,6 +66,10 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
         {
           android: {
             usesCleartextTraffic: true,
+            // Build only the ARM ABIs that real devices use; x86/x86_64 are
+            // emulator-only and dropping them cuts CI time and disk (see the
+            // matching abiCodes in plugins/withAndroidPlugin.ts).
+            buildArchs: ['armeabi-v7a', 'arm64-v8a'],
           },
           ios: {
             deploymentTarget: '17.0',
