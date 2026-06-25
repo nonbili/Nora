@@ -84,6 +84,7 @@ const languageNativeNames: Record<string, string> = {
   ru: 'Русский',
   sv: 'Svenska',
   tr: 'Türkçe',
+  uk: 'Українська',
   vi: 'Tiếng Việt',
   zh_Hans: '简体中文',
   zh_Hant: '繁體中文',
