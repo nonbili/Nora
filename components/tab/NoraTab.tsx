@@ -200,6 +200,7 @@ export const NoraTab: React.FC<{
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag | null>(null)
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
+  const webviewListenersRef = useRef<AbortController | null>(null)
   const pageUrlRef = useRef('')
   const loadingWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [canGoBack, setCanGoBack] = useState(false)
@@ -301,9 +302,23 @@ export const NoraTab: React.FC<{
 
   const noraViewRef = useCallback(
     (webview: WebviewTag | null) => {
+      const prevWebview = webviewRef.current
       registerTabWebview(tab.id, webview)
       webviewRef.current = webview
       if (!webview) {
+        // The webview is detaching (unmount, or profile switch remount via key change).
+        // Tear down its listeners so they don't accumulate on the next mount, and drop
+        // the active-webview reference if it pointed at this element — otherwise toolbar
+        // and script actions would target a destroyed webview.
+        webviewListenersRef.current?.abort()
+        webviewListenersRef.current = null
+        if (prevWebview) {
+          attachedWebviewsRef.current.delete(prevWebview)
+          if (ui$.webview.get() === prevWebview) {
+            ui$.webview.set(undefined)
+            ui$.activeCanGoBack.set(false)
+          }
+        }
         return
       }
 
@@ -323,7 +338,19 @@ export const NoraTab: React.FC<{
       }
       attachedWebviewsRef.current.add(webview)
 
-      webview.addEventListener('dom-ready', () => {
+      const controller = new AbortController()
+      webviewListenersRef.current = controller
+      // The Electron WebviewTag typings only expose `useCapture`, but the underlying DOM
+      // addEventListener supports the options object (incl. `signal`) at runtime. Route
+      // through a typed helper so aborting the controller removes every listener at once,
+      // preventing them from piling up across remounts (e.g. profile switches).
+      const on = <E extends Event = Event>(event: string, handler: (e: E) => void) => {
+        ;(webview as HTMLElement).addEventListener(event, handler as EventListener, {
+          signal: controller.signal,
+        })
+      }
+
+      on('dom-ready', () => {
         if (isActiveRef.current || !ui$.webview.get()) {
           ui$.webview.set(ObservableHint.opaque(webview))
         }
@@ -332,7 +359,7 @@ export const NoraTab: React.FC<{
           .finally(() => applyContentStateRef.current(webview))
         void refreshCanGoBack(webview)
       })
-      webview.addEventListener('did-start-loading', () => {
+      on('did-start-loading', () => {
         setTabLoading(true)
         if (loadingWatchdogRef.current) {
           clearTimeout(loadingWatchdogRef.current)
@@ -343,36 +370,37 @@ export const NoraTab: React.FC<{
           }
         }, 3000)
       })
-      webview.addEventListener('did-stop-loading', () => {
+      on('did-stop-loading', () => {
         setTabLoading(false)
       })
-      webview.addEventListener('did-finish-load', () => {
+      on('did-finish-load', () => {
         setTabLoading(false)
       })
-      webview.addEventListener('did-fail-load', () => {
+      on('did-fail-load', () => {
         setTabLoading(false)
       })
-      webview.addEventListener('did-fail-provisional-load', () => {
+      on('did-fail-provisional-load', () => {
         setTabLoading(false)
       })
-      webview.addEventListener('did-navigate', (e) => {
+      on<Electron.DidNavigateEvent>('did-navigate', (e) => {
         setPageUrl(e.url)
         applyContentStateRef.current(webview, e.url)
         void refreshCanGoBack(webview)
       })
-      webview.addEventListener('did-navigate-in-page', (e) => {
+      on<Electron.DidNavigateInPageEvent>('did-navigate-in-page', (e) => {
         setPageUrl(e.url)
         applyContentStateRef.current(webview, e.url)
         setTabLoading(false)
         void refreshCanGoBack(webview)
       })
-      webview.addEventListener('page-favicon-updated', (e) => {
+      on<Electron.PageFaviconUpdatedEvent>('page-favicon-updated', (e) => {
         const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
         if (currentIndex !== -1) {
           tabs$.tabs[currentIndex].assign({ title: webview.getTitle(), icon: e.favicons.at(-1) })
         }
       })
-      webview.addEventListener('before-input-event', ((e: Electron.Event & { input: Electron.Input }) => {
+      on('before-input-event', (rawEvent) => {
+        const e = rawEvent as unknown as { input: Electron.Input }
         if (e.input.type === 'keyDown') {
           if ((e.input.meta || e.input.control) && e.input.key.toLowerCase() === 'r') {
             if (typeof webview.reload === 'function') {
@@ -384,9 +412,9 @@ export const NoraTab: React.FC<{
             handleShortcuts(e.input)
           }
         }
-      }) as unknown as (e: Event) => void)
-      webview.addEventListener('ipc-message', (e) => {})
-      webview.addEventListener('update-target-url', (e) => {
+      })
+      on('ipc-message', () => {})
+      on<Electron.UpdateTargetUrlEvent>('update-target-url', (e) => {
         ui$.hoverLinkUrl.set(e.url || '')
       })
     },

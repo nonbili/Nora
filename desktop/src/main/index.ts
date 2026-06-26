@@ -163,6 +163,13 @@ function createWindow(): void {
     cb({ responseHeaders: details.responseHeaders })
   })
   mainWindow.webContents.on('did-attach-webview', (e, wc) => {
+    // Electron's webContents.executeJavaScript queues work behind once('did-stop-loading')
+    // until the page can run JS. We fire several executeJavaScript calls per page (content
+    // script, settings, user styles, user scripts) while a tab is still loading, so the
+    // transient once-listeners can exceed Node's default cap of 10 and emit a spurious
+    // MaxListenersExceededWarning. Raise the cap so the warning doesn't fire (the listeners
+    // clear themselves once the page stops loading).
+    wc.setMaxListeners(50)
     attachDownloadHandler(wc.session)
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
       callback(permission === 'notifications')
