@@ -1,0 +1,2 @@
+- Support clearing history
+- UI and performance fixes
