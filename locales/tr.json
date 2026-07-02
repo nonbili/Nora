@@ -313,7 +313,9 @@
     "noRecentlyClosed": "Son kapatılan sekme yok",
     "paused": "Sekme duraklatıldı",
     "pausedHint": "Kaynakları korumak için içeriği boşaltıldı.",
-    "resume": "Devam et"
+    "resume": "Devam et",
+    "removeFromHistory": "Geçmişten sil",
+    "clearRecentlyClosed": "Geçmişi temizle"
   },
   "toast": {
     "pinned": "Yeni sekme sayfasına sabitlendi",

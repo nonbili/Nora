@@ -253,8 +253,8 @@
       "type": "代理类型",
       "host": "代理主机",
       "port": "代理端口",
-      "hostPlaceholder": "例如 127.0.0.1 或 proxy.example.com",
-      "portPlaceholder": "例如 1080"
+      "hostPlaceholder": "例如：127.0.0.1 或 proxy.example.com",
+      "portPlaceholder": "例如：1080"
     }
   },
   "tabs": {
@@ -263,7 +263,9 @@
     "noRecentlyClosed": "没有最近关闭的标签页",
     "paused": "标签页已暂停",
     "pausedHint": "其内容已被卸载以节省资源。",
-    "resume": "恢复"
+    "resume": "恢复",
+    "removeFromHistory": "从历史记录中移除",
+    "clearRecentlyClosed": "清除历史记录"
   },
   "toast": {
     "pinned": "已固定到新标签页页面",
