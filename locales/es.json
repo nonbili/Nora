@@ -42,7 +42,8 @@
     "openInProfile": "Abrir en perfil",
     "pause": "Pausar pestaña",
     "resume": "Reanudar pestaña",
-    "viewInSplitView": "Ver en vista dividida"
+    "viewInSplitView": "Ver en vista dividida",
+    "zoom": "Zoom"
   },
   "modals": {
     "downloadVideo": "Descargar vídeo",
@@ -233,7 +234,15 @@
     },
     "showReloadButton": "Mostrar botón de recarga",
     "oneTabPerSite": "Una pestaña por sitio al abrir un enlace compartido",
-    "showForwardButton": "Mostrar botón de avance"
+    "showForwardButton": "Mostrar botón de avance",
+    "zoom": {
+      "label": "Zoom de la página",
+      "defaultLabel": "Zoom por defecto"
+    },
+    "proxy": {
+      "enabled": "Habilitar proxy",
+      "type": "Tipo de proxy"
+    }
   },
   "sync": {
     "label": "Sincronizar",
@@ -267,7 +276,9 @@
     "recentlyClosed": "Cerrado recientemente",
     "noRecentlyClosed": "No hay pestañas cerradas recientemente",
     "paused": "La pestaña está en pausa",
-    "pausedHint": "Su contenido se descargó para ahorrar recursos."
+    "pausedHint": "Su contenido se descargó para ahorrar recursos.",
+    "removeFromHistory": "Eliminar del historial",
+    "clearRecentlyClosed": "Limpiar historial"
   },
   "toast": {
     "pinned": "Anclado a la página de nueva pestaña",

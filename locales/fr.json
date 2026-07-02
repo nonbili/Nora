@@ -362,7 +362,9 @@
     "noRecentlyClosed": "Aucun onglets récemment fermés",
     "paused": "L'onglet est en pause",
     "pausedHint": "Son contenu a été vidé pour économiser des ressources.",
-    "resume": "Réactiver"
+    "resume": "Réactiver",
+    "removeFromHistory": "Supprimer de l'historique",
+    "clearRecentlyClosed": "Effacer l'historique"
   },
   "newTab": {
     "presets": {
