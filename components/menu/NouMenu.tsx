@@ -63,7 +63,7 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <div className="flex shrink min-w-0 items-center justify-center">{trigger}</div>
+        <div className="pointer-events-none flex shrink min-w-0 items-center justify-center">{trigger}</div>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content
         variant="soft"

@@ -2,6 +2,7 @@ import { Button, Divider, Host, Menu, Section } from '@expo/ui/swift-ui'
 import { disabled, frame, tint } from '@expo/ui/swift-ui/modifiers'
 import type { Item } from './NouMenu'
 import { Fragment, ReactNode } from 'react'
+import { View } from 'react-native'
 
 export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string }> = ({ trigger, items, triggerColor }) => {
   const groups = items.reduce<Item[][]>((acc, item) => {
@@ -48,7 +49,7 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
   return (
     <Host matchContents>
       <Menu
-        label={typeof trigger === 'string' ? '' : trigger}
+        label={typeof trigger === 'string' ? '' : <View pointerEvents="none">{trigger}</View>}
         systemImage={typeof trigger === 'string' ? (trigger as any) : undefined}
         modifiers={typeof trigger === 'string' ? [frame({ width: 44, height: 44 }), ...(triggerColor ? [tint(triggerColor)] : [])] : undefined}
       >
