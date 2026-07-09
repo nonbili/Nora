@@ -37,6 +37,7 @@ async function initObserver() {
 
   injectCSS()
   injectScript()
+  installHeaderDoubleTapToggle()
 
   const viewport = document.querySelector('meta[name=viewport]')
   if (viewport) {
@@ -46,4 +47,40 @@ async function initObserver() {
       viewport.setAttribute('content', contents.join(','))
     }
   }
+}
+
+function installHeaderDoubleTapToggle() {
+  let lastTapAt = 0
+  let lastTapX = 0
+  let lastTapY = 0
+
+  document.addEventListener(
+    'touchend',
+    (event) => {
+      if (!window.Nora?.getSettings?.().doubleTapToToggleHeader || event.changedTouches.length !== 1) {
+        return
+      }
+
+      const target = event.target
+      if (target instanceof Element && target.closest('input, textarea, select, button, a')) {
+        return
+      }
+
+      const touch = event.changedTouches[0]
+      const now = Date.now()
+      const dx = touch.clientX - lastTapX
+      const dy = touch.clientY - lastTapY
+      const isDoubleTap = now - lastTapAt <= 300 && dx * dx + dy * dy <= 48 * 48
+
+      lastTapAt = now
+      lastTapX = touch.clientX
+      lastTapY = touch.clientY
+
+      if (isDoubleTap) {
+        lastTapAt = 0
+        emit('header-double-tap')
+      }
+    },
+    { passive: true, capture: true },
+  )
 }

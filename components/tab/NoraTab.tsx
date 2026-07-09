@@ -7,7 +7,7 @@ import { settings$, resolveZoom } from '@/states/settings'
 import { ActivityIndicator, Appearance, Pressable, StyleSheet, View, useColorScheme } from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
-import { clsx, isWeb, isIos, nIf, getHostFromUrl } from '@/lib/utils'
+import { clsx, isWeb, isIos, isAndroid, nIf, getHostFromUrl } from '@/lib/utils'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { MaterialButton } from '../button/IconButtons'
@@ -187,6 +187,7 @@ export const NoraTab: React.FC<{
   slotSwitcher?: ReactNode
 }> = ({ tab, index, isActive = false, desktopVariant = 'deck', slotSwitcher }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
+  const doubleTapToToggleHeader = useValue(settings$.doubleTapToToggleHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
   const inspectable = useValue(settings$.inspectable)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
@@ -197,6 +198,19 @@ export const NoraTab: React.FC<{
   const defaultZoom = useValue(settings$.defaultZoom)
   const siteZoom = useValue(settings$.siteZoom)
   const resolvedZoom = resolveZoom(host, siteZoom, defaultZoom)
+
+  const headerHeight = useValue(ui$.headerHeight)
+  const headerShown = useValue(ui$.headerShown)
+  const headerPosition = useValue(settings$.headerPosition)
+
+  const hideableHeader = autoHideHeader || hideToolbarWhenScrolled || (isAndroid && doubleTapToToggleHeader)
+  const nativeHeaderInset = !isWeb && hideableHeader && headerShown ? headerHeight : 0
+  const headerInsetStyle = !isWeb
+    ? {
+        marginTop: headerPosition === 'top' ? nativeHeaderInset : 0,
+        marginBottom: headerPosition === 'bottom' ? nativeHeaderInset : 0,
+      }
+    : null
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag | null>(null)
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
@@ -280,6 +294,7 @@ export const NoraTab: React.FC<{
       const currentHost = getHostFromUrl(currentUrl)
       await loadCosmeticFilters()
       const settingsScript = `window.Nora?.setSettings?.(${JSON.stringify({
+        doubleTapToToggleHeader: isAndroid && doubleTapToToggleHeader,
         videoEdgeLongPressTo2x,
         xDefaultHomeTimeline,
         cosmeticCss: getCosmeticCssForHost(currentHost),
@@ -292,12 +307,16 @@ export const NoraTab: React.FC<{
         void executeWebviewJavaScriptQuietly(webview, userScriptRunner)
       }
     },
-    [tab.url, videoEdgeLongPressTo2x, xDefaultHomeTimeline],
+    [doubleTapToToggleHeader, tab.url, videoEdgeLongPressTo2x, xDefaultHomeTimeline],
   )
   const applyContentStateRef = useRef(applyContentState)
 
   useEffect(() => {
     applyContentStateRef.current = applyContentState
+  }, [applyContentState])
+
+  useEffect(() => {
+    void applyContentState()
   }, [applyContentState])
 
   const noraViewRef = useCallback(
@@ -599,6 +618,11 @@ export const NoraTab: React.FC<{
       case 'scroll':
         onScroll({ dy: data.dy, y: data.y, autoHideHeader, hideToolbarWhenScrolled })
         break
+      case 'header-double-tap':
+        if (isAndroid && doubleTapToToggleHeader) {
+          ui$.headerShown.set(!ui$.headerShown.get())
+        }
+        break
       default:
         console.log('onMessage', type, data)
         break
@@ -726,15 +750,18 @@ export const NoraTab: React.FC<{
   return (
     <View
       pointerEvents={isActive ? 'auto' : 'none'}
-      style={{
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        opacity: isActive ? 1 : 0,
-        zIndex: isActive ? 1 : 0,
-      }}
+      style={[
+        {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          opacity: isActive ? 1 : 0,
+          zIndex: isActive ? 1 : 0,
+        },
+        headerInsetStyle,
+      ]}
     >
       <NoraView
         key={viewInstanceKey}

@@ -35,6 +35,7 @@ const ensureProfiles = (profiles?: (Profile | null | undefined)[]) => {
 export interface Settings {
   language: SupportedI18nLanguage | null
   autoHideHeader: boolean
+  doubleTapToToggleHeader: boolean
   hideToolbarWhenScrolled: boolean
   headerPosition: 'top' | 'bottom'
   theme: null | 'dark' | 'light'
@@ -128,6 +129,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.showReloadButtonInHeader !== 'boolean') {
     data.showReloadButtonInHeader = false
   }
+  if (typeof data.doubleTapToToggleHeader !== 'boolean') {
+    data.doubleTapToToggleHeader = false
+  }
   if (typeof data.hideToolbarWhenScrolled !== 'boolean') {
     data.hideToolbarWhenScrolled = false
   }
@@ -164,6 +168,7 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
 export const settings$: Observable<Store> = observable<Store>({
   language: null,
   autoHideHeader: false,
+  doubleTapToToggleHeader: false,
   hideToolbarWhenScrolled: false,
   headerPosition: 'top',
   theme: null,

@@ -157,6 +157,7 @@
     "oneProfilePerSite": "One profile per site",
     "oneProfilePerSiteHint": "Use a separate automatic session for each site. Links opened from a site keep that site's profile.",
     "hideHeader": "Hide and show toolbar on scroll direction",
+    "doubleTapToToggleHeader": "Double-tap page to hide or show toolbar",
     "hideToolbarWhenScrolled": "Hide toolbar when page is not at top",
     "xHomeTimeline": {
       "label": "Default home timeline",

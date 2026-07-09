@@ -13,6 +13,7 @@ export const noraUserStylesEvent = 'nora:user-styles'
 export const noraUserScriptsEvent = 'nora:user-scripts'
 
 const defaultSettings = {
+  doubleTapToToggleHeader: false,
   videoEdgeLongPressTo2x: false,
   xDefaultHomeTimeline: 'for-you',
   hideXHomeTimelineTabs: false,

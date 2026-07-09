@@ -33,11 +33,10 @@ import { ServiceIcon } from '../service/Services'
 import { Tooltip } from '../tooltip/Tooltip'
 import { userStyles$ } from '@/states/user-styles'
 import { buildUserScriptExecutionSource, matchesAnyHostGlob, type CustomUserScript } from '@/lib/user-styles'
+import { useHeaderAnimation } from './header-animation'
 
 const webAnimatedHelpers = {
-  AnimatedView: View,
   useSharedValueSafe: (initial: number) => ({ value: initial }) as SharedValue<number>,
-  withTimingSafe: (value: number) => value,
 }
 
 const nativeAnimatedHelpers = !isWeb
@@ -45,9 +44,7 @@ const nativeAnimatedHelpers = !isWeb
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const Reanimated = require('react-native-reanimated')
       return {
-        AnimatedView: Reanimated.default?.View ?? Reanimated.View ?? Reanimated.default,
         useSharedValueSafe: Reanimated.useSharedValue as (initial: number) => SharedValue<number>,
-        withTimingSafe: Reanimated.withTiming as (value: number) => number,
       }
     })()
   : null
@@ -74,7 +71,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
 
   const autoHideHeader = useValue(settings$.autoHideHeader)
+  const doubleTapToToggleHeader = useValue(settings$.doubleTapToToggleHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
+  const headerPosition = useValue(settings$.headerPosition)
   const showNewTabButtonInHeader = useValue(settings$.showNewTabButtonInHeader)
   const showBackButtonInHeader = useValue(settings$.showBackButtonInHeader)
   const showForwardButtonInHeader = useValue(settings$.showForwardButtonInHeader)
@@ -93,8 +92,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const currentTab = useValue(tabs$.currentTab)
   const customScripts = useValue(userStyles$.customScripts).filter((script): script is CustomUserScript => Boolean(script))
   const webview = ui$.webview.get()
-  const { AnimatedView, useSharedValueSafe, withTimingSafe } = isWeb ? webAnimatedHelpers : nativeAnimatedHelpers!
-  const marginTop = useSharedValueSafe(0)
+  const { useSharedValueSafe } = isWeb ? webAnimatedHelpers : nativeAnimatedHelpers!
   const flingStart = useSharedValueSafe(0)
   const panStart = useSharedValueSafe(0)
   let hostname = '',
@@ -122,14 +120,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
     }
     ui$.headerHeight.set(height)
   }
-
-  useEffect(() => {
-    if (isWeb) {
-      return
-    }
-    const shouldHide = (autoHideHeader || hideToolbarWhenScrolled) && !headerShown
-    marginTop.value = withTimingSafe(shouldHide ? -headerHeight : 0)
-  }, [autoHideHeader, hideToolbarWhenScrolled, headerHeight, headerShown, marginTop, withTimingSafe])
 
   const scrollToTop = () => {
     void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
@@ -197,9 +187,16 @@ export const NouHeader: React.FC<{}> = ({}) => {
     tabs$.handleBackPress()
   }
 
-  const Root = AnimatedView
+  const { Root, style: animatedHeaderStyle } = useHeaderAnimation({
+    autoHideHeader,
+    doubleTapToToggleHeader: isAndroid && doubleTapToToggleHeader,
+    headerHeight,
+    headerPosition,
+    headerShown,
+    hideToolbarWhenScrolled,
+  })
 
-  const webMarginTop = (autoHideHeader || hideToolbarWhenScrolled) && !headerShown ? -headerHeight : 0
+  const hideableHeader = autoHideHeader || hideToolbarWhenScrolled || (isAndroid && doubleTapToToggleHeader)
 
   const toggleSidebar = () => settings$.sidebarCollapsed.set(!settings$.sidebarCollapsed.get())
   const pinnedScripts = customScripts
@@ -213,13 +210,14 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const ret = (
     <Root
+      pointerEvents={isWeb ? 'auto' : (headerShown ? 'auto' : 'none')}
       className={clsx(
         'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between pl-2 py-1',
         isWeb && (sidebarCollapsed
           ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
           : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
       )}
-      style={{ marginTop: isWeb ? webMarginTop : marginTop }}
+      style={animatedHeaderStyle}
       onLayout={onLayout}
     >
       {nIf(
@@ -510,7 +508,14 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const composed = Gesture.Race(flingGesture, panGesture)
   return (
-    <GestureHandlerRootView style={{ minHeight: 0 }}>
+    <GestureHandlerRootView
+      pointerEvents="box-none"
+      style={
+        hideableHeader
+          ? { position: 'absolute', left: 0, right: 0, zIndex: 10, ...(headerPosition === 'bottom' ? { bottom: 0 } : { top: 0 }) }
+          : { minHeight: 0 }
+      }
+    >
       <GestureDetector gesture={composed}>{ret}</GestureDetector>
     </GestureHandlerRootView>
   )
