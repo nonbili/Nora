@@ -374,16 +374,16 @@ export const SettingsAppearanceContent = () => {
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.hideHeader')}</NouText>}
-                value={settings.autoHideHeader}
-                onPress={() => settings$.autoHideHeader.toggle()}
+                label={<NouText className="font-medium">{t('settings.doubleTapToToggleHeader')}</NouText>}
+                value={settings.doubleTapToToggleHeader}
+                onPress={() => settings$.doubleTapToToggleHeader.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.doubleTapToToggleHeader')}</NouText>}
-                value={settings.doubleTapToToggleHeader}
-                onPress={() => settings$.doubleTapToToggleHeader.toggle()}
+                label={<NouText className="font-medium">{t('settings.hideHeader')}</NouText>}
+                value={settings.autoHideHeader}
+                onPress={() => settings$.autoHideHeader.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>

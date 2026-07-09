@@ -1,0 +1,2 @@
+- Support double-tap page to toggle toolbar
+- Fix opening zoom options
