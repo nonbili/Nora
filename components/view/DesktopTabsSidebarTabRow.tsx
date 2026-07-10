@@ -1,6 +1,6 @@
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
 import React, { memo } from 'react'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Pressable, View } from 'react-native'

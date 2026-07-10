@@ -1,11 +1,11 @@
 import { Image } from 'expo-image'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons, { type MaterialIconsIconName } from '@react-native-vector-icons/material-icons'
 import { View, useColorScheme } from 'react-native'
 import { services } from './Services'
 import { getFaviconUrl, ResolvedSearchProvider } from '@/lib/search'
 import { colors } from '@/lib/colors'
 
-const SearchIcon = ({ name, size, color }: { name: keyof typeof MaterialIcons.glyphMap; size: number; color: string }) => (
+const SearchIcon = ({ name, size, color }: { name: MaterialIconsIconName; size: number; color: string }) => (
   <MaterialIcons name={name} size={size} color={color} />
 )
 

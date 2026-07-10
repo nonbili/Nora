@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import {
   DndContext,
   PointerSensor,

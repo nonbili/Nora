@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Alert, Keyboard, Platform, Pressable, ScrollView, Switch, TextInput, View, useWindowDimensions } from 'react-native'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'
 import { useValue } from '@legendapp/state/react'

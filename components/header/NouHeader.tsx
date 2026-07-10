@@ -1,6 +1,6 @@
 import { ActivityIndicator, Dimensions, View, Text, TouchableOpacity, LayoutChangeEvent, useColorScheme } from 'react-native'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
+import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons'
 import React, { useCallback, useEffect, useRef } from 'react'
 import Drawer from 'expo-router/drawer'
 import { useValue, useObserve } from '@legendapp/state/react'
@@ -212,7 +212,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     <Root
       pointerEvents={isWeb ? 'auto' : (headerShown ? 'auto' : 'none')}
       className={clsx(
-        'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between pl-2 py-1',
+        'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between px-2 py-1',
         isWeb && (sidebarCollapsed
           ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
           : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
@@ -357,11 +357,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
           <NouMenu
             triggerColor={headerControlColor}
             trigger={
-              isWeb
-                ? <MaterialButton name="more-vert" color={headerControlColor} />
-                : isIos
-                  ? 'ellipsis'
-                  : 'filled.MoreVert'
+              isIos
+                ? 'ellipsis'
+                : <MaterialButton name="more-vert" color={headerControlColor} />
             }
             items={[
               ...(isWeb

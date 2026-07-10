@@ -14,7 +14,7 @@ import { NouMenu } from '../menu/NouMenu'
 import { NouSwitch } from '../switch/NouSwitch'
 import { t } from 'i18next'
 import { MaterialButton } from '../button/IconButtons'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 
 import { ProfileManager } from '../profile/ProfileManager'
 import { BlocklistSection } from '../blocklist/BlocklistSection'

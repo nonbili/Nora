@@ -7,7 +7,7 @@ import { t } from 'i18next'
 import { useEffect, useRef, useState } from 'react'
 import { BaseCenterModal } from './BaseCenterModal'
 import { ui$ } from '@/states/ui'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 
 const profileColors = [
   '#6366f1', // indigo

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Keyboard, Platform, Pressable, ScrollView, TextInput, View, useWindowDimensions } from 'react-native'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import * as Clipboard from 'expo-clipboard'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'

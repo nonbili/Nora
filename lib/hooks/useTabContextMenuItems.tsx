@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useColorScheme } from 'react-native'
 import { t } from 'i18next'
 import { colors } from '@/lib/colors'

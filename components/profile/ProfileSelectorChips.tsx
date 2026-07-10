@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native'
 import { NouText } from '../NouText'
 import { t } from 'i18next'
 import { AUTO_PROFILE_ID } from '@/lib/site-profile'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 
 type ProfileSelectorChipsProps = {
   profiles: Profile[]

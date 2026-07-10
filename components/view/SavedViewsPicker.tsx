@@ -8,7 +8,7 @@ import { sortTabsByOrder, tabs$ } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
 import { clsx, nIf } from '@/lib/utils'
 import { openTabForActiveDesktopView } from '@/lib/desktop-view-actions'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { NouContextMenu, type ContextItem } from '../menu/NouContextMenu'
 import { t } from 'i18next'
 

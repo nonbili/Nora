@@ -1,54 +1,38 @@
 import { colors } from '@/lib/colors'
-import AntDesign from '@expo/vector-icons/AntDesign'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { ComponentProps } from 'react'
-import { useColorScheme } from 'react-native'
+import AntDesign from '@react-native-vector-icons/ant-design'
+import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
+import { type ComponentProps, type ElementType } from 'react'
+import { Pressable, useColorScheme } from 'react-native'
 
-export const AntButton = ({ color, ...props }: ComponentProps<typeof AntDesign.Button>) => {
+type IconButtonProps<T extends ElementType> = Omit<ComponentProps<T>, 'style' | 'onPress'> & Omit<ComponentProps<typeof Pressable>, 'children'>
+
+export const AntButton = ({ color, name, size = 24, style, ...props }: IconButtonProps<typeof AntDesign>) => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
-    <AntDesign.Button
-      backgroundColor="transparent"
-      underlayColor={isDark ? colors.underlay : '#e5e7eb'}
-      iconStyle={{ marginRight: 0 }}
-      style={{ padding: 10 }}
-      size={24}
-      {...props}
-      color={color ?? (isDark ? colors.icon : colors.iconLightStrong)}
-    />
+    <Pressable style={(state) => [{ padding: 10 }, typeof style === 'function' ? style(state) : style]} {...props}>
+      <AntDesign name={name} size={size} color={color ?? (isDark ? colors.icon : colors.iconLightStrong)} />
+    </Pressable>
   )
 }
 
-export const MaterialButton = ({ color, ...props }: ComponentProps<typeof MaterialIcons.Button>) => {
+export const MaterialButton = ({ color, name, size = 24, style, ...props }: IconButtonProps<typeof MaterialIcons>) => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
-    <MaterialIcons.Button
-      backgroundColor="transparent"
-      underlayColor={isDark ? colors.underlay : '#e5e7eb'}
-      iconStyle={{ marginRight: 0 }}
-      style={{ padding: 10 }}
-      size={24}
-      {...props}
-      color={color ?? (isDark ? colors.icon : colors.iconLightStrong)}
-    />
+    <Pressable style={(state) => [{ padding: 10 }, typeof style === 'function' ? style(state) : style]} {...props}>
+      <MaterialIcons name={name} size={size} color={color ?? (isDark ? colors.icon : colors.iconLightStrong)} />
+    </Pressable>
   )
 }
 
-export const MaterialCommunityButton = ({ color, ...props }: ComponentProps<typeof MaterialCommunityIcons.Button>) => {
+export const MaterialCommunityButton = ({ color, name, size = 24, style, ...props }: IconButtonProps<typeof MaterialCommunityIcons>) => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
-    <MaterialCommunityIcons.Button
-      backgroundColor="transparent"
-      underlayColor={isDark ? colors.underlay : '#e5e7eb'}
-      iconStyle={{ marginRight: 0 }}
-      style={{ padding: 10 }}
-      size={24}
-      {...props}
-      color={color ?? (isDark ? colors.icon : colors.iconLightStrong)}
-    />
+    <Pressable style={(state) => [{ padding: 10 }, typeof style === 'function' ? style(state) : style]} {...props}>
+      <MaterialCommunityIcons name={name} size={size} color={color ?? (isDark ? colors.icon : colors.iconLightStrong)} />
+    </Pressable>
   )
 }

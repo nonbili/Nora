@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { DndContext, PointerSensor, rectIntersection, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, rectSortingStrategy } from '@dnd-kit/sortable'
 import { useValue } from '@legendapp/state/react'

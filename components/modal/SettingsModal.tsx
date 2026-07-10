@@ -19,7 +19,7 @@ import {
 import { SettingsUserStylesContent } from './SettingsUserStylesContent'
 import { t } from 'i18next'
 import { SettingsModalTabSync } from './SettingsModalTabSync'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons, { type MaterialIconsIconName } from '@react-native-vector-icons/material-icons'
 import { auth$ } from '@/states/auth'
 import { capitalize } from 'es-toolkit'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -42,7 +42,7 @@ type SettingsPage = 'home' | 'browsing' | 'styles' | 'appearance' | 'services' |
 const SettingsNavRow: React.FC<{
   title: string
   description: string
-  icon: keyof typeof MaterialIcons.glyphMap
+  icon: MaterialIconsIconName
   meta?: string
   onPress: () => void
   isLast?: boolean
@@ -76,7 +76,7 @@ const SettingsExternalRow: React.FC<{
   title: string
   detail: string
   href: string
-  icon?: keyof typeof MaterialIcons.glyphMap
+  icon?: MaterialIconsIconName
   isLast?: boolean
 }> = ({ title, detail, href, icon = 'open-in-new', isLast = false }) => {
   const colorScheme = useColorScheme()

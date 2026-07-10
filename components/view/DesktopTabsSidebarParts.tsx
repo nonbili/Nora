@@ -1,5 +1,5 @@
 import React, { memo, type ReactNode } from 'react'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useDndContext, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Pressable, View, useColorScheme } from 'react-native'

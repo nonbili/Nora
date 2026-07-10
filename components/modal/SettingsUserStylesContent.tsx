@@ -1,5 +1,5 @@
 import { Platform, Pressable, Switch, View } from 'react-native'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useValue } from '@legendapp/state/react'
 import { t } from 'i18next'
 import { NouText } from '../NouText'
