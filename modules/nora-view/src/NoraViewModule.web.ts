@@ -2,6 +2,13 @@ import { registerWebModule, NativeModule } from 'expo'
 import { mainClient } from '@/desktop/src/renderer/ipc/main'
 
 class NoraViewModule extends NativeModule {
+  async translateText() {
+    throw new Error('Translation is available on mobile only')
+  }
+
+  async getTranslationSupportedLanguages() {
+    return []
+  }
   async clearProfileData(profile: string) {
     if (!window.electron?.ipcRenderer) {
       return

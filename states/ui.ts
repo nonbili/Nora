@@ -37,6 +37,13 @@ interface Store {
   activeCanGoBack: boolean
   webview: any
   hoverLinkUrl: string
+  translation: {
+    id: string
+    text: string
+    targetLanguage: string
+    x: number
+    y: number
+  } | null
 }
 
 export const ui$ = observable<Store>({
@@ -76,4 +83,5 @@ export const ui$ = observable<Store>({
   activeCanGoBack: false,
   webview: undefined,
   hoverLinkUrl: '',
+  translation: null,
 })

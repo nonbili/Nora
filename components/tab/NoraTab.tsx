@@ -191,6 +191,8 @@ export const NoraTab: React.FC<{
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
   const inspectable = useValue(settings$.inspectable)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
+  const translateOnTwoFingerTap = useValue(settings$.translateOnTwoFingerTap)
+  const translationTargetLanguage = useValue(settings$.translationTargetLanguage)
   const xDefaultHomeTimeline = useValue(settings$.xDefaultHomeTimeline)
   const theme = useValue(settings$.theme)
   const colorScheme = useColorScheme()
@@ -296,6 +298,7 @@ export const NoraTab: React.FC<{
       const settingsScript = `window.Nora?.setSettings?.(${JSON.stringify({
         doubleTapToToggleHeader: isAndroid && doubleTapToToggleHeader,
         videoEdgeLongPressTo2x,
+        translateOnTwoFingerTap: !isWeb && translateOnTwoFingerTap && Boolean(translationTargetLanguage),
         xDefaultHomeTimeline,
         cosmeticCss: getCosmeticCssForHost(currentHost),
       })})`
@@ -307,7 +310,7 @@ export const NoraTab: React.FC<{
         void executeWebviewJavaScriptQuietly(webview, userScriptRunner)
       }
     },
-    [doubleTapToToggleHeader, tab.url, videoEdgeLongPressTo2x, xDefaultHomeTimeline],
+    [doubleTapToToggleHeader, tab.url, videoEdgeLongPressTo2x, translateOnTwoFingerTap, translationTargetLanguage, xDefaultHomeTimeline],
   )
   const applyContentStateRef = useRef(applyContentState)
 
@@ -581,6 +584,9 @@ export const NoraTab: React.FC<{
       }
     }
     applyContentState(undefined, hasLoadedUrl ? url : undefined)
+    if (isActive && hasLoadedUrl) {
+      ui$.translation.set(null)
+    }
   }
 
   const onMessage = async (e: { nativeEvent: { payload: string | object } }) => {
@@ -621,6 +627,17 @@ export const NoraTab: React.FC<{
       case 'header-double-tap':
         if (isAndroid && doubleTapToToggleHeader) {
           ui$.headerShown.set(!ui$.headerShown.get())
+        }
+        break
+      case 'translate-block':
+        if (!isWeb && translateOnTwoFingerTap && translationTargetLanguage && typeof data?.text === 'string') {
+          ui$.translation.set({
+            id: String(data.id || Date.now()),
+            text: data.text,
+            targetLanguage: translationTargetLanguage,
+            x: Number(data.x) || 16,
+            y: Number(data.y) || 96,
+          })
         }
         break
       default:

@@ -45,4 +45,6 @@ android {
 dependencies {
   implementation "org.apache.tika:tika-core:3.2.3"
   implementation "androidx.webkit:webkit:1.13.0"
+  implementation "com.google.mlkit:translate:17.0.3"
+  implementation "com.google.mlkit:language-id:17.0.6"
 }

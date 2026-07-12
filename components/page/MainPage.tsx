@@ -23,6 +23,7 @@ import NoraViewModule from '@/modules/nora-view'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query/client'
 import { resolveI18nLanguageFromExpoLocale } from '@/lib/i18n'
+import { TranslationCard } from '@/components/translation/TranslationCard'
 
 export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const locales = useLocales()
@@ -70,6 +71,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <RenameGroupModal />
         <RenameViewModal />
         <ZoomModal />
+        {nIf(!isWeb, <TranslationCard />)}
         {nIf(
           !isWeb,
           <>

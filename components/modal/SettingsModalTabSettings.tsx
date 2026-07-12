@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Alert, Pressable, ScrollView, View, TextInput, useColorScheme } from 'react-native'
+import { Alert, Pressable, ScrollView, View, TextInput, useColorScheme, Platform } from 'react-native'
 import { NouButton } from '../button/NouButton'
 import { ui$ } from '@/states/ui'
 import { services } from '../service/Services'
@@ -13,6 +13,7 @@ import { Image } from 'expo-image'
 import { NouMenu } from '../menu/NouMenu'
 import { NouSwitch } from '../switch/NouSwitch'
 import { t } from 'i18next'
+import i18n from 'i18next'
 import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 
@@ -38,6 +39,7 @@ import { settingsUi, SettingsSurface, SettingsRow } from './SettingsPrimitives'
 import { useLocales } from 'expo-localization'
 import { resolveI18nLanguageFromExpoLocale, supportedI18nLanguages } from '@/lib/i18n'
 import { colors } from '@/lib/colors'
+import NoraViewModule from '@/modules/nora-view'
 
 const headerPositions = ['top', 'bottom'] as const
 const themes = [null, 'dark', 'light'] as const
@@ -88,6 +90,33 @@ const languageNativeNames: Record<string, string> = {
   vi: 'Tiếng Việt',
   zh_Hans: '简体中文',
   zh_Hant: '繁體中文',
+}
+const translationLanguageNames: Record<string, string> = {
+  af: 'Afrikaans', ar: 'Arabic', be: 'Belarusian', bg: 'Bulgarian', bn: 'Bengali', ca: 'Catalan', cs: 'Czech', cy: 'Welsh', da: 'Danish', de: 'German',
+  el: 'Greek', en: 'English', eo: 'Esperanto', es: 'Spanish', et: 'Estonian', fa: 'Persian', fi: 'Finnish', fr: 'French', ga: 'Irish', gl: 'Galician',
+  gu: 'Gujarati', he: 'Hebrew', hi: 'Hindi', hr: 'Croatian', ht: 'Haitian Creole', hu: 'Hungarian', id: 'Indonesian', is: 'Icelandic', it: 'Italian', ja: 'Japanese',
+  ka: 'Georgian', kn: 'Kannada', ko: 'Korean', lt: 'Lithuanian', lv: 'Latvian', mk: 'Macedonian', mr: 'Marathi', ms: 'Malay', mt: 'Maltese', nl: 'Dutch',
+  no: 'Norwegian', pl: 'Polish', pt: 'Portuguese', ro: 'Romanian', ru: 'Russian', sk: 'Slovak', sl: 'Slovenian', sq: 'Albanian', sv: 'Swedish', sw: 'Swahili',
+  ta: 'Tamil', te: 'Telugu', th: 'Thai', tl: 'Tagalog', tr: 'Turkish', uk: 'Ukrainian', ur: 'Urdu', vi: 'Vietnamese', zh: 'Chinese',
+}
+const supportsNativeTranslation = !isWeb && (!isIos || Number(Platform.Version) >= 18)
+const translationLanguageLabel = (language: string) => {
+  const normalized = language.replace('_', '-')
+  try {
+    const DisplayNames = Intl.DisplayNames
+    const displayName = DisplayNames ? new DisplayNames([i18n.language || 'en'], { type: 'language' }).of(normalized) : undefined
+    if (displayName && displayName !== normalized) return displayName
+  } catch {
+    // Use the stable fallback below on runtimes with incomplete Intl support.
+  }
+  return translationLanguageNames[normalized.toLowerCase()] || languageNativeNames[language.replace('-', '_')] || normalized
+}
+
+const findSupportedTranslationLanguage = (language: string | undefined, available: string[]) => {
+  if (!language) return undefined
+  const normalized = language.replace('_', '-').toLowerCase()
+  return available.find((candidate) => candidate.toLowerCase() === normalized)
+    || available.find((candidate) => candidate.split('-')[0].toLowerCase() === normalized.split('-')[0])
 }
 
 export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = ({ onFocusInput }) => {
@@ -283,6 +312,7 @@ export const SettingsAppearanceContent = () => {
   const isDark = colorScheme !== 'light'
   const locales = useLocales()
   const [deckTabWidthInput, setDeckTabWidthInput] = useState(settings.deckTabWidth.toString())
+  const [translationLanguages, setTranslationLanguages] = useState<string[]>([])
   const systemLanguage = resolveI18nLanguageFromExpoLocale(locales[0]) || 'en'
   const effectiveLanguage = settings.language || systemLanguage
   const isSystemLanguageSelected = settings.language == null
@@ -302,10 +332,40 @@ export const SettingsAppearanceContent = () => {
       metaLabel: settings.language === language ? '✓' : undefined,
     })),
   ]
+  const appTranslationLanguage = findSupportedTranslationLanguage(effectiveLanguage, translationLanguages)
+  const systemTranslationLanguage = findSupportedTranslationLanguage(locales[0]?.languageCode ?? undefined, translationLanguages)
+  const preferredTranslationLanguages = [
+    appTranslationLanguage ? { language: appTranslationLanguage, metaLabel: t('settings.translation.appLanguage') } : null,
+    systemTranslationLanguage && systemTranslationLanguage !== appTranslationLanguage
+      ? { language: systemTranslationLanguage, metaLabel: t('settings.translation.systemLanguage') }
+      : null,
+  ].filter((item): item is { language: string; metaLabel: string } => Boolean(item))
+  const translationLanguageMenuItems = [
+    ...preferredTranslationLanguages,
+    ...translationLanguages
+      .filter((language) => !preferredTranslationLanguages.some((item) => item.language === language))
+      .map((language) => ({ language, metaLabel: undefined })),
+  ]
 
   useEffect(() => {
     setDeckTabWidthInput(settings.deckTabWidth.toString())
   }, [settings.deckTabWidth])
+
+  useEffect(() => {
+    if (!supportsNativeTranslation) return
+    let active = true
+    void NoraViewModule.getTranslationSupportedLanguages()
+      .then((languages) => {
+        if (!active) return
+        const next = [...new Set(languages)].sort()
+        setTranslationLanguages(next)
+        if (settings$.translationTargetLanguage.get() && !next.includes(settings$.translationTargetLanguage.get()!)) {
+          settings$.assign({ translateOnTwoFingerTap: false, translationTargetLanguage: null })
+        }
+      })
+      .catch(() => active && setTranslationLanguages([]))
+    return () => { active = false }
+  }, [])
 
   const submitDeckTabWidth = () => {
     const parsed = parseInt(deckTabWidthInput, 10)
@@ -436,7 +496,7 @@ export const SettingsAppearanceContent = () => {
         {t('settings.language.label')}
       </NouText>
       <View className={surfaceCls}>
-        <View className={clsx('items-center flex-row justify-between', rowCls)}>
+        <View className={clsx('items-center flex-row justify-between', rowCls, supportsNativeTranslation && rowBorderCls)}>
           <View className="flex-1 pr-3">
             <NouText className="font-medium">{t('settings.language.label')}</NouText>
             <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
@@ -458,6 +518,48 @@ export const SettingsAppearanceContent = () => {
             items={languageMenuItems}
           />
         </View>
+        {supportsNativeTranslation ? (
+          <View className={clsx(rowCls, rowBorderCls)}>
+            <NouSwitch
+              label={
+                <View>
+                  <NouText className="font-medium">{t('settings.translation.enable')}</NouText>
+                  <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('settings.translation.hint')}</NouText>
+                </View>
+              }
+              value={settings.translateOnTwoFingerTap}
+              onPress={() => {
+                if (!settings.translationTargetLanguage) {
+                  showToast(t('settings.translation.chooseLanguage'))
+                  return
+                }
+                settings$.translateOnTwoFingerTap.toggle()
+              }}
+            />
+          </View>
+        ) : null}
+        {supportsNativeTranslation ? (
+          <View className={rowCls}>
+            <View className="flex-row items-center justify-between gap-3">
+              <View className="flex-1">
+                <NouText className="font-medium">{t('settings.translation.targetLanguage')}</NouText>
+                <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  {settings.translationTargetLanguage
+                    ? translationLanguageLabel(settings.translationTargetLanguage)
+                    : t('settings.translation.notSelected')}
+                </NouText>
+              </View>
+              <NouMenu
+                trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
+                items={translationLanguageMenuItems.map(({ language, metaLabel }) => ({
+                  label: translationLanguageLabel(language),
+                  metaLabel: settings.translationTargetLanguage === language ? '✓' : metaLabel,
+                  handler: () => settings$.translationTargetLanguage.set(language),
+                }))}
+              />
+            </View>
+          </View>
+        ) : null}
       </View>
 
       <NouText className="mt-8 mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500">

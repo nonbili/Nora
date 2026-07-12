@@ -1,5 +1,7 @@
 import ExpoModulesCore
 import WebKit
+import Translation
+import SwiftUI
 
 let VIEW_HOSTS = [
     "bsky.app",
@@ -70,6 +72,8 @@ let INTERNAL_SCHEMES: Set<String> = [
 
 public class NoraViewModule: Module {
   private var clipText = ""
+  private var translationCoordinator: AnyObject?
+  private var translationHost: UIViewController?
 
   public func definition() -> ModuleDefinition {
     Name("NoraView")
@@ -148,6 +152,25 @@ public class NoraViewModule: Module {
       return true
     }
 
+    AsyncFunction("translateText") { (text: String, targetLanguage: String, promise: Promise) in
+      guard #available(iOS 18.0, *) else {
+        promise.reject("translation_unavailable", "Translation requires iOS 18 or later")
+        return
+      }
+      Task { @MainActor in
+        let coordinator = self.translationCoordinatorForCurrentOS()
+        self.installTranslationHostIfNeeded(coordinator: coordinator)
+        coordinator.start(text: text, targetLanguage: targetLanguage, promise: promise)
+      }
+    }
+
+    AsyncFunction("getTranslationSupportedLanguages") { () async -> [String] in
+      guard #available(iOS 18.0, *) else {
+        return []
+      }
+      return await LanguageAvailability().supportedLanguages.map(\.minimalIdentifier)
+    }
+
     View(NoraView.self) {
       Prop("scriptOnStart") { (view: NoraView, script: String) in
         view.setScriptOnStart(script)
@@ -216,6 +239,34 @@ public class NoraViewModule: Module {
     }
   }
 
+  @available(iOS 18.0, *)
+  @MainActor
+  private func translationCoordinatorForCurrentOS() -> AppleTranslationCoordinator {
+    if let coordinator = translationCoordinator as? AppleTranslationCoordinator {
+      return coordinator
+    }
+    let coordinator = AppleTranslationCoordinator()
+    translationCoordinator = coordinator
+    return coordinator
+  }
+
+  @available(iOS 18.0, *)
+  @MainActor
+  private func installTranslationHostIfNeeded(coordinator: AppleTranslationCoordinator) {
+    guard translationHost == nil else { return }
+    guard let windowScene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first,
+          let root = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+      return
+    }
+    let host = UIHostingController(rootView: AppleTranslationTaskView(coordinator: coordinator))
+    host.view.backgroundColor = .clear
+    host.view.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
+    root.addChild(host)
+    root.view.addSubview(host.view)
+    host.didMove(toParent: root)
+    translationHost = host
+  }
+
   @objc
   private func onPasteboardChanged() {
     guard let text = UIPasteboard.general.string, !text.isEmpty else {
@@ -268,5 +319,45 @@ public class NoraViewModule: Module {
   required public init(appContext: AppContext) {
       super.init(appContext: appContext)
       NouController.shared.logFn = self.log
+  }
+}
+
+@available(iOS 18.0, *)
+@MainActor
+private final class AppleTranslationCoordinator: ObservableObject {
+  @Published var configuration: TranslationSession.Configuration?
+  private var text = ""
+  private var promise: Promise?
+
+  func start(text: String, targetLanguage: String, promise: Promise) {
+    self.promise?.reject("translation_cancelled", "A newer translation request replaced this one")
+    self.text = text
+    self.promise = promise
+    configuration = TranslationSession.Configuration(source: nil, target: Locale.Language(identifier: targetLanguage))
+  }
+
+  func translate(using session: TranslationSession) async {
+    guard let promise else { return }
+    do {
+      let response = try await session.translate(text)
+      promise.resolve(["text": response.targetText, "sourceLanguage": response.sourceLanguage.minimalIdentifier])
+    } catch {
+      promise.reject("translation_failed", error.localizedDescription)
+    }
+    self.promise = nil
+    configuration = nil
+  }
+}
+
+@available(iOS 18.0, *)
+private struct AppleTranslationTaskView: View {
+  @ObservedObject var coordinator: AppleTranslationCoordinator
+
+  var body: some View {
+    Color.clear
+      .frame(width: 1, height: 1)
+      .translationTask(coordinator.configuration) { session in
+        await coordinator.translate(using: session)
+      }
   }
 }
