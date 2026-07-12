@@ -163,6 +163,8 @@
       "loading": "Translating…",
       "copy": "Copy translation",
       "copySource": "Copy source",
+      "pin": "Pin translation",
+      "unpin": "Unpin translation",
       "failed": "Couldn’t translate this text",
       "unsupported": "This language pair is unavailable on this device"
     },
