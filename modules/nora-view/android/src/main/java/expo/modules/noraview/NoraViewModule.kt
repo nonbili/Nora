@@ -246,7 +246,9 @@ class NoraViewModule : Module() {
       )
       try {
         Tasks.await(translator.downloadModelIfNeeded())
-        val translated = Tasks.await(translator.translate(text))
+        val translated = text.lineSequence().joinToString("\n") { line ->
+          if (line.isBlank()) line else Tasks.await(translator.translate(line))
+        }
         mapOf("text" to translated, "sourceLanguage" to source)
       } finally {
         translator.close()

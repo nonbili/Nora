@@ -191,7 +191,7 @@ export const NoraTab: React.FC<{
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
   const inspectable = useValue(settings$.inspectable)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
-  const translateOnTwoFingerTap = useValue(settings$.translateOnTwoFingerTap)
+  const translateOnDoubleTap = useValue(settings$.translateOnDoubleTap)
   const translationTargetLanguage = useValue(settings$.translationTargetLanguage)
   const xDefaultHomeTimeline = useValue(settings$.xDefaultHomeTimeline)
   const theme = useValue(settings$.theme)
@@ -298,7 +298,7 @@ export const NoraTab: React.FC<{
       const settingsScript = `window.Nora?.setSettings?.(${JSON.stringify({
         doubleTapToToggleHeader: isAndroid && doubleTapToToggleHeader,
         videoEdgeLongPressTo2x,
-        translateOnTwoFingerTap: !isWeb && translateOnTwoFingerTap && Boolean(translationTargetLanguage),
+        translateOnDoubleTap: !isWeb && translateOnDoubleTap && Boolean(translationTargetLanguage),
         xDefaultHomeTimeline,
         cosmeticCss: getCosmeticCssForHost(currentHost),
       })})`
@@ -310,7 +310,7 @@ export const NoraTab: React.FC<{
         void executeWebviewJavaScriptQuietly(webview, userScriptRunner)
       }
     },
-    [doubleTapToToggleHeader, tab.url, videoEdgeLongPressTo2x, translateOnTwoFingerTap, translationTargetLanguage, xDefaultHomeTimeline],
+    [doubleTapToToggleHeader, tab.url, videoEdgeLongPressTo2x, translateOnDoubleTap, translationTargetLanguage, xDefaultHomeTimeline],
   )
   const applyContentStateRef = useRef(applyContentState)
 
@@ -630,7 +630,7 @@ export const NoraTab: React.FC<{
         }
         break
       case 'translate-block':
-        if (!isWeb && translateOnTwoFingerTap && translationTargetLanguage && typeof data?.text === 'string') {
+        if (!isWeb && translateOnDoubleTap && translationTargetLanguage && typeof data?.text === 'string') {
           ui$.translation.set({
             id: String(data.id || Date.now()),
             text: data.text,

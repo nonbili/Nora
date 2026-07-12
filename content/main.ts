@@ -37,8 +37,7 @@ async function initObserver() {
 
   injectCSS()
   injectScript()
-  installHeaderDoubleTapToggle()
-  installBlockTranslationGesture()
+  installDoubleTapGestures()
 
   const viewport = document.querySelector('meta[name=viewport]')
   if (viewport) {
@@ -50,21 +49,70 @@ async function initObserver() {
   }
 }
 
-function installBlockTranslationGesture() {
-  const root = window as Window & typeof globalThis & { __noraBlockTranslationInit?: boolean }
-  if (root.__noraBlockTranslationInit) return
-  root.__noraBlockTranslationInit = true
+function installDoubleTapGestures() {
+  const root = window as Window & typeof globalThis & { __noraDoubleTapGesturesInit?: boolean }
+  if (root.__noraDoubleTapGesturesInit) return
+  root.__noraDoubleTapGesturesInit = true
 
-  let touchStartAt = 0
-  let touchPoints: { x: number; y: number }[] = []
-  let moved = false
+  let lastTapAt = 0
+  let lastTapX = 0
+  let lastTapY = 0
+  let multiTouchSequence = false
 
-  const textOf = (element: Element) => (element as HTMLElement).innerText?.replace(/\s+/g, ' ').trim() || ''
+  const textOf = (element: Element) => {
+    const parts: string[] = []
+    const appendBreak = () => {
+      if (parts.length && !parts.at(-1)?.endsWith('\n')) parts.push('\n')
+    }
+    const appendParagraphBreak = () => {
+      appendBreak()
+      if (parts.length && !parts.at(-1)?.endsWith('\n\n')) parts.push('\n')
+    }
+    const visit = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const value = node.textContent?.replace(/\s+/g, ' ').trim()
+        if (value) parts.push(value, ' ')
+        return
+      }
+      if (!(node instanceof Element)) return
+      if (node.tagName === 'BR') {
+        appendBreak()
+        return
+      }
+      const isParagraph = /^(P|LI|BLOCKQUOTE|H[1-6])$/.test(node.tagName)
+      const isTextBlock = isParagraph
+        || (node.tagName === 'DIV' && Array.from(node.childNodes).some((child) => child.nodeType === Node.TEXT_NODE && child.textContent?.trim()))
+      if (isParagraph) appendParagraphBreak()
+      else if (isTextBlock) appendBreak()
+      node.childNodes.forEach(visit)
+      if (isParagraph) appendParagraphBreak()
+      else if (isTextBlock) appendBreak()
+    }
+    visit(element)
+    return parts.join('')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  }
   const isIgnored = (target: Element) => Boolean(target.closest('input, textarea, select, button, a, video, audio, [contenteditable="true"], [role="button"]'))
+  const isTextAtPoint = (x: number, y: number) => {
+    const range = document.caretRangeFromPoint?.(x, y)
+    if (!range || range.startContainer.nodeType !== Node.TEXT_NODE) return false
+    const text = range.startContainer.textContent || ''
+    if (!text.trim()) return false
+    const offset = Math.min(range.startOffset, Math.max(0, text.length - 1))
+    const glyphRange = document.createRange()
+    glyphRange.setStart(range.startContainer, offset)
+    glyphRange.setEnd(range.startContainer, Math.min(text.length, offset + 1))
+    const rect = glyphRange.getBoundingClientRect()
+    return x >= rect.left - 4 && x <= rect.right + 4 && y >= rect.top - 8 && y <= rect.bottom + 8
+  }
   const getBlock = (target: Element) => {
     const post = target.closest('article, [role="article"], [data-testid*="tweet" i], [data-testid*="comment" i], [data-testid*="post" i]')
     const semantic = target.closest('p, blockquote, li, [role="paragraph"], h1, h2, h3, h4, h5, h6')
-    const candidate = post || semantic || target.closest('div')
+    const candidate = post || semantic
     if (!candidate) return null
     const text = textOf(candidate)
     if (text.length < 2 || text.length > 12000) return null
@@ -72,83 +120,38 @@ function installBlockTranslationGesture() {
   }
 
   document.addEventListener('touchstart', (event) => {
-    if (!window.Nora?.getSettings?.().translateOnTwoFingerTap || event.touches.length !== 2) return
-    touchStartAt = Date.now()
-    touchPoints = Array.from(event.touches, (touch) => ({ x: touch.clientX, y: touch.clientY }))
-    moved = false
-    event.preventDefault()
-  }, { capture: true, passive: false })
-
-  document.addEventListener('touchmove', (event) => {
-    if (!touchStartAt) return
-    const current = Array.from(event.touches)
-    moved ||= current.length !== 2 || current.some((touch, index) => Math.hypot(touch.clientX - touchPoints[index].x, touch.clientY - touchPoints[index].y) > 24)
-    event.preventDefault()
-  }, { capture: true, passive: false })
+    if (event.touches.length > 1) multiTouchSequence = true
+  }, { passive: true, capture: true })
 
   document.addEventListener('touchend', (event) => {
-    if (!touchStartAt || event.touches.length > 0) return
-    const isTap = !moved && Date.now() - touchStartAt <= 450
-    const points = touchPoints
-    touchStartAt = 0
-    touchPoints = []
-    if (!isTap || points.length !== 2) return
-    event.preventDefault()
-    const x = (points[0].x + points[1].x) / 2
-    const y = (points[0].y + points[1].y) / 2
-    const target = document.elementFromPoint(x, y)
+    if (multiTouchSequence) {
+      if (event.touches.length === 0) multiTouchSequence = false
+      return
+    }
+    if (event.changedTouches.length !== 1) return
+    const touch = event.changedTouches[0]
+    const now = Date.now()
+    const dx = touch.clientX - lastTapX
+    const dy = touch.clientY - lastTapY
+    const isDoubleTap = now - lastTapAt <= 300 && dx * dx + dy * dy <= 48 * 48
+    lastTapAt = now
+    lastTapX = touch.clientX
+    lastTapY = touch.clientY
+    if (!isDoubleTap) return
+    lastTapAt = 0
+
+    const target = document.elementFromPoint(touch.clientX, touch.clientY)
     if (!target || isIgnored(target)) return
-    const block = getBlock(target)
-    if (!block) return
-    emit('translate-block', { id: `${Date.now()}-${Math.random()}`, text: block.text, x: block.rect.left, y: block.rect.bottom })
+    const settings = window.Nora?.getSettings?.()
+    const block = settings?.translateOnDoubleTap && isTextAtPoint(touch.clientX, touch.clientY) ? getBlock(target) : null
+    if (block) {
+      event.preventDefault()
+      emit('translate-block', { id: `${Date.now()}-${Math.random()}`, text: block.text, x: block.rect.left, y: block.rect.bottom })
+      return
+    }
+    if (settings?.doubleTapToToggleHeader) {
+      event.preventDefault()
+      emit('header-double-tap')
+    }
   }, { capture: true, passive: false })
-}
-
-function installHeaderDoubleTapToggle() {
-  let lastTapAt = 0
-  let lastTapX = 0
-  let lastTapY = 0
-  let multiTouchSequence = false
-
-  document.addEventListener(
-    'touchstart',
-    (event) => {
-      if (event.touches.length > 1) multiTouchSequence = true
-    },
-    { passive: true, capture: true },
-  )
-
-  document.addEventListener(
-    'touchend',
-    (event) => {
-      if (multiTouchSequence) {
-        if (event.touches.length === 0) multiTouchSequence = false
-        return
-      }
-      if (!window.Nora?.getSettings?.().doubleTapToToggleHeader || event.changedTouches.length !== 1) {
-        return
-      }
-
-      const target = event.target
-      if (target instanceof Element && target.closest('input, textarea, select, button, a')) {
-        return
-      }
-
-      const touch = event.changedTouches[0]
-      const now = Date.now()
-      const dx = touch.clientX - lastTapX
-      const dy = touch.clientY - lastTapY
-      const isDoubleTap = now - lastTapAt <= 300 && dx * dx + dy * dy <= 48 * 48
-
-      lastTapAt = now
-      lastTapX = touch.clientX
-      lastTapY = touch.clientY
-
-      if (isDoubleTap) {
-        lastTapAt = 0
-        emit('header-double-tap')
-      }
-    },
-    { passive: true, capture: true },
-  )
 }

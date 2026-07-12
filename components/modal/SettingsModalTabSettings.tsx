@@ -344,6 +344,7 @@ export const SettingsAppearanceContent = () => {
     ...preferredTranslationLanguages,
     ...translationLanguages
       .filter((language) => !preferredTranslationLanguages.some((item) => item.language === language))
+      .sort((a, b) => translationLanguageLabel(a).localeCompare(translationLanguageLabel(b), i18n.language || 'en'))
       .map((language) => ({ language, metaLabel: undefined })),
   ]
 
@@ -357,10 +358,10 @@ export const SettingsAppearanceContent = () => {
     void NoraViewModule.getTranslationSupportedLanguages()
       .then((languages) => {
         if (!active) return
-        const next = [...new Set(languages)].sort()
+        const next = [...new Set(languages)]
         setTranslationLanguages(next)
         if (settings$.translationTargetLanguage.get() && !next.includes(settings$.translationTargetLanguage.get()!)) {
-          settings$.assign({ translateOnTwoFingerTap: false, translationTargetLanguage: null })
+          settings$.assign({ translateOnDoubleTap: false, translationTargetLanguage: null })
         }
       })
       .catch(() => active && setTranslationLanguages([]))
@@ -527,13 +528,13 @@ export const SettingsAppearanceContent = () => {
                   <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('settings.translation.hint')}</NouText>
                 </View>
               }
-              value={settings.translateOnTwoFingerTap}
+              value={settings.translateOnDoubleTap}
               onPress={() => {
                 if (!settings.translationTargetLanguage) {
                   showToast(t('settings.translation.chooseLanguage'))
                   return
                 }
-                settings$.translateOnTwoFingerTap.toggle()
+                settings$.translateOnDoubleTap.toggle()
               }}
             />
           </View>

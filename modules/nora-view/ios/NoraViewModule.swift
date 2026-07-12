@@ -339,13 +339,32 @@ private final class AppleTranslationCoordinator: ObservableObject {
   func translate(using session: TranslationSession) async {
     guard let promise else { return }
     do {
-      let response = try await session.translate(text)
-      promise.resolve(["text": response.targetText, "sourceLanguage": response.sourceLanguage.minimalIdentifier])
+      var sourceLanguage = ""
+      let translated = try await text.split(separator: "\n", omittingEmptySubsequences: false)
+        .asyncMap { line in
+          guard !line.trimmingCharacters(in: .whitespaces).isEmpty else { return "" }
+          let response = try await session.translate(String(line))
+          sourceLanguage = response.sourceLanguage.minimalIdentifier
+          return response.targetText
+        }
+        .joined(separator: "\n")
+      promise.resolve(["text": translated, "sourceLanguage": sourceLanguage])
     } catch {
       promise.reject("translation_failed", error.localizedDescription)
     }
     self.promise = nil
     configuration = nil
+  }
+}
+
+@available(iOS 18.0, *)
+private extension Sequence {
+  func asyncMap<T>(_ transform: (Element) async throws -> T) async throws -> [T] {
+    var results: [T] = []
+    for element in self {
+      try await results.append(transform(element))
+    }
+    return results
   }
 }
 

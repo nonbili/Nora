@@ -46,7 +46,7 @@ export interface Settings {
   allowHttpWebsite: boolean
   inspectable: boolean
   videoEdgeLongPressTo2x: boolean
-  translateOnTwoFingerTap: boolean
+  translateOnDoubleTap: boolean
   translationTargetLanguage: string | null
   doubleBackToExitApp: boolean
   mentionNotificationsEnabled: boolean
@@ -113,8 +113,8 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.videoEdgeLongPressTo2x !== 'boolean') {
     data.videoEdgeLongPressTo2x = true
   }
-  if (typeof data.translateOnTwoFingerTap !== 'boolean') {
-    data.translateOnTwoFingerTap = (data as any).translateOnDoubleTap === true
+  if (typeof data.translateOnDoubleTap !== 'boolean') {
+    data.translateOnDoubleTap = (data as any).translateOnTwoFingerTap === true
   }
   if (typeof data.translationTargetLanguage !== 'string' || !data.translationTargetLanguage.trim()) {
     data.translationTargetLanguage = null
@@ -187,7 +187,7 @@ export const settings$: Observable<Store> = observable<Store>({
   allowHttpWebsite: true,
   inspectable: false,
   videoEdgeLongPressTo2x: true,
-  translateOnTwoFingerTap: false,
+  translateOnDoubleTap: false,
   translationTargetLanguage: null,
   doubleBackToExitApp: false,
   mentionNotificationsEnabled: false,

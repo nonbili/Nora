@@ -1,15 +1,17 @@
 import * as Clipboard from 'expo-clipboard'
 import { useValue } from '@legendapp/state/react'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Dimensions, Modal, Pressable, View } from 'react-native'
+import { ActivityIndicator, Dimensions, Modal, Pressable, ScrollView, View } from 'react-native'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import NoraViewModule from '@/modules/nora-view'
 import { ui$ } from '@/states/ui'
 import { NouText } from '@/components/NouText'
 import { t } from 'i18next'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const TranslationCard = () => {
   const request = useValue(ui$.translation)
+  const insets = useSafeAreaInsets()
   const [result, setResult] = useState<{ text: string; sourceLanguage?: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,17 +39,19 @@ export const TranslationCard = () => {
 
   if (!request) return null
   const { height, width } = Dimensions.get('window')
-  const top = Math.min(Math.max(request.y + 8, 56), height - 260)
+  const maxCardHeight = Math.min(360, height - insets.top - insets.bottom - 24)
+  const top = Math.min(Math.max(request.y + 8, insets.top + 12), height - insets.bottom - maxCardHeight - 12)
   const left = Math.min(Math.max(request.x, 12), Math.max(12, width - 332))
   const close = () => ui$.translation.set(null)
+  const translatedParagraphs = result?.text.split(/\n{2,}/).filter(Boolean) || []
 
   return (
     <Modal transparent visible animationType="fade" onRequestClose={close}>
-      <Pressable className="flex-1" onPress={close}>
-        <Pressable
+      <View className="flex-1">
+        <Pressable className="absolute inset-0" onPress={close} />
+        <View
           className="absolute w-80 rounded-2xl border border-zinc-300 bg-zinc-50 p-4 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
-          style={{ top, left }}
-          onPress={(event) => event.stopPropagation()}
+          style={{ top, left, maxHeight: maxCardHeight }}
         >
           <View className="flex-row items-center justify-between gap-2">
             <NouText className="text-sm font-semibold">{result?.sourceLanguage ? `${result.sourceLanguage} → ${request.targetLanguage}` : t('settings.translation.loading')}</NouText>
@@ -55,17 +59,40 @@ export const TranslationCard = () => {
               <MaterialIcons name="close" size={20} color="#71717a" />
             </Pressable>
           </View>
-          {result ? <NouText className="mt-3 text-base leading-6">{result.text}</NouText> : error ? <NouText className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</NouText> : <ActivityIndicator className="mt-5 mb-2" />}
           {result ? (
-            <Pressable
-              className="mt-4 self-start rounded-full bg-indigo-600 px-3 py-2"
-              onPress={() => void Clipboard.setStringAsync(result.text)}
+            <ScrollView
+              className="mt-3"
+              style={{ maxHeight: maxCardHeight - 116, marginRight: -16 }}
+              contentContainerStyle={{ paddingRight: 16 }}
+              nestedScrollEnabled
+              persistentScrollbar
+              showsVerticalScrollIndicator
             >
-              <NouText className="text-xs font-semibold text-white">{t('settings.translation.copy')}</NouText>
-            </Pressable>
+              {translatedParagraphs.map((paragraph, index) => (
+                <NouText key={`${index}-${paragraph.slice(0, 24)}`} className={index < translatedParagraphs.length - 1 ? 'mb-3 text-base leading-6' : 'text-base leading-6'}>
+                  {paragraph}
+                </NouText>
+              ))}
+            </ScrollView>
+          ) : error ? <NouText className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</NouText> : <ActivityIndicator className="mt-5 mb-2" />}
+          {result ? (
+            <View className="mt-4 flex-row items-center justify-between gap-2">
+              <Pressable
+                className="rounded-full border border-zinc-300 px-3 py-2 dark:border-zinc-700"
+                onPress={() => void Clipboard.setStringAsync(request.text)}
+              >
+                <NouText className="text-xs font-semibold">{t('settings.translation.copySource')}</NouText>
+              </Pressable>
+              <Pressable
+                className="rounded-full border border-zinc-300 px-3 py-2 dark:border-zinc-700"
+                onPress={() => void Clipboard.setStringAsync(result.text)}
+              >
+                <NouText className="text-xs font-semibold">{t('settings.translation.copy')}</NouText>
+              </Pressable>
+            </View>
           ) : null}
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   )
 }
