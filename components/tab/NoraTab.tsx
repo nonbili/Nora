@@ -18,6 +18,7 @@ import { getUserAgent } from '@/lib/useragent'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
+import { useTabAnimation } from './tab-animation'
 import { handleShortcuts } from '@/desktop/src/renderer/lib/shortcuts'
 import { t } from 'i18next'
 import { getProfileColor } from '@/lib/profile'
@@ -206,13 +207,12 @@ export const NoraTab: React.FC<{
   const headerPosition = useValue(settings$.headerPosition)
 
   const hideableHeader = autoHideHeader || hideToolbarWhenScrolled || (isAndroid && doubleTapToToggleHeader)
-  const nativeHeaderInset = !isWeb && hideableHeader && headerShown ? headerHeight : 0
-  const headerInsetStyle = !isWeb
-    ? {
-        marginTop: headerPosition === 'top' ? nativeHeaderInset : 0,
-        marginBottom: headerPosition === 'bottom' ? nativeHeaderInset : 0,
-      }
-    : null
+  const { Root: TabRoot, style: tabAnimationStyle } = useTabAnimation({
+    headerHeight,
+    headerShown,
+    hideableHeader,
+    headerPosition,
+  })
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag | null>(null)
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
@@ -765,7 +765,7 @@ export const NoraTab: React.FC<{
   }
 
   return (
-    <View
+    <TabRoot
       pointerEvents={isActive ? 'auto' : 'none'}
       style={[
         {
@@ -777,7 +777,7 @@ export const NoraTab: React.FC<{
           opacity: isActive ? 1 : 0,
           zIndex: isActive ? 1 : 0,
         },
-        headerInsetStyle,
+        tabAnimationStyle,
       ]}
     >
       <NoraView
@@ -800,6 +800,6 @@ export const NoraTab: React.FC<{
         textZoom={resolvedZoom}
       />
       {nIf(!tab.url && isActive, <NavModalContent index={index} />)}
-    </View>
+    </TabRoot>
   )
 }
