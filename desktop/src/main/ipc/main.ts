@@ -61,6 +61,12 @@ const interfaces = {
   downloadVideo: (url: string) => {
     openDownloadWindow(url)
   },
+  getCookies: async (profile: string, url: string) => {
+    const targetProfile = profile || 'default'
+    const ses = session.fromPartition(`persist:${targetProfile}`)
+    const cookies = await ses.cookies.get({ url })
+    return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ')
+  },
   setCookie: async (profile: string, url: string, cookie: string) => {
     const targetProfile = profile || 'default'
     const targetUrl = new URL(url)

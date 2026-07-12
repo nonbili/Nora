@@ -19,8 +19,6 @@ import { NouText } from '../NouText'
 import type { SharedValue } from 'react-native-reanimated'
 import NoraViewModule from '@/modules/nora-view'
 import { share } from '@/lib/share'
-import { clearHostData } from '@/lib/profile-data'
-import { confirmDestructiveAction } from '@/lib/confirm'
 import { isDirectlyDownloadable } from '@/content/download'
 import { t } from 'i18next'
 import { bookmarks$ } from '@/states/bookmarks'
@@ -155,25 +153,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
       })
       showToast(t('toast.pinned'))
     }
-  }
-
-  const clearSiteData = () => {
-    if (!hostname) {
-      return
-    }
-    confirmDestructiveAction(
-      t('menus.clearSiteData'),
-      t('menus.clearSiteDataConfirm', { host: hostname }),
-      t('menus.clearSiteData'),
-      () => {
-        void clearHostData(hostname, currentTab?.profile || 'default')
-          .then(() => {
-            showToast(t('toast.siteDataCleared'))
-            reloadPage()
-          })
-          .catch(() => showToast(t('toast.siteDataClearFailed')))
-      },
-    )
   }
 
   const editTabUrl = () => {
@@ -435,27 +414,13 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       systemImage: 'square.and.arrow.up',
                       handler: () => (currentTab ? share(currentTab.url) : {}),
                     },
-                    ...(hostname
-                      ? [
-                          {
-                            label: t('menus.clearSiteData'),
-                            icon: <MaterialIcons name="delete-sweep" size={18} color={headerControlColor} />,
-                            systemImage: 'trash',
-                            handler: clearSiteData,
-                          },
-                        ]
-                      : []),
                   ]),
-              ...(isIos
-                ? []
-                : [
-                    {
-                      label: t('menus.tools'),
-                      icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
-                      systemImage: 'wrench.and.screwdriver',
-                      handler: () => ui$.toolsModalOpen.set(true),
-                    },
-                  ]),
+              {
+                label: t('menus.tools'),
+                icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
+                systemImage: 'wrench.and.screwdriver',
+                handler: () => ui$.toolsModalOpen.set(true),
+              },
               {
                 label: t('settings.label'),
                 icon: <MaterialIcons name="settings" size={18} color={headerControlColor} />,

@@ -92,7 +92,13 @@
   },
   "modals": {
     "downloadVideo": "Download video",
-    "downloadOnCobalt": "Download video on cobalt.tools"
+    "downloadOnCobalt": "Download video on cobalt.tools",
+    "downloadTab": "Download",
+    "cookiesTab": "Site Data",
+    "exportCookies": "Export cookies",
+    "exportCookiesHint": "Export cookies for the current tab and its profile as a cookies.txt file.",
+    "exportCookiesButton": "Export cookies.txt",
+    "clearSiteDataHint": "Clear cookies and browsing data for the current site and profile."
   },
   "native": {
     "menu_saveImage": "Save image",
@@ -392,6 +398,10 @@
     "blocklistUpdated": "Blocklist updated",
     "profileDataCleared": "Profile data cleared",
     "profileDataClearFailed": "Failed to clear profile data",
+    "cookieExported": "Exported cookies.txt",
+    "cookieExportEmpty": "No cookies found for this site",
+    "cookieExportFailed": "Failed to export cookies.txt",
+    "cookieExportOpenPage": "Open a page before exporting cookies",
     "siteDataCleared": "Site data cleared",
     "siteDataClearFailed": "Failed to clear site data",
     "pressBackAgainToExit": "Press back again to exit"
