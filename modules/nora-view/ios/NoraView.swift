@@ -4,6 +4,13 @@ import Network
 
 let uaMac = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
 
+func isMessengerUrl(_ url: URL) -> Bool {
+  let path = url.path
+  return url.scheme == "https" &&
+    (url.host == "www.facebook.com" || url.host == "m.facebook.com") &&
+    (path == "/messages" || path.hasPrefix("/messages/"))
+}
+
 class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIGestureRecognizerDelegate {
   let onLoad = EventDispatcher()
   let onMessage = EventDispatcher()
@@ -314,9 +321,13 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   }
 
   func load(url: String) {
-      guard let u = URL(string: url) else { return }
+      var targetUrl = url
+      if let sourceUrl = URL(string: url), isMessengerUrl(sourceUrl), sourceUrl.host == "m.facebook.com" {
+          targetUrl = url.replacingOccurrences(of: "https://m.facebook.com", with: "https://www.facebook.com", options: .anchored)
+      }
+      guard let u = URL(string: targetUrl) else { return }
       let urlString = u.absoluteString
-      if urlString.hasPrefix("https://www.facebook.com/messages/") ||
+      if isMessengerUrl(u) ||
         urlString.hasPrefix("https://www.tiktok.com") {
           webView.customUserAgent = uaMac
       } else {
@@ -375,6 +386,12 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
           emitCustomEvent(type: "new-tab", data: ["url": urlString])
           dismissPopup()
           decisionHandler(.cancel)
+          return
+      }
+
+      if isMainFrame && isMessengerUrl(url) && (url.host == "m.facebook.com" || webView.customUserAgent != uaMac) {
+          decisionHandler(.cancel)
+          load(url: urlString)
           return
       }
 

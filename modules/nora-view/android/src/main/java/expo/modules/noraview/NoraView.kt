@@ -136,10 +136,21 @@ fun redirectFacebookUrl(url: String): String? {
 }
 
 fun isMessengerUrl(url: String): Boolean {
-  return url.startsWith("https://www.facebook.com/messages/") || url.startsWith("https://m.facebook.com/messages/")
+  val uri = Uri.parse(url)
+  val path = uri.path ?: return false
+  return uri.scheme == "https" &&
+    (uri.host == "www.facebook.com" || uri.host == "m.facebook.com") &&
+    (path == "/messages" || path.startsWith("/messages/"))
 }
 
-fun shouldRedirectFacebookToMobile(currentUrl: String, targetUrl: String): Boolean {
+fun desktopMessengerUrl(url: String): String {
+  return url.replaceFirst("https://m.facebook.com", "https://www.facebook.com")
+}
+
+fun shouldRedirectFacebookToMobile(currentUrl: String, targetUrl: String, desktopMode: Boolean): Boolean {
+  if (desktopMode) {
+    return false
+  }
   if (!targetUrl.startsWith("https://www.facebook.com/")) {
     return false
   }
@@ -525,11 +536,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               load(url.replace("www.reddit.com", "old.reddit.com"))
               return
             }
-            if (url.startsWith("https://m.facebook.com/messages/")) {
-              load("https://www.facebook.com/messages/")
+            if (isMessengerUrl(url) && (Uri.parse(url).host == "m.facebook.com" || view.settings.userAgentString != uaLinux)) {
+              load(desktopMessengerUrl(url))
               return
             }
-            if (shouldRedirectFacebookToMobile(pageUrl, url)) {
+            if (shouldRedirectFacebookToMobile(pageUrl, url, userAgent?.contains(" Mobile ") == false)) {
               load(url.replace("www", "m"))
               return
             }
@@ -574,7 +585,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               load(redirectedUrl)
               return true
             }
-            if (shouldRedirectFacebookToMobile(pageUrl, url)) {
+            if (isMessengerUrl(url) && (Uri.parse(url).host == "m.facebook.com" || view.settings.userAgentString != uaLinux)) {
+              load(desktopMessengerUrl(url))
+              return true
+            }
+            if (shouldRedirectFacebookToMobile(pageUrl, url, userAgent?.contains(" Mobile ") == false)) {
               load(url.replace("www", "m"))
               return true
             }
@@ -881,7 +896,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
     pageUrl = url
     var ua = userAgent
-    if (url.startsWith("https://www.facebook.com/messages/") ||
+    if (isMessengerUrl(url) ||
       url.startsWith("https://www.tiktok.com")
     ) {
       ua = uaLinux

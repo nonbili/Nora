@@ -39,7 +39,11 @@ const hideFacebookDesktopAds = (element: HTMLElement) => {
     return
   }
 
-  const container = element.closest('[role="article"], div[data-pagelet^="FeedUnit"], div[role="feed"] > div')
+  if (typeof element.closest !== 'function') {
+    return
+  }
+
+  const container = element.closest('[role="article"], div[data-pagelet^="FeedUnit"]')
   if (!container || !(container instanceof HTMLElement) || container.dataset.noraHiddenAd === '1') {
     return
   }

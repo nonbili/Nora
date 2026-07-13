@@ -95,6 +95,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const panStart = useSharedValueSafe(0)
   let hostname = '',
     host = '',
+    pathname = '',
     canDownload = false
 
   const defaultZoom = useValue(settings$.defaultZoom)
@@ -105,11 +106,13 @@ export const NouHeader: React.FC<{}> = ({}) => {
       const url = new URL(currentTab.url)
       hostname = url.hostname
       host = url.host
+      pathname = url.pathname
       canDownload = isDirectlyDownloadable(currentTab.url)
     } catch (e) {}
   }
 
-  const hideDesktopSiteToggle = hostname.endsWith('.facebook.com') || hostname.endsWith('.tiktok.com')
+  const isFacebookMessenger = hostname.endsWith('.facebook.com') && (pathname === '/messages' || pathname.startsWith('/messages/'))
+  const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com')
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
@@ -390,8 +393,24 @@ export const NouHeader: React.FC<{}> = ({}) => {
                               </View>
                             ),
                             handler: () => {
+                              const desktopMode = !currentTab?.desktopMode
                               tabs$.tabs[activeTabIndex].desktopMode.toggle()
-                              void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+                              setTimeout(() => {
+                                if (currentTab?.url) {
+                                  const url = new URL(currentTab.url)
+                                  if (url.hostname === 'm.facebook.com' && desktopMode) {
+                                    url.hostname = 'www.facebook.com'
+                                    webview?.loadUrl?.(url.toString())
+                                    return
+                                  }
+                                  if (url.hostname === 'www.facebook.com' && !desktopMode) {
+                                    url.hostname = 'm.facebook.com'
+                                    webview?.loadUrl?.(url.toString())
+                                    return
+                                  }
+                                }
+                                void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+                              }, 0)
                             },
                           },
                         ]),
