@@ -1,3 +1,5 @@
+require "shellwords"
+
 default_platform(:ios)
 
 platform :ios do
@@ -34,16 +36,47 @@ platform :ios do
     release_notes = File.exist?(release_notes_path) ? File.read(release_notes_path).strip : nil
 
     if build_before_upload
-      build_app(
-        workspace: File.expand_path("../../ios/Nora.xcworkspace", __dir__),
-        scheme: ENV["IOS_SCHEME"] || "Nora",
-        configuration: ENV["IOS_CONFIGURATION"] || "Release",
-        export_method: ENV["IOS_EXPORT_METHOD"] || "app-store",
-        output_directory: File.dirname(ipa_path),
-        output_name: File.basename(ipa_path),
-        clean: true,
-        xcargs: ENV["APP_STORE_DEVELOPMENT_TEAM"].to_s.empty? ? nil : "DEVELOPMENT_TEAM=#{ENV['APP_STORE_DEVELOPMENT_TEAM']}"
-      )
+      provisioning_args = ["-allowProvisioningUpdates"]
+      key_filepath = ENV["APP_STORE_KEY_FILEPATH"]
+
+      unless key_filepath.to_s.empty?
+        provisioning_args.concat([
+          "-authenticationKeyPath #{Shellwords.escape(File.expand_path(key_filepath))}",
+          "-authenticationKeyID #{Shellwords.escape(ENV['APP_STORE_KEY_ID'])}",
+          "-authenticationKeyIssuerID #{Shellwords.escape(ENV['APP_STORE_ISSUER_ID'])}"
+        ])
+      end
+
+      development_team = ENV["APP_STORE_DEVELOPMENT_TEAM"]
+      project_path = File.expand_path("../../ios/Nora.xcodeproj", __dir__)
+
+      begin
+        unless development_team.to_s.empty?
+          update_project_team(
+            path: project_path,
+            teamid: development_team
+          )
+        end
+
+        build_app(
+          workspace: File.expand_path("../../ios/Nora.xcworkspace", __dir__),
+          scheme: ENV["IOS_SCHEME"] || "Nora",
+          configuration: ENV["IOS_CONFIGURATION"] || "Release",
+          export_method: ENV["IOS_EXPORT_METHOD"] || "app-store",
+          output_directory: File.dirname(ipa_path),
+          output_name: File.basename(ipa_path),
+          clean: true,
+          # gym appends both xcargs and export_xcargs to the exportArchive
+          # command, so setting both would duplicate flags and fail with
+          # "option '-authenticationKeyPath' may only be provided once"
+          xcargs: provisioning_args.join(" ")
+        )
+      ensure
+        # ios/ may be gitignored (expo prebuild output), in which case there
+        # is nothing to revert and git checkout would fail with a pathspec
+        # error that masks the real build error
+        sh("git ls-files --error-unmatch ios/Nora.xcodeproj > /dev/null 2>&1 && git checkout -- ios/Nora.xcodeproj || true")
+      end
     end
 
     UI.user_error!("IPA not found: #{ipa_path}") if !skip_binary_upload && !File.exist?(ipa_path)

@@ -204,7 +204,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     >
       {nIf(
         !isWeb,
-        <View className="flex-row items-center gap-1">
+        <View className="flex-row items-center gap-3">
           {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={22} color={headerControlColor} onPress={() => tabs$.openTab('')} />)}
           {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} />)}
           {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} />)}

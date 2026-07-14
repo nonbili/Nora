@@ -6,7 +6,7 @@
   "private": true,
   "main": "expo-router/entry",
   "version": "0.7.13",
-  "versionCode": 80,
+  "versionCode": 81,
   "buildNumber": "28",
   "scripts": {
     "bundle": "bun build --target browser content/main.ts --outfile assets/scripts/main.bjs",
