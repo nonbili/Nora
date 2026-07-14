@@ -15,7 +15,7 @@ import {
 const [trackArg, aabArg] = Bun.argv.slice(2)
 const pkg = await packageInfo()
 const track = trackArg ?? process.env.GOOGLE_PLAY_TRACK ?? 'production'
-const aabPath = aabArg ?? process.env.AAB_PATH ?? resolve(repoRoot, 'android/app/build/outputs/bundle/release/app-release.aab')
+const aabPath = aabArg ?? process.env.AAB_PATH ?? resolve(repoRoot, 'android/app/build/outputs/bundle/fullRelease/app-full-release.aab')
 const packageName = process.env.ANDROID_PACKAGE_NAME ?? 'jp.nonbili.nora'
 const jsonKey = process.env.GOOGLE_PLAY_JSON_KEY ?? process.env.SUPPLY_JSON_KEY
 const jsonKeyData = process.env.GOOGLE_PLAY_JSON_KEY_DATA ?? process.env.SUPPLY_JSON_KEY_DATA
@@ -57,7 +57,7 @@ if (envFlag('PREBUILD', !envFlag('SKIP_BUILD', false))) {
 }
 
 if (!envFlag('SKIP_BUILD', false)) {
-  const gradleArgs = ['bundleRelease']
+  const gradleArgs = ['bundleFullRelease']
   for (const name of ['NB_UPLOAD_STORE_FILE', 'NB_UPLOAD_STORE_PASSWORD', 'NB_UPLOAD_KEY_ALIAS', 'NB_UPLOAD_KEY_PASSWORD']) {
     const value = process.env[name]
     if (value) {

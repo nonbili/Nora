@@ -5,15 +5,15 @@
   "name": "nora",
   "private": true,
   "main": "expo-router/entry",
-  "version": "0.7.13",
-  "versionCode": 81,
+  "version": "0.7.14",
+  "versionCode": 82,
   "buildNumber": "28",
   "scripts": {
     "bundle": "bun build --target browser content/main.ts --outfile assets/scripts/main.bjs",
     "bundle:es": "esbuild --bundle content/main.ts --outfile=assets/scripts/main.bjs",
     "dev": "bun bundle --watch",
     "start": "expo start",
-    "android": "expo run:android",
+    "android": "expo run:android --variant fullDebug",
     "ios": "expo run:ios",
     "lint": "expo lint"
   },

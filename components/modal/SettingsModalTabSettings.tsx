@@ -318,6 +318,7 @@ export const SettingsAppearanceContent = () => {
   const locales = useLocales()
   const [deckTabWidthInput, setDeckTabWidthInput] = useState(settings.deckTabWidth.toString())
   const [translationLanguages, setTranslationLanguages] = useState<string[]>([])
+  const translationAvailable = supportsNativeTranslation && translationLanguages.length > 0
   const systemLanguage = resolveI18nLanguageFromExpoLocale(locales[0]) || 'en'
   const effectiveLanguage = settings.language || systemLanguage
   const isSystemLanguageSelected = settings.language == null
@@ -502,7 +503,7 @@ export const SettingsAppearanceContent = () => {
         {t('settings.language.label')}
       </NouText>
       <View className={surfaceCls}>
-        <View className={clsx('items-center flex-row justify-between', rowCls, supportsNativeTranslation && rowBorderCls)}>
+        <View className={clsx('items-center flex-row justify-between', rowCls, translationAvailable && rowBorderCls)}>
           <View className="flex-1 pr-3">
             <NouText className="font-medium">{t('settings.language.label')}</NouText>
             <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
@@ -524,7 +525,7 @@ export const SettingsAppearanceContent = () => {
             items={languageMenuItems}
           />
         </View>
-        {supportsNativeTranslation ? (
+        {translationAvailable ? (
           <View className={rowCls}>
             <View className="flex-row items-center justify-between gap-3">
               <View className="flex-1">

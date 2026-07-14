@@ -33,6 +33,15 @@ if (useManagedAndroidSdkVersions) {
 
 android {
   namespace "expo.modules.noraview"
+  flavorDimensions "distribution"
+  productFlavors {
+    full {
+      dimension "distribution"
+    }
+    foss {
+      dimension "distribution"
+    }
+  }
   defaultConfig {
     versionCode 1
     versionName "0.7.2"
@@ -45,6 +54,11 @@ android {
 dependencies {
   implementation "org.apache.tika:tika-core:3.2.3"
   implementation "androidx.webkit:webkit:1.13.0"
-  implementation "com.google.mlkit:translate:17.0.3"
-  implementation "com.google.mlkit:language-id:17.0.6"
+}
+
+// F-Droid deletes the full source set before building and scanning. Keeping
+// its dependencies alongside its source leaves the remaining tree untainted.
+def fullDependencies = file("src/full/dependencies.gradle")
+if (fullDependencies.exists()) {
+  apply from: fullDependencies
 }
