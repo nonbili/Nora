@@ -434,6 +434,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       handler: () => (currentTab ? share(currentTab.url) : {}),
                     },
                   ]),
+              ...(isWeb
+                ? []
+                : [{ label: '', handler: () => {}, kind: 'separator' as const }]),
               {
                 label: t('menus.tools'),
                 icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,

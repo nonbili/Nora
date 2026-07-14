@@ -1,0 +1,3 @@
+- Support on-device text translation
+- Support exporting cookies to cookies.txt
+- Support Facebook desktop mode
