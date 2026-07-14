@@ -95,8 +95,8 @@
     "downloadOnCobalt": "Download video on cobalt.tools",
     "downloadTab": "Download",
     "cookiesTab": "Site Data",
-    "exportCookies": "Export cookies",
-    "exportCookiesHint": "Export cookies for the current tab and its profile as a cookies.txt file.",
+    "exportCookies": "Export current site cookies",
+    "exportCookiesHint": "Save cookies for the current site as a cookies.txt file.",
     "exportCookiesButton": "Export cookies.txt",
     "clearSiteDataHint": "Clear cookies and browsing data for the current site and profile."
   },
@@ -133,6 +133,8 @@
     "namePlaceholder": "Profile name",
     "clearData": "Clear data",
     "clearDataConfirm": "Clear all browsing data for \"{{name}}\"? This signs you out and closes tabs using this profile.",
+    "exportCookies": "Export profile cookies",
+    "exportCookiesConfirm": "Export all cookies from \"{{name}}\"? The file may contain login sessions for every site in this profile. Keep it private.",
     "deleteConfirm": "Delete \"{{name}}\"? This clears its stored browsing data and closes tabs using this profile."
   },
   "settings": {
@@ -159,7 +161,7 @@
     },
     "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
     "translation": {
-      "enable": "Translate text on double-tap",
+      "enable": "Double-tap text to translate",
       "hint": "Double-tap a post, comment, or paragraph to translate it on your device.",
       "targetLanguage": "Translate to",
       "appLanguage": "App",
@@ -402,6 +404,9 @@
     "cookieExportEmpty": "No cookies found for this site",
     "cookieExportFailed": "Failed to export cookies.txt",
     "cookieExportOpenPage": "Open a page before exporting cookies",
+    "profileCookieExported": "Exported profile cookies.txt",
+    "profileCookieExportEmpty": "No cookies found in this profile",
+    "profileCookieExportFailed": "Failed to export profile cookies.txt",
     "siteDataCleared": "Site data cleared",
     "siteDataClearFailed": "Failed to clear site data",
     "pressBackAgainToExit": "Press back again to exit"

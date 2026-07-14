@@ -102,6 +102,7 @@ const translationLanguageNames: Record<string, string> = {
 const supportsNativeTranslation = !isWeb && (!isIos || Number(Platform.Version) >= 18)
 const translationLanguageLabel = (language: string) => {
   const normalized = language.replace('_', '-')
+  const baseLanguage = normalized.split('-')[0].toLowerCase()
   try {
     const DisplayNames = Intl.DisplayNames
     const displayName = DisplayNames ? new DisplayNames([i18n.language || 'en'], { type: 'language' }).of(normalized) : undefined
@@ -109,7 +110,11 @@ const translationLanguageLabel = (language: string) => {
   } catch {
     // Use the stable fallback below on runtimes with incomplete Intl support.
   }
-  return translationLanguageNames[normalized.toLowerCase()] || languageNativeNames[language.replace('-', '_')] || normalized
+  return translationLanguageNames[normalized.toLowerCase()]
+    || translationLanguageNames[baseLanguage]
+    || languageNativeNames[language.replace('-', '_')]
+    || languageNativeNames[baseLanguage]
+    || normalized
 }
 
 const findSupportedTranslationLanguage = (language: string | undefined, available: string[]) => {
@@ -501,7 +506,7 @@ export const SettingsAppearanceContent = () => {
           <View className="flex-1 pr-3">
             <NouText className="font-medium">{t('settings.language.label')}</NouText>
             <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
-              {t('settings.language.hint')}
+              {currentLanguageLabel}
             </NouText>
           </View>
               <NouMenu
@@ -520,43 +525,33 @@ export const SettingsAppearanceContent = () => {
           />
         </View>
         {supportsNativeTranslation ? (
-          <View className={clsx(rowCls, rowBorderCls)}>
-            <NouSwitch
-              label={
-                <View>
-                  <NouText className="font-medium">{t('settings.translation.enable')}</NouText>
-                  <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('settings.translation.hint')}</NouText>
-                </View>
-              }
-              value={settings.translateOnDoubleTap}
-              onPress={() => {
-                if (!settings.translationTargetLanguage) {
-                  showToast(t('settings.translation.chooseLanguage'))
-                  return
-                }
-                settings$.translateOnDoubleTap.toggle()
-              }}
-            />
-          </View>
-        ) : null}
-        {supportsNativeTranslation ? (
           <View className={rowCls}>
             <View className="flex-row items-center justify-between gap-3">
               <View className="flex-1">
-                <NouText className="font-medium">{t('settings.translation.targetLanguage')}</NouText>
+                <NouText className="font-medium">{t('settings.translation.enable')}</NouText>
                 <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  {settings.translationTargetLanguage
-                    ? translationLanguageLabel(settings.translationTargetLanguage)
-                    : t('settings.translation.notSelected')}
+                  {settings.translateOnDoubleTap && settings.translationTargetLanguage
+                    ? `${t('settings.translation.targetLanguage')} ${translationLanguageLabel(settings.translationTargetLanguage)}`
+                    : t('common.off')}
                 </NouText>
               </View>
               <NouMenu
                 trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
-                items={translationLanguageMenuItems.map(({ language, metaLabel }) => ({
-                  label: translationLanguageLabel(language),
-                  metaLabel: settings.translationTargetLanguage === language ? '✓' : metaLabel,
-                  handler: () => settings$.translationTargetLanguage.set(language),
-                }))}
+                items={[
+                  {
+                    label: t('common.off'),
+                    metaLabel: settings.translateOnDoubleTap ? undefined : '✓',
+                    handler: () => settings$.translateOnDoubleTap.set(false),
+                  },
+                  { kind: 'separator', label: '', handler: () => {} },
+                  ...translationLanguageMenuItems.map(({ language, metaLabel }) => ({
+                    label: translationLanguageLabel(language),
+                    metaLabel:
+                      settings.translateOnDoubleTap && settings.translationTargetLanguage === language ? '✓' : metaLabel,
+                    handler: () =>
+                      settings$.assign({ translationTargetLanguage: language, translateOnDoubleTap: true }),
+                  })),
+                ]}
               />
             </View>
           </View>
@@ -567,28 +562,14 @@ export const SettingsAppearanceContent = () => {
         {t('settings.theme.label')}
       </NouText>
       <View className={surfaceCls}>
-        <View className="px-4 py-4">
-          <View className="flex-row items-start gap-3">
-            <View className={iconWrapCls}>
-              <MaterialIcons name="palette" color={isDark ? colors.icon : colors.iconLightStrong} size={18} />
-            </View>
-            <View className="flex-1">
-              <NouText className="font-medium">{t('settings.theme.label')}</NouText>
-              <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
-                {t('settings.theme.hint')}
-              </NouText>
-            </View>
-          </View>
-        </View>
-        <View className="border-t border-zinc-300 dark:border-zinc-800 px-4 py-4">
-          <View className="items-end">
-            <Segemented
-              options={[t('settings.theme.system'), t('settings.theme.dark'), t('settings.theme.light')]}
-              selectedIndex={themes.indexOf(settings.theme)}
-              size={1}
-              onChange={(index) => settings$.theme.set(themes[index])}
-            />
-          </View>
+        <View className={clsx('flex-row items-center justify-between gap-3', rowCls)}>
+          <NouText className="font-medium">{t('settings.theme.label')}</NouText>
+          <Segemented
+            options={[t('settings.theme.system'), t('settings.theme.dark'), t('settings.theme.light')]}
+            selectedIndex={themes.indexOf(settings.theme)}
+            size={1}
+            onChange={(index) => settings$.theme.set(themes[index])}
+          />
         </View>
       </View>
 
@@ -599,22 +580,18 @@ export const SettingsAppearanceContent = () => {
         <View className={clsx('items-center flex-row justify-between', rowCls)}>
           <View className="flex-1 pr-3">
             <NouText className="font-medium">{t('settings.zoom.defaultLabel') || 'Default zoom'}</NouText>
-            <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
-              {t('settings.zoom.defaultHint') || 'Set the default zoom level for all web pages.'}
-            </NouText>
           </View>
-          <NouMenu
-            trigger={
-              <NouButton size="1" variant="outline" onPress={() => {}}>
-                {settings.defaultZoom}%
-              </NouButton>
-            }
-            items={ZOOM_PRESETS.map((zoom) => ({
-              label: `${zoom}%`,
-              handler: () => settings$.setDefaultZoom(zoom),
-              metaLabel: settings.defaultZoom === zoom ? '✓' : undefined,
-            }))}
-          />
+          <View className="flex-row items-center gap-1">
+            <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{settings.defaultZoom}%</NouText>
+            <NouMenu
+              trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
+              items={ZOOM_PRESETS.map((zoom) => ({
+                label: `${zoom}%`,
+                handler: () => settings$.setDefaultZoom(zoom),
+                metaLabel: settings.defaultZoom === zoom ? '✓' : undefined,
+              }))}
+            />
+          </View>
         </View>
       </View>
 

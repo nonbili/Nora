@@ -60,6 +60,22 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     }
   }
 
+  static func getProfileCookies(profile: String, completion: @escaping ([[String: Any]]) -> Void) {
+    dataStore(for: profile).httpCookieStore.getAllCookies { cookies in
+      completion(cookies.map { cookie in
+        [
+          "domain": cookie.domain,
+          "path": cookie.path,
+          "secure": cookie.isSecure,
+          "httpOnly": cookie.isHTTPOnly,
+          "expires": cookie.expiresDate?.timeIntervalSince1970 ?? 0,
+          "name": cookie.name,
+          "value": cookie.value,
+        ]
+      })
+    }
+  }
+
   private static func dataStore(for profile: String) -> WKWebsiteDataStore {
     let store: WKWebsiteDataStore
     if profile == "default" {

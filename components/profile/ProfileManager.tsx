@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, View } from 'react-native'
 import { clsx, isWeb, isIos } from '@/lib/utils'
-import { confirmDestructiveAction } from '@/lib/confirm'
+import { confirmAction, confirmDestructiveAction } from '@/lib/confirm'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
 import { settings$, Profile } from '@/states/settings'
@@ -16,6 +16,7 @@ import { deleteAutoProfilesData } from '@/lib/auto-profile-data'
 import { clearProfileData } from '@/lib/profile-data'
 import { getDeterministicProfileColor } from '@/lib/profile-color'
 import { showToast } from '@/lib/toast'
+import { exportProfileCookiesTxt } from '@/lib/cookie-export'
 
 const formatDate = (value: number) => {
   if (!value) {
@@ -175,6 +176,19 @@ export const ProfileManager = () => {
     )
   }
 
+  const confirmExportCookies = (profile: Profile) => {
+    confirmAction(
+      t('profiles.exportCookies'),
+      t('profiles.exportCookiesConfirm', { name: profile.name }),
+      t('profiles.exportCookies'),
+      () => {
+        void exportProfileCookiesTxt(profile.id, profile.name)
+          .then((exported) => showToast(t(exported ? 'toast.profileCookieExported' : 'toast.profileCookieExportEmpty')))
+          .catch(() => showToast(t('toast.profileCookieExportFailed')))
+      },
+    )
+  }
+
   return (
     <View className="mb-4">
       <AutoProfilesModal />
@@ -211,6 +225,9 @@ export const ProfileManager = () => {
               trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
               items={[
                 { label: t('common.edit'), handler: () => startEdit(profile) },
+                ...(isWeb || isIos
+                  ? [{ label: t('profiles.exportCookies'), handler: () => confirmExportCookies(profile) }]
+                  : []),
                 { label: t('profiles.clearData'), handler: () => confirmClearData(profile) },
                 ...(profile.isDefault
                   ? []

@@ -19,14 +19,16 @@ export const NouSwitch: React.FC<{
         value={value}
         disabled={disabled}
         onValueChange={() => onPress()}
-        trackColor={{ false: '#767577', true: '#e9d5ff' }}
-        thumbColor={value ? '#6366f1' : '#f4f3f4'}
+        trackColor={{ false: '#a1a1aa', true: '#6366f1' }}
         {...Platform.select({
           web: {
-            activeThumbColor: '#6366f1',
+            activeThumbColor: '#ffffff',
           },
           ios: {
             style: { transform: [{ scale: 0.8 }] },
+          },
+          android: {
+            thumbColor: '#ffffff',
           },
         })}
       />

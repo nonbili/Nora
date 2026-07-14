@@ -141,6 +141,14 @@ public class NoraViewModule: Module {
       }
     }
 
+    AsyncFunction("getProfileCookies") { (profile: String, promise: Promise) in
+      DispatchQueue.main.async {
+        NoraView.getProfileCookies(profile: profile) { cookies in
+          promise.resolve(cookies)
+        }
+      }
+    }
+
     AsyncFunction("openExternalUrl") { (url: String) -> Bool in
       guard let target = URL(string: url) else {
         return false

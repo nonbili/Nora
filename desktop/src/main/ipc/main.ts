@@ -67,6 +67,20 @@ const interfaces = {
     const cookies = await ses.cookies.get({ url })
     return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ')
   },
+  getProfileCookies: async (profile: string) => {
+    const targetProfile = profile || 'default'
+    const ses = session.fromPartition(`persist:${targetProfile}`)
+    const cookies = await ses.cookies.get({})
+    return cookies.map((cookie) => ({
+      domain: cookie.domain || '',
+      path: cookie.path || '/',
+      secure: Boolean(cookie.secure),
+      httpOnly: Boolean(cookie.httpOnly),
+      expires: cookie.expirationDate || 0,
+      name: cookie.name,
+      value: cookie.value,
+    }))
+  },
   setCookie: async (profile: string, url: string, cookie: string) => {
     const targetProfile = profile || 'default'
     const targetUrl = new URL(url)

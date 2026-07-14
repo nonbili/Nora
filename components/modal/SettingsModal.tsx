@@ -485,7 +485,13 @@ export const SettingsModal = () => {
       </SafeAreaView>
     </View>
   ) : (
-    <BaseModal onClose={closeSettingsTree} onRequestClose={handleBack} className="bg-transparent" useNativeModal={false}>
+    <BaseModal
+      onClose={closeSettingsTree}
+      onRequestClose={handleBack}
+      className="bg-transparent"
+      useNativeModal={false}
+      safeAreaEdges={['left', 'right']}
+    >
       {content}
     </BaseModal>
   )

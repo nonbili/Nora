@@ -1,7 +1,7 @@
 import { clsx, isIos, isWeb } from '@/lib/utils'
 import { ReactNode } from 'react'
 import { KeyboardAvoidingView, Modal, Pressable, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context'
 
 export const BaseModal: React.FC<{
   className?: string
@@ -9,15 +9,17 @@ export const BaseModal: React.FC<{
   onClose: () => void
   onRequestClose?: () => void
   useNativeModal?: boolean
+  safeAreaEdges?: Edge[]
 }> = ({
   className,
   children,
   onClose,
   onRequestClose,
   useNativeModal = !isWeb,
+  safeAreaEdges,
 }) => {
   const insets = useSafeAreaInsets()
-  const inner = isWeb ? children : <SafeAreaView className="flex-1 max-h-full">{children}</SafeAreaView>
+  const inner = isWeb ? children : <SafeAreaView className="flex-1 max-h-full" edges={safeAreaEdges}>{children}</SafeAreaView>
 
   if (!isWeb && useNativeModal) {
     return (

@@ -4,6 +4,37 @@ const NETSCAPE_HEADER = [
   '',
 ].join('\n')
 
+export interface ProfileCookie {
+  domain: string
+  path: string
+  secure: boolean
+  httpOnly: boolean
+  expires: number
+  name: string
+  value: string
+}
+
+const cleanCookieField = (value: string) => value.replace(/[\t\r\n]/g, '')
+
+export function formatProfileCookiesTxt(cookies: ProfileCookie[]) {
+  const rows = cookies.flatMap((cookie) => {
+    const rawDomain = cleanCookieField(cookie.domain.trim())
+    const path = cleanCookieField(cookie.path.trim()) || '/'
+    const name = cleanCookieField(cookie.name.trim())
+    const value = cleanCookieField(cookie.value)
+    if (!rawDomain || !name) return []
+
+    const includeSubdomains = rawDomain.startsWith('.')
+    const domain = cookie.httpOnly ? `#HttpOnly_${rawDomain}` : rawDomain
+    const expires = Number.isFinite(cookie.expires) ? Math.max(0, Math.floor(cookie.expires)) : 0
+    return [
+      `${domain}\t${includeSubdomains ? 'TRUE' : 'FALSE'}\t${path}\t${cookie.secure ? 'TRUE' : 'FALSE'}\t${expires}\t${name}\t${value}`,
+    ]
+  })
+
+  return rows.length ? `${NETSCAPE_HEADER}${rows.join('\n')}\n` : ''
+}
+
 export function formatCookiesTxt(cookieHeader: string, url: string) {
   const target = new URL(url)
   const domain = target.hostname
@@ -16,8 +47,8 @@ export function formatCookiesTxt(cookieHeader: string, url: string) {
       const separator = item.indexOf('=')
       if (separator <= 0) return []
 
-      const name = item.slice(0, separator).trim().replace(/[\t\r\n]/g, '')
-      const value = item.slice(separator + 1).replace(/[\t\r\n]/g, '')
+      const name = cleanCookieField(item.slice(0, separator).trim())
+      const value = cleanCookieField(item.slice(separator + 1))
       if (!name) return []
 
       return [`${domain}\tFALSE\t/\t${secure}\t0\t${name}\t${value}`]

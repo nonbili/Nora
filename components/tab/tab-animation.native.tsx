@@ -27,8 +27,8 @@ export function useTabAnimation({
 
   const style = useAnimatedStyle(() => {
     return {
-      marginTop: headerPosition === 'top' ? inset.value : 0,
-      marginBottom: headerPosition === 'bottom' ? inset.value : 0,
+      top: headerPosition === 'top' ? inset.value : 0,
+      bottom: headerPosition === 'bottom' ? inset.value : 0,
     }
   }, [headerPosition])
 
