@@ -1,4 +1,0 @@
-dependencies {
-  fullImplementation "com.google.mlkit:translate:17.0.3"
-  fullImplementation "com.google.mlkit:language-id:17.0.6"
-}
