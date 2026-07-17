@@ -94,6 +94,7 @@ function parsePersistedMatcherSnapshot(raw: string | null | undefined): Persiste
     }
     return {
       revision: parsed.revision,
+      ...(typeof parsed.parserVersion === 'number' ? { parserVersion: parsed.parserVersion } : {}),
       blockedHosts,
       allowedHosts,
       ...(cosmeticFilters === undefined ? {} : { cosmeticFilters }),

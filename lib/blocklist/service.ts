@@ -4,7 +4,7 @@ import { isWeb, isIos, isAndroid } from '@/lib/utils'
 import { settings$ } from '@/states/settings'
 import { autoProfiles$ } from '@/states/auto-profiles'
 import { blocklist$ } from '@/states/blocklist'
-import { mergeFilterListsText, mergeFilterListsAsync } from './parser'
+import { BLOCKLIST_PARSER_VERSION, mergeFilterListsText, mergeFilterListsAsync } from './parser'
 import { shouldAutoRefresh } from './policy'
 import { createWorkletRuntime, runOnRuntime, type WorkletRuntime } from 'react-native-worklets'
 import {
@@ -169,6 +169,7 @@ function toMatcherData(snapshot: PersistedBlocklistMatcherSnapshot): BlocklistMa
 function toPersistedMatcherSnapshot(matcherData: BlocklistMatcherData): PersistedBlocklistMatcherSnapshot {
   return {
     revision: matcherData.revision,
+    parserVersion: BLOCKLIST_PARSER_VERSION,
     blockedHosts: encodeHosts(matcherData.blockedHosts),
     allowedHosts: encodeHosts(matcherData.allowedHosts),
     cosmeticFilters: encodeHosts(matcherData.cosmeticFilters),
@@ -189,6 +190,7 @@ async function mergeFilterListsInBackground(bodies: string[], revision: number):
       if (result && typeof result.blockedHosts === 'string' && typeof result.allowedHosts === 'string') {
         return {
           revision,
+          parserVersion: BLOCKLIST_PARSER_VERSION,
           blockedHosts: result.blockedHosts,
           allowedHosts: result.allowedHosts,
           cosmeticFilters: typeof result.cosmeticFilters === 'string' ? result.cosmeticFilters : '',
@@ -203,6 +205,7 @@ async function mergeFilterListsInBackground(bodies: string[], revision: number):
   const merged = await mergeFilterListsAsync(bodies)
   return {
     revision,
+    parserVersion: BLOCKLIST_PARSER_VERSION,
     blockedHosts: encodeHosts(merged.blockedHosts),
     allowedHosts: encodeHosts(merged.allowedHosts),
     cosmeticFilters: encodeHosts(merged.cosmeticFilters),
@@ -308,7 +311,11 @@ async function getPersistedMatcherData(revision: number) {
   }
 
   const persistedSnapshot = await readBlocklistMatcherSnapshot()
-  if (persistedSnapshot?.revision === revision && typeof persistedSnapshot.cosmeticFilters === 'string') {
+  if (
+    persistedSnapshot?.revision === revision &&
+    persistedSnapshot.parserVersion === BLOCKLIST_PARSER_VERSION &&
+    typeof persistedSnapshot.cosmeticFilters === 'string'
+  ) {
     const matcherData = toMatcherData(persistedSnapshot)
     setPayloadCache(matcherData)
     return matcherData

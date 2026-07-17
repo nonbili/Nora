@@ -16,6 +16,10 @@ const UNSUPPORTED_COSMETIC_SELECTOR_TOKENS = [
   ':xpath(',
 ]
 
+// Bump when extractHost/normalizeHost semantics change so persisted matcher
+// snapshots parsed by an older version get rebuilt from the cached source files.
+export const BLOCKLIST_PARSER_VERSION = 2
+
 export const DEFAULT_BLOCKLIST_EXPIRY_MS = 4 * 24 * 60 * 60 * 1000
 const PARSE_YIELD_EVERY = 4_000
 
@@ -69,6 +73,12 @@ function extractHost(rawLine: string) {
   if (optionIndex !== -1) {
     const pattern = line.slice(0, optionIndex)
     if (!pattern.startsWith('||') || !pattern.endsWith('^')) {
+      return null
+    }
+    // Rules scoped to specific sites (e.g. `||amazonaws.com^$domain=animeflv.net`)
+    // or negated via `badfilter` must not become global host blocks.
+    const options = line.slice(optionIndex + 1).toLowerCase()
+    if (options.includes('domain=') || options.split(',').includes('badfilter')) {
       return null
     }
     line = pattern

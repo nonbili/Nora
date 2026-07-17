@@ -14,6 +14,9 @@ example.org
 example.net$image
 ||third-party.example^$third-party
 @@||allow.third-party.example^$third-party
+||amazonaws.com^$domain=animeflv.net|uploadhaven.com
+||scoped.example^$third-party,domain=~foo.example
+||badfilter.example^$badfilter
 news.example##.promo
 `)
 

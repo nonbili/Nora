@@ -46,6 +46,7 @@ export interface BlocklistMatcherData {
 
 export interface PersistedBlocklistMatcherSnapshot {
   revision: number
+  parserVersion?: number
   blockedHosts: string
   allowedHosts: string
   cosmeticFilters?: string
