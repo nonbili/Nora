@@ -16,13 +16,15 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: yarn
+
+      - uses: oven-sh/setup-bun@v2
 
       - name: install and prebuild
         run: |
-          yarn install
-          yarn bundle:es
-          yarn expo prebuild -p android --clean --no-install
+          bun link
+          bun install --frozen-lockfile
+          bun bundle:es
+          bun expo prebuild -p android --clean --no-install
 
       - name: build apk
         run: ./gradlew assembleFullRelease --stacktrace
@@ -72,14 +74,16 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: yarn
+
+      - uses: oven-sh/setup-bun@v2
 
       - name: install and prebuild FOSS variant
         run: |
           rm -rf modules/nora-view/android/src/full
-          yarn install
-          yarn bundle:es
-          yarn expo prebuild -p android --clean --no-install
+          bun link
+          bun install --frozen-lockfile
+          bun bundle:es
+          bun expo prebuild -p android --clean --no-install
           echo "" >> android/gradle.properties
           echo 'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m' >> android/gradle.properties
           echo 'org.gradle.workers.max=2' >> android/gradle.properties
