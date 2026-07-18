@@ -1,0 +1,2 @@
+- Fix uploading images to Reddit when blocklist is on
+- Fix distorted default video poster
