@@ -9,6 +9,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -610,6 +611,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         }
 
       webChromeClient = object : WebChromeClient() {
+        override fun getDefaultVideoPoster(): Bitmap {
+          return Bitmap.createBitmap(intArrayOf(Color.BLACK), 1, 1, Bitmap.Config.ARGB_8888)
+        }
+
         override fun onReceivedIcon(view: WebView, icon: Bitmap) {
           emit("icon", "")
         }

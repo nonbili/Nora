@@ -194,7 +194,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
     <Root
       pointerEvents={isWeb ? 'auto' : (headerShown ? 'auto' : 'none')}
       className={clsx(
-        'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between px-2 py-1',
+        'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between py-1',
+        isWeb ? 'px-2' : 'px-3',
         isWeb && (sidebarCollapsed
           ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
           : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
