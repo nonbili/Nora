@@ -82,6 +82,7 @@ platform :ios do
     UI.user_error!("IPA not found: #{ipa_path}") if !skip_binary_upload && !File.exist?(ipa_path)
 
     upload_options = {
+      force: true,
       api_key: api_key,
       app_identifier: app_identifier,
       app_version: app_version,
@@ -115,6 +116,7 @@ platform :ios do
   desc "Upload screenshots to App Store Connect"
   lane :upload_screenshots do
     upload_to_app_store(
+      force: true,
       skip_binary_upload: true,
       skip_metadata: true,
       skip_screenshots: false

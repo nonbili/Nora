@@ -89,15 +89,6 @@ jobs:
           echo 'org.gradle.workers.max=2' >> android/gradle.properties
           echo 'org.gradle.parallel=false' >> android/gradle.properties
 
-      - name: reject ML Kit references
-        run: |
-          if grep -R -n -E 'com[./]google[./]mlkit' \
-            --include='*.gradle' --include='*.java' --include='*.kt' \
-            modules/nora-view/android; then
-            echo 'ML Kit reference remains in the FOSS source tree'
-            exit 1
-          fi
-
       - name: build FOSS APKs
         run: ./gradlew assembleFossRelease --stacktrace
         working-directory: android

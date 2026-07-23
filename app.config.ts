@@ -7,6 +7,12 @@ const intentFilters = [
   {
     autoVerify: false,
     action: 'VIEW',
+    data: [{ scheme: 'http' }, { scheme: 'https' }],
+    category: ['BROWSABLE', 'DEFAULT'],
+  },
+  {
+    autoVerify: false,
+    action: 'VIEW',
     data: [
       'bsky.app',
       'm.facebook.com',
@@ -40,7 +46,6 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       infoPlist: {
         NSMicrophoneUsageDescription: 'Allow $(PRODUCT_NAME) to use the microphone.',
         NSPhotoLibraryAddUsageDescription: 'Allow $(PRODUCT_NAME) to save photos to your library.',
-        NSPhotoLibraryUsageDescription: 'Allow $(PRODUCT_NAME) to access your photo library.',
       },
     },
     android: {
