@@ -233,6 +233,36 @@ fun shouldNoraOverrideUrlLoading(view: WebView, url: String): Boolean {
   }
 }
 
+// `<input accept>` may carry extensions (`.jpg`), bare MIME types
+// (`image/png`) or comma separated lists in a single entry. Turn all of them
+// into a plain MIME list the document picker understands.
+fun normalizeAcceptTypes(acceptTypes: Array<String>?): Array<String> {
+  val mimeTypes = LinkedHashSet<String>()
+  acceptTypes?.forEach { entry ->
+    entry.split(",").forEach { raw ->
+      val accept = raw.trim()
+      when {
+        accept.isEmpty() -> {}
+        accept.startsWith(".") -> {
+          val mimeType = MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(accept.substring(1).lowercase())
+          if (mimeType != null) {
+            mimeTypes.add(mimeType)
+          }
+        }
+        accept.contains("/") -> mimeTypes.add(accept.lowercase())
+        else -> {
+          val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(accept.lowercase())
+          if (mimeType != null) {
+            mimeTypes.add(mimeType)
+          }
+        }
+      }
+    }
+  }
+  return mimeTypes.toTypedArray()
+}
+
 fun handleExternalAppUrl(context: Context, url: String): Boolean {
   val uri = Uri.parse(url)
   val scheme = uri.scheme?.lowercase()
@@ -705,7 +735,21 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         ): Boolean {
           // https://stackoverflow.com/a/62625964
           nouController.setFileChooserCallback(callback)
-          val intent = params.createIntent()
+          // params.createIntent() only honors acceptTypes[0] and passes it to
+          // setType() verbatim, so extension based accept lists (`.jpg,.png`,
+          // used by desktop Facebook and Reddit) leave the picker with an
+          // invalid MIME filter and it shows no photos or videos at all.
+          // Keep the platform intent so save and folder picker modes retain
+          // their actions and extras, but replace its MIME filter with the
+          // full, normalized list.
+          val mimeTypes = normalizeAcceptTypes(params.acceptTypes)
+          val intent = params.createIntent().apply {
+            type = if (mimeTypes.size == 1) mimeTypes[0] else "*/*"
+            removeExtra(Intent.EXTRA_MIME_TYPES)
+            if (mimeTypes.size > 1) {
+              putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+            }
+          }
           val activity = currentActivity
           activity?.startActivityForResult(intent, 0)
           return true
