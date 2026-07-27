@@ -8,6 +8,7 @@ import { ActivityIndicator, Appearance, Pressable, StyleSheet, View, useColorSch
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
 import { clsx, isWeb, isIos, isAndroid, nIf, getHostFromUrl } from '@/lib/utils'
+import { ensureDownloadNotificationPermission } from '@/lib/download-notifications'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { MaterialButton } from '../button/IconButtons'
@@ -619,6 +620,7 @@ export const NoraTab: React.FC<{
         }
         break
       case 'save-file':
+        ensureDownloadNotificationPermission()
         getCurrentWebview()?.saveFile(data.content, data.fileName, data.mimeType)
         break
       case 'scroll':

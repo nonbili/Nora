@@ -11,6 +11,7 @@ import { delay } from 'es-toolkit'
 import { getUserAgent } from '@/lib/useragent'
 import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
 import { normalizeDownloadUrl } from '@/content/download'
+import { ensureDownloadNotificationPermission } from '@/lib/download-notifications'
 
 const userAgent = getUserAgent(isIos ? 'ios' : 'android')
 
@@ -159,6 +160,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         break
       case 'save-file':
         setTitle('Downloading...')
+        ensureDownloadNotificationPermission()
         nativeRef.current?.saveFile(data.content, data.fileName, data.mimeType || 'video/mp4')
         await delay(500)
         onClose()

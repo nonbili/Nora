@@ -39,14 +39,53 @@ async function blobToBase64(blob: Blob) {
   })
 }
 
-async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
-  const res = await fetch(url)
-  const blob = await res.blob()
-  const content = await blobToBase64(blob)
-  if (!fileName) {
-    fileName = url.split('/').at(-1)
+// Keep recent object URLs around so a blob can be saved without `fetch()`, which
+// fails once the page revokes the URL and is rejected outright by strict
+// `connect-src` policies that don't allow `blob:` (e.g. grok.com).
+const trackedBlobs = new Map<string, Blob>()
+const maxTrackedBlobs = 8
+
+let objectUrlsTracked = false
+
+function trackObjectUrls() {
+  const createObjectURL = URL.createObjectURL
+  if (objectUrlsTracked || typeof createObjectURL !== 'function') {
+    return
   }
-  emit('save-file', { content, fileName, mimeType })
+  objectUrlsTracked = true
+  URL.createObjectURL = function (object: Blob | MediaSource) {
+    const url = createObjectURL.call(URL, object as Blob)
+    // A revoked URL keeps working here, so entries are only dropped by the cap.
+    if (object instanceof Blob) {
+      trackedBlobs.set(url, object)
+      while (trackedBlobs.size > maxTrackedBlobs) {
+        trackedBlobs.delete(trackedBlobs.keys().next().value!)
+      }
+    }
+    return url
+  }
+}
+
+async function resolveBlob(url: string) {
+  const tracked = trackedBlobs.get(url)
+  if (tracked) {
+    return tracked
+  }
+  const res = await fetch(url)
+  return res.blob()
+}
+
+async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
+  try {
+    const blob = await resolveBlob(url)
+    const content = await blobToBase64(blob)
+    if (!fileName) {
+      fileName = url.split('/').at(-1)
+    }
+    emit('save-file', { content, fileName, mimeType: mimeType || blob.type || undefined })
+  } catch (e) {
+    console.error('[nora] failed to save blob', url, e)
+  }
 }
 
 async function getVideoUrl() {
@@ -187,6 +226,7 @@ function setUserScripts(next?: CustomUserScript[]) {
 }
 
 export function initNora() {
+  trackObjectUrls()
   return {
     getMeta,
     downloadBlob,

@@ -2,6 +2,9 @@ package expo.modules.noraview
 
 import android.app.Activity
 import android.app.DownloadManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -39,6 +42,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.webkit.WebSettingsCompat
@@ -165,6 +169,8 @@ fun shouldRedirectFacebookToMobile(currentUrl: String, targetUrl: String, deskto
 }
 
 val INTERNAL_SCHEMES = setOf("about", "blob", "data", "file", "http", "https", "javascript", "nora")
+
+const val SAVED_FILE_CHANNEL_ID = "nora-saved-files"
 
 // Hosts where Google runs WebView-detection for OAuth.
 val GOOGLE_AUTH_HOSTS = setOf("accounts.google.com", "accounts.youtube.com")
@@ -964,6 +970,14 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
 
+    // DownloadManager can't read `blob:` URLs, the page has to hand us the bytes.
+    // The blob knows its own type, so `mimeType` is left out on purpose here.
+    if (url.startsWith("blob:")) {
+      val name = if (fileName != null) "'$fileName'" else null
+      webView.evaluateJavascript("window.Nora?.downloadBlob('$url', $name)", null)
+      return
+    }
+
     CoroutineScope(Dispatchers.IO).launch {
       try {
         val uri = Uri.parse(url)
@@ -989,6 +1003,46 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
         }
       }
+    }
+  }
+
+  // DownloadManager posts its own notification, files written straight to MediaStore
+  // need one so the save is more than a toast the user has to act on immediately.
+  private fun notifySaved(uri: Uri, fileName: String, mimeType: String?) {
+    try {
+      val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        manager.createNotificationChannel(
+          NotificationChannel(
+            SAVED_FILE_CHANNEL_ID,
+            nouController.t("toast_downloadSucceeded"),
+            NotificationManager.IMPORTANCE_LOW
+          )
+        )
+      }
+
+      val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, mimeType)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+      var flags = PendingIntent.FLAG_UPDATE_CURRENT
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        flags = flags or PendingIntent.FLAG_IMMUTABLE
+      }
+      val notificationId = uri.hashCode()
+      val pendingIntent = PendingIntent.getActivity(context, notificationId, viewIntent, flags)
+
+      val notification = NotificationCompat.Builder(context, SAVED_FILE_CHANNEL_ID)
+        .setSmallIcon(android.R.drawable.stat_sys_download_done)
+        .setContentTitle(nouController.t("toast_downloadSucceeded"))
+        .setContentText(fileName)
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
+        .build()
+      manager.notify(notificationId, notification)
+    } catch (e: Exception) {
+      // The file is already saved, a missing notification must not fail the download.
+      e.printStackTrace()
     }
   }
 
@@ -1028,6 +1082,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         activity.runOnUiThread {
           Toast.makeText(context, nouController.t("toast_downloadSucceeded"), Toast.LENGTH_LONG).show()
         }
+        uri?.let { notifySaved(it, fileName, mimeType) }
       } catch (e: Exception) {
         e.printStackTrace()
         uri?.let { resolver.delete(it, null, null) }
