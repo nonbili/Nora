@@ -1,0 +1,3 @@
+- Support setting as default browser
+- Fix saving images
+- Fix file upload picker in desktop mode
