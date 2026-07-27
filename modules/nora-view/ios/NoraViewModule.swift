@@ -241,7 +241,8 @@ public class NoraViewModule: Module {
         view.load(url: url)
       }
 
-      AsyncFunction("saveFile") { (view: NoraView, fileName: String, mimeType: String, content: String) in
+      // Argument order must match the JS call site: saveFile(content, fileName, mimeType).
+      AsyncFunction("saveFile") { (view: NoraView, content: String, fileName: String, mimeType: String?) in
         view.saveFile(content: content, fileName: fileName, mimeType: mimeType)
       }
     }

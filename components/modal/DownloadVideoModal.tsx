@@ -160,7 +160,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         break
       case 'save-file':
         setTitle('Downloading...')
-        ensureDownloadNotificationPermission()
+        await ensureDownloadNotificationPermission()
         nativeRef.current?.saveFile(data.content, data.fileName, data.mimeType || 'video/mp4')
         await delay(500)
         onClose()

@@ -620,7 +620,7 @@ export const NoraTab: React.FC<{
         }
         break
       case 'save-file':
-        ensureDownloadNotificationPermission()
+        await ensureDownloadNotificationPermission()
         getCurrentWebview()?.saveFile(data.content, data.fileName, data.mimeType)
         break
       case 'scroll':

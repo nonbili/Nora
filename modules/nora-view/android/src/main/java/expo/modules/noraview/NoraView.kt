@@ -65,6 +65,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONArray
+import org.json.JSONObject
 import org.json.JSONTokener
 import org.apache.tika.Tika
 
@@ -794,10 +795,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
             }
             if (url.startsWith("blob:")) {
-              if (fileName != null) {
-                fileName = "'$fileName'"
-              }
-              evaluateJavascript("window.Nora?.downloadBlob('$url', $fileName, '$mimeType')", null)
+              val name = fileName?.let(JSONObject::quote) ?: "null"
+              evaluateJavascript(
+                "window.Nora?.downloadBlob(${JSONObject.quote(url)}, $name, ${JSONObject.quote(mimeType)})",
+                null
+              )
             } else {
               download(url, fileName, null)
             }
@@ -973,8 +975,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     // DownloadManager can't read `blob:` URLs, the page has to hand us the bytes.
     // The blob knows its own type, so `mimeType` is left out on purpose here.
     if (url.startsWith("blob:")) {
-      val name = if (fileName != null) "'$fileName'" else null
-      webView.evaluateJavascript("window.Nora?.downloadBlob('$url', $name)", null)
+      val name = fileName?.let(JSONObject::quote) ?: "null"
+      webView.evaluateJavascript(
+        "window.Nora?.downloadBlob(${JSONObject.quote(url)}, $name)",
+        null
+      )
       return
     }
 

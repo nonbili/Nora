@@ -11,7 +11,7 @@ func isMessengerUrl(_ url: URL) -> Bool {
     (path == "/messages" || path.hasPrefix("/messages/"))
 }
 
-class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIGestureRecognizerDelegate {
+class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIGestureRecognizerDelegate, WKDownloadDelegate {
   let onLoad = EventDispatcher()
   let onMessage = EventDispatcher()
 
@@ -26,6 +26,8 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   private var popupContainer: UIView?
   private var popupWebView: WKWebView?
   private var popupCommittedToGoogleOAuth = false
+  /// Destination picked for each in-flight WKDownload, read back when it finishes.
+  private var downloadDestinations: [WKDownload: URL] = [:]
 
   // MARK: - Profile Data Store
 
@@ -388,6 +390,13 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       let isInternalScheme = INTERNAL_SCHEMES.contains(scheme)
       let isMainFrame = navigationAction.targetFrame?.isMainFrame ?? true
 
+      // `<a download>` clicks, including the `blob:` URLs image generators hand out.
+      // WebKit reads the blob itself, so this never goes through the page's CSP.
+      if navigationAction.shouldPerformDownload {
+          decisionHandler(.download)
+          return
+      }
+
       if webView == popupWebView && isMainFrame && !popupCommittedToGoogleOAuth {
           if scheme == "about" {
               decisionHandler(.allow)
@@ -452,6 +461,27 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       }
   }
 
+  func webView(
+    _ webView: WKWebView,
+    decidePolicyFor navigationResponse: WKNavigationResponse,
+    decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+  ) {
+      // Attachments and types WebKit can't render would otherwise silently do nothing.
+      if !navigationResponse.canShowMIMEType {
+          decisionHandler(.download)
+          return
+      }
+      decisionHandler(.allow)
+  }
+
+  func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+      download.delegate = self
+  }
+
+  func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+      download.delegate = self
+  }
+
   func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
       if webView == popupWebView {
           return
@@ -485,17 +515,56 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       do {
           try data.write(to: fileUrl)
            NouController.shared.log("Saved file to \(fileUrl.path)")
-
-          DispatchQueue.main.async {
-               let activityVC = UIActivityViewController(activityItems: [fileUrl], applicationActivities: nil)
-               if let topVC = UIApplication.shared.keyWindow?.rootViewController {
-                    activityVC.popoverPresentationController?.sourceView = self
-                    topVC.present(activityVC, animated: true, completion: nil)
-               }
-          }
+          presentSavedFile(fileUrl)
       } catch {
            NouController.shared.log("Failed to save file: \(error)")
       }
+  }
+
+  /// Let the user pick where a saved file ends up, iOS has no shared Downloads folder.
+  private func presentSavedFile(_ fileUrl: URL) {
+      DispatchQueue.main.async {
+          let activityVC = UIActivityViewController(activityItems: [fileUrl], applicationActivities: nil)
+          if let topVC = UIApplication.shared.keyWindow?.rootViewController {
+               activityVC.popoverPresentationController?.sourceView = self
+               topVC.present(activityVC, animated: true, completion: nil)
+          }
+      }
+  }
+
+  // MARK: - WKDownloadDelegate
+
+  func download(
+    _ download: WKDownload,
+    decideDestinationUsing response: URLResponse,
+    suggestedFilename: String,
+    completionHandler: @escaping (URL?) -> Void
+  ) {
+      // WKDownload requires a path that doesn't exist yet, so give each one its own directory.
+      let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+      do {
+          try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+      } catch {
+          NouController.shared.log("Failed to prepare download directory: \(error)")
+          completionHandler(nil)
+          return
+      }
+
+      let name = suggestedFilename.isEmpty ? "download" : suggestedFilename
+      let fileUrl = directory.appendingPathComponent(name)
+      downloadDestinations[download] = fileUrl
+      completionHandler(fileUrl)
+  }
+
+  func downloadDidFinish(_ download: WKDownload) {
+      guard let fileUrl = downloadDestinations.removeValue(forKey: download) else { return }
+      NouController.shared.log("Downloaded file to \(fileUrl.path)")
+      presentSavedFile(fileUrl)
+  }
+
+  func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+      downloadDestinations.removeValue(forKey: download)
+      NouController.shared.log("Download failed: \(error)")
   }
 
   // MARK: - UIScrollViewDelegate
