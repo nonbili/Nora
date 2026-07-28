@@ -4,12 +4,9 @@ import { ExpoConfig } from 'expo/config'
 import { version, versionCode, buildNumber } from './package.json'
 
 const intentFilters = [
-  {
-    autoVerify: false,
-    action: 'VIEW',
-    data: [{ scheme: 'http' }, { scheme: 'https' }],
-    category: ['BROWSABLE', 'DEFAULT'],
-  },
+  // Note: do not add a host-less http/https filter here. It makes Android
+  // classify Nora as a browser app, which removes the per-domain "Open by
+  // default" link handling below.
   {
     autoVerify: false,
     action: 'VIEW',
