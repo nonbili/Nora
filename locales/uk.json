@@ -92,7 +92,13 @@
   },
   "modals": {
     "downloadVideo": "Завантажити відео",
-    "downloadOnCobalt": "Завантажити відео з cobalt.tools"
+    "downloadOnCobalt": "Завантажити відео з cobalt.tools",
+    "downloadTab": "Завантажити",
+    "cookiesTab": "Дані сайту",
+    "exportCookies": "Експортувати поточні кукі сайту",
+    "exportCookiesHint": "Зберегти кукі поточного сайту в файл ookies.txt.",
+    "exportCookiesButton": "Експорт cookies.txt",
+    "clearSiteDataHint": "Видалити кукі та дані перегляду для поточного сайту та профілю."
   },
   "native": {
     "menu_saveImage": "Зберегти зображення",
@@ -127,7 +133,9 @@
     "autoProfilesEmpty": "Ще жодних авто профілів.",
     "openLinkInProfile": "Відкрити посилання в профілі",
     "manageAutoProfiles": "Керування авто профілів ({{count}})",
-    "deleteAutoProfileConfirm": "Видалити авто профіль для {{site}}? Збережені дані будуть очищені а вкладки закриті."
+    "deleteAutoProfileConfirm": "Видалити авто профіль для {{site}}? Збережені дані будуть очищені а вкладки закриті.",
+    "exportCookies": "Експортувати кукі профілю",
+    "exportCookiesConfirm": "Експортувати всі кукі з \"{{name}}\"? Файл може містити сесії входу для кожного сайту цього профілю. Слідкуйте за приватністю."
   },
   "settings": {
     "label": "Налаштування",
@@ -322,7 +330,24 @@
     "oneTabPerSite": "Одна вкладка на сайт при переході через посилання",
     "enterInsertsNewline": "Enter додає рядок (Shift+Enter)",
     "inspectable": "Дозволити перегляд Webview",
-    "oneProfilePerSiteHint": "Використовувати окрему автоматичну сесію для кожного сайту. Посилання сайта відкриватимуться в цьому профілі."
+    "oneProfilePerSiteHint": "Використовувати окрему автоматичну сесію для кожного сайту. Посилання сайта відкриватимуться в цьому профілі.",
+    "translation": {
+      "enable": "Подвійний натиск на тексти для перекладу",
+      "hint": "Подвійний натиск на пост, комет чи абзац для перекладу на мову вашого пристрою.",
+      "targetLanguage": "Перекласти на",
+      "appLanguage": "Програма",
+      "systemLanguage": "Система",
+      "notSelected": "Оберіть мову",
+      "chooseLanguage": "Спочатку оберіть мову перекладу",
+      "loading": "Переклад…",
+      "copy": "Копіювати переклад",
+      "copySource": "Копіювати джерело",
+      "pin": "Закріпити переклад",
+      "unpin": "Відкріпити переклад",
+      "failed": "Не вдалось перекласти цей текст",
+      "unsupported": "Ця мовна пара не доступна на цьому приладі"
+    },
+    "doubleTapToToggleHeader": "Подвійний натиск на сторінку - сховати/показати панель"
   },
   "sync": {
     "hint": "Синхронізація закладок і налаштувань всіх девайсів.",
@@ -367,7 +392,14 @@
     "siteDataCleared": "Дані сайту очищено",
     "siteDataClearFailed": "Невдалось очистити дані сайту",
     "pressBackAgainToExit": "Натисніть ще раз щоб вийти",
-    "pinned": "Закріпити на новій вкладці"
+    "pinned": "Закріпити на новій вкладці",
+    "cookieExported": "Експортовані cookies.txt",
+    "cookieExportEmpty": "Для цього сайту кукі не знайдено",
+    "cookieExportFailed": "Не вдалось експортувати cookies.txt",
+    "cookieExportOpenPage": "Для експорту кукі, спочатку відкрийте сторінку",
+    "profileCookieExported": "Експортовані профілі cookies.txt",
+    "profileCookieExportEmpty": "Для цього профілю кук не знайдено",
+    "profileCookieExportFailed": "Не вдалось експортувати cookies.txt профілю"
   },
   "usageLimits": {
     "label": "Ліміти користування",

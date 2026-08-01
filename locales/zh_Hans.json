@@ -47,7 +47,13 @@
   },
   "modals": {
     "downloadVideo": "下载视频",
-    "downloadOnCobalt": "在 cobalt.tools 下载视频"
+    "downloadOnCobalt": "在 cobalt.tools 下载视频",
+    "downloadTab": "下载",
+    "cookiesTab": "网站数据",
+    "exportCookies": "导出当前网站 Cookie",
+    "exportCookiesHint": "将当前网站的 Cookie 保存为 cookies.txt 文件。",
+    "exportCookiesButton": "导出 cookies.txt",
+    "clearSiteDataHint": "清除当前网站及其配置文件的 Cookie 和浏览数据。"
   },
   "native": {
     "menu_saveImage": "保存图片",
@@ -93,7 +99,7 @@
       "description": "管理内置服务。"
     },
     "videoEdgeLongPressTo2x": "长按边缘即可 2 倍速播放",
-    "doubleBackToExitApp": "双击返回即可退出应用",
+    "doubleBackToExitApp": "点按两次返回即可退出应用",
     "hideToolbarWhenScrolled": "页面不在顶部时隐藏工具栏",
     "xHomeTimeline": {
       "label": "默认首页时间线",
@@ -255,7 +261,24 @@
       "port": "代理端口",
       "hostPlaceholder": "例如：127.0.0.1 或 proxy.example.com",
       "portPlaceholder": "例如：1080"
-    }
+    },
+    "translation": {
+      "enable": "点按两次文本翻译",
+      "hint": "点按两次帖子、评论或段落即可在您的设备上进行翻译。",
+      "targetLanguage": "翻译为",
+      "appLanguage": "应用",
+      "systemLanguage": "系统",
+      "notSelected": "选择语言",
+      "chooseLanguage": "请先选择翻译语言",
+      "loading": "正在翻译…",
+      "copy": "复制翻译",
+      "copySource": "复制原文",
+      "pin": "固定翻译",
+      "unpin": "取消固定翻译",
+      "failed": "无法翻译此文本",
+      "unsupported": "此设备上不支持此语言对"
+    },
+    "doubleTapToToggleHeader": "点按两次页面即可隐藏或显示工具栏"
   },
   "tabs": {
     "new": "新标签页",
@@ -274,7 +297,14 @@
     "profileDataClearFailed": "无法清除配置文件数据",
     "profileDataCleared": "配置文件数据已清除",
     "siteDataClearFailed": "无法清除网站数据",
-    "siteDataCleared": "网站数据已清除"
+    "siteDataCleared": "网站数据已清除",
+    "cookieExported": "已导出 cookies.txt",
+    "cookieExportEmpty": "未找到此网站的 Cookie",
+    "cookieExportFailed": "无法导出 cookies.txt",
+    "cookieExportOpenPage": "导出 Cookie 前请先打开页面",
+    "profileCookieExported": "已导出配置文件 cookies.txt",
+    "profileCookieExportEmpty": "此配置文件中未找到 Cookie",
+    "profileCookieExportFailed": "无法导出配置文件 cookies.txt"
   },
   "profiles": {
     "label": "配置文件",
@@ -296,7 +326,9 @@
     "deleteStaleAutoProfilesConfirm": "删除过去 14 天内未使用的 {{count}} 个自动配置文件？这将清除它们存储的浏览数据并关闭使用这些配置文件的标签页。",
     "clearData": "清除数据",
     "clearDataConfirm": "清除“{{name}}”的所有浏览数据？这将使您退出登录并关闭使用此配置文件的标签页。",
-    "deleteConfirm": "删除“{{name}}”？这将清除其存储的浏览数据，并关闭使用此配置文件的标签页。"
+    "deleteConfirm": "删除“{{name}}”？这将清除其存储的浏览数据，并关闭使用此配置文件的标签页。",
+    "exportCookies": "导出配置文件 Cookie",
+    "exportCookiesConfirm": "导出“{{name}}”的所有 Cookie？该文件可能包含此配置文件中所有网站的登录会话。请妥善保管。"
   },
   "sync": {
     "label": "同步",

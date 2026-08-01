@@ -35,10 +35,19 @@
       "chooseTabToAdd": "Escolha uma guia para adicionar a {{layout}}",
       "createBlankTabInSlot": "Crie uma nova guia em branco neste slot",
       "layout": {
-        "split": "vista dividida",
-        "grid": "visualização da grade",
-        "gridFour": "Grade de 4 abas"
-      }
+        "split": "Visualização dividida",
+        "grid": "Visualização em grade",
+        "gridFour": "Grade de 4 abas",
+        "deck": "Visualização em Deck"
+      },
+      "deck": "Deck",
+      "groupNamePlaceholder": "Nome do grupo",
+      "newDeckView": "Nova visualização deck",
+      "newGroupFromTab": "Novo grupo a partir da aba",
+      "renameGroup": "Renomear grupo",
+      "tabCount": "{{count}} aba",
+      "tabCount_plural": "{{count}} abas",
+      "ungrouped": "Não agrupado"
     }
   },
   "blocklist": {
@@ -56,7 +65,10 @@
     "continue": "Continuar",
     "openUrl": "Abrir URL",
     "open": "Aberto",
-    "save": "Salvar"
+    "save": "Salvar",
+    "reopenLastClosedTab": "Reabrir última aba fechada",
+    "restoreTabs": "Abas recentemente fechadas",
+    "toggleSidebar": "Mostrar/ocultar barra lateral"
   },
   "menus": {
     "close": "Fechar",
@@ -68,10 +80,26 @@
     "scroll": "Voltar ao topo",
     "share": "Compartilhar",
     "signOut": "Sair",
-    "tools": "Ferramentas"
+    "tools": "Ferramentas",
+    "openInProfile": "Abrir no perfil",
+    "clearSiteData": "Excluir dados do site",
+    "clearSiteDataConfirm": "Deseja limpar todos os cookies e dados do site “{{host}}”? Isso fará com que você saia deste site.",
+    "duplicate": "Clonar aba",
+    "more": "Mais",
+    "pause": "Pausar aba",
+    "resume": "Retomar aba",
+    "zoom": "Zoom",
+    "viewInSplitView": "Ver na visualização dividida"
   },
   "modals": {
-    "downloadVideo": "Baixar vídeo"
+    "downloadVideo": "Baixar vídeo",
+    "downloadOnCobalt": "Baixar vídeo em cobalt.tools",
+    "downloadTab": "Baixar",
+    "cookiesTab": "Dados do site",
+    "exportCookies": "Exportar cookies do site atual",
+    "exportCookiesHint": "Salvar os cookies do site atual como um arquivo cookies.txt.",
+    "exportCookiesButton": "Exportar cookies.txt",
+    "clearSiteDataHint": "Limpar cookies e dados de navegação do site e do perfil atuais."
   },
   "native": {
     "menu_saveImage": "Salvar imagem",
@@ -83,14 +111,26 @@
     "toast_downloadSucceeded": "Salvo na pasta Downloads",
     "toast_downloadFailed": "Falha ao baixar",
     "httpBlocked_title": "Site HTTP bloqueado",
-    "httpBlocked_body": "Este site utiliza uma conexão HTTP insegura. Para permitir o carregamento de sites HTTP, ative a opção \"Permitir sites HTTP\" nas Configurações."
+    "httpBlocked_body": "Este site utiliza uma conexão HTTP insegura. Para permitir o carregamento de sites HTTP, ative a opção \"Permitir sites HTTP\" nas Configurações.",
+    "menu_openInProfile": "Abrir no perfil"
   },
   "profiles": {
     "label": "Perfis",
     "add": "Adicionar",
     "edit": "Editar",
     "save": "Salvar",
-    "namePlaceholder": "Nome do Perfil"
+    "namePlaceholder": "Nome do Perfil",
+    "auto": "Automático",
+    "autoProfiles": "Perfis automáticos",
+    "autoProfilesEmpty": "Ainda não há perfis automáticos.",
+    "openLinkInProfile": "Abrir link no perfil",
+    "autoProfileLastUsed": "Última utilização: {{value}}",
+    "autoProfileLastUsedLabel": "Última utilização",
+    "manageAutoProfiles": "Gerenciar perfis automáticos ({{count}})",
+    "deleteAutoProfileConfirm": "Excluir o perfil automático de {{site}}? Isso limpará os dados de navegação armazenados e fechará as abas que o utilizam.",
+    "deleteAllAutoProfiles": "Apagar todos",
+    "deleteAllAutoProfilesConfirm": "Excluir todos os {{count}} perfis automáticos? Isso limpará os dados de navegação armazenados e fechará as abas que os utilizam.",
+    "deleteStaleAutoProfiles": "Excluir os não utilizados há 14 dias"
   },
   "settings": {
     "label": "Configurações",
