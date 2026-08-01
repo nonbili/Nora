@@ -38,10 +38,22 @@
     "duplicate": "Scheda duplicata",
     "viewInSplitView": "Visualizza in modalità schermo diviso",
     "openInProfile": "Apri nel profilo",
-    "more": "Altro"
+    "more": "Altro",
+    "clearSiteData": "Cancella dati del sito",
+    "clearSiteDataConfirm": "Vuoi cancellare tutti i cookie e i dati del sito “{{host}}”? In questo modo verrai disconnesso da questo sito.",
+    "pause": "Scheda Pausa",
+    "resume": "Scheda Ripresa",
+    "zoom": "Zoom"
   },
   "modals": {
-    "downloadVideo": "Scarica video"
+    "downloadVideo": "Scarica video",
+    "downloadOnCobalt": "Scarica il video su cobalt.tools",
+    "downloadTab": "Scarica",
+    "cookiesTab": "Dati sito",
+    "exportCookies": "Esporta i cookie dell'attuale sito",
+    "exportCookiesHint": "Salva i cookie dell'attuale sito sul file cookies.txt.",
+    "exportCookiesButton": "Esporta il file cookies.txt",
+    "clearSiteDataHint": "Elimina i cookie e i dati di navigazione relativi al sito e al profilo attuale."
   },
   "native": {
     "menu_saveImage": "Salva immagine",
@@ -218,7 +230,10 @@
         "runFailed": "Errore nell'esecuzione dello script",
         "validation": {
           "js": "Aggiungi il codice JavaScript prima di salvare"
-        }
+        },
+        "pinToHeader": "Aggiungi alla barra degli strumenti",
+        "pinToHeaderHint": "Mostra questo script come azione della barra degli strumenti sui siti corrispondenti.",
+        "pinnedScripts": "Script in evidenza"
       }
     },
     "doubleBackToExitApp": "Doppio tocco indietro per uscire dall'app",
@@ -230,8 +245,42 @@
     },
     "oneProfilePerSite": "Un profilo per sito",
     "oneProfilePerSiteHint": "Utilizza una sessione automatica distinta per ogni sito. I link aperti da un sito mantengono il profilo di quel sito.",
-    "mentionNotifications": "Notifiche menzioni e DM",
-    "mentionNotificationsHint": "A causa dei limiti imposti dal sistema operativo, la consegna potrebbe subire ritardi e non è garantita."
+    "mentionNotifications": "Notifiche sui social",
+    "mentionNotificationsHint": "A causa dei limiti imposti dal sistema operativo, la consegna potrebbe subire ritardi e non è garantita.",
+    "zoom": {
+      "label": "Zoom della pagina",
+      "defaultLabel": "Zoom predefinito",
+      "defaultHint": "Imposta il livello di zoom predefinito per tutte la pagine web.",
+      "siteZoomLabel": "Zoom per sito",
+      "usingDefault": "Utilizzo dello zoom predefinito"
+    },
+    "proxy": {
+      "label": "Proxy",
+      "enabled": "Abilita proxy",
+      "type": "Tipo di proxy",
+      "host": "Host del proxy",
+      "port": "Porta del proxy",
+      "hostPlaceholder": "ad es. 127.0.0.1 o proxy.example.com",
+      "portPlaceholder": "ad es. 1080"
+    },
+    "translation": {
+      "enable": "Tocca due volte il testo per tradurlo",
+      "hint": "Tocca due volte un post, un commento o un paragrafo per tradurlo sul tuo dispositivo.",
+      "targetLanguage": "Traduci in",
+      "appLanguage": "App",
+      "systemLanguage": "Sistema",
+      "notSelected": "Scegli una lingua",
+      "chooseLanguage": "Scegli prima la lingua di traduzione",
+      "loading": "Traduzione in corso…",
+      "copy": "Copia traduzione",
+      "copySource": "Copia sorgente",
+      "pin": "Appunta traduzione",
+      "unpin": "Rimuovi traduzione",
+      "failed": "Non è stato possibile tradurre questo testo",
+      "unsupported": "Questa combinazione linguistica non è disponibile su questo dispositivo"
+    },
+    "enterInsertsNewline": "Il tasto Invio inserisce una nuova riga (Shift+Invio)",
+    "doubleTapToToggleHeader": "Tocca due volte la pagina per nascondere o visualizzare la barra degli strumenti"
   },
   "sync": {
     "label": "Sincronizza",
@@ -262,14 +311,28 @@
   "tabs": {
     "new": "Nuova scheda",
     "recentlyClosed": "Chiuse di recente",
-    "noRecentlyClosed": "Nessuna scheda chiusa di recente"
+    "noRecentlyClosed": "Nessuna scheda chiusa di recente",
+    "removeFromHistory": "Elimina dalla cronologia",
+    "clearRecentlyClosed": "Cancella la cronologia",
+    "paused": "La scheda è in pausa",
+    "pausedHint": "Il suo contenuto è stato scaricato per risparmiare risorse.",
+    "resume": "Riprendi"
   },
   "toast": {
     "pinned": "Aggiunto alla pagina nuova scheda",
     "blocklistUpdated": "Lista di blocco aggiornata",
     "pressBackAgainToExit": "Premi nuovamente il tasto Indietro per uscire",
     "profileDataCleared": "Dati del profilo cancellati",
-    "profileDataClearFailed": "Impossibile cancellare i dati del profilo"
+    "profileDataClearFailed": "Impossibile cancellare i dati del profilo",
+    "cookieExported": "File cookies.txt esportato",
+    "cookieExportEmpty": "Non sono stati trovati cookie per questo sito",
+    "cookieExportFailed": "Impossibile esportare il file cookies.txt",
+    "cookieExportOpenPage": "Apri una pagina prima di esportare i cookie",
+    "profileCookieExported": "File “cookies.txt” de profilo esportato",
+    "profileCookieExportEmpty": "In questo profilo non sono stati trovati cookie",
+    "profileCookieExportFailed": "Impossibile esportare il file cookies.txt del profilo",
+    "siteDataCleared": "Dati del sito cancellati",
+    "siteDataClearFailed": "Impossibile cancellare i dati del sito"
   },
   "profiles": {
     "label": "Profili",
@@ -291,7 +354,9 @@
     "deleteStaleAutoProfilesConfirm": "Eliminare {{count}} profili automatici non utilizzati negli ultimi 14 giorni? Questa operazione cancella i dati di navigazione memorizzati e chiude le schede che li utilizzano.",
     "clearData": "Cancella dati",
     "clearDataConfirm": "Cancellare tutti i dati di navigazione relativi a “{{name}}”? Questa operazione comporta la disconnessione e la chiusura delle schede associate a questo profilo.",
-    "deleteConfirm": "Elimina “{{name}}”? Questo cancella i dati di navigazione memorizzati e chiude le schede associate a questo profilo."
+    "deleteConfirm": "Elimina “{{name}}”? Questo cancella i dati di navigazione memorizzati e chiude le schede associate a questo profilo.",
+    "exportCookies": "Esporta i cookie del profilo",
+    "exportCookiesConfirm": "Esportare tutti i cookie da “{{name}}”? Il file potrebbe contenere sessioni di accesso per tutti i siti presenti in questo profilo. Mantenerlo privato."
   },
   "blocklist": {
     "label": "Lista di blocco",

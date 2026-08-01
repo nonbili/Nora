@@ -237,7 +237,24 @@
       "port": "Port proxy",
       "hostPlaceholder": "Par exemple : 127.0.0.1 ou proxy.example.com",
       "portPlaceholder": "par ex. 1080"
-    }
+    },
+    "translation": {
+      "enable": "Appuyez deux fois sur le texte pour traduire",
+      "hint": "Appuyez deux fois sur une publication, un commentaire ou un paragraphe pour le traduire sur votre appareil.",
+      "targetLanguage": "Traduire en",
+      "appLanguage": "Application",
+      "systemLanguage": "Système",
+      "notSelected": "Choisissez une langue",
+      "chooseLanguage": "Choisissez d'abord une langue de traduction",
+      "loading": "Traduction en cours…",
+      "copy": "Copier la traduction",
+      "copySource": "Copier la source",
+      "pin": "Épingler la traduction",
+      "unpin": "Désépingler la traduction",
+      "failed": "Impossible de traduire ce texte",
+      "unsupported": "Ce couple de langues n'est pas disponible sur cet appareil"
+    },
+    "doubleTapToToggleHeader": "Double-cliquez sur la page pour masquer ou afficher la barre d'outils"
   },
   "changelog": {
     "label": "Journal des modifs",
@@ -293,7 +310,13 @@
   },
   "modals": {
     "downloadVideo": "Télécharger la vidéo",
-    "downloadOnCobalt": "Télécharger une vidéo sur cobalt.tools"
+    "downloadOnCobalt": "Télécharger une vidéo sur cobalt.tools",
+    "downloadTab": "Télécharger",
+    "cookiesTab": "Données du site",
+    "exportCookies": "Exporter les cookies du site actuel",
+    "exportCookiesHint": "Enregistrer les cookies du site actuel dans un fichier cookies.txt.",
+    "exportCookiesButton": "Exporter cookies.txt",
+    "clearSiteDataHint": "Effacer les cookies et les données de navigation pour le site et le profil actuels."
   },
   "native": {
     "menu_saveImage": "Enregistrer l'image",
@@ -328,7 +351,9 @@
     "namePlaceholder": "Nom du profil",
     "clearData": "Effacer les données",
     "clearDataConfirm": "Effacer toutes les données de navigation pour \"{{name}}\" ? Cela vous déconnecte et ferme les onglets qui utilisent ce profil.",
-    "deleteConfirm": "Supprimer \"{{name}}\" ? Cela effacera ses données de navigation enregistrées et fermera les onglets qui utilisent ce profil."
+    "deleteConfirm": "Supprimer \"{{name}}\" ? Cela effacera ses données de navigation enregistrées et fermera les onglets qui utilisent ce profil.",
+    "exportCookies": "Exporter les cookies du profil",
+    "exportCookiesConfirm": "Exporter tous les cookies de \"{{name}}\" ? Le fichier peut contenir des sessions de connexion pour tous les sites de ce profil. Gardez-le confidentiel."
   },
   "sync": {
     "label": "Synchro",
@@ -383,7 +408,14 @@
     "profileDataClearFailed": "Échec de l'effacement des données de profil",
     "siteDataCleared": "Données du site effacées",
     "siteDataClearFailed": "Échec de l'effacement des données du site",
-    "pressBackAgainToExit": "Appuyez à nouveau pour quitter"
+    "pressBackAgainToExit": "Appuyez à nouveau pour quitter",
+    "cookieExported": "Fichier cookies.txt exporté",
+    "cookieExportEmpty": "Aucun cookie trouvé pour ce site",
+    "cookieExportFailed": "Échec de l'exportation de cookies.txt",
+    "cookieExportOpenPage": "Ouvrez une page avant d'exporter les cookies",
+    "profileCookieExported": "Cookies du profil exportés",
+    "profileCookieExportEmpty": "Aucun cookie trouvé dans ce profil",
+    "profileCookieExportFailed": "Échec de l'exportation des cookies du profil"
   },
   "usageLimits": {
     "label": "Limites d'utilisation",
