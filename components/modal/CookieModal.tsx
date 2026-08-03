@@ -13,7 +13,7 @@ import { ScrollView, TextInput, View, useWindowDimensions } from 'react-native'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import { BaseCenterModal } from './BaseCenterModal'
-import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { executeWebviewJavaScript, reloadWebview } from '@/lib/webview'
 import { ProfileSelectorChips } from '../profile/ProfileSelectorChips'
 
 type InjectionRequest = {
@@ -223,7 +223,7 @@ export const CookieModal = () => {
       const activeProfileId = tabs$.currentTab()?.profile || 'default'
       if (activeProfileId === activeRequest.profileId) {
         const webview = ui$.webview.get()
-        void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+        reloadWebview(webview)
       }
 
       const profileName =
@@ -297,7 +297,7 @@ export const CookieModal = () => {
           const activeProfileId = tabs$.currentTab()?.profile || 'default'
           if (activeProfileId === effectiveProfileId) {
             const webview = ui$.webview.get()
-            void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+            reloadWebview(webview)
           }
 
           const profileName =

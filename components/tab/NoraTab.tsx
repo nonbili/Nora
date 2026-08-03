@@ -24,7 +24,7 @@ import { handleShortcuts } from '@/desktop/src/renderer/lib/shortcuts'
 import { t } from 'i18next'
 import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
-import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly, registerTabWebview } from '@/lib/webview'
+import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly, registerTabWebview, reloadWebview } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { getEnabledUserScripts } from '@/lib/user-styles'
 import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
@@ -429,11 +429,7 @@ export const NoraTab: React.FC<{
         const e = rawEvent as unknown as { input: Electron.Input }
         if (e.input.type === 'keyDown') {
           if ((e.input.meta || e.input.control) && e.input.key.toLowerCase() === 'r') {
-            if (typeof webview.reload === 'function') {
-              webview.reload()
-            } else {
-              void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
-            }
+            reloadWebview(webview)
           } else {
             handleShortcuts(e.input)
           }

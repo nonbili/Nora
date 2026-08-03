@@ -24,7 +24,7 @@ import { t } from 'i18next'
 import { bookmarks$ } from '@/states/bookmarks'
 import { showToast } from '@/lib/toast'
 import { Directions, Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
-import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { executeWebviewJavaScriptQuietly, getTabWebview, reloadWebview, scrollWebviewToTop } from '@/lib/webview'
 import { openTabForActiveDesktopView } from '@/lib/desktop-view-actions'
 import { DesktopTabsSidebar } from '../view/DesktopTabsSidebar'
 import { ServiceIcon } from '../service/Services'
@@ -89,7 +89,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
   const currentTab = useValue(tabs$.currentTab)
   const customScripts = useValue(userStyles$.customScripts).filter((script): script is CustomUserScript => Boolean(script))
-  const webview = ui$.webview.get()
+  const webview = useValue(ui$.webview)
   const { useSharedValueSafe } = isWeb ? webAnimatedHelpers : nativeAnimatedHelpers!
   const flingStart = useSharedValueSafe(0)
   const panStart = useSharedValueSafe(0)
@@ -122,29 +122,25 @@ export const NouHeader: React.FC<{}> = ({}) => {
     ui$.headerHeight.set(height)
   }
 
+  // Resolve when the handler runs, not when the header renders. On a tab switch the
+  // header re-renders for the new activeTabIndex *before* NoraTab's effect assigns
+  // ui$.webview, so a render-time value is one tab behind for that commit. The per-tab
+  // registry is keyed by tab id and is already correct at that point.
+  const activeWebview = () => getTabWebview(tabs$.currentTab()?.id || '') || webview
+
   const scrollToTop = () => {
-    void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
+    void scrollWebviewToTop(activeWebview())
   }
   const reloadPage = () => {
-    if (!webview) {
-      return
-    }
-    if (typeof webview.reload === 'function') {
-      webview.reload()
-      return
-    }
-    if (typeof webview.executeJavaScript === 'function') {
-      void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
-      return
-    }
-    webview.loadUrl?.(currentTab?.url)
+    reloadWebview(activeWebview(), currentTab?.url)
   }
   const goForward = () => {
-    if (typeof webview?.goForward === 'function') {
-      webview.goForward()
+    const target = activeWebview()
+    if (typeof target?.goForward === 'function') {
+      target.goForward()
       return
     }
-    void executeWebviewJavaScriptQuietly(webview, 'history.forward()')
+    void executeWebviewJavaScriptQuietly(target, 'history.forward()')
   }
 
   const addBookmark = () => {
@@ -187,7 +183,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     .map((script) => ({ ...script, js: script.js.trim() }))
 
   const runPinnedScript = (script: (typeof pinnedScripts)[number]) => {
-    void executeWebviewJavaScriptQuietly(webview, buildUserScriptExecutionSource(script))
+    void executeWebviewJavaScriptQuietly(activeWebview(), buildUserScriptExecutionSource(script))
   }
 
   const ret = (
@@ -397,20 +393,21 @@ export const NouHeader: React.FC<{}> = ({}) => {
                               const desktopMode = !currentTab?.desktopMode
                               tabs$.tabs[activeTabIndex].desktopMode.toggle()
                               setTimeout(() => {
+                                const target = activeWebview()
                                 if (currentTab?.url) {
                                   const url = new URL(currentTab.url)
                                   if (url.hostname === 'm.facebook.com' && desktopMode) {
                                     url.hostname = 'www.facebook.com'
-                                    webview?.loadUrl?.(url.toString())
+                                    target?.loadUrl?.(url.toString())
                                     return
                                   }
                                   if (url.hostname === 'www.facebook.com' && !desktopMode) {
                                     url.hostname = 'm.facebook.com'
-                                    webview?.loadUrl?.(url.toString())
+                                    target?.loadUrl?.(url.toString())
                                     return
                                   }
                                 }
-                                void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
+                                reloadWebview(target, currentTab?.url)
                               }, 0)
                             },
                           },
@@ -476,8 +473,15 @@ export const NouHeader: React.FC<{}> = ({}) => {
         nextTab()
       }
     })
+  // This pan covers the whole header, buttons included. Without activation thresholds it
+  // claims the touch after a few pixels of movement, which cancels the pressable
+  // underneath before onPress fires — so a tap with the slightest finger drift did
+  // nothing at all, since onEnd below also ignores movement under 50px. Require a
+  // clearly horizontal drag before taking over, and fail outright on vertical movement.
   const panGesture = Gesture.Pan()
     .runOnJS(true)
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-20, 20])
     .onBegin((e) => {
       panStart.value = e.absoluteX
     })

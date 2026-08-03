@@ -8,7 +8,7 @@ import { createDesktopTabGroupFromTab, tabGroups$ } from '@/states/tab-groups'
 import { ui$ } from '@/states/ui'
 import { addBookmark } from '@/lib/bookmark'
 import { share } from '@/lib/share'
-import { getTabWebview, pauseWebview, executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { getTabWebview, pauseWebview, reloadWebview, scrollWebviewToTop } from '@/lib/webview'
 import { isWeb } from '@/lib/utils'
 import { clearHostData } from '@/lib/profile-data'
 import { confirmDestructiveAction } from '@/lib/confirm'
@@ -42,13 +42,7 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
         void clearHostData(host, tab.profile || 'default')
           .then(() => {
             showToast(t('toast.siteDataCleared'))
-            options.runWebviewAction((webview) => {
-              if (typeof webview.reload === 'function') {
-                webview.reload()
-              } else {
-                void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
-              }
-            })
+            options.runWebviewAction((webview) => reloadWebview(webview))
           })
           .catch(() => showToast(t('toast.siteDataClearFailed')))
       },
@@ -79,14 +73,7 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
     {
       label: t('menus.reload'),
       icon: <MaterialIcons name="refresh" size={16} color={menuIconColor} />,
-      handler: () =>
-        options.runWebviewAction((webview) => {
-          if (typeof webview.reload === 'function') {
-            webview.reload()
-          } else {
-            void executeWebviewJavaScriptQuietly(webview, 'document.location.reload()')
-          }
-        }),
+      handler: () => options.runWebviewAction((webview) => reloadWebview(webview)),
     },
     {
       label: tab.isPaused ? t('menus.resume') : t('menus.pause'),
@@ -107,7 +94,7 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
       icon: <MaterialIcons name="vertical-align-top" size={16} color={menuIconColor} />,
       handler: () =>
         options.runWebviewAction((webview) => {
-          void executeWebviewJavaScriptQuietly(webview, `window.scrollTo(0, 0, {behavior: 'smooth'})`)
+          void scrollWebviewToTop(webview)
         }),
     },
     { kind: 'separator' },

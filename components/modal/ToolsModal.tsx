@@ -17,7 +17,7 @@ import { Segemented } from '../picker/Segmented'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { clearHostData } from '@/lib/profile-data'
 import { confirmDestructiveAction } from '@/lib/confirm'
-import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { executeWebviewJavaScriptQuietly, reloadWebview } from '@/lib/webview'
 
 type ToolsTab = 'download' | 'cookies'
 
@@ -130,7 +130,7 @@ export const ToolsModal = () => {
         void clearHostData(host, currentTab.profile || 'default')
           .then(() => {
             showToast(t('toast.siteDataCleared'))
-            void executeWebviewJavaScriptQuietly(ui$.webview.get(), 'document.location.reload()')
+            reloadWebview(ui$.webview.get())
           })
           .catch(() => showToast(t('toast.siteDataClearFailed')))
       },
