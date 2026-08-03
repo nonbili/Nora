@@ -211,6 +211,15 @@ class NoraViewModule : Module() {
       }
     }
 
+    AsyncFunction("getProfileCookies") Coroutine { profile: String ->
+      val context = appContext.reactContext
+      if (context == null) {
+        emptyList<Map<String, Any>>()
+      } else {
+        NoraCookies.getProfileCookies(context, profile, this@NoraViewModule::log)
+      }
+    }
+
     AsyncFunction("openExternalUrl") { url: String ->
       handleExternalAppUrl(appContext.reactContext ?: appContext.throwingActivity, url)
     }

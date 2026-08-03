@@ -225,9 +225,7 @@ export const ProfileManager = () => {
               trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
               items={[
                 { label: t('common.edit'), handler: () => startEdit(profile) },
-                ...(isWeb || isIos
-                  ? [{ label: t('profiles.exportCookies'), handler: () => confirmExportCookies(profile) }]
-                  : []),
+                { label: t('profiles.exportCookies'), handler: () => confirmExportCookies(profile) },
                 { label: t('profiles.clearData'), handler: () => confirmClearData(profile) },
                 ...(profile.isDefault
                   ? []
