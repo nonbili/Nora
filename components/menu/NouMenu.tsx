@@ -63,7 +63,15 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <div className="pointer-events-none flex shrink min-w-0 items-center justify-center">{trigger}</div>
+        {/*
+          Radix merges the trigger handlers onto this div, so it has to stay hit-testable.
+          The pointer-events-none belongs on the inner wrapper instead: triggers are often
+          a Pressable (MaterialButton), which would otherwise swallow the click before the
+          menu ever sees it. Mirrors the pointerEvents="none" the native menus use.
+        */}
+        <div className="flex shrink min-w-0 items-center justify-center">
+          <div className="pointer-events-none flex min-w-0 items-center justify-center">{trigger}</div>
+        </div>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content
         variant="soft"

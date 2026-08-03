@@ -4,6 +4,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * @react-native-vector-icons ships its own runtime font loader, but that path only
+ * works under Metro: it hands the ttf `require()` to the asset registry, which Vite
+ * has no equivalent of, so every glyph falls back to a system font and renders blank.
+ * Register the fonts here instead — the family names must match each icon set's
+ * postScriptName, which is what the components set as fontFamily on web.
+ */
+@font-face {
+  font-family: 'MaterialIcons-Regular';
+  src: url('@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MaterialDesignIcons';
+  src: url('@react-native-vector-icons/material-design-icons/fonts/MaterialDesignIcons.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'AntDesign';
+  src: url('@react-native-vector-icons/ant-design/fonts/AntDesign.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :focus-visible {
   outline: none;
 }

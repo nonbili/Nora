@@ -537,7 +537,7 @@ export const SettingsAppearanceContent = () => {
                 </NouText>
               </View>
               <NouMenu
-                trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
+                trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
                 items={[
                   {
                     label: t('common.off'),
@@ -585,7 +585,7 @@ export const SettingsAppearanceContent = () => {
           <View className="flex-row items-center gap-1">
             <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{settings.defaultZoom}%</NouText>
             <NouMenu
-              trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
+              trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
               items={ZOOM_PRESETS.map((zoom) => ({
                 label: `${zoom}%`,
                 handler: () => settings$.setDefaultZoom(zoom),
