@@ -1,0 +1,4 @@
+- Support exporting and importing settings
+- Support exporting all cookies of a profile
+- Fix blank tab when opening link in new tab
+- Fix reload and scroll to top
