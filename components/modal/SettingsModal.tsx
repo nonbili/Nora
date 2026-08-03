@@ -17,6 +17,7 @@ import {
   SettingsSearchContent,
 } from './SettingsModalTabSettings'
 import { SettingsUserStylesContent } from './SettingsUserStylesContent'
+import { SettingsBackupContent } from './SettingsBackupContent'
 import { t } from 'i18next'
 import { SettingsModalTabSync } from './SettingsModalTabSync'
 import MaterialIcons, { type MaterialIconsIconName } from '@react-native-vector-icons/material-icons'
@@ -37,7 +38,7 @@ const donateLinks = [
   { label: 'Liberapay', detail: 'liberapay.com/rnons', url: 'https://liberapay.com/rnons' },
   { label: 'PayPal', detail: 'paypal.me/rnons', url: 'https://paypal.me/rnons' },
 ]
-type SettingsPage = 'home' | 'browsing' | 'styles' | 'appearance' | 'services' | 'profiles' | 'bookmarks' | 'search' | 'sync' | 'about' | 'changelog' | 'usageLimits'
+type SettingsPage = 'home' | 'browsing' | 'styles' | 'appearance' | 'services' | 'profiles' | 'bookmarks' | 'search' | 'sync' | 'backup' | 'about' | 'changelog' | 'usageLimits'
 
 const SettingsNavRow: React.FC<{
   title: string
@@ -283,6 +284,7 @@ export const SettingsModal = () => {
     bookmarks: t('settings.pages.bookmarks'),
     search: t('settings.pages.search'),
     sync: t('sync.label'),
+    backup: t('settings.pages.backup'),
     about: t('common.about'),
     changelog: t('changelog.label'),
     usageLimits: t('usageLimits.label'),
@@ -350,7 +352,6 @@ export const SettingsModal = () => {
                 description={t('settings.search.description')}
                 icon="manage-search"
                 onPress={() => pushPage('search')}
-                isLast={!showSync}
               />
               {showSync ? (
                 <SettingsNavRow
@@ -359,9 +360,15 @@ export const SettingsModal = () => {
                   icon="sync"
                   meta={planLabel}
                   onPress={() => pushPage('sync')}
-                  isLast
                 />
               ) : null}
+              <SettingsNavRow
+                title={t('settings.pages.backup')}
+                description={t('settings.backup.description')}
+                icon="settings-backup-restore"
+                onPress={() => pushPage('backup')}
+                isLast
+              />
             </SettingsSurface>
           </SettingsSection>
 
@@ -394,6 +401,7 @@ export const SettingsModal = () => {
     if (currentPage === 'profiles') return <SettingsProfilesContent />
     if (currentPage === 'bookmarks') return <SettingsBookmarksContent />
     if (currentPage === 'search') return <SettingsSearchContent />
+    if (currentPage === 'backup') return <SettingsBackupContent />
     if (currentPage === 'changelog') return <SettingsChangelogContent />
     if (currentPage === 'usageLimits') return <SettingsUsageLimitsContent />
 

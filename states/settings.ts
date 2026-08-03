@@ -93,6 +93,90 @@ interface Store extends Settings {
   setSiteZoom: (site: string, zoom: number | null) => void
 }
 
+const sanitizeProfiles = (profiles?: (Partial<Profile> | null | undefined)[]) =>
+  ensureProfiles(
+    (profiles || [])
+      .filter((profile) => profile && typeof profile.id === 'string' && typeof profile.name === 'string')
+      .map((profile) => ({
+        id: profile!.id!,
+        name: profile!.name!,
+        color: typeof profile!.color === 'string' ? profile!.color! : DEFAULT_PROFILE.color,
+        ...(profile!.isDefault ? { isDefault: true } : {}),
+      })),
+  )
+
+const sanitizeSiteZoom = (siteZoom?: Record<string, unknown>) => {
+  const next: Record<string, number> = {}
+  for (const [site, zoom] of Object.entries(siteZoom || {})) {
+    if (typeof zoom === 'number' && Number.isFinite(zoom)) {
+      next[site] = zoom
+    }
+  }
+  return next
+}
+
+/**
+ * Build a complete, validated Settings value from a partial one, so a hand
+ * edited or older backup file can't leave holes in the store.
+ */
+export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings$.get()): Settings => {
+  const customSearchProviders = normalizeCustomSearchProviders(value?.customSearchProviders)
+  const enabledSearchProviderIds = normalizeEnabledSearchProviderIds(
+    value?.enabledSearchProviderIds,
+    customSearchProviders,
+  )
+  const bool = (input: unknown, fallback = false) => (typeof input === 'boolean' ? input : fallback)
+
+  return {
+    language: normalizeI18nLanguage(value?.language),
+    autoHideHeader: bool(value?.autoHideHeader),
+    doubleTapToToggleHeader: bool(value?.doubleTapToToggleHeader),
+    hideToolbarWhenScrolled: bool(value?.hideToolbarWhenScrolled),
+    headerPosition: value?.headerPosition === 'bottom' ? 'bottom' : 'top',
+    theme: value?.theme === 'dark' || value?.theme === 'light' ? value.theme : null,
+    openExternalLinkInSystemBrowser: bool(value?.openExternalLinkInSystemBrowser),
+    redirectToOldReddit: bool(value?.redirectToOldReddit),
+    xDefaultHomeTimeline: normalizeXHomeTimeline(value?.xDefaultHomeTimeline),
+    hideXHomeTimelineTabs: bool(value?.hideXHomeTimelineTabs),
+    allowHttpWebsite: bool(value?.allowHttpWebsite, true),
+    inspectable: bool(value?.inspectable),
+    videoEdgeLongPressTo2x: bool(value?.videoEdgeLongPressTo2x, true),
+    translateOnDoubleTap: bool(value?.translateOnDoubleTap),
+    translationTargetLanguage:
+      typeof value?.translationTargetLanguage === 'string' && value.translationTargetLanguage.trim()
+        ? value.translationTargetLanguage
+        : null,
+    doubleBackToExitApp: bool(value?.doubleBackToExitApp),
+    mentionNotificationsEnabled: bool(value?.mentionNotificationsEnabled),
+
+    proxyEnabled: bool(value?.proxyEnabled),
+    proxyType: value?.proxyType === 'socks' ? 'socks' : 'http',
+    proxyHost: typeof value?.proxyHost === 'string' ? value.proxyHost : '',
+    proxyPort: typeof value?.proxyPort === 'string' ? value.proxyPort : '',
+
+    showNewTabButtonInHeader: bool(value?.showNewTabButtonInHeader, true),
+    showBackButtonInHeader: bool(value?.showBackButtonInHeader),
+    showForwardButtonInHeader: bool(value?.showForwardButtonInHeader),
+    showReloadButtonInHeader: bool(value?.showReloadButtonInHeader),
+    showScrollButtonInHeader: bool(value?.showScrollButtonInHeader),
+    oneHandMode: bool(value?.oneHandMode),
+    oneTabPerSite: bool(value?.oneTabPerSite),
+    oneProfilePerSite: bool(value?.oneProfilePerSite),
+
+    deckTabWidth: typeof value?.deckTabWidth === 'number' ? value.deckTabWidth : 400,
+    sidebarCollapsed: bool(value?.sidebarCollapsed),
+
+    defaultZoom: typeof value?.defaultZoom === 'number' ? value.defaultZoom : 100,
+    siteZoom: sanitizeSiteZoom(value?.siteZoom),
+
+    disabledServicesArr: (value?.disabledServicesArr || []).filter((service): service is string => typeof service === 'string'),
+    enabledSearchProviderIds,
+    selectedSearchProviderId: normalizeSelectedSearchProviderId(value?.selectedSearchProviderId, enabledSearchProviderIds),
+    customSearchProviders,
+    profiles: sanitizeProfiles(value?.profiles),
+  }
+}
+
 export const normalizeSettings = <T extends Partial<Settings> | undefined>(data: T) => {
   if (!data) {
     return data

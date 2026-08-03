@@ -204,7 +204,8 @@
       "services": "Services",
       "profiles": "Profiles & Sessions",
       "bookmarks": "Bookmarks",
-      "search": "Search"
+      "search": "Search",
+      "backup": "Backup"
     },
     "browsing": {
       "descriptionNative": "Feature toggles.",
@@ -228,6 +229,18 @@
       "description": "Manage pinned websites.",
       "saved": "Saved Bookmarks",
       "empty": "No bookmarks yet."
+    },
+    "backup": {
+      "description": "Export or restore settings, bookmarks and user styles.",
+      "export": "Export settings",
+      "exportDescription": "Save settings, bookmarks, user styles and custom scripts as a JSON file",
+      "exportFailed": "Export failed: {{message}}",
+      "import": "Import settings",
+      "importDescription": "Restore settings from a Nora settings file",
+      "importConfirm": "This replaces your current settings, bookmarks, user styles and custom scripts. Continue?",
+      "importWithScriptsConfirm": "This file contains {{count}} enabled custom script(s), which can run code inside websites. Only continue if you trust the file. Your current settings, bookmarks, user styles and custom scripts will be replaced.",
+      "importDone": "Imported: {{sections}}",
+      "importFailed": "Import failed: {{message}}"
     },
     "services": {
       "title": "Built-In Services",
