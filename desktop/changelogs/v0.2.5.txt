@@ -1,0 +1,4 @@
+- Support exporting and importing settings
+- Support exporting cookies
+- Fix uploading image to Reddit when blocklist is enabled
+- UI fixes and dependency updates

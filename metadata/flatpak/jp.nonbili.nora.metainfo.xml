@@ -60,6 +60,16 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.5" date="2026-08-03">
+      <description>
+        <ul>
+          <li>Support exporting and importing settings</li>
+          <li>Support exporting cookies</li>
+          <li>Fix uploading image to Reddit when blocklist is enabled</li>
+          <li>UI fixes and dependency updates</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.4" date="2026-06-26">
       <description>
         <ul>
