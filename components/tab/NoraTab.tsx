@@ -32,6 +32,9 @@ import { tabGroups$ } from '@/states/tab-groups'
 import { blocklistMatcherRevision$, getCosmeticCssForHost, loadCosmeticFilters } from '@/lib/blocklist'
 import { blocklist$ } from '@/states/blocklist'
 
+const LOAD_URL_MAX_RETRIES = 5
+const LOAD_URL_RETRY_DELAY = 100
+
 const getRedirectTo = (str: string) => {
   try {
     const url = new URL(str)
@@ -460,6 +463,16 @@ export const NoraTab: React.FC<{
     }
   }, [])
 
+  // Must run before the load effect below, so that a remounted native view starts
+  // from a cleared pageUrlRef and the load is actually re-issued. The desktop ref
+  // callback already loads the URL and seeds pageUrlRef during the commit phase.
+  useEffect(() => {
+    if (!isWeb) {
+      pageUrlRef.current = ''
+    }
+    setCanGoBack(false)
+  }, [viewInstanceKey])
+
   useEffect(() => {
     const webview = webviewRef.current
     if (webview && tab.url && tab.url !== pageUrlRef.current) {
@@ -471,30 +484,53 @@ export const NoraTab: React.FC<{
       return
     }
 
-    const native = nativeRef.current
-    if (!native || tab.url === pageUrlRef.current) {
-      return
-    }
+    // The native view is addressed by tag across the bridge, and that tag can go
+    // stale between scheduling and dispatching the call (the view is remounted, or
+    // the JS thread stalls long enough for the registry entry to be replaced). The
+    // call then rejects with ERR_VIEW_NOT_FOUND and the tab stays blank forever,
+    // because tab.url never changes again to re-trigger this effect. So re-resolve
+    // nativeRef on every attempt and retry a stale-view rejection.
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | null = null
 
-    const timer = setTimeout(() => {
-      if (nativeRef.current !== native || tab.url === pageUrlRef.current) {
+    const attempt = (retriesLeft: number) => {
+      timer = null
+      if (cancelled || tab.url === pageUrlRef.current) {
         return
       }
+
+      const native = nativeRef.current
+      if (!native) {
+        if (retriesLeft > 0) {
+          timer = setTimeout(() => attempt(retriesLeft - 1), LOAD_URL_RETRY_DELAY)
+        }
+        return
+      }
+
       void Promise.resolve(native.loadUrl(tab.url)).catch((error) => {
-        if (nativeRef.current !== native) {
+        if (cancelled || tab.url === pageUrlRef.current) {
+          return
+        }
+        if (error?.code === 'ERR_VIEW_NOT_FOUND' && retriesLeft > 0) {
+          timer = setTimeout(() => attempt(retriesLeft - 1), LOAD_URL_RETRY_DELAY)
           return
         }
         console.warn('[NoraTab] loadUrl failed', error)
       })
-    }, 0)
+    }
 
-    return () => clearTimeout(timer)
-  }, [tab.url])
+    timer = setTimeout(() => attempt(LOAD_URL_MAX_RETRIES), 0)
 
-  useEffect(() => {
-    pageUrlRef.current = ''
-    setCanGoBack(false)
-  }, [viewInstanceKey])
+    return () => {
+      cancelled = true
+      if (timer) {
+        clearTimeout(timer)
+      }
+    }
+    // viewInstanceKey is a dependency because a remounted native view needs the
+    // load re-issued: the effect above clears pageUrlRef, but nothing else would
+    // retrigger the load since tab.url is unchanged across a remount.
+  }, [tab.url, viewInstanceKey])
 
   useEffect(() => {
     const webview = nativeRef.current
