@@ -17,6 +17,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
   var webView: WKWebView!
   var scriptOnStart: String = ""
+  var documentStartScript: String = ""
   var userAgent: String?
   var textZoom: Int = 100
   var lastTranslationY: CGFloat = 0
@@ -171,6 +172,21 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     let config = WKWebViewConfiguration()
     config.userContentController.add(self, name: "NoraI")
 
+    installUserScripts(config.userContentController)
+
+    config.allowsInlineMediaPlayback = true
+    config.preferences.javaScriptCanOpenWindowsAutomatically = true
+    config.websiteDataStore = NoraView.dataStore(for: profile)
+
+    return config
+  }
+
+  /// Adds every user script the webview needs, in injection order. Called on
+  /// creation and again whenever one of the scripts changes, since a single
+  /// user script can't be removed on its own.
+  private func installUserScripts(_ controller: WKUserContentController) {
+    controller.removeAllUserScripts()
+
     // Inject the bridge shim to match Android's NoraI.onMessage
     let bridgeScript = """
       window.NoraI = {
@@ -179,21 +195,17 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
         }
       };
     """
-    let userScript = WKUserScript(source: bridgeScript, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-    config.userContentController.addUserScript(userScript)
+    controller.addUserScript(WKUserScript(source: bridgeScript, injectionTime: .atDocumentStart, forMainFrameOnly: false))
 
-    if !scriptOnStart.isEmpty {
-      let startScript = WKUserScript(source: scriptOnStart, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
-      config.userContentController.addUserScript(startScript)
+    if !documentStartScript.isEmpty {
+      controller.addUserScript(WKUserScript(source: documentStartScript, injectionTime: .atDocumentStart, forMainFrameOnly: false))
     }
 
-    installGoogleOAuthShim(config.userContentController)
+    if !scriptOnStart.isEmpty {
+      controller.addUserScript(WKUserScript(source: scriptOnStart, injectionTime: .atDocumentEnd, forMainFrameOnly: false))
+    }
 
-    config.allowsInlineMediaPlayback = true
-    config.preferences.javaScriptCanOpenWindowsAutomatically = true
-    config.websiteDataStore = NoraView.dataStore(for: profile)
-
-    return config
+    installGoogleOAuthShim(controller)
   }
 
   private func setupWebView(profile: String) {
@@ -305,9 +317,21 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   }
 
   func setScriptOnStart(_ script: String) {
+      if script == scriptOnStart { return }
       scriptOnStart = script
-      let userScript = WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
-      webView.configuration.userContentController.addUserScript(userScript)
+      if let controller = webView?.configuration.userContentController {
+        installUserScripts(controller)
+      }
+  }
+
+  /// Runs [script] before any page script on every navigation, so a page can't
+  /// capture the globals it overrides. Takes effect on the next page load.
+  func setScriptOnDocumentStart(_ script: String) {
+      if script == documentStartScript { return }
+      documentStartScript = script
+      if let controller = webView?.configuration.userContentController {
+        installUserScripts(controller)
+      }
   }
 
   func setProfile(_ profile: String) {

@@ -6,6 +6,7 @@ import { useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
+import { webRtcGuardScript$ } from '@/lib/webrtc'
 import { settings$ } from '@/states/settings'
 import { delay } from 'es-toolkit'
 import { getUserAgent } from '@/lib/useragent'
@@ -31,6 +32,8 @@ type DownloadWebview = {
 export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const currentUrl = useValue(ui$.downloadVideoModalUrl)
   const inspectable = useValue(settings$.inspectable)
+  const protectWebRtcIp = useValue(settings$.protectWebRtcIp)
+  const webRtcGuardScript = useValue(webRtcGuardScript$)
   const onClose = () => ui$.downloadVideoModalUrl.set('')
   const [title, setTitle] = useState('')
   const [downloadOptions, setDownloadOptions] = useState<DownloadOption[]>([])
@@ -189,6 +192,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
                 className="bg-white"
                 style={{ flex: 1 }}
                 scriptOnStart={contentJs}
+                scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
                 useragent={userAgent}
                 onLoad={onLoad}
                 onMessage={onMessage}

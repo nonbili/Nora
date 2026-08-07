@@ -11,6 +11,7 @@ import { initMainChannel } from './ipc/main'
 import { uiClient } from './ipc/ui'
 import { getUserAgent } from '@/lib/useragent'
 import { isHttpUrl, normalizeExternalTargetUrl, shouldOpenInSystemBrowser } from './lib/link-handling'
+import { attachWebRtcProtection } from './lib/webrtc'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
 
@@ -170,6 +171,7 @@ function createWindow(): void {
     // MaxListenersExceededWarning. Raise the cap so the warning doesn't fire (the listeners
     // clear themselves once the page stops loading).
     wc.setMaxListeners(50)
+    attachWebRtcProtection(wc)
     attachDownloadHandler(wc.session)
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
       callback(permission === 'notifications')

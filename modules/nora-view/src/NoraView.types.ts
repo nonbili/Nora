@@ -22,6 +22,8 @@ export type NoraViewProps = {
   allowpopups?: string
   src?: string
   scriptOnStart?: string
+  /** Injected before page scripts run (WebRTC guard). Native platforms only. */
+  scriptOnDocumentStart?: string
   textZoom?: number
   onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
   onMessage?: (event: { nativeEvent: OnMessageEventPayload }) => void

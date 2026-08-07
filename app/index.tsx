@@ -15,6 +15,7 @@ import { tabs$ } from '@/states/tabs'
 import { blocklist$ } from '@/states/blocklist'
 import { applyBlocklist, refreshBlocklistIfDue, supportsRuntimeBlocklist, waitForBlocklistPersist } from '@/lib/blocklist'
 import { showToast } from '@/lib/toast'
+import { loadWebRtcGuardScript } from '@/lib/webrtc'
 import { t } from 'i18next'
 
 let Notifications: typeof import('expo-notifications') | undefined
@@ -130,6 +131,10 @@ export default function HomeScreen() {
   useEffect(() => {
     ;(async () => {
       const [{ localUri }] = await Asset.loadAsync(require('../assets/scripts/main.bjs'))
+      // The guard has to be ready before the first webview renders: handing it
+      // over later only takes effect on the next navigation, which would leave
+      // the restored tabs unprotected.
+      await loadWebRtcGuardScript().catch((e) => console.error('[nora] failed to load WebRTC guard', e))
       if (localUri) {
         const res = await fetch(localUri)
         const content = await res.text()

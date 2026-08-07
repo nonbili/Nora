@@ -150,6 +150,11 @@
     "redirectToOldReddit": "Redirect to Old Reddit",
     "allowHttpWebsite": "Allow HTTP websites",
     "inspectable": "Make webview inspectable",
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "Prevent WebRTC IP leaks",
+      "protectIpHint": "Stops pages from discovering your real IP address through WebRTC, which bypasses the proxy and VPN. Calls that use a relay server keep working; turn this off if a video or voice call fails to connect. Takes effect on the next page load."
+    },
     "proxy": {
       "label": "Proxy",
       "enabled": "Enable proxy",

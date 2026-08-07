@@ -50,6 +50,7 @@ export interface Settings {
   translationTargetLanguage: string | null
   doubleBackToExitApp: boolean
   mentionNotificationsEnabled: boolean
+  protectWebRtcIp: boolean
 
   proxyEnabled: boolean
   proxyType: 'http' | 'socks'
@@ -148,6 +149,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
         : null,
     doubleBackToExitApp: bool(value?.doubleBackToExitApp),
     mentionNotificationsEnabled: bool(value?.mentionNotificationsEnabled),
+    protectWebRtcIp: bool(value?.protectWebRtcIp, true),
 
     proxyEnabled: bool(value?.proxyEnabled),
     proxyType: value?.proxyType === 'socks' ? 'socks' : 'http',
@@ -236,6 +238,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.oneProfilePerSite !== 'boolean') {
     data.oneProfilePerSite = false
   }
+  if (typeof data.protectWebRtcIp !== 'boolean') {
+    data.protectWebRtcIp = true
+  }
   if (typeof data.proxyEnabled !== 'boolean') {
     data.proxyEnabled = false
   }
@@ -275,6 +280,7 @@ export const settings$: Observable<Store> = observable<Store>({
   translationTargetLanguage: null,
   doubleBackToExitApp: false,
   mentionNotificationsEnabled: false,
+  protectWebRtcIp: true,
 
   proxyEnabled: false,
   proxyType: 'http',

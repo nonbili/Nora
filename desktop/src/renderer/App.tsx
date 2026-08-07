@@ -59,6 +59,10 @@ function App(): React.JSX.Element {
     })
   })
 
+  useObserveEffect(() => {
+    void mainClient.setWebRtcProtection(settings$.protectWebRtcIp.get())
+  })
+
   return (
     <>
       <MainPage contentJs={contentJs} />

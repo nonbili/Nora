@@ -45,6 +45,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.webkit.ScriptHandler
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
@@ -345,6 +346,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   internal val onMessage by EventDispatcher()
 
   private var scriptOnStart = ""
+  private var documentStartScript = ""
+  private var documentStartScriptHandler: ScriptHandler? = null
   private var pageUrl = ""
   private var customView: View? = null
   private var contextMenuLinkUrl: String? = null
@@ -596,6 +599,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             if (Uri.parse(url).host in GOOGLE_AUTH_HOSTS) {
               evaluateJavascript(OAUTH_SHIM_SCRIPT, null)
             }
+            // Only a fallback: when the WebView supports document start scripts the
+            // guard is already installed before any page script has run.
+            if (documentStartScript.isNotEmpty() && documentStartScriptHandler == null) {
+              evaluateJavascript(documentStartScript, null)
+            }
             evaluateJavascript(scriptOnStart, null)
           }
 
@@ -770,6 +778,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             }
           }
           installGoogleOAuthShim(newWebView)
+          // A popup starts out as its own realm the opener can run scripts in,
+          // so it needs the guard as much as a tab does.
+          installDocumentStartScript(newWebView)
           newWebView.settings.userAgentString = view.settings.userAgentString
           var decided = false
 
@@ -1008,6 +1019,32 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   fun setScriptOnStart(script: String) {
     scriptOnStart = script
+  }
+
+  /**
+   * Runs [script] before any page script on every navigation, so a page can't
+   * capture the globals it overrides. Takes effect on the next page load.
+   */
+  fun setScriptOnDocumentStart(script: String) {
+    if (script == documentStartScript) {
+      return
+    }
+    documentStartScript = script
+    documentStartScriptHandler?.remove()
+    documentStartScriptHandler = installDocumentStartScript(webView)
+  }
+
+  private fun installDocumentStartScript(target: WebView): ScriptHandler? {
+    if (documentStartScript.isEmpty() ||
+      !WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+      return null
+    }
+    return try {
+      WebViewCompat.addDocumentStartJavaScript(target, documentStartScript, setOf("*"))
+    } catch (e: Exception) {
+      log("addDocumentStartJavaScript failed: ${e.message}")
+      null
+    }
   }
 
   fun download(url: String, fileName: String?, mimeType: String?) {

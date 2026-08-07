@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import { app, BrowserWindow, ipcMain, IpcMainEvent, session, WebPreferences } from 'electron'
 import { is } from '@electron-toolkit/utils'
 import contentJs from '@/assets/scripts/main.bjs?raw'
+import { attachWebRtcProtection } from './webrtc.js'
 import { uiClient } from 'main/ipc/ui'
 import { normalizeDownloadUrl } from '@/content/download'
 
@@ -79,6 +80,7 @@ export async function openDownloadWindow(url: string) {
     webPreferences,
   })
 
+  attachWebRtcProtection(win.webContents)
   win.loadURL(url)
   const ses = session.defaultSession
 

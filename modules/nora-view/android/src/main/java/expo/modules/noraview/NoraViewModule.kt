@@ -237,6 +237,10 @@ class NoraViewModule : Module() {
         view.setScriptOnStart(script)
       }
 
+      Prop("scriptOnDocumentStart") { view: NoraView, script: String ->
+        view.setScriptOnDocumentStart(script)
+      }
+
       Prop("useragent") { view: NoraView, ua: String ->
         view.userAgent = ua
         view.webView.settings.setUserAgentString(ua)

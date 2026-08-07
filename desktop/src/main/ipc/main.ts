@@ -2,6 +2,7 @@ import { openDownloadWindow } from 'main/lib/download-window.js'
 import { MAIN_CHANNEL } from './constants.js'
 import { ipcMain, session } from 'electron'
 import { setLinkHandlingSettings } from '../lib/link-handling.js'
+import { setWebRtcProtection } from '../lib/webrtc.js'
 import {
   deleteDesktopBlocklistMatcherSnapshot,
   deleteDesktopBlocklistSources,
@@ -125,6 +126,7 @@ const interfaces = {
   writeBlocklistMatcherSnapshot: writeDesktopBlocklistMatcherSnapshot,
   setBlocklist: setDesktopBlocklist,
   setLinkHandlingSettings,
+  setWebRtcProtection,
 }
 
 export type MainInterface = typeof interfaces
