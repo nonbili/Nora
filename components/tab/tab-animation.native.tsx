@@ -1,6 +1,10 @@
-import { useEffect, useRef } from 'react'
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
+import { View } from 'react-native'
 
+// The inset is plain layout, not a Reanimated value. The tab is absolutely positioned and
+// the webview has to genuinely resize, so the inset must survive re-renders: switching
+// tabs re-renders every NoraTab (isActive drives opacity/zIndex), and an animated margin
+// does not carry across that, which left every tab but the first one sitting under the
+// toolbar.
 export function useTabAnimation({
   headerHeight,
   headerShown,
@@ -12,28 +16,13 @@ export function useTabAnimation({
   hideableHeader: boolean
   headerPosition: 'top' | 'bottom'
 }) {
-  const inset = useSharedValue(hideableHeader && headerShown ? headerHeight : 0)
-  const isFirstRender = useRef(true)
-
-  useEffect(() => {
-    const targetInset = hideableHeader && headerShown ? headerHeight : 0
-    if (isFirstRender.current) {
-      inset.value = targetInset
-      isFirstRender.current = false
-    } else {
-      inset.value = withTiming(targetInset)
-    }
-  }, [headerHeight, headerShown, hideableHeader, inset])
-
-  const style = useAnimatedStyle(() => {
-    return {
-      top: headerPosition === 'top' ? inset.value : 0,
-      bottom: headerPosition === 'bottom' ? inset.value : 0,
-    }
-  }, [headerPosition])
+  const inset = hideableHeader && headerShown ? headerHeight : 0
 
   return {
-    Root: Animated.View,
-    style,
+    Root: View,
+    style: {
+      marginTop: headerPosition === 'top' ? inset : 0,
+      marginBottom: headerPosition === 'bottom' ? inset : 0,
+    },
   }
 }

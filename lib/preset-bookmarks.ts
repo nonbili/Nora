@@ -54,6 +54,7 @@ export const presetBookmarks: PresetBookmark[] = [
   { id: 'preset-ai-gemini', groupId: 'preset-ai', title: 'Gemini', url: 'https://gemini.google.com' },
   { id: 'preset-ai-perplexity', groupId: 'preset-ai', title: 'Perplexity', url: 'https://www.perplexity.ai' },
   { id: 'preset-ai-grok', groupId: 'preset-ai', title: 'Grok', url: 'https://grok.com' },
+  { id: 'preset-ai-copilot', groupId: 'preset-ai', title: 'Copilot', url: 'https://copilot.microsoft.com' },
   { id: 'preset-ai-poe', groupId: 'preset-ai', title: 'Poe', url: 'https://poe.com' },
   { id: 'preset-ai-huggingface', groupId: 'preset-ai', title: 'Hugging Face', url: 'https://huggingface.co' },
   { id: 'preset-ai-characterai', groupId: 'preset-ai', title: 'Character.AI', url: 'https://character.ai' },
