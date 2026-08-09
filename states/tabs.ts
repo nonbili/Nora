@@ -14,6 +14,7 @@ import {
   pruneChildBackParentByTabId,
   pruneRecentTabIds,
   resolveCloseTarget,
+  shouldTabStartDormant,
   updateRecentTabIds,
   type ChildBackParentByTabId,
 } from '@/lib/tab-behavior'
@@ -34,6 +35,10 @@ export interface Tab {
   icon?: string
   isLoading?: boolean
   isPaused?: boolean
+  // Set on cold start for every restored tab except the active one: the webview is not
+  // mounted, so the active tab gets the network and renderer to itself. Cleared when the
+  // tab is activated, or by wakeDormantTabs() once the active tab has finished loading.
+  isDormant?: boolean
   desktopMode?: boolean
   profile?: string
   profileMode?: ProfileMode
@@ -67,6 +72,7 @@ interface Store {
   updateTabUrl: (url: string, index?: number) => void
   setTabLoading: (loading: boolean, index?: number) => void
   setTabPaused: (paused: boolean, index?: number) => void
+  wakeDormantTabs: () => void
   setActiveTabIndex: (index: number, reason?: TabActivationReason) => void
   setActiveTabById: (tabId: string, reason?: TabActivationReason) => void
   handleBackPress: () => boolean
@@ -74,6 +80,10 @@ interface Store {
 
 let lastOpenedUrl = ''
 let recentTabIds: string[] = []
+let dormantWakeTimer: ReturnType<typeof setTimeout> | null = null
+// If the active tab never reports a finished load (offline, a hung page, a URL the
+// webview silently drops), the background tabs must still come back on their own.
+const DORMANT_WAKE_FALLBACK_DELAY = 10000
 let childBackParentByTabId: ChildBackParentByTabId = {}
 const MAX_RECENTLY_CLOSED_TABS = 10
 
@@ -260,6 +270,11 @@ const setActiveTabIndexInternal = (index: number, reason: TabActivationReason = 
       recentTabIds = updateRecentTabIds(recentTabIds, previousTabId, nextTabId)
     }
     ui$.activeCanGoBack.set(false)
+  }
+
+  // Visiting a dormant tab is the strongest possible signal that it should load now.
+  if (tabs[index]?.isDormant) {
+    tabs$.tabs[index].isDormant.set(false)
   }
 
   tabs$.activeTabIndex.set(index)
@@ -580,6 +595,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       tab$.url.set(url)
       tab$.isLoading.set(Boolean(url))
       tab$.isPaused.set(false)
+      tab$.isDormant.set(false)
       if (!previousUrl && url) {
         tab$.backToNewTab.set(true)
       }
@@ -605,8 +621,23 @@ export const tabs$: Observable<Store> = observable<Store>({
       tab$.isPaused.set(paused)
       if (paused) {
         tab$.isLoading.set(false)
+      } else {
+        tab$.isDormant.set(false)
       }
     }
+  },
+
+  wakeDormantTabs: () => {
+    if (dormantWakeTimer) {
+      clearTimeout(dormantWakeTimer)
+      dormantWakeTimer = null
+    }
+    const tabs = tabs$.tabs.get()
+    tabs.forEach((tab, index) => {
+      if (tab?.isDormant) {
+        tabs$.tabs[index].isDormant.set(false)
+      }
+    })
   },
 
   setActiveTabIndex: (index, reason = 'user') => {
@@ -700,11 +731,22 @@ syncObservable(tabs$, {
             })
           if (!data.tabs.length) {
             data.tabs = [{ id: genId(), url: '' }]
-          }          if (typeof data.activeTabIndex !== 'number' || data.activeTabIndex < 0) {
+          }
+          if (typeof data.activeTabIndex !== 'number' || data.activeTabIndex < 0) {
             data.activeTabIndex = 0
           }
           if (data.activeTabIndex >= data.tabs.length) {
             data.activeTabIndex = data.tabs.length - 1
+          }
+
+          // Restore lazily: only the active tab mounts a webview now, the rest wait for
+          // wakeDormantTabs() (or for the user to switch to them). The flag is recomputed
+          // from scratch on every hydrate, so a persisted value never leaks across starts.
+          data.tabs.forEach((tab, index) => {
+            tab.isDormant = shouldTabStartDormant(data.tabs, data.activeTabIndex, index)
+          })
+          if (data.tabs.some((tab) => tab.isDormant)) {
+            dormantWakeTimer = setTimeout(() => tabs$.wakeDormantTabs(), DORMANT_WAKE_FALLBACK_DELAY)
           }
         }
         if (data?.recentlyClosedTabs) {

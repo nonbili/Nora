@@ -110,3 +110,22 @@ export function getChildBackTarget(
   const existingTabIdSet = new Set(existingTabIds)
   return existingTabIdSet.has(targetTabId) ? targetTabId : undefined
 }
+
+type DormantTabInput = {
+  url?: string
+  isPaused?: boolean
+}
+
+/**
+ * Deferred cold-start restore: decides which restored tabs should stay unloaded so the
+ * active tab gets the network and renderer to itself. A blank or paused active tab never
+ * loads anything, so there is nothing to prioritise and no tab is held back.
+ */
+export function shouldTabStartDormant(tabs: DormantTabInput[], activeTabIndex: number, index: number) {
+  const activeTab = tabs[activeTabIndex]
+  if (!activeTab?.url || activeTab.isPaused) {
+    return false
+  }
+  const tab = tabs[index]
+  return index !== activeTabIndex && Boolean(tab?.url) && !tab?.isPaused
+}

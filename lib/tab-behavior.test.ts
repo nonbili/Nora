@@ -6,6 +6,7 @@ import {
   pruneChildBackParentByTabId,
   pruneRecentTabIds,
   resolveCloseTarget,
+  shouldTabStartDormant,
   updateRecentTabIds,
 } from './tab-behavior'
 
@@ -85,5 +86,31 @@ describe('child back fallback', () => {
 describe('pruneRecentTabIds', () => {
   it('drops closed tabs from MRU history', () => {
     expect(pruneRecentTabIds(['tab-5', 'tab-3', 'tab-2'], ['tab-2', 'tab-5'])).toEqual(['tab-5', 'tab-2'])
+  })
+})
+
+describe('shouldTabStartDormant', () => {
+  const tabs = [{ url: 'https://a.test' }, { url: 'https://b.test' }, { url: 'https://c.test' }]
+
+  it('loads the active tab and holds the rest back', () => {
+    expect(tabs.map((_, index) => shouldTabStartDormant(tabs, 1, index))).toEqual([true, false, true])
+  })
+
+  it('holds nothing back when the active tab is blank', () => {
+    const withBlankActive = [{ url: '' }, { url: 'https://b.test' }]
+    expect(withBlankActive.map((_, index) => shouldTabStartDormant(withBlankActive, 0, index))).toEqual([false, false])
+  })
+
+  it('holds nothing back when the active tab is paused', () => {
+    const withPausedActive = [{ url: 'https://a.test', isPaused: true }, { url: 'https://b.test' }]
+    expect(withPausedActive.map((_, index) => shouldTabStartDormant(withPausedActive, 0, index))).toEqual([
+      false,
+      false,
+    ])
+  })
+
+  it('leaves blank and paused background tabs alone', () => {
+    const mixed = [{ url: 'https://a.test' }, { url: '' }, { url: 'https://c.test', isPaused: true }]
+    expect(mixed.map((_, index) => shouldTabStartDormant(mixed, 0, index))).toEqual([false, false, false])
   })
 })

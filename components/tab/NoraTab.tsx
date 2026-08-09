@@ -233,6 +233,9 @@ export const NoraTab: React.FC<{
   const profileColor = getProfileColor(tab.profile)
   const viewKey = getProfileViewKey(tab)
   const viewInstanceKey = `${viewKey}:${tab.url ? 'page' : 'blank'}`
+  // Deferred cold-start restore: no webview is mounted while dormant, so the tab costs
+  // nothing until the active tab has loaded (or the user switches to it).
+  const isDormant = Boolean(tab.isDormant) && !tab.isPaused
 
   useEffect(() => {
     contentJsRef.current = contentJs
@@ -291,6 +294,11 @@ export const NoraTab: React.FC<{
       const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
       if (currentIndex !== -1) {
         tabs$.setTabLoading(loading, currentIndex)
+      }
+      // The active tab is done competing for bandwidth, so let the tabs held back by the
+      // deferred cold-start restore load now. A no-op once nothing is dormant.
+      if (!loading && isActiveRef.current) {
+        tabs$.wakeDormantTabs()
       }
     },
     [tab.id],
@@ -465,14 +473,22 @@ export const NoraTab: React.FC<{
   // Must run before the load effect below, so that a remounted native view starts
   // from a cleared pageUrlRef and the load is actually re-issued. The desktop ref
   // callback already loads the URL and seeds pageUrlRef during the commit phase.
+  // `isDormant` is a dependency on both effects because waking a tab mounts a fresh view
+  // that has never been navigated, exactly like a remount. Clearing pageUrlRef while the
+  // tab is going dormant (rather than when it wakes) keeps the desktop ref callback, which
+  // runs before these effects, as the single place that issues the load there.
   useEffect(() => {
-    if (!isWeb) {
+    if (!isWeb || isDormant) {
       pageUrlRef.current = ''
     }
     setCanGoBack(false)
-  }, [viewInstanceKey])
+  }, [isDormant, viewInstanceKey])
 
   useEffect(() => {
+    if (isDormant) {
+      return
+    }
+
     const webview = webviewRef.current
     if (webview && tab.url && tab.url !== pageUrlRef.current) {
       webview.src = tab.url
@@ -529,7 +545,7 @@ export const NoraTab: React.FC<{
     // viewInstanceKey is a dependency because a remounted native view needs the
     // load re-issued: the effect above clears pageUrlRef, but nothing else would
     // retrigger the load since tab.url is unchanged across a remount.
-  }, [tab.url, viewInstanceKey])
+  }, [isDormant, tab.url, viewInstanceKey])
 
   useEffect(() => {
     const webview = nativeRef.current
@@ -779,6 +795,10 @@ export const NoraTab: React.FC<{
               </NouText>
             </Pressable>
           </View>
+        ) : isDormant ? (
+          <View className="flex-1 min-h-0 items-center justify-center">
+            <ActivityIndicator size="small" color="#a1a1aa" />
+          </View>
         ) : (
           <NoraView
             className={clsx('flex-1', !tab.url && 'hidden')}
@@ -817,26 +837,29 @@ export const NoraTab: React.FC<{
         tabAnimationStyle,
       ]}
     >
-      <NoraView
-        key={viewInstanceKey}
-        ref={onNativeRef}
-        className={clsx(!tab.url && 'hidden')}
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-        }}
-        profile={tab.profile || 'default'}
-        scriptOnStart={contentJs}
-        scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
-        useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
-        onLoad={onLoad}
-        onMessage={onMessage}
-        inspectable={inspectable}
-        textZoom={resolvedZoom}
-      />
+      {nIf(
+        !isDormant,
+        <NoraView
+          key={viewInstanceKey}
+          ref={onNativeRef}
+          className={clsx(!tab.url && 'hidden')}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+          }}
+          profile={tab.profile || 'default'}
+          scriptOnStart={contentJs}
+          scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
+          useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
+          onLoad={onLoad}
+          onMessage={onMessage}
+          inspectable={inspectable}
+          textZoom={resolvedZoom}
+        />,
+      )}
       {nIf(!tab.url && isActive, <NavModalContent index={index} />)}
     </TabRoot>
   )
