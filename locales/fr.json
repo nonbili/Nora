@@ -93,7 +93,8 @@
       "services": "Services",
       "profiles": "Profils et sessions",
       "bookmarks": "Signets",
-      "search": "Recherche"
+      "search": "Recherche",
+      "backup": "Sauvegarde"
     },
     "browsing": {
       "descriptionNative": "Commutateurs de fonctionnalités.",
@@ -254,7 +255,24 @@
       "failed": "Impossible de traduire ce texte",
       "unsupported": "Ce couple de langues n'est pas disponible sur cet appareil"
     },
-    "doubleTapToToggleHeader": "Double-cliquez sur la page pour masquer ou afficher la barre d'outils"
+    "doubleTapToToggleHeader": "Double-cliquez sur la page pour masquer ou afficher la barre d'outils",
+    "backup": {
+      "description": "Exporter ou restaurer les paramètres, les signets et les styles utilisateur.",
+      "export": "Paramètres d'exportation",
+      "exportDescription": "Enregistrez les paramètres, les signets, les styles utilisateurs et les scripts personnalisés sous forme de fichier JSON",
+      "exportFailed": "Échec de l'exportation : {{message}}",
+      "import": "Paramètres d'importation",
+      "importDescription": "Rétablir les paramètres à partir d'un fichier de paramètres Nora",
+      "importConfirm": "Ceci remplace vos paramètres actuels, vos signets, vos styles utilisateurs et vos scripts personnalisés. Continuer ?",
+      "importWithScriptsConfirm": "Ce fichier contient {{count}} script(s) personnalisé(s) activé(s), qui peuvent exécuter du code à l'intérieur des sites web. Ne continuez que si vous faites confiance au fichier. Vos paramètres actuels, signets, styles utilisateur et scripts personnalisés seront remplacés.",
+      "importDone": "Importé : {{sections}}",
+      "importFailed": "Importation échouée : {{message}}"
+    },
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "Empêcher les fuites d'IP WebRTC",
+      "protectIpHint": "Empêche les pages de découvrir votre adresse IP réelle via WebRTC, qui contourne le proxy et le VPN. Les appels utilisant un serveur de relais continuent de fonctionner ; désactivez ceci si un appel vidéo ou vocal échoue à se connecter. Prend effet au prochain chargement de page."
+    }
   },
   "changelog": {
     "label": "Journal des modifs",

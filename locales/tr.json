@@ -47,7 +47,13 @@
   },
   "modals": {
     "downloadVideo": "Video indir",
-    "downloadOnCobalt": "Videoyu cobalt.tools üzerinde indir"
+    "downloadOnCobalt": "Videoyu cobalt.tools üzerinde indir",
+    "downloadTab": "İndir",
+    "cookiesTab": "Site Verileri",
+    "exportCookies": "Geçerli site çerezlerini dışa aktar",
+    "exportCookiesHint": "Geçerli siteye ait çerezleri txt dosyası olarak kaydedin.",
+    "exportCookiesButton": "Çerezleri Dışa Aktar",
+    "clearSiteDataHint": "Mevcut site ve profil için çerezleri ve tarama verilerini temizle."
   },
   "native": {
     "menu_saveImage": "Görseli kaydet",
@@ -82,7 +88,9 @@
     "deleteStaleAutoProfilesConfirm": "Son 14 gün içinde kullanılmayan {{count}} otomatik profili silmek ister misiniz? Bu işlem, bu profillerde saklanan tarama verilerini siler ve bu profilleri kullanan sekmeleri kapatır.",
     "clearData": "Verileri sil",
     "clearDataConfirm": "\"{{name}}\" için tüm tarama verilerini silmek istiyor musunuz? Bu işlem, oturumunuzu kapatır ve bu profili kullanan sekmeleri kapatır.",
-    "deleteConfirm": "\"{{name}}\" silinsin mi? Bu işlem depolanan tarama verilerini temizler ve bu profili kullanan sekmeleri kapatır."
+    "deleteConfirm": "\"{{name}}\" silinsin mi? Bu işlem depolanan tarama verilerini temizler ve bu profili kullanan sekmeleri kapatır.",
+    "exportCookies": "Profil çerezlerini dışa aktar",
+    "exportCookiesConfirm": "{{name}} adlı profildeki tüm sitelere ait çerezler dışa aktarılsın mı? Bu dosya her site için oturum bilgileri içerebilir. Gizli tutun."
   },
   "settings": {
     "label": "Ayarlar",
@@ -129,7 +137,8 @@
       "profiles": "Profiller ve Oturumlar",
       "bookmarks": "Yer imleri",
       "search": "Ara",
-      "services": "Uygulamalar"
+      "services": "Uygulamalar",
+      "backup": "Yedekleme"
     },
     "browsing": {
       "descriptionNative": "Özellik kontrolleri.",
@@ -279,6 +288,35 @@
       "port": "Vekil sunucu bağlantı noktası",
       "hostPlaceholder": "Örn. 127.0.0.1 veya proxy.example.com",
       "portPlaceholder": "Örn. 1080"
+    },
+    "translation": {
+      "enable": "Metne çift dokunarak çevirin",
+      "hint": "Bir gönderiyi, yorumu veya paragrafı cihazınızda çevirmek için çift dokunun.",
+      "targetLanguage": "Çevir",
+      "appLanguage": "Uygulama",
+      "systemLanguage": "Sistem",
+      "notSelected": "Bir dil seçin",
+      "chooseLanguage": "Öncelikle bir çeviri dili seçin",
+      "loading": "Çevriliyor…",
+      "copy": "Çeviriyi kopyala",
+      "copySource": "Kaynağı kopyala",
+      "pin": "Çeviriyi sabitle",
+      "unpin": "Çevirinin sabitlemesini kaldır",
+      "failed": "Bu metni çeviremedim",
+      "unsupported": "Bu dil çifti bu cihazda mevcut değildir"
+    },
+    "doubleTapToToggleHeader": "Araç çubuğunu gizlemek veya göstermek için sayfaya iki kez dokunun",
+    "backup": {
+      "description": "Ayarları, yer imlerini ve kullanıcı stillerini dışa aktarın veya geri yükleyin.",
+      "export": "Ayarları dışa aktar",
+      "exportDescription": "Ayarları, yer imlerini, kullanıcı stillerini ve özel komut dosyalarını bir JSON dosyası olarak kaydedin",
+      "exportFailed": "Dışa aktarma başarısız: {{message}}",
+      "import": "Ayarları içe aktar",
+      "importDescription": "Nora ayar dosyasından ayarları geri yükle",
+      "importConfirm": "Bu işlem, mevcut ayarlarınızı, yer imlerinizi, kullanıcı stillerinizi ve özel komut dosyalarınızı silecektir. Devam etmek istiyor musunuz?",
+      "importWithScriptsConfirm": "Bu dosya, web siteleri içinde kod çalıştırabilen {{count}} adet etkinleştirilmiş özel komut dosyası içermektedir. Yalnızca dosyaya güveniyorsanız devam edin. Mevcut ayarlarınız, yer imleriniz, kullanıcı stilleriniz ve özel komut dosyalarınız silinecektir.",
+      "importDone": "İçe aktarılan: {{sections}}",
+      "importFailed": "İçe aktarma başarısız: {{message}}"
     }
   },
   "sync": {
@@ -324,7 +362,14 @@
     "profileDataCleared": "Profil verileri temizlendi",
     "profileDataClearFailed": "Profil verileri temizlenemedi",
     "siteDataCleared": "Site verileri temizlendi",
-    "siteDataClearFailed": "Site verileri temizlenemedi"
+    "siteDataClearFailed": "Site verileri temizlenemedi",
+    "cookieExported": "Dışa aktarılan çerezler dosyası",
+    "cookieExportEmpty": "Bu site için çerez bulunamadı",
+    "cookieExportFailed": "Çerezleri dışa aktarma başarısız oldu",
+    "cookieExportOpenPage": "Çerezleri dışa aktarmadan önce bir sayfa açın",
+    "profileCookieExported": "Dışa aktarılan profil çerezleri",
+    "profileCookieExportEmpty": "Bu profilde hiçbir çerez bulunamadı",
+    "profileCookieExportFailed": "Profil çerezlerini dışa aktarma başarısız oldu"
   },
   "changelog": {
     "label": "Değişiklik günlüğü",
