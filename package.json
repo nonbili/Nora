@@ -80,6 +80,7 @@
     "esbuild": "^0.25.5",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~56.0.0",
+    "react-test-renderer": "19.2.3",
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3"
   }
