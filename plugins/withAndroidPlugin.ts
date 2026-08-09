@@ -1,9 +1,25 @@
-import { ConfigPlugin } from '@expo/config-plugins'
+import { ConfigPlugin, withGradleProperties } from '@expo/config-plugins'
 import { withAppBuildGradle } from '@expo/config-plugins/build/plugins/android-plugins.js'
 
 const googlePlayBuild = !!process.env.GOOGLE_PLAY_BUILD
 
 const withAndroidSigningConfig: ConfigPlugin = (config) => {
+  config = withGradleProperties(config, (config) => {
+    const existingIndex = config.modResults.findIndex(
+      (item) => item.type === 'property' && item.key === 'org.gradle.jvmargs'
+    )
+    if (existingIndex !== -1) {
+      config.modResults[existingIndex].value = '-Xmx4096m -XX:MaxMetaspaceSize=1024m'
+    } else {
+      config.modResults.push({
+        type: 'property',
+        key: 'org.gradle.jvmargs',
+        value: '-Xmx4096m -XX:MaxMetaspaceSize=1024m',
+      })
+    }
+    return config
+  })
+
   return withAppBuildGradle(config, (config) => {
     // https://www.reddit.com/r/expo/comments/1j4v323/comment/mit9b2a/
     let contents = config.modResults.contents

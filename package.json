@@ -5,8 +5,8 @@
   "name": "nora",
   "private": true,
   "main": "expo-router/entry",
-  "version": "0.8.4",
-  "versionCode": 88,
+  "version": "0.8.5",
+  "versionCode": 89,
   "buildNumber": "31",
   "scripts": {
     "bundle": "bun build --target browser content/main.ts content/webrtc.ts --outdir assets/scripts --entry-naming '[name].bjs'",
