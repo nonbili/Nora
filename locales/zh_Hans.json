@@ -120,7 +120,8 @@
       "services": "服务",
       "profiles": "配置文件和会话",
       "bookmarks": "书签",
-      "search": "搜索"
+      "search": "搜索",
+      "backup": "备份"
     },
     "browsing": {
       "descriptionNative": "功能开关。",
@@ -278,7 +279,24 @@
       "failed": "无法翻译此文本",
       "unsupported": "此设备上不支持此语言对"
     },
-    "doubleTapToToggleHeader": "点按两次页面即可隐藏或显示工具栏"
+    "doubleTapToToggleHeader": "点按两次页面即可隐藏或显示工具栏",
+    "backup": {
+      "description": "导出或恢复设置、书签和用户样式。",
+      "export": "导出设置",
+      "exportDescription": "将设置、书签、用户样式和自定义脚本保存为 JSON 文件",
+      "exportFailed": "导出失败：{{message}}",
+      "import": "导入设置",
+      "importDescription": "从 Nora 设置文件中恢复设置",
+      "importConfirm": "这将替换您当前的设置、书签、用户样式和自定义脚本。继续？",
+      "importWithScriptsConfirm": "此文件包含 {{count}} 个已启用的自定义脚本，这些脚本可以在网站内运行代码。请仅在您信任此文件时继续操作。您当前的设置、书签、用户样式和自定义脚本将被替换。",
+      "importDone": "已导入：{{sections}}",
+      "importFailed": "导入失败：{{message}}"
+    },
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "防止 WebRTC IP 泄漏",
+      "protectIpHint": "阻止网页通过 WebRTC 发现您的真实 IP 地址，WebRTC 会绕过代理和 VPN。使用中继服务器的通话仍可正常工作；如果视频或语音通话无法连接，请关闭此功能。此设置将在下次页面加载时生效。"
+    }
   },
   "tabs": {
     "new": "新标签页",
