@@ -1,0 +1,3 @@
+- Add setting to prevent WebRTC IP leaks
+- Prioritize loading active tab on startup
+- Fix toolbar covering top of page when hideable header is enabled
