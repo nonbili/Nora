@@ -37,7 +37,7 @@ import { builtinUserStyleDefinitions } from '@/lib/user-styles'
 import { userStyles$ } from '@/states/user-styles'
 import { settingsUi, SettingsSurface, SettingsRow } from './SettingsPrimitives'
 import { useLocales } from 'expo-localization'
-import { resolveI18nLanguageFromExpoLocale, supportedI18nLanguages } from '@/lib/i18n'
+import { resolveI18nLanguageFromExpoLocale, supportedI18nLanguages, toBcp47Locale } from '@/lib/i18n'
 import { colors } from '@/lib/colors'
 import NoraViewModule from '@/modules/nora-view'
 
@@ -105,7 +105,9 @@ const translationLanguageLabel = (language: string) => {
   const baseLanguage = normalized.split('-')[0].toLowerCase()
   try {
     const DisplayNames = Intl.DisplayNames
-    const displayName = DisplayNames ? new DisplayNames([i18n.language || 'en'], { type: 'language' }).of(normalized) : undefined
+    const displayName = DisplayNames
+      ? new DisplayNames([toBcp47Locale(i18n.language || 'en')], { type: 'language' }).of(normalized)
+      : undefined
     if (displayName && displayName !== normalized) return displayName
   } catch {
     // Use the stable fallback below on runtimes with incomplete Intl support.
@@ -369,7 +371,9 @@ export const SettingsAppearanceContent = () => {
     ...preferredTranslationLanguages,
     ...translationLanguages
       .filter((language) => !preferredTranslationLanguages.some((item) => item.language === language))
-      .sort((a, b) => translationLanguageLabel(a).localeCompare(translationLanguageLabel(b), i18n.language || 'en'))
+      .sort((a, b) =>
+        translationLanguageLabel(a).localeCompare(translationLanguageLabel(b), toBcp47Locale(i18n.language || 'en')),
+      )
       .map((language) => ({ language, metaLabel: undefined })),
   ]
 
