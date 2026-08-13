@@ -51,6 +51,32 @@ export const isFacebookMessagesPath = (pathname: string) => pathname === '/messa
 
 export const isFacebookHomePath = (pathname: string) => pathname === '/' || pathname === '/home.php'
 
+export const shouldHideFacebookOpenAppBanner = (element: HTMLElement | null) => {
+  if (!element) {
+    return false
+  }
+
+  if (element.dataset.noraHiddenOpenApp === '1') {
+    return true
+  }
+
+  if (element.querySelector('form, input, textarea, select')) {
+    return false
+  }
+
+  if (element.querySelector('[role="article"], [data-pagelet], [role="feed"]')) {
+    return false
+  }
+
+  const textBlocks = element.querySelectorAll('.native-text')
+  const buttons = element.querySelectorAll('[role="button"][data-focusable="true"]')
+  const hasTopGradient = !!element.querySelector(
+    ':scope > [data-mcomponent="MContainer"] > [data-mcomponent="TextArea"]',
+  )
+
+  return textBlocks.length === 1 && buttons.length === 1 && hasTopGradient
+}
+
 const shouldHideFacebookFeed = (snapshot?: UserStylesSnapshot | null) => {
   return snapshot?.builtins?.['hide-facebook-feed']?.enabled === true
 }

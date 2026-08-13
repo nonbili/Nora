@@ -4,6 +4,7 @@ import {
   isFacebookHomePath,
   isFacebookMessagesPath,
   isFacebookSponsoredText,
+  shouldHideFacebookOpenAppBanner,
 } from './facebook'
 
 describe('isFacebookSponsoredText', () => {
@@ -33,6 +34,43 @@ describe('isFacebookHomePath', () => {
     expect(isFacebookHomePath('/groups/feed/')).toBe(false)
     expect(isFacebookHomePath('/some-user')).toBe(false)
     expect(isFacebookHomePath('/messages')).toBe(false)
+  })
+})
+
+describe('shouldHideFacebookOpenAppBanner', () => {
+  const createBanner = ({ hasForm = false, buttons = 1 } = {}) =>
+    ({
+      dataset: {},
+      querySelector: (selector: string) => {
+        if (selector === 'form, input, textarea, select') {
+          return hasForm ? {} : null
+        }
+        if (selector === '[role="article"], [data-pagelet], [role="feed"]') {
+          return null
+        }
+        if (selector.includes('[data-mcomponent="TextArea"]')) {
+          return {}
+        }
+        return null
+      },
+      querySelectorAll: (selector: string) => {
+        if (selector === '.native-text') {
+          return [{}]
+        }
+        if (selector === '[role="button"][data-focusable="true"]') {
+          return Array.from({ length: buttons }, () => ({}))
+        }
+        return []
+      },
+    }) as unknown as HTMLElement
+
+  it('matches the current mobile Facebook open-app banner structure', () => {
+    expect(shouldHideFacebookOpenAppBanner(createBanner())).toBe(true)
+  })
+
+  it('rejects interactive containers that are not the open-app banner', () => {
+    expect(shouldHideFacebookOpenAppBanner(createBanner({ hasForm: true }))).toBe(false)
+    expect(shouldHideFacebookOpenAppBanner(createBanner({ buttons: 2 }))).toBe(false)
   })
 })
 

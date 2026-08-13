@@ -1,4 +1,9 @@
-import { fbL10nSponsored, isFacebookDesktopSponsoredPost, isFacebookMessagesPath } from './services/facebook'
+import {
+  fbL10nSponsored,
+  isFacebookDesktopSponsoredPost,
+  isFacebookMessagesPath,
+  shouldHideFacebookOpenAppBanner,
+} from './services/facebook'
 import { linkedinL10nPromoted } from './services/linkedin'
 import { getService } from './services/manager'
 import { emit } from './utils'
@@ -7,31 +12,6 @@ const { host } = document.location
 
 const hideElement = (element: HTMLElement) => {
   element.style.display = 'none'
-}
-
-const shouldHideFacebookOpenAppBanner = (element: HTMLElement | null) => {
-  if (!element) {
-    return false
-  }
-
-  if (element.dataset.noraHiddenOpenApp === '1') {
-    return true
-  }
-
-  if (element.querySelector('form, input, textarea, select')) {
-    return false
-  }
-
-  if (element.querySelector('[role="article"], [data-pagelet], [role="feed"]')) {
-    return false
-  }
-
-  const textBlocks = element.querySelectorAll('.native-text')
-  const hasTopGradient = !!element.querySelector(':scope > [data-mcomponent="MContainer"] > [data-mcomponent="TextArea"]')
-  const hasServerImageArea = !!element.querySelector('[data-mcomponent="ServerImageArea"]')
-  const hasPromoButtonShell = !!element.querySelector('[role="button"].bg-s3')
-
-  return textBlocks.length == 1 && hasTopGradient && hasServerImageArea && hasPromoButtonShell
 }
 
 const hideFacebookDesktopAds = (element: HTMLElement) => {
