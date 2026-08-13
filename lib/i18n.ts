@@ -7,6 +7,7 @@ import enText from '@/locales/en.json'
 import esText from '@/locales/es.json'
 import etText from '@/locales/et.json'
 import frText from '@/locales/fr.json'
+import huText from '@/locales/hu.json'
 import itText from '@/locales/it.json'
 import koText from '@/locales/ko.json'
 import lvText from '@/locales/lv.json'
@@ -30,6 +31,7 @@ export const supportedI18nLanguages = [
   'es',
   'et',
   'fr',
+  'hu',
   'it',
   'ko',
   'lv',
@@ -67,6 +69,9 @@ const resources: Record<SupportedI18nLanguage, { translation: any }> = {
   },
   fr: {
     translation: frText,
+  },
+  hu: {
+    translation: huText,
   },
   it: {
     translation: itText,

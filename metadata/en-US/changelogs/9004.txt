@@ -1,0 +1,7 @@
+- Add tab context menus and tab group/layout options in desktop mode
+- Add option to hide Facebook feed
+- Fix top of page touch interaction when toolbar is hidden
+- Fix settings crash on certain locales
+- Fix rendering on secondary displays in desktop mode
+- Enlarge header action touch targets
+- Translation updates

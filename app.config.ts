@@ -108,6 +108,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
             'es',
             'et',
             'fr',
+            'hu',
             'it',
             'ko',
             'lv',

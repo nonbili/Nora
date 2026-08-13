@@ -78,6 +78,7 @@ const languageNativeNames: Record<string, string> = {
   es: 'Español',
   et: 'Eesti',
   fr: 'Français',
+  hu: 'Magyar',
   it: 'Italiano',
   ko: '한국어',
   lv: 'Latviešu',
