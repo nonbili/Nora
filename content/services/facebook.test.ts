@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { isFacebookDesktopSponsoredPost, isFacebookMessagesPath, isFacebookSponsoredText } from './facebook'
+import {
+  isFacebookDesktopSponsoredPost,
+  isFacebookHomePath,
+  isFacebookMessagesPath,
+  isFacebookSponsoredText,
+} from './facebook'
 
 describe('isFacebookSponsoredText', () => {
   it('matches localized sponsored labels', () => {
@@ -18,6 +23,16 @@ describe('isFacebookMessagesPath', () => {
     expect(isFacebookMessagesPath('/messages')).toBe(true)
     expect(isFacebookMessagesPath('/messages/t/123')).toBe(true)
     expect(isFacebookMessagesPath('/watch')).toBe(false)
+  })
+})
+
+describe('isFacebookHomePath', () => {
+  it('matches only Facebook home routes', () => {
+    expect(isFacebookHomePath('/')).toBe(true)
+    expect(isFacebookHomePath('/home.php')).toBe(true)
+    expect(isFacebookHomePath('/groups/feed/')).toBe(false)
+    expect(isFacebookHomePath('/some-user')).toBe(false)
+    expect(isFacebookHomePath('/messages')).toBe(false)
   })
 })
 

@@ -303,6 +303,9 @@
       },
       "builtin": {
         "label": "Builtin Styles",
+        "hideFacebookFeed": {
+          "label": "Hide Facebook feed"
+        },
         "hideRedditGame": {
           "label": "Hide Reddit game posts"
         },

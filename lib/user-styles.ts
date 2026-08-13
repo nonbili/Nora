@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid'
 export const USER_STYLES_SCHEMA_VERSION = 1
 
 export const builtinUserStyleIds = [
+  'hide-facebook-feed',
   'hide-reddit-game',
   'hide-x-bottom-nav',
   'hide-x-home-tabs',
@@ -60,6 +61,30 @@ export interface BuiltinUserScriptDefinition {
 const css = (raw: ArrayLike<string>, ...values: any[]) => String.raw({ raw }, ...values)
 
 export const builtinUserStyleDefinitions: BuiltinUserStyleDefinition[] = [
+  {
+    id: 'hide-facebook-feed',
+    labelKey: 'settings.userStyles.builtin.hideFacebookFeed.label',
+    hostGlobs: ['m.facebook.com', 'www.facebook.com'],
+    css: css`
+      /* News feed */
+      :root._nora_hide_facebook_feed_ [role='main'] [role='feed'],
+      :root._nora_hide_facebook_feed_ [data-pagelet='MainFeed'],
+      :root._nora_hide_facebook_feed_ [data-testid='newsFeedStream'],
+      :root._nora_hide_facebook_feed_ #m_newsfeed_stream,
+      :root._nora_hide_facebook_feed_ [data-dcm-id][data-tracking-duration-id],
+      :root._nora_hide_facebook_feed_
+        [data-type='vscroller']
+        > [data-dcm-id][data-tracking-duration-id]
+        ~ * {
+        display: none !important;
+      }
+
+      /* Fallback for Facebook's current hash classes, scoped to main content. */
+      :root._nora_hide_facebook_feed_ [role='main'] div.x1hc1fzr.x1unhpq9.x6o7n8i {
+        display: none !important;
+      }
+    `,
+  },
   {
     id: 'hide-reddit-game',
     labelKey: 'settings.userStyles.builtin.hideRedditGame.label',
@@ -132,6 +157,7 @@ export const builtinUserStyleDefinitionById = builtinUserStyleDefinitions.reduce
 )
 
 export const createDefaultBuiltinUserStyles = (): Record<BuiltinUserStyleId, BuiltinUserStyleState> => ({
+  'hide-facebook-feed': { enabled: false },
   'hide-reddit-game': { enabled: false },
   'hide-x-bottom-nav': { enabled: true },
   'hide-x-home-tabs': { enabled: false },

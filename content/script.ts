@@ -1,5 +1,6 @@
 import { hostHomes } from './css'
 import { noraSettingsEvent } from './nora'
+import { runFacebookFeedController } from './services/facebook'
 import { runXHomeTabsController } from './services/twitter/home-tabs'
 
 function runVideoLongPressScript() {
@@ -425,6 +426,9 @@ export function injectScript() {
   runVideoLongPressScript()
 
   const { host } = document.location
+  if (host === 'm.facebook.com' || host === 'www.facebook.com') {
+    runFacebookFeedController()
+  }
   const key = hostHomes[host]
   switch (key) {
     case 'bluesky':

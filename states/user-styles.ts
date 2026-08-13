@@ -158,13 +158,18 @@ export const userStyles$ = observable<Store>({
   },
 })
 
+const defaultBuiltinUserStyles = createDefaultUserStylesSnapshot().builtins
+
 export const getUserStylesSnapshot = (value: Partial<Store> | undefined = userStyles$.get()): UserStylesSnapshot => ({
   schemaVersion:
     typeof value?.schemaVersion === 'number' ? value.schemaVersion : USER_STYLES_SCHEMA_VERSION,
   builtins: builtinUserStyleIds.reduce(
     (acc, id) => {
       acc[id] = {
-        enabled: typeof value?.builtins?.[id]?.enabled === 'boolean' ? value.builtins[id].enabled : true,
+        enabled:
+          typeof value?.builtins?.[id]?.enabled === 'boolean'
+            ? value.builtins[id].enabled
+            : defaultBuiltinUserStyles[id].enabled,
       }
       return acc
     },
