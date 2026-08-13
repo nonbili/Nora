@@ -15,7 +15,7 @@ export interface Item {
   trailing?: ReactNode
 }
 
-export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string }> = ({ trigger, items }) => {
+export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number }> = ({ trigger, items, triggerSize }) => {
   const menuItems = items.map((item, index) => {
     if (item.kind === 'separator') {
       return <DropdownMenu.Separator key={index} />
@@ -69,7 +69,10 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
           a Pressable (MaterialButton), which would otherwise swallow the click before the
           menu ever sees it. Mirrors the pointerEvents="none" the native menus use.
         */}
-        <div className="flex shrink min-w-0 items-center justify-center">
+        <div
+          className="flex shrink min-w-0 items-center justify-center"
+          style={triggerSize ? { minWidth: triggerSize, minHeight: triggerSize } : undefined}
+        >
           <div className="pointer-events-none flex min-w-0 items-center justify-center">{trigger}</div>
         </div>
       </DropdownMenu.Trigger>

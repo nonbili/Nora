@@ -4,7 +4,7 @@ import type { Item } from './NouMenu'
 import { Fragment, ReactNode } from 'react'
 import { View } from 'react-native'
 
-export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string }> = ({ trigger, items, triggerColor }) => {
+export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number }> = ({ trigger, items, triggerColor, triggerSize = 44 }) => {
   const groups = items.reduce<Item[][]>((acc, item) => {
     if (item.kind === 'separator') {
       acc.push([])
@@ -51,7 +51,7 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
       <Menu
         label={typeof trigger === 'string' ? '' : <View pointerEvents="none">{trigger}</View>}
         systemImage={typeof trigger === 'string' ? (trigger as any) : undefined}
-        modifiers={typeof trigger === 'string' ? [frame({ width: 44, height: 44 }), ...(triggerColor ? [tint(triggerColor)] : [])] : undefined}
+        modifiers={typeof trigger === 'string' ? [frame({ width: triggerSize, height: triggerSize }), ...(triggerColor ? [tint(triggerColor)] : [])] : undefined}
       >
         {menuItems}
       </Menu>

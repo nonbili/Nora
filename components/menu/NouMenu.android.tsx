@@ -13,7 +13,7 @@ type Anchor = {
   height: number
 }
 
-export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColor?: string }> = ({ items, trigger, triggerColor }) => {
+export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number }> = ({ items, trigger, triggerColor, triggerSize }) => {
   const [open, setOpen] = useState(false)
   const [anchor, setAnchor] = useState<Anchor | null>(null)
   const colorScheme = useColorScheme()
@@ -74,13 +74,16 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
     <>
       <View ref={triggerRef} collapsable={false}>
         {typeof trigger === 'string' ? (
-          <MaterialButton name="more-vert" color={triggerColor} onPress={openMenu} />
+          <MaterialButton name="more-vert" color={triggerColor} onPress={openMenu} style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined} />
         ) : trigger ? (
-          <Pressable onPress={openMenu}>
+          <Pressable
+            onPress={openMenu}
+            style={triggerSize ? { width: triggerSize, height: triggerSize, alignItems: 'center', justifyContent: 'center' } : undefined}
+          >
             <View pointerEvents="none">{trigger}</View>
           </Pressable>
         ) : (
-          <MaterialButton name="more-vert" color={triggerColor} onPress={openMenu} />
+          <MaterialButton name="more-vert" color={triggerColor} onPress={openMenu} style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined} />
         )}
       </View>
       <Modal transparent visible={open} animationType="fade" onRequestClose={closeMenu}>

@@ -207,7 +207,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         !isWeb,
         <View className="flex-row items-center gap-3">
-          {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={22} color={headerControlColor} onPress={() => tabs$.openTab('')} />)}
+          {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={22} color={headerControlColor} onPress={() => tabs$.openTab('')} style={{ width: 48, height: 48 }} />)}
           {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} />)}
           {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} />)}
           {nIf(showReloadButtonInHeader, <MaterialButton name="refresh" size={22} color={headerControlColor} onPress={reloadPage} />)}
@@ -340,6 +340,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           const moreMenu = (
           <NouMenu
             triggerColor={headerControlColor}
+            triggerSize={!isWeb ? 48 : undefined}
             trigger={
               isIos
                 ? 'ellipsis'
