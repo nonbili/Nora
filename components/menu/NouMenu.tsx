@@ -1,5 +1,5 @@
 import { DropdownMenu } from '@radix-ui/themes'
-import { ReactNode } from 'react'
+import { forwardRef, ReactNode, useImperativeHandle } from 'react'
 import { clsx } from '@/lib/utils'
 
 export interface Item {
@@ -15,7 +15,12 @@ export interface Item {
   trailing?: ReactNode
 }
 
-export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number }> = ({ trigger, items, triggerSize }) => {
+export interface NouMenuHandle {
+  openAt: (x: number, y: number, items?: Item[]) => void
+}
+
+export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, items, triggerSize, hideTrigger }, ref) {
+  useImperativeHandle(ref, () => ({ openAt: () => {} }), [])
   const menuItems = items.map((item, index) => {
     if (item.kind === 'separator') {
       return <DropdownMenu.Separator key={index} />
@@ -60,6 +65,8 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
     )
   })
 
+  if (hideTrigger) return null
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
@@ -84,4 +91,4 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )
-}
+})

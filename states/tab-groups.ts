@@ -1,4 +1,4 @@
-import { observable, type Observable } from '@legendapp/state'
+import { batch, observable, type Observable } from '@legendapp/state'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { syncObservable } from '@legendapp/state/sync'
 import {
@@ -153,8 +153,10 @@ export const tabGroups$: Observable<Store> = observable<Store>({
     if (groupId) {
       nextGroups = nextGroups.map((group) => (group.id === groupId ? addTabToGroup(group, tabId, targetIndex) : group))
     }
-    tabGroups$.groups.set(nextGroups)
-    tabGroups$.activeGroupId.set(groupId)
+    batch(() => {
+      tabGroups$.groups.set(nextGroups)
+      tabGroups$.activeGroupId.set(groupId)
+    })
   },
 
   appendSplitGroupSlot: (groupId) => {

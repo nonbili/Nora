@@ -155,6 +155,7 @@ export const DesktopWorkspace: React.FC = () => {
                   index={index}
                   isActive={activeTabId === tab.id}
                   desktopChrome
+                  desktopVisible={isVisible}
                   desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
                 />
               </View>

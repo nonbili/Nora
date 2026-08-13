@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { batch } from '@legendapp/state'
 import { useValue } from '@legendapp/state/react'
-import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
+import { DeviceEventEmitter, Pressable, ScrollView, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
 import { NouText } from '@/components/NouText'
 import { NouMenu } from '@/components/menu/NouMenu'
-import type { Item } from '@/components/menu/NouMenu'
+import type { Item, NouMenuHandle } from '@/components/menu/NouMenu'
 import { ServiceIcon } from '@/components/service/Services'
 import { MaterialButton } from '@/components/button/IconButtons'
 import { colors } from '@/lib/colors'
@@ -50,9 +50,13 @@ const TabRow: React.FC<{
   groupId: string | null
   groups: TabGroup[]
   isActive: boolean
+  openMenu: (items: Item[], x: number, y: number) => void
   tab: Tab
-}> = ({ collapsed, groupId, groups, isActive, tab }) => {
+}> = ({ collapsed, groupId, groups, isActive, openMenu, tab }) => {
   const profileColor = getProfileColor(tab.profile)
+  const rowRef = useRef<View>(null)
+  const itemsRef = useRef<Item[]>([])
+  const openMenuRef = useRef(openMenu)
 
   // The webview of a background tab is not the one the shared menu talks to, so
   // focus the tab first and let the action run once it is the active one.
@@ -104,6 +108,20 @@ const TabRow: React.FC<{
       })),
     ...(moveTargets.length ? [{ label: '', handler: () => {}, kind: 'separator' as const }, ...moveTargets] : []),
   ]
+  useEffect(() => {
+    itemsRef.current = items
+    openMenuRef.current = openMenu
+  })
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener('noraSecondaryMouseClick', ({ x, y }) => {
+      rowRef.current?.measureInWindow((left, top, width, height) => {
+        if (x >= left && x <= left + width && y >= top && y <= top + height) {
+          openMenuRef.current(itemsRef.current, x, y)
+        }
+      })
+    })
+    return () => subscription.remove()
+  }, [])
 
   const activate = () => {
     batch(() => {
@@ -127,30 +145,36 @@ const TabRow: React.FC<{
 
   if (collapsed) {
     return (
-      <Pressable
-        className={clsx(
-          'h-10 w-10 items-center justify-center rounded-lg',
-          isActive ? 'bg-white dark:bg-zinc-700' : 'active:bg-zinc-200/70 dark:active:bg-zinc-800',
-        )}
-        onPress={activate}
-        onLongPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
-      >
-        <View style={{ position: 'absolute', left: 0, top: 10, bottom: 10, width: 3, backgroundColor: profileColor }} />
-        {favicon}
-      </Pressable>
+      <View ref={rowRef} collapsable={false}>
+        <Pressable
+          className={clsx(
+            'h-10 w-10 items-center justify-center rounded-lg',
+            isActive ? 'bg-white dark:bg-zinc-700' : 'active:bg-zinc-200/70 dark:active:bg-zinc-800',
+          )}
+          onPress={activate}
+          onLongPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
+        >
+          <View
+            style={{ position: 'absolute', left: 0, top: 10, bottom: 10, width: 3, backgroundColor: profileColor }}
+          />
+          {favicon}
+        </Pressable>
+      </View>
     )
   }
 
   return (
     <View
+      ref={rowRef}
+      collapsable={false}
       className={clsx(
         'min-h-9 flex-row items-center gap-2 rounded-md px-2 py-1',
-        isActive ? 'bg-white dark:bg-zinc-700' : 'active:bg-zinc-200/70 dark:active:bg-zinc-800',
+        isActive && 'bg-white dark:bg-zinc-700',
       )}
     >
       <Pressable className="min-w-0 flex-1 flex-row items-center gap-2" onPress={activate}>
         <View className="h-4 w-1 shrink-0 rounded-full" style={{ backgroundColor: profileColor }} />
-        <View className="h-4 w-4 shrink-0 items-center justify-center">{favicon}</View>
+        <View className="mx-1 h-4 w-4 shrink-0 items-center justify-center">{favicon}</View>
         <View className="min-w-0 flex-1">
           <NouText
             className={clsx(
@@ -164,7 +188,6 @@ const TabRow: React.FC<{
           </NouText>
         </View>
       </Pressable>
-      <NouMenu trigger={<MaterialButton name="more-vert" size={16} style={{ padding: 4 }} />} items={items} />
       <Pressable
         className="h-6 w-6 shrink-0 items-center justify-center rounded-md"
         onPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
@@ -182,7 +205,8 @@ const GroupSection: React.FC<{
   group: TabGroup
   groups: TabGroup[]
   groupTabs: Tab[]
-}> = ({ activeGroupId, activeTabId, collapsed, group, groups, groupTabs }) => {
+  openMenu: (items: Item[], x: number, y: number) => void
+}> = ({ activeGroupId, activeTabId, collapsed, group, groups, groupTabs, openMenu }) => {
   const isActiveGroup = group.id === activeGroupId
   const colorScheme = useColorScheme()
   const iconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
@@ -242,7 +266,8 @@ const GroupSection: React.FC<{
             groupId={group.id}
             groups={groups}
             isActive={tab.id === activeTabId}
-            key={tab.id}
+            key={`${group.id}:${tab.id}`}
+            openMenu={openMenu}
             tab={tab}
           />
         ))}
@@ -278,7 +303,8 @@ const GroupSection: React.FC<{
               groupId={group.id}
               groups={groups}
               isActive={tab.id === activeTabId}
-              key={tab.id}
+              key={`${group.id}:${tab.id}`}
+              openMenu={openMenu}
               tab={tab}
             />
           ))}
@@ -294,6 +320,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const activeGroupId = useValue(tabGroups$.activeGroupId)
   const groups = useValue(tabGroups$.groups)
+  const menuRef = useRef<NouMenuHandle>(null)
   const colorScheme = useColorScheme()
   const iconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
 
@@ -301,24 +328,29 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
   const activeTabId = tabs[activeTabIndex]?.id
   const groupedTabIds = useMemo(
-    () => new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
+    () =>
+      new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
     [groups],
   )
   const tabById = useMemo(() => new Map(tabs.map((tab) => [tab.id, tab])), [tabIdsKey])
   const ungroupedTabs = orderedTabs.filter((tab) => !groupedTabIds.has(tab.id))
+
+  const openMenu = (items: Item[], x: number, y: number) => {
+    setTimeout(() => {
+      menuRef.current?.openAt(x, y, items)
+    }, 0)
+  }
 
   const newTab = () => {
     tabGroups$.setActiveGroup(null)
     tabs$.openTab('')
   }
 
-  const newGroupItems: Item[] = (
-    [
-      { layout: 'deck' as TabGroupLayout, label: t('views.desktop.newDeckView') },
-      { layout: 'split-view' as TabGroupLayout, label: t('views.desktop.newSplitView') },
-      { layout: 'grid-4' as TabGroupLayout, label: t('views.desktop.newGridView') },
-    ]
-  ).map(({ layout, label }) => ({
+  const newGroupItems: Item[] = [
+    { layout: 'deck' as TabGroupLayout, label: t('views.desktop.newDeckView') },
+    { layout: 'split-view' as TabGroupLayout, label: t('views.desktop.newSplitView') },
+    { layout: 'grid-4' as TabGroupLayout, label: t('views.desktop.newGridView') },
+  ].map(({ layout, label }) => ({
     label,
     icon: <MaterialIcons name={layoutIconName(layout)} size={18} color={iconColor} />,
     handler: () => createDesktopTabGroup(layout),
@@ -338,6 +370,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
         groups={groups}
         groupTabs={groupTabs}
         key={group.id}
+        openMenu={openMenu}
       />
     )
   })
@@ -356,7 +389,8 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                 groupId={null}
                 groups={groups}
                 isActive={tab.id === activeTabId}
-                key={tab.id}
+                key={`ungrouped:${tab.id}`}
+                openMenu={openMenu}
                 tab={tab}
               />
             ))}
@@ -371,6 +405,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
             items={newGroupItems}
           />
         </ScrollView>
+        <NouMenu ref={menuRef} items={[]} hideTrigger />
       </View>
     )
   }
@@ -394,7 +429,8 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                 groupId={null}
                 groups={groups}
                 isActive={tab.id === activeTabId}
-                key={tab.id}
+                key={`ungrouped:${tab.id}`}
+                openMenu={openMenu}
                 tab={tab}
               />
             ))}
@@ -415,6 +451,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
           items={newGroupItems}
         />
       </ScrollView>
+      <NouMenu ref={menuRef} items={[]} hideTrigger />
     </View>
   )
 }

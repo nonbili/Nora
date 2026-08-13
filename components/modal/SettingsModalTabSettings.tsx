@@ -553,15 +553,26 @@ export const SettingsAppearanceContent = () => {
                   {t('settings.appearance.deckTabWidthHint', { value: settings.deckTabWidth })}
                 </NouText>
               </View>
-              <TextInput
-                className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white w-24 text-center"
-                value={deckTabWidthInput}
-                onChangeText={setDeckTabWidthInput}
-                onEndEditing={submitDeckTabWidth}
-                onSubmitEditing={submitDeckTabWidth}
-                keyboardType="numeric"
-                returnKeyType="done"
-              />
+              <View className="flex-row items-center gap-2">
+                <TextInput
+                  className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white w-24 text-center"
+                  value={deckTabWidthInput}
+                  onChangeText={setDeckTabWidthInput}
+                  onEndEditing={submitDeckTabWidth}
+                  onSubmitEditing={submitDeckTabWidth}
+                  keyboardType="numeric"
+                  returnKeyType="done"
+                />
+                <NouMenu
+                  trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
+                  items={[
+                    {
+                      label: t('common.reset'),
+                      handler: () => settings$.deckTabWidth.set(400),
+                    },
+                  ]}
+                />
+              </View>
             </View>
           </View>
         </>,

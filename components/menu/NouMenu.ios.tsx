@@ -1,10 +1,11 @@
 import { Button, Divider, Host, Menu, Section } from '@expo/ui/swift-ui'
 import { disabled, frame, tint } from '@expo/ui/swift-ui/modifiers'
-import type { Item } from './NouMenu'
-import { Fragment, ReactNode } from 'react'
+import type { Item, NouMenuHandle } from './NouMenu'
+import { forwardRef, Fragment, ReactNode, useImperativeHandle } from 'react'
 import { View } from 'react-native'
 
-export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number }> = ({ trigger, items, triggerColor, triggerSize = 44 }) => {
+export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, items, triggerColor, triggerSize = 44, hideTrigger }, ref) {
+  useImperativeHandle(ref, () => ({ openAt: () => {} }), [])
   const groups = items.reduce<Item[][]>((acc, item) => {
     if (item.kind === 'separator') {
       acc.push([])
@@ -46,6 +47,8 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
     )
   })
 
+  if (hideTrigger) return null
+
   return (
     <Host matchContents>
       <Menu
@@ -57,4 +60,4 @@ export const NouMenu: React.FC<{ trigger: ReactNode; items: Item[]; triggerColor
       </Menu>
     </Host>
   )
-}
+})

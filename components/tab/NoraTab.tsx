@@ -4,7 +4,15 @@ import { useObserveEffect, useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { settings$, resolveZoom } from '@/states/settings'
-import { ActivityIndicator, Appearance, Pressable, StyleSheet, View, useColorScheme } from 'react-native'
+import {
+  ActivityIndicator,
+  Appearance,
+  DeviceEventEmitter,
+  Pressable,
+  StyleSheet,
+  View,
+  useColorScheme,
+} from 'react-native'
 import { ObservableHint } from '@legendapp/state'
 import type { WebviewTag } from 'electron'
 import { clsx, isWeb, isIos, isAndroid, nIf, getHostFromUrl } from '@/lib/utils'
@@ -12,6 +20,7 @@ import { ensureDownloadNotificationPermission } from '@/lib/download-notificatio
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { NouMenu } from '../menu/NouMenu'
+import type { Item, NouMenuHandle } from '../menu/NouMenu'
 import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { NouText } from '../NouText'
@@ -26,7 +35,12 @@ import { handleShortcuts } from '@/desktop/src/renderer/lib/shortcuts'
 import { t } from 'i18next'
 import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
-import { executeWebviewJavaScript, executeWebviewJavaScriptQuietly, registerTabWebview, reloadWebview } from '@/lib/webview'
+import {
+  executeWebviewJavaScript,
+  executeWebviewJavaScriptQuietly,
+  registerTabWebview,
+  reloadWebview,
+} from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { getEnabledUserScripts } from '@/lib/user-styles'
 import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
@@ -193,8 +207,18 @@ export const NoraTab: React.FC<{
   desktopVariant?: 'deck' | 'saved-view' | 'single'
   /** Native only: render the desktop tab chrome and fill the slot instead of the screen. */
   desktopChrome?: boolean
+  /** Native desktop only: hidden webviews stay mounted but must not claim pointer hit tests. */
+  desktopVisible?: boolean
   slotSwitcher?: ReactNode
-}> = ({ tab, index, isActive = false, desktopChrome = false, desktopVariant = 'deck', slotSwitcher }) => {
+}> = ({
+  tab,
+  index,
+  isActive = false,
+  desktopChrome = false,
+  desktopVisible = true,
+  desktopVariant = 'deck',
+  slotSwitcher,
+}) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const doubleTapToToggleHeader = useValue(settings$.doubleTapToToggleHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
@@ -225,6 +249,9 @@ export const NoraTab: React.FC<{
   })
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag | null>(null)
+  const desktopMenuRef = useRef<NouMenuHandle>(null)
+  const desktopHeaderRef = useRef<View>(null)
+  const nativeMenuItemsRef = useRef<Item[]>([])
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
   const webviewListenersRef = useRef<AbortController | null>(null)
   const pageUrlRef = useRef('')
@@ -248,30 +275,27 @@ export const NoraTab: React.FC<{
     isActiveRef.current = isActive
   }, [isActive])
 
-  const refreshCanGoBack = useCallback(
-    async (target?: any) => {
-      const webview = target || webviewRef.current || nativeRef.current
-      if (!webview || typeof webview.canGoBack !== 'function') {
-        return
-      }
+  const refreshCanGoBack = useCallback(async (target?: any) => {
+    const webview = target || webviewRef.current || nativeRef.current
+    if (!webview || typeof webview.canGoBack !== 'function') {
+      return
+    }
 
-      let nextCanGoBack
-      try {
-        nextCanGoBack = await Promise.resolve(webview.canGoBack())
-      } catch (err) {
-        return
-      }
-      if (typeof nextCanGoBack !== 'boolean') {
-        return
-      }
+    let nextCanGoBack
+    try {
+      nextCanGoBack = await Promise.resolve(webview.canGoBack())
+    } catch (err) {
+      return
+    }
+    if (typeof nextCanGoBack !== 'boolean') {
+      return
+    }
 
-      setCanGoBack(nextCanGoBack)
-      if (isActiveRef.current) {
-        ui$.activeCanGoBack.set(nextCanGoBack)
-      }
-    },
-    [],
-  )
+    setCanGoBack(nextCanGoBack)
+    if (isActiveRef.current) {
+      ui$.activeCanGoBack.set(nextCanGoBack)
+    }
+  }, [])
 
   const setPageUrl = useCallback(
     (url: string) => {
@@ -328,7 +352,14 @@ export const NoraTab: React.FC<{
         void executeWebviewJavaScriptQuietly(webview, userScriptRunner)
       }
     },
-    [doubleTapToToggleHeader, tab.url, videoEdgeLongPressTo2x, translateOnDoubleTap, translationTargetLanguage, xDefaultHomeTimeline],
+    [
+      doubleTapToToggleHeader,
+      tab.url,
+      videoEdgeLongPressTo2x,
+      translateOnDoubleTap,
+      translationTargetLanguage,
+      xDefaultHomeTimeline,
+    ],
   )
   const applyContentStateRef = useRef(applyContentState)
 
@@ -719,6 +750,29 @@ export const NoraTab: React.FC<{
     },
     canDuplicate,
   })
+  const nativeMenuItems: Item[] = menuItems
+    .filter((item) => item.kind === 'separator' || item.label)
+    .map((item) => ({
+      label: item.label || '',
+      handler: item.handler || (() => {}),
+      icon: item.icon,
+      kind: item.kind,
+    }))
+  useEffect(() => {
+    nativeMenuItemsRef.current = nativeMenuItems
+  })
+
+  useEffect(() => {
+    if (!desktopChrome || !desktopVisible || isWeb) return
+    const subscription = DeviceEventEmitter.addListener('noraSecondaryMouseClick', ({ x, y }) => {
+      desktopHeaderRef.current?.measureInWindow((left, top, width, height) => {
+        if (x >= left && x <= left + width && y >= top && y <= top + height) {
+          desktopMenuRef.current?.openAt(x, y, nativeMenuItemsRef.current)
+        }
+      })
+    })
+    return () => subscription.remove()
+  }, [desktopChrome, desktopVisible, tab.id])
 
   if (isWeb) {
     return (
@@ -782,12 +836,8 @@ export const NoraTab: React.FC<{
         {tab.isPaused ? (
           <View className="flex-1 min-h-0 items-center justify-center gap-3 px-6">
             <MaterialIcons name="pause-circle-outline" size={40} color="#a1a1aa" />
-            <NouText className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-              {t('tabs.paused')}
-            </NouText>
-            <NouText className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-              {t('tabs.pausedHint')}
-            </NouText>
+            <NouText className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">{t('tabs.paused')}</NouText>
+            <NouText className="text-center text-xs text-zinc-500 dark:text-zinc-400">{t('tabs.pausedHint')}</NouText>
             <Pressable
               className="mt-2 flex-row items-center gap-1 rounded-full bg-indigo-500 px-4 py-2 hover:bg-indigo-600 active:bg-indigo-600"
               onPress={() => tabs$.setTabPaused(false, index)}
@@ -833,6 +883,8 @@ export const NoraTab: React.FC<{
         )}
       >
         <View
+          ref={desktopHeaderRef}
+          collapsable={false}
           className={clsx(
             'flex-row items-center justify-between gap-2 border-b pl-2 pr-1',
             isActive
@@ -847,7 +899,10 @@ export const NoraTab: React.FC<{
           <View className="min-w-0 flex-1 flex-row items-center justify-center">
             {slotSwitcher || (
               <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
-                <View className="shrink-0" style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+                <View
+                  className="shrink-0"
+                  style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}
+                >
                   {tab.isPaused ? (
                     <MaterialIcons name="pause-circle-filled" size={16} color="#a1a1aa" />
                   ) : tab.isLoading ? (
@@ -869,18 +924,6 @@ export const NoraTab: React.FC<{
             )}
           </View>
           <View className="shrink-0 flex-row items-center">
-            {/* Long press has no context menu on native, so the per tab actions get a button. */}
-            <NouMenu
-              trigger={<MaterialButton name="more-vert" style={toolbarButtonStyle} size={16} />}
-              items={menuItems
-                .filter((item) => item.kind === 'separator' || item.label)
-                .map((item) => ({
-                  label: item.label || '',
-                  handler: item.handler || (() => {}),
-                  icon: item.icon,
-                  kind: item.kind,
-                }))}
-            />
             <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
           </View>
         </View>
@@ -911,6 +954,7 @@ export const NoraTab: React.FC<{
             <NavModalContent index={index} />
           </View>,
         )}
+        <NouMenu ref={desktopMenuRef} items={[]} hideTrigger />
       </View>
     )
   }

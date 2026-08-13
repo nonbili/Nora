@@ -3,6 +3,40 @@ import { withAppBuildGradle } from '@expo/config-plugins/build/plugins/android-p
 
 const googlePlayBuild = !!process.env.GOOGLE_PLAY_BUILD
 
+const SECONDARY_MOUSE_CLICK_BRIDGE = `
+  private var lastSecondaryMouseClickTime = -1L
+
+  private fun emitSecondaryMouseClick(event: android.view.MotionEvent) {
+    val isSecondary = event.actionButton == android.view.MotionEvent.BUTTON_SECONDARY ||
+      event.buttonState and android.view.MotionEvent.BUTTON_SECONDARY != 0
+    val isClickStart = event.actionMasked == android.view.MotionEvent.ACTION_DOWN ||
+      event.actionMasked == android.view.MotionEvent.ACTION_BUTTON_PRESS
+    if (!isSecondary || !isClickStart || event.eventTime == lastSecondaryMouseClickTime) return
+
+    lastSecondaryMouseClickTime = event.eventTime
+    val density = resources.displayMetrics.density.toDouble()
+    val contentLocation = IntArray(2)
+    window.decorView.findViewById<android.view.View>(android.R.id.content)?.getLocationInWindow(contentLocation)
+    val payload = com.facebook.react.bridge.Arguments.createMap().apply {
+      putDouble("x", (event.x.toDouble() - contentLocation[0]) / density)
+      putDouble("y", (event.y.toDouble() - contentLocation[1]) / density)
+    }
+    (application as? com.facebook.react.ReactApplication)?.reactHost?.currentReactContext
+      ?.getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+      ?.emit("noraSecondaryMouseClick", payload)
+  }
+
+  override fun dispatchTouchEvent(event: android.view.MotionEvent): Boolean {
+    emitSecondaryMouseClick(event)
+    return super.dispatchTouchEvent(event)
+  }
+
+  override fun dispatchGenericMotionEvent(event: android.view.MotionEvent): Boolean {
+    emitSecondaryMouseClick(event)
+    return super.dispatchGenericMotionEvent(event)
+  }
+`
+
 // React Native seeds DisplayMetricsHolder from the *application* context
 // (ReactRootView.init, ReactHostImpl.onConfigurationChanged), which always
 // reports the default display. When the activity runs on a secondary display --
@@ -60,14 +94,51 @@ const withSecondaryDisplayMetricsFix: ConfigPlugin = (config) =>
     if (config.modResults.language !== 'kt') {
       throw new Error('withSecondaryDisplayMetricsFix expects a Kotlin MainActivity')
     }
-    if (config.modResults.contents.includes('syncDisplayMetricsToCurrentDisplay')) {
-      return config
-    }
     const anchor = 'class MainActivity : ReactActivity() {'
-    if (!config.modResults.contents.includes(anchor)) {
-      throw new Error('withSecondaryDisplayMetricsFix could not find the MainActivity class declaration')
+    if (!config.modResults.contents.includes('emitSecondaryMouseClick')) {
+      if (!config.modResults.contents.includes(anchor)) {
+        throw new Error('withSecondaryDisplayMetricsFix could not find the MainActivity class declaration')
+      }
+      config.modResults.contents = config.modResults.contents.replace(
+        anchor,
+        `${anchor}\n${SECONDARY_MOUSE_CLICK_BRIDGE}`,
+      )
     }
-    config.modResults.contents = config.modResults.contents.replace(anchor, `${anchor}\n${DISPLAY_METRICS_FIX}`)
+    if (!config.modResults.contents.includes('syncDisplayMetricsToCurrentDisplay')) {
+      if (!config.modResults.contents.includes(anchor)) {
+        throw new Error('withSecondaryDisplayMetricsFix could not find the MainActivity class declaration')
+      }
+      config.modResults.contents = config.modResults.contents.replace(anchor, `${anchor}\n${DISPLAY_METRICS_FIX}`)
+    }
+
+    config.modResults.contents = config.modResults.contents.replace(
+      'reactNativeHost.reactInstanceManager.currentReactContext',
+      '(application as? com.facebook.react.ReactApplication)?.reactHost?.currentReactContext',
+    )
+    if (
+      config.modResults.contents.includes('emitSecondaryMouseClick') &&
+      !config.modResults.contents.includes('contentLocation = IntArray(2)')
+    ) {
+      config.modResults.contents = config.modResults.contents
+        .replace(
+          '    val density = resources.displayMetrics.density.toDouble()\n    val payload =',
+          `    val density = resources.displayMetrics.density.toDouble()
+    val contentLocation = IntArray(2)
+    window.decorView.findViewById<android.view.View>(android.R.id.content)?.getLocationInWindow(contentLocation)
+    val payload =`,
+        )
+        .replace(
+          /\s*putDouble\("x", event\.x\.toDouble\(\) \/ density\)[\s\S]*?putInt\("action", event\.actionMasked\)/,
+          `
+      putDouble("x", (event.x.toDouble() - contentLocation[0]) / density)
+      putDouble("y", (event.y.toDouble() - contentLocation[1]) / density)`,
+        )
+    }
+
+    config.modResults.contents = config.modResults.contents.replace(
+      /\n\s*com\.facebook\.react\.config\.ReactFeatureFlags\.dispatchPointerEvents = true/,
+      '',
+    )
     return config
   })
 
@@ -76,7 +147,7 @@ const withAndroidSigningConfig: ConfigPlugin = (config) => {
 
   config = withGradleProperties(config, (config) => {
     const existingIndex = config.modResults.findIndex(
-      (item) => item.type === 'property' && item.key === 'org.gradle.jvmargs'
+      (item) => item.type === 'property' && item.key === 'org.gradle.jvmargs',
     )
     if (existingIndex !== -1) {
       config.modResults[existingIndex].value = '-Xmx4096m -XX:MaxMetaspaceSize=1024m'
@@ -93,7 +164,9 @@ const withAndroidSigningConfig: ConfigPlugin = (config) => {
   return withAppBuildGradle(config, (config) => {
     // https://www.reddit.com/r/expo/comments/1j4v323/comment/mit9b2a/
     let contents = config.modResults.contents
-      .replace(
+
+    if (!contents.includes('ext.abiCodes =')) {
+      contents = contents.replace(
         'android {',
         `ext.abiCodes = ['armeabi-v7a':3, 'arm64-v8a': 4]
 
@@ -108,10 +181,18 @@ android {
         }
     }`,
       )
-      .replace('pt-BR', 'b+pt+BR')
-      .replace('zh-Hans', 'b+zh+Hans')
-      .replace('zh-Hant', 'b+zh+Hant')
-      .replace(
+    }
+
+    contents = contents
+      .replaceAll('pt-BR', 'b+pt+BR')
+      .replaceAll('zh-Hans', 'b+zh+Hans')
+      .replaceAll('zh-Hant', 'b+zh+Hant')
+      // expo-localization looks for its unmodified locale line on every
+      // prebuild, while the replacements above necessarily change it.
+      .replace(/^(\s*resourceConfigurations \+= \[[^\n]*\])(?:\n\1)+/gm, '$1')
+
+    if (!contents.includes('dependenciesInfo {')) {
+      contents = contents.replace(
         /androidResources \{([\s\S]*?)}/,
         `androidResources {$1}
     dependenciesInfo {
@@ -135,6 +216,7 @@ android {
         }
     }`,
       )
+    }
 
     if (googlePlayBuild) {
       contents = contents

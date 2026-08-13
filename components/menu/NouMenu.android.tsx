@@ -1,6 +1,6 @@
 import { colors } from '@/lib/colors'
-import type { Item } from './NouMenu'
-import { ReactNode, useRef, useState } from 'react'
+import type { Item, NouMenuHandle } from './NouMenu'
+import { forwardRef, ReactNode, useImperativeHandle, useRef, useState } from 'react'
 import { Modal, Pressable, ScrollView, useColorScheme, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NouText } from '../NouText'
@@ -13,16 +13,21 @@ type Anchor = {
   height: number
 }
 
-export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number }> = ({ items, trigger, triggerColor, triggerSize }) => {
+export const NouMenu = forwardRef<
+  NouMenuHandle,
+  { trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }
+>(function NouMenu({ items, trigger, triggerColor, triggerSize, hideTrigger }, ref) {
   const [open, setOpen] = useState(false)
   const [anchor, setAnchor] = useState<Anchor | null>(null)
+  const [imperativeItems, setImperativeItems] = useState<Item[] | null>(null)
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const insets = useSafeAreaInsets()
   const triggerRef = useRef<View>(null)
+  const visibleItems = imperativeItems ?? items
   const horizontalPadding = 8
-  const estimatedContentWidth = items.reduce((maxWidth, item) => {
+  const estimatedContentWidth = visibleItems.reduce((maxWidth, item) => {
     if (item.kind === 'separator') {
       return maxWidth
     }
@@ -38,16 +43,32 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
     if (item.kind === 'label') return 32
     return item.description ? 56 : 44
   }
-  const menuHeight = items.reduce((total, item) => total + getRowHeight(item), 16)
+  const menuHeight = visibleItems.reduce((total, item) => total + getRowHeight(item), 16)
 
   const openMenu = () => {
     triggerRef.current?.measureInWindow((x, y, width, height) => {
+      setImperativeItems(null)
       setAnchor({ x, y, width, height })
       setOpen(true)
     })
   }
 
-  const closeMenu = () => setOpen(false)
+  useImperativeHandle(
+    ref,
+    () => ({
+      openAt: (x, y, nextItems) => {
+        setImperativeItems(nextItems ?? items)
+        setAnchor({ x, y, width: 0, height: 0 })
+        setOpen(true)
+      },
+    }),
+    [items],
+  )
+
+  const closeMenu = () => {
+    setOpen(false)
+    setImperativeItems(null)
+  }
 
   const verticalPadding = 8
   const triggerGap = 4
@@ -69,23 +90,38 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
         Math.max(horizontalPadding, screenWidth - menuWidth - horizontalPadding),
       )
     : horizontalPadding
-
   return (
     <>
-      <View ref={triggerRef} collapsable={false}>
-        {typeof trigger === 'string' ? (
-          <MaterialButton name="more-vert" color={triggerColor} onPress={openMenu} style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined} />
-        ) : trigger ? (
-          <Pressable
-            onPress={openMenu}
-            style={triggerSize ? { width: triggerSize, height: triggerSize, alignItems: 'center', justifyContent: 'center' } : undefined}
-          >
-            <View pointerEvents="none">{trigger}</View>
-          </Pressable>
-        ) : (
-          <MaterialButton name="more-vert" color={triggerColor} onPress={openMenu} style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined} />
-        )}
-      </View>
+      {!hideTrigger ? (
+        <View ref={triggerRef} collapsable={false}>
+          {typeof trigger === 'string' ? (
+            <MaterialButton
+              name="more-vert"
+              color={triggerColor}
+              onPress={openMenu}
+              style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined}
+            />
+          ) : trigger ? (
+            <Pressable
+              onPress={openMenu}
+              style={
+                triggerSize
+                  ? { width: triggerSize, height: triggerSize, alignItems: 'center', justifyContent: 'center' }
+                  : undefined
+              }
+            >
+              <View pointerEvents="none">{trigger}</View>
+            </Pressable>
+          ) : (
+            <MaterialButton
+              name="more-vert"
+              color={triggerColor}
+              onPress={openMenu}
+              style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined}
+            />
+          )}
+        </View>
+      ) : null}
       <Modal transparent visible={open} animationType="fade" onRequestClose={closeMenu}>
         <View className="flex-1" pointerEvents="box-none">
           <Pressable className="absolute inset-0" onPress={closeMenu} />
@@ -105,7 +141,7 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
             }}
           >
             <ScrollView showsVerticalScrollIndicator={false}>
-              {items.map((item, index) => {
+              {visibleItems.map((item, index) => {
                 if (item.kind === 'separator') {
                   return <View key={index} className="mx-3 my-1 h-px bg-zinc-300 dark:bg-zinc-700" />
                 }
@@ -128,8 +164,14 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
                     android_ripple={{ color: isDark ? colors.underlay : '#e5e7eb' }}
                     disabled={item.disabled}
                     onPress={() => {
-                      closeMenu()
-                      item.handler()
+                      const action = item.handler
+                      setOpen(false)
+                      // Android's Modal is a separate native root. Its fade-out
+                      // continues after `visible` changes, so a synchronous store
+                      // mutation can make React reconcile the screen while that
+                      // root is still detaching and temporarily lacks navigation
+                      // context. Dispatch once the native transition has finished.
+                      setTimeout(action, 350)
                     }}
                   >
                     {item.icon ? <View className="shrink-0">{item.icon}</View> : null}
@@ -158,4 +200,4 @@ export const NouMenu: React.FC<{ trigger?: ReactNode; items: Item[]; triggerColo
       </Modal>
     </>
   )
-}
+})
