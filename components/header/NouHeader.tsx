@@ -175,6 +175,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
   })
 
   const hideableHeader = autoHideHeader || hideToolbarWhenScrolled || (isAndroid && doubleTapToToggleHeader)
+  // On native the hide animation belongs to the absolute overlay below, not to the header
+  // itself: the overlay keeps its frame over the top of the page while the header slides
+  // out from under it, and the gesture root swallows every touch that lands in that frame
+  // regardless of pointerEvents. Move the whole overlay instead so nothing is left behind.
+  const HeaderRoot = isWeb ? Root : View
 
   const toggleSidebar = () => settings$.sidebarCollapsed.set(!settings$.sidebarCollapsed.get())
   const pinnedScripts = customScripts
@@ -187,7 +192,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   }
 
   const ret = (
-    <Root
+    <HeaderRoot
       pointerEvents={isWeb ? 'auto' : (headerShown ? 'auto' : 'none')}
       className={clsx(
         'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between py-1',
@@ -196,7 +201,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
           : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
       )}
-      style={animatedHeaderStyle}
+      style={isWeb ? animatedHeaderStyle : undefined}
       onLayout={onLayout}
     >
       {nIf(
@@ -453,7 +458,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           return <Tooltip title={t('menus.more')}>{moreMenu}</Tooltip>
         })()}
       </View>
-    </Root>
+    </HeaderRoot>
   )
 
   if (isWeb) {
@@ -498,15 +503,20 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const composed = Gesture.Race(flingGesture, panGesture)
   return (
-    <GestureHandlerRootView
+    <Root
       pointerEvents="box-none"
       style={
         hideableHeader
-          ? { position: 'absolute', left: 0, right: 0, zIndex: 10, ...(headerPosition === 'bottom' ? { bottom: 0 } : { top: 0 }) }
+          ? [
+              { position: 'absolute', left: 0, right: 0, zIndex: 10, ...(headerPosition === 'bottom' ? { bottom: 0 } : { top: 0 }) },
+              animatedHeaderStyle,
+            ]
           : { minHeight: 0 }
       }
     >
-      <GestureDetector gesture={composed}>{ret}</GestureDetector>
-    </GestureHandlerRootView>
+      <GestureHandlerRootView pointerEvents="box-none" style={{ minHeight: 0 }}>
+        <GestureDetector gesture={composed}>{ret}</GestureDetector>
+      </GestureHandlerRootView>
+    </Root>
   )
 }
