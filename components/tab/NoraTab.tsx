@@ -21,6 +21,7 @@ import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
 import { NouMenu } from '../menu/NouMenu'
 import type { Item, NouMenuHandle } from '../menu/NouMenu'
+import { NouLongPressMenu } from '../menu/NouLongPressMenu'
 import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { NouText } from '../NouText'
@@ -209,6 +210,10 @@ export const NoraTab: React.FC<{
   desktopChrome?: boolean
   /** Native desktop only: hidden webviews stay mounted but must not claim pointer hit tests. */
   desktopVisible?: boolean
+  /** Native desktop only: the viewport clips horizontally scrolled deck columns. */
+  desktopClipRef?: React.RefObject<{
+    measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void
+  } | null>
   slotSwitcher?: ReactNode
 }> = ({
   tab,
@@ -216,6 +221,7 @@ export const NoraTab: React.FC<{
   isActive = false,
   desktopChrome = false,
   desktopVisible = true,
+  desktopClipRef,
   desktopVariant = 'deck',
   slotSwitcher,
 }) => {
@@ -765,14 +771,23 @@ export const NoraTab: React.FC<{
   useEffect(() => {
     if (!desktopChrome || !desktopVisible || isWeb) return
     const subscription = DeviceEventEmitter.addListener('noraSecondaryMouseClick', ({ x, y }) => {
-      desktopHeaderRef.current?.measureInWindow((left, top, width, height) => {
-        if (x >= left && x <= left + width && y >= top && y <= top + height) {
-          desktopMenuRef.current?.openAt(x, y, nativeMenuItemsRef.current)
-        }
+      desktopClipRef?.current?.measureInWindow((clipLeft, clipTop, clipWidth, clipHeight) => {
+        if (x < clipLeft || x > clipLeft + clipWidth || y < clipTop || y > clipTop + clipHeight) return
+        desktopHeaderRef.current?.measureInWindow((left, top, width, height) => {
+          if (x >= left && x <= left + width && y >= top && y <= top + height) {
+            desktopMenuRef.current?.openAt(x, y, nativeMenuItemsRef.current)
+          }
+        })
       })
     })
     return () => subscription.remove()
-  }, [desktopChrome, desktopVisible, tab.id])
+  }, [desktopChrome, desktopVisible, desktopClipRef, tab.id])
+
+  const openDesktopMenu = () => {
+    desktopHeaderRef.current?.measureInWindow((left, top, width, height) => {
+      desktopMenuRef.current?.openAt(left + width / 2, top + height / 2, nativeMenuItemsRef.current)
+    })
+  }
 
   if (isWeb) {
     return (
@@ -896,7 +911,11 @@ export const NoraTab: React.FC<{
           <View className="shrink-0 flex-row items-center gap-2">
             {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} size={18} />)}
           </View>
-          <View className="min-w-0 flex-1 flex-row items-center justify-center">
+          <NouLongPressMenu items={nativeMenuItems}>
+            <Pressable
+              className="min-w-0 flex-1 flex-row items-center justify-center"
+              onLongPress={isIos ? undefined : openDesktopMenu}
+            >
             {slotSwitcher || (
               <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
                 <View
@@ -922,7 +941,8 @@ export const NoraTab: React.FC<{
                 </NouText>
               </View>
             )}
-          </View>
+            </Pressable>
+          </NouLongPressMenu>
           <View className="shrink-0 flex-row items-center">
             <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
           </View>

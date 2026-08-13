@@ -10,7 +10,9 @@ import type { Item, NouMenuHandle } from '@/components/menu/NouMenu'
 import { ServiceIcon } from '@/components/service/Services'
 import { MaterialButton } from '@/components/button/IconButtons'
 import { colors } from '@/lib/colors'
-import { clsx } from '@/lib/utils'
+import { clsx, isIos } from '@/lib/utils'
+import { getTabWebview } from '@/lib/webview'
+import { NouLongPressMenu } from '@/components/menu/NouLongPressMenu'
 import { getProfileColor } from '@/lib/profile'
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
 import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
@@ -23,6 +25,13 @@ const layoutIconName = (layout: TabGroupLayout) => {
   if (layout === 'grid-4') return 'grid-view' as const
   return 'view-day' as const
 }
+
+type Measurable = {
+  measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void
+}
+
+const containsPoint = (x: number, y: number, left: number, top: number, width: number, height: number) =>
+  x >= left && x <= left + width && y >= top && y <= top + height
 
 const openTabInGroup = (group: TabGroup) => {
   tabGroups$.setActiveGroup(group.id)
@@ -50,19 +59,23 @@ const TabRow: React.FC<{
   groupId: string | null
   groups: TabGroup[]
   isActive: boolean
+  clipRef: React.RefObject<Measurable | null>
   openMenu: (items: Item[], x: number, y: number) => void
   tab: Tab
-}> = ({ collapsed, groupId, groups, isActive, openMenu, tab }) => {
+}> = ({ collapsed, groupId, groups, isActive, clipRef, openMenu, tab }) => {
   const profileColor = getProfileColor(tab.profile)
   const rowRef = useRef<View>(null)
   const itemsRef = useRef<Item[]>([])
   const openMenuRef = useRef(openMenu)
+  const webviewActionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // The webview of a background tab is not the one the shared menu talks to, so
   // focus the tab first and let the action run once it is the active one.
   const runWebviewAction = (action: (webview: any) => void) => {
     const performIfActive = () => {
-      const webview = ui$.webview.get()
+      const currentIndex = tabs$.activeTabIndex.get()
+      if (tabs$.tabs.get()[currentIndex]?.id !== tab.id) return
+      const webview = getTabWebview(tab.id) || ui$.webview.get()
       if (webview) action(webview)
     }
     const activeIndex = tabs$.activeTabIndex.get()
@@ -72,7 +85,11 @@ const TabRow: React.FC<{
       return
     }
     tabs$.setActiveTabById(tab.id, 'user')
-    setTimeout(performIfActive, 80)
+    if (webviewActionTimerRef.current) clearTimeout(webviewActionTimerRef.current)
+    webviewActionTimerRef.current = setTimeout(() => {
+      webviewActionTimerRef.current = null
+      performIfActive()
+    }, 80)
   }
 
   const contextItems = useTabContextMenuItems(tab, { runWebviewAction })
@@ -114,14 +131,29 @@ const TabRow: React.FC<{
   })
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('noraSecondaryMouseClick', ({ x, y }) => {
-      rowRef.current?.measureInWindow((left, top, width, height) => {
-        if (x >= left && x <= left + width && y >= top && y <= top + height) {
-          openMenuRef.current(itemsRef.current, x, y)
-        }
+      clipRef.current?.measureInWindow((clipLeft, clipTop, clipWidth, clipHeight) => {
+        if (!containsPoint(x, y, clipLeft, clipTop, clipWidth, clipHeight)) return
+        rowRef.current?.measureInWindow((left, top, width, height) => {
+          if (containsPoint(x, y, left, top, width, height)) {
+            openMenuRef.current(itemsRef.current, x, y)
+          }
+        })
       })
     })
     return () => subscription.remove()
-  }, [])
+  }, [clipRef])
+  useEffect(
+    () => () => {
+      if (webviewActionTimerRef.current) clearTimeout(webviewActionTimerRef.current)
+    },
+    [],
+  )
+
+  const openRowMenu = () => {
+    rowRef.current?.measureInWindow((left, top, width, height) => {
+      openMenuRef.current(itemsRef.current, left + width / 2, top + height / 2)
+    })
+  }
 
   const activate = () => {
     batch(() => {
@@ -144,21 +176,24 @@ const TabRow: React.FC<{
   )
 
   if (collapsed) {
+    const button = (
+      <Pressable
+        className={clsx(
+          'h-10 w-10 items-center justify-center rounded-lg',
+          isActive ? 'bg-white dark:bg-zinc-700' : 'active:bg-zinc-200/70 dark:active:bg-zinc-800',
+        )}
+        onPress={activate}
+        onLongPress={isIos ? undefined : openRowMenu}
+      >
+        <View
+          style={{ position: 'absolute', left: 0, top: 10, bottom: 10, width: 3, backgroundColor: profileColor }}
+        />
+        {favicon}
+      </Pressable>
+    )
     return (
       <View ref={rowRef} collapsable={false}>
-        <Pressable
-          className={clsx(
-            'h-10 w-10 items-center justify-center rounded-lg',
-            isActive ? 'bg-white dark:bg-zinc-700' : 'active:bg-zinc-200/70 dark:active:bg-zinc-800',
-          )}
-          onPress={activate}
-          onLongPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
-        >
-          <View
-            style={{ position: 'absolute', left: 0, top: 10, bottom: 10, width: 3, backgroundColor: profileColor }}
-          />
-          {favicon}
-        </Pressable>
+        <NouLongPressMenu items={items}>{button}</NouLongPressMenu>
       </View>
     )
   }
@@ -172,22 +207,28 @@ const TabRow: React.FC<{
         isActive && 'bg-white dark:bg-zinc-700',
       )}
     >
-      <Pressable className="min-w-0 flex-1 flex-row items-center gap-2" onPress={activate}>
-        <View className="h-4 w-1 shrink-0 rounded-full" style={{ backgroundColor: profileColor }} />
-        <View className="mx-1 h-4 w-4 shrink-0 items-center justify-center">{favicon}</View>
-        <View className="min-w-0 flex-1">
-          <NouText
-            className={clsx(
-              'text-xs font-medium',
-              isActive ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-800 dark:text-zinc-200',
-              tab.isPaused && 'italic opacity-60',
-            )}
-            numberOfLines={1}
-          >
-            {getTabLabel(tab)}
-          </NouText>
-        </View>
-      </Pressable>
+      <NouLongPressMenu items={items}>
+        <Pressable
+          className="min-w-0 flex-1 flex-row items-center gap-2"
+          onPress={activate}
+          onLongPress={isIos ? undefined : openRowMenu}
+        >
+          <View className="h-4 w-1 shrink-0 rounded-full" style={{ backgroundColor: profileColor }} />
+          <View className="mx-1 h-4 w-4 shrink-0 items-center justify-center">{favicon}</View>
+          <View className="min-w-0 flex-1">
+            <NouText
+              className={clsx(
+                'text-xs font-medium',
+                isActive ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-800 dark:text-zinc-200',
+                tab.isPaused && 'italic opacity-60',
+              )}
+              numberOfLines={1}
+            >
+              {getTabLabel(tab)}
+            </NouText>
+          </View>
+        </Pressable>
+      </NouLongPressMenu>
       <Pressable
         className="h-6 w-6 shrink-0 items-center justify-center rounded-md"
         onPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
@@ -205,8 +246,9 @@ const GroupSection: React.FC<{
   group: TabGroup
   groups: TabGroup[]
   groupTabs: Tab[]
+  clipRef: React.RefObject<Measurable | null>
   openMenu: (items: Item[], x: number, y: number) => void
-}> = ({ activeGroupId, activeTabId, collapsed, group, groups, groupTabs, openMenu }) => {
+}> = ({ activeGroupId, activeTabId, collapsed, group, groups, groupTabs, clipRef, openMenu }) => {
   const isActiveGroup = group.id === activeGroupId
   const colorScheme = useColorScheme()
   const iconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
@@ -267,6 +309,7 @@ const GroupSection: React.FC<{
             groups={groups}
             isActive={tab.id === activeTabId}
             key={`${group.id}:${tab.id}`}
+            clipRef={clipRef}
             openMenu={openMenu}
             tab={tab}
           />
@@ -304,6 +347,7 @@ const GroupSection: React.FC<{
               groups={groups}
               isActive={tab.id === activeTabId}
               key={`${group.id}:${tab.id}`}
+              clipRef={clipRef}
               openMenu={openMenu}
               tab={tab}
             />
@@ -321,6 +365,10 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const activeGroupId = useValue(tabGroups$.activeGroupId)
   const groups = useValue(tabGroups$.groups)
   const menuRef = useRef<NouMenuHandle>(null)
+  const sidebarViewportRef = useRef<Measurable | null>(null)
+  const setSidebarViewportRef = (scrollView: ScrollView | null) => {
+    sidebarViewportRef.current = scrollView?.getNativeScrollRef() ?? null
+  }
   const colorScheme = useColorScheme()
   const iconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
 
@@ -370,6 +418,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
         groups={groups}
         groupTabs={groupTabs}
         key={group.id}
+        clipRef={sidebarViewportRef}
         openMenu={openMenu}
       />
     )
@@ -378,7 +427,11 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   if (collapsed) {
     return (
       <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
-        <ScrollView className="flex-1" contentContainerClassName="gap-2 items-center px-1 pb-2 pt-1">
+        <ScrollView
+          ref={setSidebarViewportRef}
+          className="flex-1"
+          contentContainerClassName="gap-2 items-center px-1 pb-2 pt-1"
+        >
           <Pressable className="h-10 w-10 items-center justify-center rounded-md" onPress={newTab}>
             <MaterialIcons name="add" size={20} color={iconColor} />
           </Pressable>
@@ -390,6 +443,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                 groups={groups}
                 isActive={tab.id === activeTabId}
                 key={`ungrouped:${tab.id}`}
+                clipRef={sidebarViewportRef}
                 openMenu={openMenu}
                 tab={tab}
               />
@@ -412,7 +466,11 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
 
   return (
     <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
-      <ScrollView className="flex-1" contentContainerClassName="gap-3 px-2 pb-3 pt-1">
+      <ScrollView
+        ref={setSidebarViewportRef}
+        className="flex-1"
+        contentContainerClassName="gap-3 px-2 pb-3 pt-1"
+      >
         <View>
           <View className="mb-1 flex-row items-center justify-between px-2 py-1">
             <NouText className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
@@ -430,6 +488,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
                 groups={groups}
                 isActive={tab.id === activeTabId}
                 key={`ungrouped:${tab.id}`}
+                clipRef={sidebarViewportRef}
                 openMenu={openMenu}
                 tab={tab}
               />

@@ -26,6 +26,7 @@ export const DesktopWorkspace: React.FC = () => {
   const focusedEmptySlotByGroup = useValue(desktopWorkspaceState$.focusedEmptySlotByGroup)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const scrollRef = useRef<ScrollView>(null)
+  const workspaceViewportRef = useRef<View>(null)
   const prevTabCountRef = useRef(tabs.length)
 
   const activeGroup = groups.find((group) => group.id === activeGroupId) || null
@@ -120,7 +121,7 @@ export const DesktopWorkspace: React.FC = () => {
   const hiddenRect = { left: 0, top: 0, width: size.width, height: size.height }
 
   return (
-    <View className="flex-1" onLayout={onLayout}>
+    <View ref={workspaceViewportRef} className="flex-1" onLayout={onLayout}>
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -155,6 +156,7 @@ export const DesktopWorkspace: React.FC = () => {
                   index={index}
                   isActive={activeTabId === tab.id}
                   desktopChrome
+                  desktopClipRef={workspaceViewportRef}
                   desktopVisible={isVisible}
                   desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
                 />

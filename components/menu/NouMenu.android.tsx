@@ -1,6 +1,6 @@
 import { colors } from '@/lib/colors'
 import type { Item, NouMenuHandle } from './NouMenu'
-import { forwardRef, ReactNode, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, ReactNode, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Modal, Pressable, ScrollView, useColorScheme, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NouText } from '../NouText'
@@ -11,6 +11,7 @@ type Anchor = {
   y: number
   width: number
   height: number
+  placement: 'point' | 'trigger'
 }
 
 export const NouMenu = forwardRef<
@@ -25,6 +26,7 @@ export const NouMenu = forwardRef<
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const insets = useSafeAreaInsets()
   const triggerRef = useRef<View>(null)
+  const clearItemsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const visibleItems = imperativeItems ?? items
   const horizontalPadding = 8
   const estimatedContentWidth = visibleItems.reduce((maxWidth, item) => {
@@ -46,9 +48,10 @@ export const NouMenu = forwardRef<
   const menuHeight = visibleItems.reduce((total, item) => total + getRowHeight(item), 16)
 
   const openMenu = () => {
+    if (clearItemsTimerRef.current) clearTimeout(clearItemsTimerRef.current)
     triggerRef.current?.measureInWindow((x, y, width, height) => {
       setImperativeItems(null)
-      setAnchor({ x, y, width, height })
+      setAnchor({ x, y, width, height, placement: 'trigger' })
       setOpen(true)
     })
   }
@@ -57,8 +60,9 @@ export const NouMenu = forwardRef<
     ref,
     () => ({
       openAt: (x, y, nextItems) => {
+        if (clearItemsTimerRef.current) clearTimeout(clearItemsTimerRef.current)
         setImperativeItems(nextItems ?? items)
-        setAnchor({ x, y, width: 0, height: 0 })
+        setAnchor({ x, y, width: 0, height: 0, placement: 'point' })
         setOpen(true)
       },
     }),
@@ -67,8 +71,21 @@ export const NouMenu = forwardRef<
 
   const closeMenu = () => {
     setOpen(false)
-    setImperativeItems(null)
+    if (clearItemsTimerRef.current) clearTimeout(clearItemsTimerRef.current)
+    // Android has no Modal onDismiss event. Retain the rows through the native
+    // fade, then release imperative handler closures once it is no longer visible.
+    clearItemsTimerRef.current = setTimeout(() => {
+      clearItemsTimerRef.current = null
+      setImperativeItems(null)
+    }, 350)
   }
+
+  useEffect(
+    () => () => {
+      if (clearItemsTimerRef.current) clearTimeout(clearItemsTimerRef.current)
+    },
+    [],
+  )
 
   const verticalPadding = 8
   const triggerGap = 4
@@ -86,7 +103,10 @@ export const NouMenu = forwardRef<
     : minTop
   const left = anchor
     ? Math.min(
-        Math.max(anchor.x + anchor.width - menuWidth, horizontalPadding),
+        Math.max(
+          anchor.placement === 'point' ? anchor.x : anchor.x + anchor.width - menuWidth,
+          horizontalPadding,
+        ),
         Math.max(horizontalPadding, screenWidth - menuWidth - horizontalPadding),
       )
     : horizontalPadding
@@ -122,7 +142,12 @@ export const NouMenu = forwardRef<
           )}
         </View>
       ) : null}
-      <Modal transparent visible={open} animationType="fade" onRequestClose={closeMenu}>
+      <Modal
+        transparent
+        visible={open}
+        animationType="fade"
+        onRequestClose={closeMenu}
+      >
         <View className="flex-1" pointerEvents="box-none">
           <Pressable className="absolute inset-0" onPress={closeMenu} />
           <View
@@ -164,14 +189,8 @@ export const NouMenu = forwardRef<
                     android_ripple={{ color: isDark ? colors.underlay : '#e5e7eb' }}
                     disabled={item.disabled}
                     onPress={() => {
-                      const action = item.handler
-                      setOpen(false)
-                      // Android's Modal is a separate native root. Its fade-out
-                      // continues after `visible` changes, so a synchronous store
-                      // mutation can make React reconcile the screen while that
-                      // root is still detaching and temporarily lacks navigation
-                      // context. Dispatch once the native transition has finished.
-                      setTimeout(action, 350)
+                      closeMenu()
+                      item.handler()
                     }}
                   >
                     {item.icon ? <View className="shrink-0">{item.icon}</View> : null}

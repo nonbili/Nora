@@ -15,11 +15,13 @@ const SECONDARY_MOUSE_CLICK_BRIDGE = `
 
     lastSecondaryMouseClickTime = event.eventTime
     val density = resources.displayMetrics.density.toDouble()
-    val contentLocation = IntArray(2)
-    window.decorView.findViewById<android.view.View>(android.R.id.content)?.getLocationInWindow(contentLocation)
+    val visibleWindowFrame = android.graphics.Rect()
+    window.decorView.getWindowVisibleDisplayFrame(visibleWindowFrame)
     val payload = com.facebook.react.bridge.Arguments.createMap().apply {
-      putDouble("x", (event.x.toDouble() - contentLocation[0]) / density)
-      putDouble("y", (event.y.toDouble() - contentLocation[1]) / density)
+      // Fabric measureInWindow coordinates are relative to this same visible
+      // frame, including in edge-to-edge, split-screen and freeform windows.
+      putDouble("x", (event.x.toDouble() - visibleWindowFrame.left) / density)
+      putDouble("y", (event.y.toDouble() - visibleWindowFrame.top) / density)
     }
     (application as? com.facebook.react.ReactApplication)?.reactHost?.currentReactContext
       ?.getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
@@ -95,7 +97,17 @@ const withSecondaryDisplayMetricsFix: ConfigPlugin = (config) =>
       throw new Error('withSecondaryDisplayMetricsFix expects a Kotlin MainActivity')
     }
     const anchor = 'class MainActivity : ReactActivity() {'
-    if (!config.modResults.contents.includes('emitSecondaryMouseClick')) {
+    const secondaryMouseBridgePattern =
+      /\n[ \t]*private var lastSecondaryMouseClickTime[\s\S]*?override fun dispatchGenericMotionEvent\(event: android\.view\.MotionEvent\): Boolean \{[\s\S]*?return super\.dispatchGenericMotionEvent\(event\)\n[ \t]*}\n(?:[ \t]*\n)*/
+    if (config.modResults.contents.includes('emitSecondaryMouseClick')) {
+      if (!secondaryMouseBridgePattern.test(config.modResults.contents)) {
+        throw new Error('withSecondaryDisplayMetricsFix could not replace the existing secondary mouse bridge')
+      }
+      config.modResults.contents = config.modResults.contents.replace(
+        secondaryMouseBridgePattern,
+        `${SECONDARY_MOUSE_CLICK_BRIDGE}\n`,
+      )
+    } else {
       if (!config.modResults.contents.includes(anchor)) {
         throw new Error('withSecondaryDisplayMetricsFix could not find the MainActivity class declaration')
       }
@@ -111,30 +123,8 @@ const withSecondaryDisplayMetricsFix: ConfigPlugin = (config) =>
       config.modResults.contents = config.modResults.contents.replace(anchor, `${anchor}\n${DISPLAY_METRICS_FIX}`)
     }
 
-    config.modResults.contents = config.modResults.contents.replace(
-      'reactNativeHost.reactInstanceManager.currentReactContext',
-      '(application as? com.facebook.react.ReactApplication)?.reactHost?.currentReactContext',
-    )
-    if (
-      config.modResults.contents.includes('emitSecondaryMouseClick') &&
-      !config.modResults.contents.includes('contentLocation = IntArray(2)')
-    ) {
-      config.modResults.contents = config.modResults.contents
-        .replace(
-          '    val density = resources.displayMetrics.density.toDouble()\n    val payload =',
-          `    val density = resources.displayMetrics.density.toDouble()
-    val contentLocation = IntArray(2)
-    window.decorView.findViewById<android.view.View>(android.R.id.content)?.getLocationInWindow(contentLocation)
-    val payload =`,
-        )
-        .replace(
-          /\s*putDouble\("x", event\.x\.toDouble\(\) \/ density\)[\s\S]*?putInt\("action", event\.actionMasked\)/,
-          `
-      putDouble("x", (event.x.toDouble() - contentLocation[0]) / density)
-      putDouble("y", (event.y.toDouble() - contentLocation[1]) / density)`,
-        )
-    }
-
+    // This was an abandoned pointer-event experiment. Leaving it behind changes
+    // event dispatch globally and conflicts with the scoped mouse bridge above.
     config.modResults.contents = config.modResults.contents.replace(
       /\n\s*com\.facebook\.react\.config\.ReactFeatureFlags\.dispatchPointerEvents = true/,
       '',
@@ -149,8 +139,9 @@ const withAndroidSigningConfig: ConfigPlugin = (config) => {
     const existingIndex = config.modResults.findIndex(
       (item) => item.type === 'property' && item.key === 'org.gradle.jvmargs',
     )
-    if (existingIndex !== -1) {
-      config.modResults[existingIndex].value = '-Xmx4096m -XX:MaxMetaspaceSize=1024m'
+    const existingItem = existingIndex === -1 ? undefined : config.modResults[existingIndex]
+    if (existingItem?.type === 'property') {
+      existingItem.value = '-Xmx4096m -XX:MaxMetaspaceSize=1024m'
     } else {
       config.modResults.push({
         type: 'property',
@@ -183,13 +174,13 @@ android {
       )
     }
 
-    contents = contents
-      .replaceAll('pt-BR', 'b+pt+BR')
-      .replaceAll('zh-Hans', 'b+zh+Hans')
-      .replaceAll('zh-Hant', 'b+zh+Hant')
-      // expo-localization looks for its unmodified locale line on every
-      // prebuild, while the replacements above necessarily change it.
-      .replace(/^(\s*resourceConfigurations \+= \[[^\n]*\])(?:\n\1)+/gm, '$1')
+    const resourceConfigurationLines = new Set<string>()
+    contents = contents.replace(/^\s*resourceConfigurations \+= \[[^\n]*\]$/gm, (line) => {
+      const normalized = line.trim()
+      if (resourceConfigurationLines.has(normalized)) return ''
+      resourceConfigurationLines.add(normalized)
+      return line
+    })
 
     if (!contents.includes('dependenciesInfo {')) {
       contents = contents.replace(
