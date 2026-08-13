@@ -11,6 +11,7 @@ import { clsx, isWeb, isIos, isAndroid, nIf, getHostFromUrl } from '@/lib/utils'
 import { ensureDownloadNotificationPermission } from '@/lib/download-notifications'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouContextMenu } from '../menu/NouContextMenu'
+import { NouMenu } from '../menu/NouMenu'
 import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { NouText } from '../NouText'
@@ -190,8 +191,10 @@ export const NoraTab: React.FC<{
   index: number
   isActive?: boolean
   desktopVariant?: 'deck' | 'saved-view' | 'single'
+  /** Native only: render the desktop tab chrome and fill the slot instead of the screen. */
+  desktopChrome?: boolean
   slotSwitcher?: ReactNode
-}> = ({ tab, index, isActive = false, desktopVariant = 'deck', slotSwitcher }) => {
+}> = ({ tab, index, isActive = false, desktopChrome = false, desktopVariant = 'deck', slotSwitcher }) => {
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const doubleTapToToggleHeader = useValue(settings$.doubleTapToToggleHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
@@ -808,6 +811,97 @@ export const NoraTab: React.FC<{
             inspectable={inspectable}
             allowpopups="true"
             key={viewInstanceKey}
+            textZoom={resolvedZoom}
+          />
+        )}
+        {nIf(
+          !tab.url,
+          <View className="flex-1 min-h-0">
+            <NavModalContent index={index} />
+          </View>,
+        )}
+      </View>
+    )
+  }
+
+  if (desktopChrome) {
+    return (
+      <View
+        className={clsx(
+          'h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border bg-white dark:bg-zinc-900',
+          isActive ? 'border-indigo-400/60 dark:border-indigo-400/50' : 'border-zinc-300 dark:border-zinc-800',
+        )}
+      >
+        <View
+          className={clsx(
+            'flex-row items-center justify-between gap-2 border-b pl-2 pr-1',
+            isActive
+              ? 'bg-indigo-100 border-indigo-200 dark:bg-indigo-400/30 dark:border-indigo-300/50'
+              : 'bg-zinc-50 border-zinc-300 dark:bg-zinc-800 dark:border-zinc-700/50',
+          )}
+          style={{ borderLeftWidth: 4, borderLeftColor: profileColor, height: 36 }}
+        >
+          <View className="shrink-0 flex-row items-center gap-2">
+            {nIf(canGoBack, <MaterialButton name="arrow-back" onPress={goBack} style={toolbarButtonStyle} size={18} />)}
+          </View>
+          <View className="min-w-0 flex-1 flex-row items-center justify-center">
+            {slotSwitcher || (
+              <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
+                <View className="shrink-0" style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+                  {tab.isPaused ? (
+                    <MaterialIcons name="pause-circle-filled" size={16} color="#a1a1aa" />
+                  ) : tab.isLoading ? (
+                    <ActivityIndicator size="small" color="#a1a1aa" />
+                  ) : (
+                    <ServiceIcon url={tab.url} icon={tab.icon} />
+                  )}
+                </View>
+                <NouText
+                  className={clsx(
+                    'min-w-0 flex-1 text-center text-[11px] font-bold tracking-wider',
+                    isActive ? 'text-zinc-600 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400',
+                  )}
+                  numberOfLines={1}
+                >
+                  {getTabLabel(tab)}
+                </NouText>
+              </View>
+            )}
+          </View>
+          <View className="shrink-0 flex-row items-center">
+            {/* Long press has no context menu on native, so the per tab actions get a button. */}
+            <NouMenu
+              trigger={<MaterialButton name="more-vert" style={toolbarButtonStyle} size={16} />}
+              items={menuItems
+                .filter((item) => item.kind === 'separator' || item.label)
+                .map((item) => ({
+                  label: item.label || '',
+                  handler: item.handler || (() => {}),
+                  icon: item.icon,
+                  kind: item.kind,
+                }))}
+            />
+            <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
+          </View>
+        </View>
+        {/* Pausing is not a discard on native -- it stops the load and the media, so the
+            webview stays mounted and only the header shows the paused state. */}
+        {isDormant ? (
+          <View className="flex-1 min-h-0 items-center justify-center">
+            <ActivityIndicator size="small" color="#a1a1aa" />
+          </View>
+        ) : (
+          <NoraView
+            key={viewInstanceKey}
+            ref={onNativeRef}
+            className={clsx('flex-1', !tab.url && 'hidden')}
+            profile={tab.profile || 'default'}
+            scriptOnStart={contentJs}
+            scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
+            useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
+            onLoad={onLoad}
+            onMessage={onMessage}
+            inspectable={inspectable}
             textZoom={resolvedZoom}
           />
         )}

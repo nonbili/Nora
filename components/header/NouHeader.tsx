@@ -32,6 +32,12 @@ import { Tooltip } from '../tooltip/Tooltip'
 import { userStyles$ } from '@/states/user-styles'
 import { buildUserScriptExecutionSource, matchesAnyHostGlob, type CustomUserScript } from '@/lib/user-styles'
 import { useHeaderAnimation } from './header-animation'
+import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
+
+// The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
+// any time. On native the same decision is made in JS, so the classes are duplicated
+// unprefixed instead -- Tailwind only generates what it can see in the source.
+const rc = (web: string, native: string) => (isWeb ? web : native)
 
 const webAnimatedHelpers = {
   useSharedValueSafe: (initial: number) => ({ value: initial }) as SharedValue<number>,
@@ -78,7 +84,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const showReloadButtonInHeader = useValue(settings$.showReloadButtonInHeader)
   const showScrollButtonInHeader = useValue(settings$.showScrollButtonInHeader)
   const sidebarCollapsedValue = useValue(settings$.sidebarCollapsed)
-  const sidebarCollapsed = isWeb && sidebarCollapsedValue
+  const desktopLayout = useDesktopLayout()
+  const nativeDesktop = desktopLayout && !isWeb
+  const sidebarCollapsed = desktopLayout && sidebarCollapsedValue
 
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
@@ -115,6 +123,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com')
 
   const onLayout = (event: LayoutChangeEvent) => {
+    // In the desktop layout the header is a full height sidebar, and its height means
+    // nothing to the scroll-away toolbar logic that reads this.
+    if (nativeDesktop) {
+      return
+    }
     const { height } = event.nativeEvent.layout
     if (Math.abs(ui$.headerHeight.get() - height) < 1) {
       return
@@ -193,19 +206,29 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const ret = (
     <HeaderRoot
-      pointerEvents={isWeb ? 'auto' : (headerShown ? 'auto' : 'none')}
+      pointerEvents={desktopLayout ? 'auto' : (headerShown ? 'auto' : 'none')}
       className={clsx(
-        'bg-zinc-100 dark:bg-zinc-800 flex-row items-center justify-between py-1',
-        isWeb ? 'px-2' : 'px-3',
-        isWeb && (sidebarCollapsed
-          ? 'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'
-          : 'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800'),
+        'bg-zinc-100 dark:bg-zinc-800',
+        // On web the sidebar classes sit behind the `lg:` media query and win there, so the
+        // row defaults stay. On native both sets are plain classes and would fight over
+        // flex-direction and padding, so the sidebar replaces them outright.
+        !nativeDesktop && 'flex-row items-center justify-between py-1',
+        !nativeDesktop && (desktopLayout ? 'px-2' : 'px-3'),
+        desktopLayout && (sidebarCollapsed
+          ? rc(
+              'lg:w-[56px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800',
+              'w-[56px] flex-col items-stretch justify-start gap-0 bg-zinc-100 px-0 py-0 border-r border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
+            )
+          : rc(
+              'lg:w-[280px] lg:flex-col lg:items-stretch lg:justify-start lg:gap-0 lg:bg-zinc-100 lg:px-0 lg:py-0 lg:border-r lg:border-zinc-200 dark:lg:bg-zinc-900 dark:lg:border-zinc-800',
+              'w-[280px] flex-col items-stretch justify-start gap-0 bg-zinc-100 px-0 py-0 border-r border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
+            )),
       )}
       style={isWeb ? animatedHeaderStyle : undefined}
       onLayout={onLayout}
     >
       {nIf(
-        !isWeb,
+        !desktopLayout,
         <View className="flex-row items-center gap-3">
           {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={22} color={headerControlColor} onPress={() => tabs$.openTab('')} style={{ width: 48, height: 48 }} />)}
           {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} />)}
@@ -215,22 +238,22 @@ export const NouHeader: React.FC<{}> = ({}) => {
         </View>,
       )}
       {nIf(
-        isWeb && !sidebarCollapsed,
-        <View className="lg:flex-row lg:items-center lg:justify-end lg:px-1 lg:pt-1">
+        desktopLayout && !sidebarCollapsed,
+        <View className={rc('lg:flex-row lg:items-center lg:justify-end lg:px-1 lg:pt-1', 'flex-row items-center justify-end px-1 pt-1')}>
           <Tooltip title={t('buttons.toggleSidebar')}>
             <MaterialButton name="chevron-left" color={headerControlColor} onPress={toggleSidebar} />
           </Tooltip>
         </View>,
       )}
       {nIf(
-        isWeb && !sidebarCollapsed,
-        <View className="min-w-0 lg:w-full lg:flex-1 lg:min-h-0">
+        desktopLayout && !sidebarCollapsed,
+        <View className={rc('min-w-0 lg:w-full lg:flex-1 lg:min-h-0', 'min-w-0 w-full flex-1 min-h-0')}>
           <DesktopTabsSidebar />
         </View>,
       )}
       {nIf(
         sidebarCollapsed,
-        <View className="lg:flex-row lg:items-center lg:justify-center lg:pt-2">
+        <View className={rc('lg:flex-row lg:items-center lg:justify-center lg:pt-2', 'flex-row items-center justify-center pt-2')}>
           <Tooltip title={t('buttons.toggleSidebar')}>
             <MaterialButton name="chevron-right" color={headerControlColor} onPress={toggleSidebar} />
           </Tooltip>
@@ -238,15 +261,25 @@ export const NouHeader: React.FC<{}> = ({}) => {
       )}
       {nIf(
         sidebarCollapsed,
-        <View className="min-w-0 lg:w-full lg:flex-1 lg:min-h-0">
+        <View className={rc('min-w-0 lg:w-full lg:flex-1 lg:min-h-0', 'min-w-0 w-full flex-1 min-h-0')}>
           <DesktopTabsSidebar collapsed />
         </View>,
       )}
       <View
         className={clsx(
-          'flex-row items-center justify-end gap-1',
-          isWeb && !sidebarCollapsed && 'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-t lg:border-zinc-200 lg:bg-zinc-100 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
-          isWeb && sidebarCollapsed && 'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-100 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
+          !nativeDesktop && 'flex-row items-center justify-end gap-1',
+          desktopLayout &&
+            !sidebarCollapsed &&
+            rc(
+              'lg:w-full lg:flex-row lg:items-center lg:justify-center lg:border-t lg:border-zinc-200 lg:bg-zinc-100 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
+              'w-full flex-row items-center justify-center gap-1 border-t border-zinc-200 bg-zinc-100 p-2 dark:border-zinc-800 dark:bg-zinc-900',
+            ),
+          desktopLayout &&
+            sidebarCollapsed &&
+            rc(
+              'lg:w-full lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:border-t lg:border-zinc-200 lg:bg-zinc-100 lg:p-2 dark:lg:border-zinc-800 dark:lg:bg-zinc-900',
+              'w-full flex-col items-center justify-center gap-1 border-t border-zinc-200 bg-zinc-100 p-2 dark:border-zinc-800 dark:bg-zinc-900',
+            ),
         )}
       >
         {nIf(
@@ -287,11 +320,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
           })(),
         )}
         {nIf(
-          !isWeb && currentTab?.isLoading,
+          !desktopLayout && currentTab?.isLoading,
           <ActivityIndicator size="small" color={headerControlColor} style={{ marginRight: 4 }} />,
         )}
         {nIf(
-          !isWeb,
+          !desktopLayout,
           <TouchableOpacity className="flex-row items-center p-3" onPress={() => ui$.tabModalOpen.set(true)}>
             <View
               className="rounded-md px-2 py-1 border"
@@ -302,7 +335,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           </TouchableOpacity>,
         )}
         {nIf(
-          isWeb && recentlyClosedTabs.length > 0,
+          desktopLayout && recentlyClosedTabs.length > 0,
           <Tooltip title={t('buttons.restoreTabs')}>
             <NouMenu
               trigger={<MaterialButton name="restore" color={headerControlColor} />}
@@ -462,7 +495,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     </HeaderRoot>
   )
 
-  if (isWeb) {
+  if (isWeb || nativeDesktop) {
     return ret
   }
 

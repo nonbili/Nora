@@ -46,7 +46,10 @@
         "split": "Split view",
         "grid": "Grid view",
         "gridFour": "4-tabs grid"
-      }
+      },
+      "newGroup": "New group",
+      "moveToGroup": "Move to {{name}}",
+      "moveToUngrouped": "Move out of group"
     }
   },
   "blocklist": {
@@ -222,7 +225,12 @@
       "theme": "Theme",
       "toolbar": "Toolbar",
       "deckTabWidth": "Deck tab width",
-      "deckTabWidthHint": "Current: {{value}}px"
+      "deckTabWidthHint": "Current: {{value}}px",
+      "desktopLayout": "Desktop layout",
+      "desktopLayoutHint": "Show tab groups and deck/split/grid views on large screens, like desktop mode.",
+      "desktopLayoutAuto": "Auto",
+      "desktopLayoutOn": "Always",
+      "desktopLayoutOff": "Never"
     },
     "profiles": {
       "description": "Multiple accounts with separate cookies and browsing state.",

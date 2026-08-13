@@ -32,6 +32,11 @@ const ensureProfiles = (profiles?: (Profile | null | undefined)[]) => {
   return sanitized
 }
 
+export type DesktopLayoutMode = 'auto' | 'on' | 'off'
+
+const normalizeDesktopLayout = (value: unknown): DesktopLayoutMode =>
+  value === 'on' || value === 'off' ? value : 'auto'
+
 export interface Settings {
   language: SupportedI18nLanguage | null
   autoHideHeader: boolean
@@ -68,6 +73,7 @@ export interface Settings {
 
   deckTabWidth: number
   sidebarCollapsed: boolean
+  desktopLayout: DesktopLayoutMode
 
   defaultZoom: number
   siteZoom: Record<string, number>
@@ -167,6 +173,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
 
     deckTabWidth: typeof value?.deckTabWidth === 'number' ? value.deckTabWidth : 400,
     sidebarCollapsed: bool(value?.sidebarCollapsed),
+    desktopLayout: normalizeDesktopLayout(value?.desktopLayout),
 
     defaultZoom: typeof value?.defaultZoom === 'number' ? value.defaultZoom : 100,
     siteZoom: sanitizeSiteZoom(value?.siteZoom),
@@ -235,6 +242,7 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.sidebarCollapsed !== 'boolean') {
     data.sidebarCollapsed = false
   }
+  data.desktopLayout = normalizeDesktopLayout(data.desktopLayout)
   if (typeof data.oneProfilePerSite !== 'boolean') {
     data.oneProfilePerSite = false
   }
@@ -298,6 +306,7 @@ export const settings$: Observable<Store> = observable<Store>({
 
   deckTabWidth: 400,
   sidebarCollapsed: false,
+  desktopLayout: 'auto',
 
   defaultZoom: 100,
   siteZoom: {},

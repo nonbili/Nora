@@ -15,12 +15,17 @@ import { syncSupabase } from '@/lib/supabase/sync'
 import { useUsageTracker } from '@/lib/hooks/useUsageTracker'
 import { UsageLockout } from '../lockout/UsageLockout'
 import { SettingsModal } from '../modal/SettingsModal'
+import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
 const logger = createLogger('sync')
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
   const tabs = useValue(tabs$.tabs)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
+  const desktopLayout = useDesktopLayout()
+  // Android desktop mode gets the same workspace as the desktop app, laid out with
+  // native views instead of DOM ones.
+  const nativeDesktop = desktopLayout && !isWeb
   const { userId, me } = useMe()
   useUsageTracker()
 
@@ -46,13 +51,14 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     <View
       className={clsx(
         'flex-1 h-full overflow-hidden bg-zinc-100 dark:bg-zinc-950',
-        headerPosition === 'bottom' && 'flex-col-reverse',
+        !nativeDesktop && headerPosition === 'bottom' && 'flex-col-reverse',
         isWeb && 'lg:flex-row',
+        nativeDesktop && 'flex-row',
       )}
     >
       <NouHeader />
       {isWeb ? <SettingsModal /> : null}
-      {isWeb && tabs.length ? (
+      {desktopLayout && tabs.length ? (
         <View className="relative flex-1 min-h-0 overflow-hidden bg-zinc-200 dark:bg-black">
           <DesktopWorkspace />
           <UsageLockout />
