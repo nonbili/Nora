@@ -199,6 +199,9 @@
         },
         "compactTiktokLayout": {
           "label": "Kompakt Tiktok düzenini kullan"
+        },
+        "hideFacebookFeed": {
+          "label": "Facebook akışını gizle"
         }
       },
       "custom": {
@@ -317,6 +320,11 @@
       "importWithScriptsConfirm": "Bu dosya, web siteleri içinde kod çalıştırabilen {{count}} adet etkinleştirilmiş özel komut dosyası içermektedir. Yalnızca dosyaya güveniyorsanız devam edin. Mevcut ayarlarınız, yer imleriniz, kullanıcı stilleriniz ve özel komut dosyalarınız silinecektir.",
       "importDone": "İçe aktarılan: {{sections}}",
       "importFailed": "İçe aktarma başarısız: {{message}}"
+    },
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "WebRTC IP sızıntılarını önle",
+      "protectIpHint": "Vekil sunucu ve VPN'i atlayan WebRTC aracılığıyla sayfaların gerçek IP adresinizi tespit etmesini engeller. Aktarım sunucusu kullanan aramalar çalışmaya devam eder; bir video veya sesli arama bağlantısı kurulamıyorsa bu özelliği devre dışı bırakın. Bir sonraki sayfa yüklemesinde etkili olur."
     }
   },
   "sync": {

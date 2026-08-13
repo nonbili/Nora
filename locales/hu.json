@@ -1,0 +1,488 @@
+{
+  "about": {
+    "label": "Névjegy",
+    "code": "Forráskód",
+    "donate": "Adakozás",
+    "hint": "Verzióinformációk, forráskód és támogatási hivatkozások."
+  },
+  "changelog": {
+    "label": "Változáslista",
+    "hint": "Legutóbbi kiadások és javítások a GitHubról.",
+    "loading": "Kiadási megjegyzések betöltése...",
+    "error": "Nem sikerült betölteni a kiadási megjegyzéseket.",
+    "retry": "Újrapróbálkozás",
+    "empty": "Nem találhatók kiadási megjegyzések.",
+    "current": "Jelenlegi",
+    "noNotes": "Ehhez a verzióhoz nem állnak rendelkezésre kiadási megjegyzések."
+  },
+  "common": {
+    "about": "Névjegy",
+    "edit": "Szerkesztés",
+    "off": "Ki",
+    "on": "Be",
+    "reset": "Visszaállítás",
+    "save": "Mentés",
+    "theme": "Téma"
+  },
+  "views": {
+    "rename": "Nézet átnevezése",
+    "namePlaceholder": "Nézet neve",
+    "desktop": {
+      "blankTab": "Üres lap",
+      "deck": "Lapfül",
+      "groupNamePlaceholder": "Csoport neve",
+      "newDeckView": "Új lapnézet",
+      "newGroupFromTab": "Új csoport lapból",
+      "newSplitView": "Új osztott nézet",
+      "newGridView": "Új rácsnézet",
+      "renameGroup": "Csoport átnevezése",
+      "tabCount": "{{count}} lap",
+      "tabCount_plural": "{{count}} lap",
+      "ungrouped": "Nem csoportosított",
+      "chooseTabToAdd": "Válasszon egy lapot a(z) {{layout}} hozzáadásához",
+      "createBlankTabInSlot": "Új üres lap létrehozása ezen a helyen",
+      "layout": {
+        "deck": "Lapnézet",
+        "split": "Osztott nézet",
+        "grid": "Rácsnézet",
+        "gridFour": "4 lapos rács"
+      }
+    }
+  },
+  "blocklist": {
+    "label": "Hálózati tiltólista",
+    "description": "Hirdetések és követők tiltása az EasyList és az EasyPrivacy szabályai alapján.",
+    "enable": "Hálózati tiltólista engedélyezése",
+    "statusFetching": "Tiltólista lekérése",
+    "lastUpdated": "Utoljára frissítve: {{value}}",
+    "refreshNow": "Tiltólista frissítése"
+  },
+  "buttons": {
+    "cancel": "Mégse",
+    "closeAll": "Összes bezárása",
+    "confirm": "Megerősítés",
+    "continue": "Folytatás",
+    "openUrl": "Hivatkozás megnyitása",
+    "open": "Megnyitás",
+    "reopenLastClosedTab": "Utoljára bezárt lap újbóli megnyitása",
+    "restoreTabs": "Nemrég bezárt lapok",
+    "save": "Mentés",
+    "toggleSidebar": "Oldalsáv be/ki"
+  },
+  "menus": {
+    "clearSiteData": "Webhelyadatok törlése",
+    "clearSiteDataConfirm": "Törli a „{{host}}” webhely összes sütijét és webhelyadatát? Ezzel kijelentkezik erről a webhelyről.",
+    "close": "Bezárás",
+    "delete": "Törlés",
+    "desktop": "Asztali webhely",
+    "duplicate": "Lap megkettőzése",
+    "addBookmark": "Könyvjelző hozzáadása",
+    "editUrl": "Lap hivatkozásának szerkesztése",
+    "more": "Több",
+    "openInProfile": "Megnyitás profilban",
+    "pause": "Lap szüneteltetése",
+    "resume": "Lap folytatása",
+    "reload": "Újratöltés",
+    "scroll": "Görgetés az oldal tetejére",
+    "share": "Megosztás",
+    "signOut": "Kijelentkezés",
+    "tools": "Eszközök",
+    "zoom": "Nagyítás",
+    "viewInSplitView": "Megtekintés osztott nézetben"
+  },
+  "modals": {
+    "downloadVideo": "Videó letöltése",
+    "downloadOnCobalt": "Videó letöltése a cobalt.tools használatával",
+    "downloadTab": "Letöltés",
+    "cookiesTab": "Webhelyadatok",
+    "exportCookies": "Jelenlegi webhely sütijeinek exportálása",
+    "exportCookiesHint": "Jelenlegi webhely sütijeinek mentése cookies.txt fájlként.",
+    "exportCookiesButton": "cookies.txt exportálása",
+    "clearSiteDataHint": "Jelenlegi webhely és profil sütijeinek, valamint böngészési adatainak törlése."
+  },
+  "native": {
+    "menu_saveImage": "Kép mentése",
+    "menu_copyImageLink": "Kép hivatkozásának másolása",
+    "menu_copyLink": "Hivatkozás másolása",
+    "menu_openInProfile": "Megnyitás profilban",
+    "menu_openInNewTab": "Megnyitás új lapon",
+    "menu_openImageInNewTab": "Kép megnyitása új lapon",
+    "toast_downloadStarted": "A letöltés elindult, ellenőrizze a rendszerértesítést",
+    "toast_downloadSucceeded": "Mentve a letöltések mappába",
+    "toast_downloadFailed": "Nem sikerült letölteni",
+    "httpBlocked_title": "HTTP-webhely tiltva",
+    "httpBlocked_body": "Ez a webhely nem biztonságos HTTP-kapcsolatot használ. A HTTP-webhelyek betöltésének engedélyezéséhez kapcsolja be a „HTTP-webhelyek engedélyezése” beállítást a beállításokban."
+  },
+  "profiles": {
+    "label": "Profilok",
+    "auto": "Automatikus",
+    "autoProfiles": "Automatikus profilok",
+    "autoProfilesEmpty": "Még nincsenek automatikus profilok.",
+    "openLinkInProfile": "Hivatkozás megnyitása profilban",
+    "autoProfileLastUsed": "Utoljára használva: {{value}}",
+    "autoProfileLastUsedLabel": "Utoljára használva",
+    "manageAutoProfiles": "Automatikus profilok kezelése ({{count}})",
+    "deleteAutoProfileConfirm": "Törli a(z) {{site}} automatikus profilját? Ezzel törlődnek a tárolt böngészési adatai, és bezáródnak az ezt használó lapok.",
+    "deleteAllAutoProfiles": "Összes törlése",
+    "deleteAllAutoProfilesConfirm": "Törli mind a(z) {{count}} automatikus profilt? Ezzel törlődnek a tárolt böngészési adataik, és bezáródnak az ezeket használó lapok.",
+    "deleteStaleAutoProfiles": "14 napja nem használtak törlése",
+    "deleteStaleAutoProfilesConfirm": "Törli a(z) {{count}} olyan automatikus profilt, amelyet az elmúlt 14 napban nem használtak? Ezzel törlődnek a tárolt böngészési adataik, és bezáródnak az ezeket használó lapok.",
+    "add": "Hozzáadás",
+    "edit": "Szerkesztés",
+    "save": "Mentés",
+    "namePlaceholder": "Profil neve",
+    "clearData": "Adatok törlése",
+    "clearDataConfirm": "Törli a(z) „{{name}}” profil összes böngészési adatát? Ezzel kijelentkezik, és bezáródnak az ezt a profilt használó lapok.",
+    "exportCookies": "Profil sütijeinek exportálása",
+    "exportCookiesConfirm": "Exportálja a(z) „{{name}}” profil összes sütijét? A fájl a profilban található összes webhelyhez tartozó bejelentkezési munkameneteket is tartalmazhat. Tartsa bizalmasan.",
+    "deleteConfirm": "Törli a(z) „{{name}}” profilt? Ezzel törlődnek a tárolt böngészési adatai, és bezáródnak az ezt a profilt használó lapok."
+  },
+  "settings": {
+    "label": "Beállítások",
+    "zoom": {
+      "label": "Oldal nagyítása",
+      "defaultLabel": "Alapértelmezett nagyítás",
+      "defaultHint": "Összes weboldal alapértelmezett nagyítási szintjének beállítása.",
+      "siteZoomLabel": "Webhelyenkénti nagyítás",
+      "usingDefault": "Alapértelmezett nagyítás használata"
+    },
+    "openExternalLink": "Külső hivatkozás megnyitása a rendszerböngészőben",
+    "redirectToOldReddit": "Átirányítás a régi Redditre",
+    "allowHttpWebsite": "HTTP-webhelyek engedélyezése",
+    "inspectable": "WebView vizsgálhatóságának engedélyezése",
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "WebRTC IP-cím-szivárgások megakadályozása",
+      "protectIpHint": "Megakadályozza, hogy a weboldalak WebRTC-n keresztül felderítsék a valódi IP-címét, megkerülve a proxyt és a VPN-t. A közvetítő kiszolgálót használó hívások továbbra is működnek; kapcsolja ki ezt a beállítást, ha egy videó- vagy hanghívás nem tud létrejönni. A beállítás a következő oldalbetöltéskor lép érvénybe."
+    },
+    "proxy": {
+      "label": "Proxy",
+      "enabled": "Proxy engedélyezése",
+      "type": "Proxy típusa",
+      "host": "Proxykiszolgáló",
+      "port": "Proxyport",
+      "hostPlaceholder": "pl. 127.0.0.1 vagy proxy.example.com",
+      "portPlaceholder": "pl. 1080"
+    },
+    "videoEdgeLongPressTo2x": "A képernyő szélének hosszan lenyomásával 2×-es lejátszás",
+    "translation": {
+      "enable": "Szöveg dupla koppintása a fordításhoz",
+      "hint": "Bejegyzés, hozzászólás vagy bekezdés dupla koppintása az eszközön történő fordításhoz.",
+      "targetLanguage": "Fordítás erre",
+      "appLanguage": "Alkalmazás",
+      "systemLanguage": "Rendszer",
+      "notSelected": "Válasszon egy nyelvet",
+      "chooseLanguage": "Először válasszon fordítási nyelvet",
+      "loading": "Fordítás…",
+      "copy": "Fordítás másolása",
+      "copySource": "Forrás másolása",
+      "pin": "Fordítás rögzítése",
+      "unpin": "Fordítás rögzítésének megszüntetése",
+      "failed": "A szöveg fordítása nem sikerült",
+      "unsupported": "Ez a nyelvpár nem érhető el ezen az eszközön"
+    },
+    "enterInsertsNewline": "Enter: új sor (Shift+Enter)",
+    "doubleBackToExitApp": "Kétszeri visszalépés az alkalmazás bezárásához",
+    "oneProfilePerSite": "Webhelyenként egy profil",
+    "oneProfilePerSiteHint": "Külön automatikus munkamenet webhelyenként. A webhelyről megnyitott hivatkozások az adott webhely profilját használják.",
+    "hideHeader": "Eszköztár elrejtése és megjelenítése görgetési irány szerint",
+    "doubleTapToToggleHeader": "Eszköztár elrejtése és megjelenítése az oldal dupla koppintásával",
+    "hideToolbarWhenScrolled": "Eszköztár elrejtése, ha az oldal nincs a tetején",
+    "xHomeTimeline": {
+      "label": "Alapértelmezett kezdő idővonal",
+      "forYou": "Neked",
+      "following": "Követett"
+    },
+    "mentionNotifications": "Közösségi értesítések",
+    "mentionNotificationsHint": "Az operációs rendszer háttérben futó alkalmazásokra vonatkozó korlátozásai miatt a kézbesítés késhet, és nem garantált.",
+    "sections": {
+      "general": "Általános",
+      "accounts": "Fiókok és adatok",
+      "bookmarksSearch": "Könyvjelzők és keresés",
+      "notifications": "Értesítések",
+      "advanced": "Speciális",
+      "about": "Névjegy"
+    },
+    "pages": {
+      "browsing": "Beállítások",
+      "appearance": "Megjelenés",
+      "services": "Szolgáltatások",
+      "profiles": "Profilok és munkamentek",
+      "bookmarks": "Könyvjelzők",
+      "search": "Keresés",
+      "backup": "Biztonsági mentés"
+    },
+    "browsing": {
+      "descriptionNative": "Funkciókapcsolók.",
+      "descriptionWeb": "Hálózati tiltás és speciális böngészési beállítások.",
+      "features": "Funkciók"
+    },
+    "appearance": {
+      "description": "Téma- és eszköztár-beállítások.",
+      "theme": "Téma",
+      "toolbar": "Eszköztár",
+      "deckTabWidth": "Lap szélessége",
+      "deckTabWidthHint": "Jelenlegi: {{value}}px"
+    },
+    "profiles": {
+      "description": "Több fiók külön sütikkel és böngészési állapottal.",
+      "sessionMode": "Munkamenet mód",
+      "injectCookie": "Süti hozzáadása",
+      "injectCookieHint": "Másik böngészőből származó süti fejlécének beillesztése munkamenet kézi visszaállításához."
+    },
+    "bookmarks": {
+      "description": "Rögzített weboldalak kezelése.",
+      "saved": "Mentett könyvjelzők",
+      "empty": "Nincsenek könyvjelzők."
+    },
+    "backup": {
+      "description": "Beállítások, könyvjelzők és felhasználói stílusok exportálása vagy visszaállítása.",
+      "export": "Beállítások exportálása",
+      "exportDescription": "Beállítások, könyvjelzők, felhasználói stílusok és egyéni parancsfájlok mentése JSON-fájlként",
+      "exportFailed": "Exportálás nem sikerült: {{message}}",
+      "import": "Beállítások importálása",
+      "importDescription": "Beállítások visszaállítása Nora-beállításfájlból",
+      "importConfirm": "Ezzel felülírja jelenlegi beállításait, könyvjelzőit, felhasználói stílusait és egyéni parancsfájljait. Folytatja?",
+      "importWithScriptsConfirm": "Ez a fájl {{count}} engedélyezett egyéni parancsfájlt tartalmaz, amelyek kódot futtathatnak a webhelyeken. Csak akkor folytassa, ha megbízik a fájlban. Jelenlegi beállításai, könyvjelzői, felhasználói stílusai és egyéni parancsfájljai le lesznek cserélve.",
+      "importDone": "Importálva: {{sections}}",
+      "importFailed": "Importálás nem sikerült: {{message}}"
+    },
+    "services": {
+      "title": "Beépített szolgáltatások",
+      "description": "Beépített szolgáltatások kezelése."
+    },
+    "search": {
+      "description": "Keresőszolgáltatók kezelése.",
+      "builtin": "Beépített keresőszolgáltatók",
+      "builtinHint": "Kapcsolja be azokat a szolgáltatókat, amelyeket meg szeretne jeleníteni az új lap keresési menüjében.",
+      "custom": "Egyéni keresőszolgáltatók",
+      "empty": "Még nincsenek egyéni keresőszolgáltatók.",
+      "urlHint": "Közvetlen hivatkozás beírásakor mindig elérhető.",
+      "addTitle": "Egyéni keresőszolgáltató hozzáadása",
+      "editTitle": "Egyéni keresőszolgáltató szerkesztése",
+      "addAction": "Keresőszolgáltató hozzáadása",
+      "templateHint": "A keresési kifejezés helyén használja a „%s” karakterláncot.",
+      "fields": {
+        "name": "Név",
+        "namePlaceholder": "Példakereső",
+        "template": "Keresési webcímsablon",
+        "templatePlaceholder": "https://example.com/search?q=%s"
+      },
+      "validation": {
+        "name": "Adja meg a keresőszolgáltató nevét",
+        "template": "Adjon meg érvényes HTTP(S)-sablonwebcímet, amely tartalmazza a „%s” karakterláncot",
+        "duplicateName": "Már létezik egy egyéni keresőszolgáltató ezzel a névvel"
+      },
+      "deleteConfirm": "Biztosan törölni szeretné ezt az egyéni keresőt?"
+    },
+    "userStyles": {
+      "label": "Felhasználói stílusok és parancsfájlok",
+      "hint": "Beépített CSS-módosítások be- és kikapcsolása, valamint saját webhelyalapú stílusok és parancsfájlok hozzáadása.",
+      "customHint": "Bármely webhely testreszabása CSS-sel vagy JavaScripttel.",
+      "copyCss": "CSS másolása",
+      "cssCopied": "CSS másolva",
+      "copyFailed": "CSS másolása nem sikerült",
+      "importCss": "CSS importálása",
+      "importFailed": "CSS importálása nem sikerült",
+      "preview": "Előnézet",
+      "previewApplied": "Előnézet alkalmazva",
+      "noActiveTab": "Nincs aktív lap",
+      "add": "Stílus hozzáadása",
+      "addTitle": "Egyéni stílus hozzáadása",
+      "editTitle": "Egyéni stílus szerkesztése",
+      "deleteConfirm": "Biztosan törölni szeretné ezt az egyéni stílust?",
+      "nameLabel": "Név",
+      "namePlaceholder": "Stílus neve",
+      "hostGlobs": {
+        "label": "Kiszolgálóhelyettesítők",
+        "placeholder": "*.reddit.com, x.com (vesszővel elválasztva)"
+      },
+      "validation": {
+        "hostGlobs": "Adjon meg legalább egy érvényes kiszolgálóhelyettesítőt",
+        "css": "Adjon hozzá CSS-t mentés előtt"
+      },
+      "builtin": {
+        "label": "Beépített stílusok",
+        "hideRedditGame": {
+          "label": "Reddit játékbejegyzéseinek elrejtése"
+        },
+        "compactTiktokLayout": {
+          "label": "Kompakt TikTok elrendezés használata"
+        },
+        "hideXBottomNav": {
+          "label": "Az X alsó navigációs sáv elrejtése görgetéskor"
+        },
+        "hideXHomeTabs": {
+          "label": "Az X kezdőlap idővonalfüleinek elrejtése"
+        },
+        "hideFacebookFeed": {
+          "label": "Facebook-hírfolyam elrejtése"
+        }
+      },
+      "custom": {
+        "label": "Egyéni stílusok",
+        "empty": "Még nincsenek egyéni stílusok. Adjon hozzá egyet, ha saját CSS-kódot szeretne beilleszteni a megadott gazdagépeken."
+      },
+      "scripts": {
+        "label": "Egyéni parancsfájlok",
+        "add": "Parancsfájl hozzáadása",
+        "addTitle": "Egyéni parancsfájl hozzáadása",
+        "editTitle": "Egyéni parancsfájl szerkesztése",
+        "deleteConfirm": "Biztosan törölni szeretné ezt az egyéni parancsfájlt?",
+        "empty": "Még nincsenek egyéni parancsfájlok. Adjon hozzá egyet, ha saját JavaScript-kódot szeretne futtatni a megadott gazdagépeken.",
+        "namePlaceholder": "Parancsfájl neve",
+        "import": "Importálás",
+        "importFailed": "Nem sikerült a parancsfájl importálása",
+        "pinToHeader": "Rögzítés az eszköztáron",
+        "pinToHeaderHint": "Parancsfájl megjelenítése eszköztárműveletként a megadott webhelyeken.",
+        "pinnedScripts": "Rögzített parancsfájlok",
+        "run": "Futtatás",
+        "runComplete": "Parancsfájl fut",
+        "runFailed": "Parancsfájl meghiúsult",
+        "validation": {
+          "js": "JavaScript hozzáadása mentés előtt"
+        }
+      }
+    },
+    "headerPosition": {
+      "label": "Eszköztár helye",
+      "top": "Felül",
+      "bottom": "Alul"
+    },
+    "showNewTabButton": "Új lap gomb megjelenítése",
+    "showBackButton": "Vissza gomb megjelenítése",
+    "showForwardButton": "Előre gomb megjelenítése",
+    "showReloadButton": "Újratöltés gomb megjelenítése",
+    "showScrollButton": "A lap tetejére ugró gomb megjelenítése",
+    "oneHandMode": "Egykezes mód",
+    "oneTabPerSite": "Megosztott hivatkozás megnyitásakor webhelyenként egy lap",
+    "theme": {
+      "label": "Téma",
+      "system": "Rendszer",
+      "dark": "Sötét",
+      "light": "Világos",
+      "hint": "Az alkalmazás és a webnézet témája. Ha egy oldal nem frissül azonnal, töltse újra a lapot."
+    },
+    "language": {
+      "label": "Nyelv",
+      "system": "Rendszer",
+      "hint": "Egy nyelv kiválasztása vagy kövesse a rendszer nyelvét."
+    },
+    "injectCookie": "Süti hozzáadása"
+  },
+  "sync": {
+    "label": "Szinkronizálás",
+    "hint": "Könyvjelzők és a beállítások szinkronizálása az eszközök között.",
+    "upgradeHint": "Frissítsen az előfizetésre a könyvjelzők és a beállítások eszközök közötti szinkronizálásához.",
+    "currentPlan": "Jelenlegi csomag",
+    "managePlan": "Csomag kezelése",
+    "deleteAccount": "Fiók törlése",
+    "buy": "Előfizetés az App Store-on keresztül",
+    "restore": "Vásárlások visszaállítása",
+    "manageIos": "Kezelés az App Store-ban",
+    "purchaseTitle": "Előfizetés összekapcsolása",
+    "purchaseConfirm": "Ez az előfizetés a(z) {{email}} e-mail-címhez lesz kapcsolva, és lehetővé teszi a szinkronizálást, bárhol is jelentkezik be ebbe a Nora-fiókba.",
+    "priceLoading": "Az App Store árának betöltése…",
+    "activeViaIos": "Aktív az App Store-on keresztül",
+    "freePlan": "Ingyenes",
+    "purchasePending": "A vásárlás jóváhagyásra vár.",
+    "restoreConflict": "Ez az App Store-előfizetés már hozzá van kapcsolva a(z) {{email}} e-mail-címhez.",
+    "signOutSwitch": "Kijelentkezés és fiókváltás",
+    "signedInAs": "Bejelentkezve: {{email}}",
+    "productUnavailable": "Az App Store-termék még nem érhető el.",
+    "expiresAt": "Megújul vagy lejár ekkor: {{value}}",
+    "legalNotice": "Az előfizetések automatikusan megújulnak, amennyiben nem mondja le őket. Az előfizetéssel elfogadja a Felhasználási feltételeket (EULA) és az Adatvédelmi irányelveket.",
+    "termsOfUse": "Felhasználási feltételek (EULA)",
+    "privacyPolicy": "Adatvédelmi irányelvek",
+    "signInRequired": "A folytatáshoz jelentkezzen be."
+  },
+  "tabs": {
+    "new": "Új lap",
+    "recentlyClosed": "Utoljára bezárt",
+    "noRecentlyClosed": "Nincsenek utoljára bezárt lapok",
+    "removeFromHistory": "Eltávolítás az előzményekből",
+    "clearRecentlyClosed": "Előzmények törlése",
+    "paused": "Lap szüneteltetve",
+    "pausedHint": "A tartalma az erőforrások megtakarítása érdekében ki lett töltve a memóriából.",
+    "resume": "Folytatás"
+  },
+  "newTab": {
+    "presets": {
+      "open": "Előre beállított könyvjelzők hozzáadása",
+      "title": "Előre beállított könyvjelzők"
+    },
+    "search": {
+      "urlPlaceholder": "Adjon meg egy webcímet",
+      "searchPlaceholder": "Keresés a weben"
+    }
+  },
+  "toast": {
+    "pinned": "Rögzítve az új lap oldalára",
+    "blocklistUpdated": "Tiltólista frissítve",
+    "profileDataCleared": "Profiladatok törölve",
+    "profileDataClearFailed": "Profiladatok törlése nem sikerült",
+    "cookieExported": "cookies.txt exportálva",
+    "cookieExportEmpty": "Ehhez a webhelyhez nem találhatók sütik",
+    "cookieExportFailed": "A cookies.txt exportálása nem sikerült",
+    "cookieExportOpenPage": "Nyisson meg egy oldalt a sütik exportálása előtt",
+    "profileCookieExported": "Profil sütijeinek exportálása megtörtént (cookies.txt)",
+    "profileCookieExportEmpty": "Nem találhatók sütik ebben a profilban",
+    "profileCookieExportFailed": "Profil sütijeinek exportálása nem sikerült (cookies.txt)",
+    "siteDataCleared": "Weboldaladatok törölve",
+    "siteDataClearFailed": "Weboldaladatok törlése nem sikerült",
+    "pressBackAgainToExit": "A kilépéshez nyomja meg ismét a vissza gombot"
+  },
+  "usageLimits": {
+    "label": "Használati korlátok",
+    "description": "Állítson be napi időkorlátokat a kiválasztott szolgáltatásokhoz vagy az egész alkalmazáshoz.",
+    "limits": "Korlátok",
+    "empty": "Még nincsenek használati korlátok.",
+    "emptyHint": "Adjon hozzá egy korlátot a napi böngészési idő követésének megkezdéséhez.",
+    "usageLine": "Ma: {{used}} / {{limit}}",
+    "deleteConfirm": "Törli ezt a használati korlátot?",
+    "scope": {
+      "all": "Egész alkalmazás",
+      "none": "Nincsenek szolgáltatások kiválasztva"
+    },
+    "editor": {
+      "addTitle": "Használati korlát hozzáadása",
+      "editTitle": "Használati korlát szerkesztése",
+      "name": "Név",
+      "namePlaceholder": "pl. közösségi média",
+      "defaultName": "Korlát",
+      "dailyLimit": "Napi korlát",
+      "hours": "Órák",
+      "minutes": "Percek",
+      "scope": "Alkalmazás erre",
+      "add": "Hozzáadás",
+      "errorMinutes": "Állítson be legalább 1 perces napi korlátot",
+      "errorScope": "Válasszon ki legalább egy szolgáltatást, vagy alkalmazza az egész alkalmazásra"
+    },
+    "pin": {
+      "label": "PIN-kód",
+      "hint": "A korlátok kezeléséhez és a feloldáshoz, amikor egy korlát elérése megtörténik, PIN-kód szükséges. Helyi éjfélkor visszaáll.",
+      "set": "PIN-kód beállítva",
+      "notSet": "Nincs beállított PIN-kód",
+      "setAction": "PIN-kód beállítása",
+      "change": "Módosítás",
+      "remove": "Eltávolítás",
+      "currentPlaceholder": "Jelenlegi PIN-kód",
+      "newPlaceholder": "Új PIN-kód",
+      "confirmPlaceholder": "Új PIN-kód megerősítése",
+      "errorEmpty": "A PIN-kód nem lehet üres",
+      "errorMismatch": "A PIN-kódok nem egyeznek",
+      "errorIncorrect": "Helytelen PIN-kód",
+      "requiredFirst": "Először állítson be egy PIN-kódot",
+      "confirmEdit": "A szerkesztéshez adja meg a PIN-kódot",
+      "confirmDelete": "A törléshez adja meg a PIN-kódot"
+    },
+    "lockout": {
+      "title": "A mai idő lejárt",
+      "body": "Felhasználta a(z) {{used}} értéket a(z) {{name}} számára beállított {{limit}} napi korlátból.",
+      "pinPlaceholder": "A feloldáshoz adja meg a PIN-kódot",
+      "pinIncorrect": "Helytelen PIN-kód",
+      "unlock": "Feloldás mára",
+      "noPinHint": "A korábbi feloldáshoz állítson be PIN-kódot a Beállítások → Használati korlátok menüpontban."
+    }
+  }
+}
