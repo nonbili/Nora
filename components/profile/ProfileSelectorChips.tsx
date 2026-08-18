@@ -13,6 +13,7 @@ type ProfileSelectorChipsProps = {
   showAuto?: boolean
   disabled?: boolean
   containerClassName?: string
+  onAddProfile?: () => void
 }
 
 export const ProfileSelectorChips: React.FC<ProfileSelectorChipsProps> = ({
@@ -22,6 +23,7 @@ export const ProfileSelectorChips: React.FC<ProfileSelectorChipsProps> = ({
   showAuto = false,
   disabled = false,
   containerClassName,
+  onAddProfile,
 }) => {
   const entries = showAuto ? [{ id: AUTO_PROFILE_ID, name: t('profiles.auto'), color: '#0f766e' }, ...profiles] : profiles
 
@@ -64,6 +66,14 @@ export const ProfileSelectorChips: React.FC<ProfileSelectorChipsProps> = ({
           </Pressable>
         )
       })}
+      {onAddProfile ? (
+        <Pressable onPress={onAddProfile} disabled={disabled} className={clsx(disabled && 'opacity-60')}>
+          <View className="flex-row items-center gap-2 rounded-full px-4 py-2 border border-dashed border-zinc-300 dark:border-zinc-700/60 bg-white/80 dark:bg-white/5">
+            <MaterialIcons name="add" size={14} color="#71717a" />
+            <NouText className="text-sm text-zinc-500 dark:text-gray-400">{t('profiles.add')}</NouText>
+          </View>
+        </Pressable>
+      ) : null}
     </View>
   )
 }

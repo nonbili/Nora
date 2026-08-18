@@ -19,6 +19,7 @@ interface Store {
   autoProfilesModalOpen: boolean
   profileModalOpen: boolean
   editingProfileId: string | null
+  createdProfileId: string | null
   lastSelectedProfileId: string
   renameGroupModalTargetGroupId: string | null
   renameViewModalTargetViewId: string | null
@@ -65,6 +66,7 @@ export const ui$ = observable<Store>({
   autoProfilesModalOpen: false,
   profileModalOpen: false,
   editingProfileId: null,
+  createdProfileId: null,
   renameGroupModalTargetGroupId: null,
   renameViewModalTargetViewId: null,
   settingsModalOpen: false,

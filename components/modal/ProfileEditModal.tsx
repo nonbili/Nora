@@ -42,6 +42,7 @@ export const ProfileEditModal = () => {
       } else {
         setName('')
         setColor(profileColors[0])
+        ui$.createdProfileId.set(null)
       }
     }
   }, [profileModalOpen, editingProfileId])
@@ -56,7 +57,10 @@ export const ProfileEditModal = () => {
     if (editingProfileId) {
       settings$.updateProfile(editingProfileId, trimmedName, color)
     } else {
-      settings$.addProfile(trimmedName, color)
+      const createdId = settings$.addProfile(trimmedName, color)
+      if (createdId) {
+        ui$.createdProfileId.set(createdId)
+      }
     }
     onClose()
   }

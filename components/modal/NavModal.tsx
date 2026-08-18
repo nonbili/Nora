@@ -19,7 +19,7 @@ import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { bookmarks$ } from '@/states/bookmarks'
 import { t } from 'i18next'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { NouMenu } from '../menu/NouMenu'
 import { getEnabledSearchProviders, getResolvedSearchProvider, resolveSearchUrl, resolveUrlInput } from '@/lib/search'
@@ -63,6 +63,8 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   const [presetPickerOpen, setPresetPickerOpen] = useState(false)
   const [selectedPresetGroupId, setSelectedPresetGroupId] = useState(presetBookmarkGroups[0].id)
   const [providerAnchor, setProviderAnchor] = useState<Anchor | null>(null)
+  const awaitingCreatedProfileRef = useRef(false)
+  const createdProfileId = useValue(ui$.createdProfileId)
   const providerTriggerRef = useRef<View>(null)
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const colorScheme = useColorScheme()
@@ -120,6 +122,20 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
     }
   }
 
+  const addProfile = () => {
+    awaitingCreatedProfileRef.current = true
+    ui$.assign({ profileModalOpen: true, editingProfileId: null })
+  }
+
+  useEffect(() => {
+    if (!createdProfileId || !awaitingCreatedProfileRef.current) {
+      return
+    }
+    awaitingCreatedProfileRef.current = false
+    ui$.createdProfileId.set(null)
+    selectProfile(createdProfileId)
+  }, [createdProfileId])
+
   const submitInput = () => {
     const value = input.trim()
     if (!value || !selectedSearchProvider) {
@@ -171,6 +187,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
           onSelectProfile={selectProfile}
           showAuto={oneProfilePerSite}
           containerClassName="flex-row gap-4"
+          onAddProfile={addProfile}
         />
       </ScrollView>
       <ScrollView

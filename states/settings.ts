@@ -93,7 +93,7 @@ interface Store extends Settings {
   addCustomSearchProvider: (name: string, templateUrl: string) => string | null
   updateCustomSearchProvider: (id: string, name: string, templateUrl: string) => void
   deleteCustomSearchProvider: (id: string) => void
-  addProfile: (name: string, color: string) => void
+  addProfile: (name: string, color: string) => string | undefined
   updateProfile: (id: string, name: string, color: string) => void
   deleteProfile: (id: string) => void
   setDefaultZoom: (zoom: number) => void
@@ -414,7 +414,9 @@ export const settings$: Observable<Store> = observable<Store>({
     if (!trimmedName) {
       return
     }
-    settings$.profiles.push({ id: genId(), name: trimmedName, color })
+    const id = genId()
+    settings$.profiles.push({ id, name: trimmedName, color })
+    return id
   },
   updateProfile: (id, name, color) => {
     const profiles = settings$.profiles.get()
