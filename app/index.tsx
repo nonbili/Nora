@@ -12,8 +12,7 @@ import { nIf } from '@/lib/utils'
 import NoraViewModule from '@/modules/nora-view'
 import { bookmarks$ } from '@/states/bookmarks'
 import { tabs$ } from '@/states/tabs'
-import { blocklist$ } from '@/states/blocklist'
-import { applyBlocklist, refreshBlocklistIfDue, supportsRuntimeBlocklist, waitForBlocklistPersist } from '@/lib/blocklist'
+import { useBlocklistSync } from '@/lib/hooks/useBlocklistSync'
 import { showToast } from '@/lib/toast'
 import { loadWebRtcGuardScript } from '@/lib/webrtc'
 import { t } from 'i18next'
@@ -172,33 +171,7 @@ export default function HomeScreen() {
     return () => subscription.remove()
   }, [])
 
-  useEffect(() => {
-    let active = true
-
-    const init = async () => {
-      if (!supportsRuntimeBlocklist()) {
-        return
-      }
-      await waitForBlocklistPersist()
-      if (!active) {
-        return
-      }
-      await applyBlocklist()
-      await refreshBlocklistIfDue()
-    }
-
-    void init()
-
-    if (!supportsRuntimeBlocklist()) {
-      return () => {
-        active = false
-      }
-    }
-
-    return () => {
-      active = false
-    }
-  }, [])
+  useBlocklistSync()
 
   useObserveEffect(settings$, () => {
     syncNativeSettings()
@@ -210,15 +183,6 @@ export default function HomeScreen() {
 
   useObserveEffect(tabs$.tabs, () => {
     syncNativeSettings()
-  })
-
-  useObserveEffect(() => {
-    const { enabled, hasSnapshot, revision } = blocklist$.get()
-    void applyBlocklist()
-  })
-
-  useObserveEffect(settings$.profiles, () => {
-    void applyBlocklist()
   })
 
   return nIf(scriptOnStart, <MainPage contentJs={scriptOnStart} />)

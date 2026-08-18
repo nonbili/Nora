@@ -14,6 +14,8 @@ import {
   writeDesktopBlocklistSource,
 } from '../lib/blocklist.js'
 
+const FETCH_TEXT_TIMEOUT_MS = 20_000
+
 const interfaces = {
   clearData: () => {
     session.fromPartition('persist:webview').clearData()
@@ -49,7 +51,9 @@ const interfaces = {
     }
   },
   fetchText: async (url: string, headers: Record<string, string> = {}) => {
-    const res = await fetch(url, { headers })
+    // Bounded so a stalled request cannot keep a blocklist refresh running
+    // forever in the renderer.
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(FETCH_TEXT_TIMEOUT_MS) })
     return {
       status: res.status,
       body: await res.text(),

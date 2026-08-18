@@ -67,16 +67,19 @@ function decodeHosts(value: string) {
 }
 
 async function fetchRemoteText(url: string, headers: Record<string, string> = {}): Promise<RemoteTextResponse> {
-  if (hasElectron()) {
-    return window.electron.ipcRenderer.invoke(MAIN_CHANNEL, 'fetchText', url, headers)
-  }
-
   const controller = new AbortController()
   const timeoutError = new Error(`Timed out fetching blocklist after ${Math.round(BLOCKLIST_FETCH_TIMEOUT_MS / 1000)}s`)
   let timerId: ReturnType<typeof setTimeout> | undefined
 
   const fetchPromise = (async () => {
     try {
+      if (hasElectron()) {
+        // An IPC invoke cannot be aborted from here; the main process applies
+        // the same deadline to its own request, and this race keeps the
+        // renderer from waiting forever if it does not answer.
+        return (await window.electron.ipcRenderer.invoke(MAIN_CHANNEL, 'fetchText', url, headers)) as RemoteTextResponse
+      }
+
       const res = await fetch(url, { headers, signal: controller.signal })
       if (!res.ok && res.status !== 304) {
         throw new Error(`Failed to fetch ${url}: HTTP ${res.status}`)
@@ -341,6 +344,7 @@ export async function waitForBlocklistPersist() {
 
 let lastAppliedRevision = -1
 let lastAppliedEnabled: boolean | undefined
+let lastAppliedPartitionsKey: string | undefined
 
 export async function applyBlocklist() {
   if (!supportsRuntimeBlocklist()) {
@@ -349,12 +353,17 @@ export async function applyBlocklist() {
 
   const state = blocklist$.get()
   const enabled = !!(state.enabled && state.hasSnapshot)
-  if (state.revision === lastAppliedRevision && enabled === lastAppliedEnabled) {
+  // A new profile means a new Electron partition that has no request handler
+  // yet, so the partition set is part of what "already applied" means.
+  const partitions = hasElectron() ? getDesktopPartitions() : undefined
+  const partitionsKey = partitions?.join(',')
+  if (state.revision === lastAppliedRevision && enabled === lastAppliedEnabled && partitionsKey === lastAppliedPartitionsKey) {
     return
   }
 
   lastAppliedRevision = state.revision
   lastAppliedEnabled = enabled
+  lastAppliedPartitionsKey = partitionsKey
 
   let activePayload = emptyPayload(state.revision)
   if (isIos) {
@@ -384,8 +393,8 @@ export async function applyBlocklist() {
     }
   }
 
-  if (hasElectron()) {
-    const desktopPayload: DesktopBlocklistPayload = { ...activePayload, partitions: getDesktopPartitions() }
+  if (partitions) {
+    const desktopPayload: DesktopBlocklistPayload = { ...activePayload, partitions }
     await window.electron.ipcRenderer.invoke(MAIN_CHANNEL, 'setBlocklist', desktopPayload)
     return
   }
@@ -455,7 +464,30 @@ async function getSourceBodiesFromRefreshResults(settled: PromiseSettledResult<B
   return bodies.map((body) => body || '')
 }
 
+let inFlightRefresh: Promise<boolean> | undefined
+
 export async function refreshBlocklist({ manual = false } = {}) {
+  // The preflight checks below await storage before `phase` becomes 'fetching',
+  // so without this lock two callers (startup, interval, foreground, button)
+  // can both get past them and fetch/write in parallel.
+  while (inFlightRefresh) {
+    const pending = inFlightRefresh
+    if (!manual) {
+      return pending
+    }
+    await pending.catch(() => false)
+  }
+
+  const refresh = runRefresh(manual).finally(() => {
+    if (inFlightRefresh === refresh) {
+      inFlightRefresh = undefined
+    }
+  })
+  inFlightRefresh = refresh
+  return refresh
+}
+
+async function runRefresh(manual: boolean) {
   await waitForBlocklistPersist()
 
   const current = blocklist$.get()
@@ -477,9 +509,10 @@ export async function refreshBlocklist({ manual = false } = {}) {
   })
 
   let timeoutId: ReturnType<typeof setTimeout> | undefined
+  let refreshPromise: Promise<boolean> | undefined
 
   try {
-    const refreshPromise = (async () => {
+    refreshPromise = (async () => {
       const now = Date.now()
       const settled = await Promise.allSettled(BLOCKLIST_SOURCE_IDS.map((id) => fetchSource(id, now)))
       const failure = settled.find((result) => result.status === 'rejected')
@@ -606,6 +639,11 @@ export async function refreshBlocklist({ manual = false } = {}) {
       phase: 'error',
       lastError: error instanceof Error ? error.message : String(error),
     })
+    // Losing the race does not cancel the work, so wait for it to settle before
+    // releasing the refresh lock; otherwise the next refresh would fetch, write
+    // and assign state on top of a run that is still going. Every step it takes
+    // is bounded by its own timeout, so this cannot wait indefinitely.
+    await refreshPromise?.catch(() => false)
     return false
   }
 }

@@ -10,6 +10,7 @@ import { HoverLinkBar } from './components/HoverLinkBar'
 import { settings$ } from 'nora/states/settings'
 import { bookmarks$ } from 'nora/states/bookmarks'
 import { homeUrls } from 'nora/lib/page'
+import { useBlocklistSync } from 'nora/lib/hooks/useBlocklistSync'
 
 const getHost = (url: string | undefined) => {
   if (!url) return ''
@@ -44,6 +45,8 @@ function App(): React.JSX.Element {
     window.addEventListener('keydown', handleShortcuts)
     return () => window.removeEventListener('keydown', handleShortcuts)
   }, [])
+
+  useBlocklistSync()
 
   useObserveEffect(() => {
     const openExternalLinkInSystemBrowser = settings$.openExternalLinkInSystemBrowser.get()
