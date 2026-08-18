@@ -140,7 +140,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
           <SettingsSurface>
             <SettingsRow>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.openExternalLink')}</NouText>}
+                label={<NouText>{t('settings.openExternalLink')}</NouText>}
                 value={settings.openExternalLinkInSystemBrowser}
                 onPress={() => settings$.openExternalLinkInSystemBrowser.toggle()}
               />
@@ -149,7 +149,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
               !isWeb,
               <SettingsRow>
                 <NouSwitch
-                  label={<NouText className="font-medium">{t('settings.oneTabPerSite')}</NouText>}
+                  label={<NouText>{t('settings.oneTabPerSite')}</NouText>}
                   value={settings.oneTabPerSite}
                   onPress={() => settings$.oneTabPerSite.toggle()}
                 />
@@ -159,7 +159,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
               isAndroid,
               <SettingsRow>
                 <NouSwitch
-                  label={<NouText className="font-medium">{t('settings.doubleBackToExitApp')}</NouText>}
+                  label={<NouText>{t('settings.doubleBackToExitApp')}</NouText>}
                   value={settings.doubleBackToExitApp}
                   onPress={() => settings$.doubleBackToExitApp.toggle()}
                 />
@@ -169,7 +169,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
               !isWeb,
               <SettingsRow>
                 <NouSwitch
-                  label={<NouText className="font-medium">{t('settings.videoEdgeLongPressTo2x')}</NouText>}
+                  label={<NouText>{t('settings.videoEdgeLongPressTo2x')}</NouText>}
                   value={settings.videoEdgeLongPressTo2x}
                   onPress={() => settings$.videoEdgeLongPressTo2x.toggle()}
                 />
@@ -177,7 +177,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
             )}
             <SettingsRow isLast>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.enterInsertsNewline')}</NouText>}
+                label={<NouText>{t('settings.enterInsertsNewline')}</NouText>}
                 value={builtinScripts['enter-as-shift-enter']?.enabled ?? false}
                 onPress={() => userStyles$.toggleBuiltinScript('enter-as-shift-enter')}
               />
@@ -195,7 +195,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
               <NouSwitch
                 label={
                   <View>
-                    <NouText className="font-medium">{t('settings.mentionNotifications')}</NouText>
+                    <NouText>{t('settings.mentionNotifications')}</NouText>
                     <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">X and Facebook</NouText>
                   </View>
                 }
@@ -240,7 +240,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
               isAndroid,
               <View className={clsx(rowCls, rowBorderCls)}>
                 <NouSwitch
-                  label={<NouText className="font-medium">{t('settings.allowHttpWebsite')}</NouText>}
+                  label={<NouText>{t('settings.allowHttpWebsite')}</NouText>}
                   value={settings.allowHttpWebsite}
                   onPress={() => settings$.allowHttpWebsite.toggle()}
                 />
@@ -248,7 +248,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
             )}
             <View className={rowCls}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.inspectable')}</NouText>}
+                label={<NouText>{t('settings.inspectable')}</NouText>}
                 value={settings.inspectable}
                 onPress={() => settings$.inspectable.toggle()}
               />
@@ -264,7 +264,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
           <View className={surfaceCls}>
             <View className={rowCls}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.webrtc.protectIp')}</NouText>}
+                label={<NouText>{t('settings.webrtc.protectIp')}</NouText>}
                 value={settings.protectWebRtcIp}
                 onPress={() => settings$.protectWebRtcIp.toggle()}
               />
@@ -283,7 +283,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
           <View className={surfaceCls}>
             <View className={clsx(rowCls, settings.proxyEnabled && rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.proxy.enabled')}</NouText>}
+                label={<NouText>{t('settings.proxy.enabled')}</NouText>}
                 value={settings.proxyEnabled}
                 onPress={() => settings$.proxyEnabled.toggle()}
               />
@@ -291,7 +291,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
             {settings.proxyEnabled && (
               <>
                 <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
-                  <NouText className="font-medium">{t('settings.proxy.type')}</NouText>
+                  <NouText>{t('settings.proxy.type')}</NouText>
                   <Segemented
                     options={['HTTP', 'SOCKS']}
                     selectedIndex={settings.proxyType === 'socks' ? 1 : 0}
@@ -300,7 +300,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                   />
                 </View>
                 <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
-                  <NouText className="font-medium w-24">{t('settings.proxy.host')}</NouText>
+                  <NouText className="w-24">{t('settings.proxy.host')}</NouText>
                   <TextInput
                     className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white text-right"
                     value={settings.proxyHost}
@@ -313,7 +313,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                   />
                 </View>
                 <View className={clsx(rowCls, 'flex-row items-center justify-between gap-3')}>
-                  <NouText className="font-medium w-24">{t('settings.proxy.port')}</NouText>
+                  <NouText className="w-24">{t('settings.proxy.port')}</NouText>
                   <TextInput
                     className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white w-32 text-right"
                     value={settings.proxyPort}
@@ -418,7 +418,7 @@ export const SettingsAppearanceContent = () => {
           <View className={surfaceCls}>
             <View className={clsx('items-center flex-row justify-between', rowCls)}>
               <View>
-                <NouText className="font-medium">{t('settings.appearance.deckTabWidth')}</NouText>
+                <NouText>{t('settings.appearance.deckTabWidth')}</NouText>
                 <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
                   {t('settings.appearance.deckTabWidthHint', { value: settings.deckTabWidth })}
                 </NouText>
@@ -456,7 +456,7 @@ export const SettingsAppearanceContent = () => {
           <NouText className={subheaderCls}>{t('settings.appearance.toolbar')}</NouText>
           <View className={surfaceCls}>
             <View className={clsx('items-center flex-row justify-between', rowCls, rowBorderCls)}>
-              <NouText className="font-medium">{t('settings.headerPosition.label')}</NouText>
+              <NouText>{t('settings.headerPosition.label')}</NouText>
               <Segemented
                 options={[t('settings.headerPosition.top'), t('settings.headerPosition.bottom')]}
                 selectedIndex={headerPositions.indexOf(settings.headerPosition)}
@@ -466,56 +466,56 @@ export const SettingsAppearanceContent = () => {
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.doubleTapToToggleHeader')}</NouText>}
+                label={<NouText>{t('settings.doubleTapToToggleHeader')}</NouText>}
                 value={settings.doubleTapToToggleHeader}
                 onPress={() => settings$.doubleTapToToggleHeader.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.hideHeader')}</NouText>}
+                label={<NouText>{t('settings.hideHeader')}</NouText>}
                 value={settings.autoHideHeader}
                 onPress={() => settings$.autoHideHeader.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.hideToolbarWhenScrolled')}</NouText>}
+                label={<NouText>{t('settings.hideToolbarWhenScrolled')}</NouText>}
                 value={settings.hideToolbarWhenScrolled}
                 onPress={() => settings$.hideToolbarWhenScrolled.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.showNewTabButton')}</NouText>}
+                label={<NouText>{t('settings.showNewTabButton')}</NouText>}
                 value={settings.showNewTabButtonInHeader}
                 onPress={() => settings$.showNewTabButtonInHeader.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.showBackButton')}</NouText>}
+                label={<NouText>{t('settings.showBackButton')}</NouText>}
                 value={settings.showBackButtonInHeader}
                 onPress={() => settings$.showBackButtonInHeader.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.showForwardButton')}</NouText>}
+                label={<NouText>{t('settings.showForwardButton')}</NouText>}
                 value={settings.showForwardButtonInHeader}
                 onPress={() => settings$.showForwardButtonInHeader.toggle()}
               />
             </View>
             <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.showReloadButton')}</NouText>}
+                label={<NouText>{t('settings.showReloadButton')}</NouText>}
                 value={settings.showReloadButtonInHeader}
                 onPress={() => settings$.showReloadButtonInHeader.toggle()}
               />
             </View>
             <View className={rowCls}>
               <NouSwitch
-                label={<NouText className="font-medium">{t('settings.showScrollButton')}</NouText>}
+                label={<NouText>{t('settings.showScrollButton')}</NouText>}
                 value={settings.showScrollButtonInHeader}
                 onPress={() => settings$.showScrollButtonInHeader.toggle()}
               />
@@ -531,7 +531,7 @@ export const SettingsAppearanceContent = () => {
           <View className={surfaceCls}>
             <View className={clsx('items-center flex-row justify-between', rowCls, rowBorderCls)}>
               <View className="flex-1 pr-3">
-                <NouText className="font-medium">{t('settings.appearance.desktopLayout')}</NouText>
+                <NouText>{t('settings.appearance.desktopLayout')}</NouText>
                 <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
                   {t('settings.appearance.desktopLayoutHint')}
                 </NouText>
@@ -549,7 +549,7 @@ export const SettingsAppearanceContent = () => {
             </View>
             <View className={clsx('items-center flex-row justify-between', rowCls)}>
               <View className="flex-1 pr-3">
-                <NouText className="font-medium">{t('settings.appearance.deckTabWidth')}</NouText>
+                <NouText>{t('settings.appearance.deckTabWidth')}</NouText>
                 <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
                   {t('settings.appearance.deckTabWidthHint', { value: settings.deckTabWidth })}
                 </NouText>
@@ -585,7 +585,7 @@ export const SettingsAppearanceContent = () => {
       <View className={surfaceCls}>
         <View className={clsx('items-center flex-row justify-between', rowCls, translationAvailable && rowBorderCls)}>
           <View className="flex-1 pr-3">
-            <NouText className="font-medium">{t('settings.language.label')}</NouText>
+            <NouText>{t('settings.language.label')}</NouText>
             <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
               {currentLanguageLabel}
             </NouText>
@@ -609,7 +609,7 @@ export const SettingsAppearanceContent = () => {
           <View className={rowCls}>
             <View className="flex-row items-center justify-between gap-3">
               <View className="flex-1">
-                <NouText className="font-medium">{t('settings.translation.enable')}</NouText>
+                <NouText>{t('settings.translation.enable')}</NouText>
                 <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                   {settings.translateOnDoubleTap && settings.translationTargetLanguage
                     ? `${t('settings.translation.targetLanguage')} ${translationLanguageLabel(settings.translationTargetLanguage)}`
@@ -644,7 +644,7 @@ export const SettingsAppearanceContent = () => {
       </NouText>
       <View className={surfaceCls}>
         <View className={clsx('flex-row items-center justify-between gap-3', rowCls)}>
-          <NouText className="font-medium">{t('settings.theme.label')}</NouText>
+          <NouText>{t('settings.theme.label')}</NouText>
           <Segemented
             options={[t('settings.theme.system'), t('settings.theme.dark'), t('settings.theme.light')]}
             selectedIndex={themes.indexOf(settings.theme)}
@@ -660,7 +660,7 @@ export const SettingsAppearanceContent = () => {
       <View className={surfaceCls}>
         <View className={clsx('items-center flex-row justify-between', rowCls)}>
           <View className="flex-1 pr-3">
-            <NouText className="font-medium">{t('settings.zoom.defaultLabel') || 'Default zoom'}</NouText>
+            <NouText>{t('settings.zoom.defaultLabel') || 'Default zoom'}</NouText>
           </View>
           <View className="flex-row items-center gap-1">
             <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{settings.defaultZoom}%</NouText>
@@ -692,7 +692,7 @@ export const SettingsAppearanceContent = () => {
                 )}
               >
                 <View className="flex-1 pr-3">
-                  <NouText className="font-medium">{site}</NouText>
+                  <NouText>{site}</NouText>
                   <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                     {zoom}%
                   </NouText>
@@ -722,7 +722,7 @@ export const SettingsProfilesContent = () => {
           <NouSwitch
             label={
               <View>
-                <NouText className="font-medium">{t('settings.oneProfilePerSite')}</NouText>
+                <NouText>{t('settings.oneProfilePerSite')}</NouText>
                 <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                   {t('settings.oneProfilePerSiteHint')}
                 </NouText>
@@ -806,7 +806,7 @@ export const SettingsServicesContent = () => {
                     label={
                       <View className="flex-row items-center gap-2">
                         {entry.serviceIcon()}
-                        <NouText className="font-medium">{entry.serviceName}</NouText>
+                        <NouText>{entry.serviceName}</NouText>
                       </View>
                     }
                     value={serviceEnabled}
@@ -818,7 +818,7 @@ export const SettingsServicesContent = () => {
                     {entry.matchingBuiltins.map((definition) => (
                       <View key={definition.id} className={clsx(rowCls, nextRowBorderClass())}>
                         <NouSwitch
-                          label={<NouText className="font-medium">{t(definition.labelKey)}</NouText>}
+                          label={<NouText>{t(definition.labelKey)}</NouText>}
                           value={builtinStyles[definition.id]?.enabled ?? true}
                           onPress={() => userStyles$.toggleBuiltin(definition.id)}
                         />
@@ -827,7 +827,7 @@ export const SettingsServicesContent = () => {
                     {hasRedditSettings ? (
                       <View className={clsx(rowCls, nextRowBorderClass())}>
                         <NouSwitch
-                          label={<NouText className="font-medium">{t('settings.redirectToOldReddit')}</NouText>}
+                          label={<NouText>{t('settings.redirectToOldReddit')}</NouText>}
                           value={settings.redirectToOldReddit}
                           onPress={() => settings$.redirectToOldReddit.toggle()}
                         />
@@ -835,7 +835,7 @@ export const SettingsServicesContent = () => {
                     ) : null}
                     {hasXSettings ? (
                       <View className={clsx(rowCls, nextRowBorderClass(), 'flex-row items-center justify-between gap-3')}>
-                        <NouText className="flex-1 font-medium">{t('settings.xHomeTimeline.label')}</NouText>
+                        <NouText className="flex-1">{t('settings.xHomeTimeline.label')}</NouText>
                         <Segemented
                           options={xHomeTimelineValues.map((value) => t(xTimelineLabels[value]))}
                           selectedIndex={Math.max(0, xTimelineIndex)}
@@ -969,7 +969,7 @@ export const SettingsSearchContent = () => {
                     <NouSwitch
                       label={
                         <View className="pr-3">
-                          <NouText className="font-medium">{provider.name}</NouText>
+                          <NouText>{provider.name}</NouText>
                           {provider.id === 'url' ? (
                             <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{t('settings.search.urlHint')}</NouText>
                           ) : null}
@@ -1016,7 +1016,7 @@ export const SettingsSearchContent = () => {
                 <View className="flex-row items-center gap-3">
                   {resolved ? <SearchProviderIcon provider={resolved} /> : null}
                   <View className="flex-1">
-                    <NouText className="font-medium">{provider.name}</NouText>
+                    <NouText>{provider.name}</NouText>
                     <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
                       {provider.templateUrl}
                     </NouText>

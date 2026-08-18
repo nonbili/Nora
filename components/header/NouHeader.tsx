@@ -37,6 +37,12 @@ import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
 // unprefixed instead -- Tailwind only generates what it can see in the source.
 const rc = (web: string, native: string) => (isWeb ? web : native)
 
+// Header controls sit in a thin bar that is easy to miss with a thumb, so every icon in
+// it gets a wider press target than the glyph needs. The height stays at the default 44
+// so the bar itself does not get any taller; the extra room is taken horizontally.
+const headerButtonStyle = { width: 52, height: 44 } as const
+const headerIconSize = 26
+
 const webAnimatedHelpers = {
   useSharedValueSafe: (initial: number) => ({ value: initial }) as SharedValue<number>,
 }
@@ -228,11 +234,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         !desktopLayout,
         <View className="flex-row items-center gap-3">
-          {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={22} color={headerControlColor} onPress={() => tabs$.openTab('')} style={{ width: 48, height: 48 }} />)}
-          {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} />)}
-          {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} />)}
-          {nIf(showReloadButtonInHeader, <MaterialButton name="refresh" size={22} color={headerControlColor} onPress={reloadPage} />)}
-          {nIf(showScrollButtonInHeader, <MaterialButton name="arrow-upward" color={headerControlColor} onPress={scrollToTop} />)}
+          {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={headerIconSize} color={headerControlColor} onPress={() => tabs$.openTab('')} style={headerButtonStyle} />)}
+          {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} style={headerButtonStyle} />)}
+          {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} style={headerButtonStyle} />)}
+          {nIf(showReloadButtonInHeader, <MaterialButton name="refresh" size={22} color={headerControlColor} onPress={reloadPage} style={headerButtonStyle} />)}
+          {nIf(showScrollButtonInHeader, <MaterialButton name="arrow-upward" color={headerControlColor} onPress={scrollToTop} style={headerButtonStyle} />)}
         </View>,
       )}
       {nIf(
@@ -286,7 +292,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
             const script = pinnedScripts[0]
             return (
               <Tooltip title={script?.name}>
-                <MaterialCommunityButton name="puzzle-outline" color={headerControlColor} onPress={() => runPinnedScript(script)} />
+                <MaterialCommunityButton name="puzzle-outline" color={headerControlColor} onPress={() => runPinnedScript(script)} style={headerButtonStyle} />
               </Tooltip>
             )
           })(),
@@ -296,8 +302,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
           <Tooltip title={t('settings.userStyles.scripts.pinnedScripts')}>
             <NouMenu
               triggerColor={headerControlColor}
+              triggerSize={44}
               trigger={
-                <View className="p-[10px]">
+                <View className="px-[14px] py-[10px]">
                   <MaterialCommunityIcons name="puzzle-outline" size={24} color={headerControlColor} />
                 </View>
               }
@@ -313,7 +320,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         {nIf(
           !isIos && canDownload,
           (() => {
-            const downloadButton = <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} />
+            const downloadButton = <MaterialButton name="download" color={headerControlColor} onPress={() => ui$.downloadVideoModalUrl.set(currentTab?.url || '')} style={headerButtonStyle} />
             return <Tooltip title={t('modals.downloadVideo')}>{downloadButton}</Tooltip>
           })(),
         )}
@@ -371,11 +378,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
           const moreMenu = (
           <NouMenu
             triggerColor={headerControlColor}
-            triggerSize={!isWeb ? 48 : undefined}
+            triggerSize={44}
             trigger={
               isIos
                 ? 'ellipsis'
-                : <MaterialButton name="more-vert" color={headerControlColor} />
+                : <MaterialButton name="more-vert" size={headerIconSize} color={headerControlColor} style={headerButtonStyle} />
             }
             items={[
               ...(isWeb

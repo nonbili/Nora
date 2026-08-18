@@ -113,7 +113,7 @@ const AutoProfilesModal = () => {
                   style={{ backgroundColor: getDeterministicProfileColor(profile.site) }}
                 />
                 <View className="min-w-0 flex-1">
-                  <NouText className="font-medium" numberOfLines={1}>
+                  <NouText numberOfLines={1}>
                     {profile.site}
                   </NouText>
                   <NouText className="mt-1 text-xs text-zinc-500 dark:text-zinc-400" numberOfLines={1}>
@@ -193,7 +193,7 @@ export const ProfileManager = () => {
     <View className="mb-4">
       <AutoProfilesModal />
       <View className="flex-row items-center justify-between mb-3">
-        <NouText className="font-medium">{t('profiles.label')}</NouText>
+        <NouText>{t('profiles.label')}</NouText>
         <Pressable
           onPress={() =>
             ui$.assign({

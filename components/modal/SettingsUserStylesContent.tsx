@@ -92,7 +92,7 @@ export const SettingsUserStylesContent = () => {
               )}
             >
               <View className="flex-1 pr-4">
-                <NouText className={clsx('font-medium', !style.enabled && 'text-zinc-600 dark:text-zinc-500')} numberOfLines={1}>
+                <NouText className={clsx(!style.enabled && 'text-zinc-600 dark:text-zinc-500')} numberOfLines={1}>
                   {style.name}
                 </NouText>
                 <View className="mt-1.5 flex-row items-center gap-1.5">
@@ -150,7 +150,7 @@ export const SettingsUserStylesContent = () => {
               )}
             >
               <View className="flex-1 pr-4">
-                <NouText className={clsx('font-medium', !script.enabled && 'text-zinc-600 dark:text-zinc-500')} numberOfLines={1}>
+                <NouText className={clsx(!script.enabled && 'text-zinc-600 dark:text-zinc-500')} numberOfLines={1}>
                   {script.name}
                 </NouText>
                 <View className="mt-1.5 flex-row items-center gap-1.5">

@@ -62,7 +62,7 @@ export const BlocklistSection: React.FC<{ hideTitle?: boolean; hideRefreshAction
     <View className={clsx(!hideTitle && 'mt-2 mb-9')}>
       <NouSwitch
         className="mb-2"
-        label={<NouText className="font-medium">{hideTitle ? t('blocklist.enable') : t('blocklist.label')}</NouText>}
+        label={<NouText>{hideTitle ? t('blocklist.enable') : t('blocklist.label')}</NouText>}
         value={blocklist.enabled}
         onPress={onToggle}
       />

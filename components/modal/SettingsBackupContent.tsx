@@ -44,7 +44,7 @@ const SettingsActionRow: React.FC<{
         <MaterialIcons name={icon} color={isDark ? colors.icon : colors.iconLightStrong} size={18} />
       </View>
       <View className="flex-1">
-        <NouText className="font-medium">{label}</NouText>
+        <NouText>{label}</NouText>
         {description ? (
           <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{description}</NouText>
         ) : null}

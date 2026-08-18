@@ -188,7 +188,7 @@ export const SettingsModalTabSync = () => {
               <NouText className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{syncHint}</NouText>
               <View className="mt-5">
                 <NouLink
-                  className="rounded-full bg-zinc-900 px-5 py-2.5 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-950"
+                  className="rounded-full bg-zinc-900 px-5 py-2.5 text-center text-sm text-white dark:bg-zinc-100 dark:text-zinc-950"
                   href="https://nora.inks.page/auth/app"
                   target="_blank"
                 >
@@ -214,7 +214,7 @@ export const SettingsModalTabSync = () => {
               contentFit="cover"
             />
             <View className="flex-1">
-              <NouText className="font-medium">{userEmail || user?.email || 'Nora User'}</NouText>
+              <NouText>{userEmail || user?.email || 'Nora User'}</NouText>
               <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                 {t('sync.currentPlan')}: {planLabel}
               </NouText>

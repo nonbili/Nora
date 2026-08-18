@@ -309,7 +309,7 @@ const LimitEditor: React.FC<{
             <View className={surfaceCls}>
               <View className={rowCls}>
                 <NouSwitch
-                  label={<NouText className="font-medium">{t('usageLimits.scope.all')}</NouText>}
+                  label={<NouText>{t('usageLimits.scope.all')}</NouText>}
                   value={draft.applyAll}
                   onPress={() => onChange({ ...draft, applyAll: !draft.applyAll })}
                 />
@@ -421,7 +421,7 @@ const ScopeBadges: React.FC<{ scope: UsageLimitScope }> = ({ scope }) => {
     return (
       <View className="mt-2 flex-row flex-wrap gap-1.5">
         <View className="rounded-full bg-indigo-100 dark:bg-indigo-500/15 px-2.5 py-1">
-          <NouText className="text-xs font-medium text-indigo-700 dark:text-indigo-300">
+          <NouText className="text-xs text-indigo-700 dark:text-indigo-300">
             {t('usageLimits.scope.all')}
           </NouText>
         </View>
@@ -441,7 +441,7 @@ const ScopeBadges: React.FC<{ scope: UsageLimitScope }> = ({ scope }) => {
         const name = services[id]?.[0] || id
         return (
           <View key={id} className="rounded-full bg-zinc-200 dark:bg-zinc-800 px-2.5 py-1">
-            <NouText className="text-xs font-medium text-zinc-700 dark:text-zinc-200">{name}</NouText>
+            <NouText className="text-xs text-zinc-700 dark:text-zinc-200">{name}</NouText>
           </View>
         )
       })}
