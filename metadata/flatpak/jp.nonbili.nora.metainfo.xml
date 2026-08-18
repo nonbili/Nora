@@ -60,6 +60,20 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.6" date="2026-08-18">
+      <description>
+        <ul>
+          <li>Auto update blocklists periodically</li>
+          <li>Add setting to prevent WebRTC IP leaks</li>
+          <li>Prioritize loading active tab on startup</li>
+          <li>Support creating a profile from the new tab screen</li>
+          <li>Add option to hide Facebook feed</li>
+          <li>Strip more tracking parameters from URLs</li>
+          <li>Fix Facebook freezing when scanning ads</li>
+          <li>UI fixes and translation updates</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.5" date="2026-08-03">
       <description>
         <ul>

@@ -44,7 +44,7 @@ export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: I
         disabled={item.disabled}
         className={clsx('min-w-[160px] max-w-[320px] px-3', item.description ? 'py-2 h-auto' : 'py-2')}
       >
-        <div className="flex min-w-0 flex-row items-center gap-3 leading-none">
+        <div className="flex w-full min-w-0 flex-row items-center gap-3 leading-none">
           {item.icon ? <div className="flex shrink-0 items-center justify-center h-5 w-5">{item.icon}</div> : null}
           <div className="min-w-0 flex-1">
             <div className="truncate text-[13px] leading-[18px] text-zinc-900 dark:text-zinc-100">{item.label}</div>

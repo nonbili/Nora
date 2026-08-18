@@ -1,0 +1,8 @@
+- Auto update blocklists periodically
+- Add setting to prevent WebRTC IP leaks
+- Prioritize loading active tab on startup
+- Support creating a profile from the new tab screen
+- Add option to hide Facebook feed
+- Strip more tracking parameters from URLs
+- Fix Facebook freezing when scanning ads
+- UI fixes and translation updates

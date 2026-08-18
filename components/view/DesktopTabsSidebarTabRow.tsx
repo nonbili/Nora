@@ -61,16 +61,16 @@ export const TabRow = memo<{
       </Pressable>
       <div
         title={t('menus.close')}
-        className="absolute -right-1 -top-1 hidden group-hover:block"
+        className="absolute -right-1.5 -top-1.5 hidden group-hover:block"
         onPointerDown={(e) => {
           e.stopPropagation()
         }}
       >
         <Pressable
-          className="h-4 w-4 items-center justify-center rounded-full bg-zinc-200 shadow-sm hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+          className="h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-zinc-300 transition-colors hover:bg-zinc-100 hover:ring-zinc-400 dark:bg-zinc-700 dark:ring-zinc-600 dark:hover:bg-zinc-600 dark:hover:ring-zinc-500"
           onPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
         >
-          <MaterialIcons name="close" size={10} color="#a1a1aa" />
+          <MaterialIcons name="close" size={10} color="#71717a" />
         </Pressable>
       </div>
     </div>
@@ -103,10 +103,10 @@ export const TabRow = memo<{
       </View>
       <div title={t('menus.close')}>
         <Pressable
-          className="h-5 w-5 shrink-0 items-center justify-center rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800"
+          className="h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-zinc-300/70 dark:hover:bg-zinc-600"
           onPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
         >
-          <MaterialIcons name="close" size={14} color="#a1a1aa" />
+          <MaterialIcons name="close" size={14} color="#71717a" />
         </Pressable>
       </div>
     </Pressable>
