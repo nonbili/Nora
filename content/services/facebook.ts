@@ -164,3 +164,28 @@ export const isFacebookDesktopSponsoredPost = (element: HTMLElement) => {
 
   return false
 }
+
+// Every candidate post container in the desktop feed. `closest()` uses the same
+// selector, so a mutation anywhere inside a post resolves back to the post itself.
+export const facebookDesktopAdContainerSelector =
+  '[role="article"], div[data-pagelet^="FeedUnit"], div[role="feed"] > div'
+
+// Posts are scanned at most once and then remembered, because reading `textContent`
+// of every link and span in a post is O(subtree) and the feed grows without bound as
+// the user scrolls. Facebook renders the "Sponsored" label after the post is inserted,
+// so any DOM change inside a post drops its cached verdict and it gets scanned again.
+export const invalidateFacebookDesktopAdVerdict = (node: Node | null) => {
+  const candidate = node as (Node & Partial<HTMLElement>) | null
+  const element = typeof candidate?.closest === 'function' ? candidate : candidate?.parentElement
+  if (typeof element?.closest !== 'function') {
+    return
+  }
+  const container = element.closest<HTMLElement>(facebookDesktopAdContainerSelector)
+  if (container && container.dataset.noraHiddenAd !== '1') {
+    delete container.dataset.noraAdChecked
+  }
+}
+
+export const shouldScanFacebookDesktopContainer = (container: HTMLElement) => {
+  return container.dataset.noraHiddenAd !== '1' && container.dataset.noraAdChecked !== '1'
+}

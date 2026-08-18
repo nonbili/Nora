@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  facebookDesktopAdContainerSelector,
+  invalidateFacebookDesktopAdVerdict,
   isFacebookDesktopSponsoredPost,
   isFacebookHomePath,
   isFacebookMessagesPath,
   isFacebookSponsoredText,
   shouldHideFacebookOpenAppBanner,
+  shouldScanFacebookDesktopContainer,
 } from './facebook'
 
 describe('isFacebookSponsoredText', () => {
@@ -97,5 +100,51 @@ describe('isFacebookDesktopSponsoredPost', () => {
       querySelectorAll: () => [child],
     }
     expect(isFacebookDesktopSponsoredPost(root as unknown as HTMLElement)).toBe(false)
+  })
+})
+
+describe('shouldScanFacebookDesktopContainer', () => {
+  const container = (dataset: Record<string, string>) => ({ dataset }) as unknown as HTMLElement
+
+  it('scans a post the first time it is seen', () => {
+    expect(shouldScanFacebookDesktopContainer(container({}))).toBe(true)
+  })
+
+  it('skips posts already hidden or already scanned', () => {
+    expect(shouldScanFacebookDesktopContainer(container({ noraHiddenAd: '1' }))).toBe(false)
+    expect(shouldScanFacebookDesktopContainer(container({ noraAdChecked: '1' }))).toBe(false)
+  })
+})
+
+describe('invalidateFacebookDesktopAdVerdict', () => {
+  const createPost = (dataset: Record<string, string>) => {
+    const post = {
+      dataset,
+      closest: (selector: string) => (selector === facebookDesktopAdContainerSelector ? post : null),
+    }
+    return post
+  }
+
+  it('drops the cached verdict of the post a mutation happened in', () => {
+    const post = createPost({ noraAdChecked: '1' })
+    const textNode = { parentElement: post } as unknown as Node
+
+    invalidateFacebookDesktopAdVerdict(textNode)
+
+    expect(post.dataset.noraAdChecked).toBeUndefined()
+    expect(shouldScanFacebookDesktopContainer(post as unknown as HTMLElement)).toBe(true)
+  })
+
+  it('leaves posts that are already hidden alone', () => {
+    const post = createPost({ noraHiddenAd: '1', noraAdChecked: '1' })
+
+    invalidateFacebookDesktopAdVerdict(post as unknown as Node)
+
+    expect(post.dataset.noraAdChecked).toBe('1')
+  })
+
+  it('ignores nodes outside any post container', () => {
+    expect(() => invalidateFacebookDesktopAdVerdict(null)).not.toThrow()
+    expect(() => invalidateFacebookDesktopAdVerdict({} as unknown as Node)).not.toThrow()
   })
 })
