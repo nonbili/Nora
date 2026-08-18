@@ -1,3 +1,4 @@
+import { batch } from '@legendapp/state'
 import { tabGroups$ } from '@/states/tab-groups'
 import { openDesktopTab, tabs$ } from '@/states/tabs'
 
@@ -31,4 +32,24 @@ export const openTabForActiveDesktopView = () => {
   }
   tabGroups$.setActiveGroup(null)
   tabs$.setActiveTabById(tabId, 'open')
+}
+
+export const closeDesktopGroupWithTabs = (groupId: string) => {
+  const group = tabGroups$.groups.get().find((currentGroup) => currentGroup.id === groupId)
+  if (!group) {
+    return
+  }
+  const groupTabIds = group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string')
+  batch(() => {
+    tabs$.closeTabsByIds(groupTabIds)
+    tabGroups$.deleteGroup(groupId)
+    // Closing may have activated a tab that lives in another group. deleteGroup clears
+    // activeGroupId, so follow the active tab to its group or the workspace renders nothing.
+    const tabs = tabs$.tabs.get()
+    const activeTabId = tabs[tabs$.activeTabIndex.get()]?.id
+    const nextGroup = activeTabId
+      ? tabGroups$.groups.get().find((group) => group.tabIds.includes(activeTabId))
+      : undefined
+    tabGroups$.setActiveGroup(nextGroup?.id ?? null)
+  })
 }

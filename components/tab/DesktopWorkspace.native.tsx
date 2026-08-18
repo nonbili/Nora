@@ -3,6 +3,7 @@ import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useValue } from '@legendapp/state/react'
 import { LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native'
 import { settings$ } from '@/states/settings'
+import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { tabGroups$, type TabGroupLayout } from '@/states/tab-groups'
 import { openDesktopTab, sortTabsByOrder, tabs$ } from '@/states/tabs'
 import { NoraTab } from './NoraTab'
@@ -30,10 +31,8 @@ export const DesktopWorkspace: React.FC = () => {
   const prevTabCountRef = useRef(tabs.length)
 
   const activeGroup = groups.find((group) => group.id === activeGroupId) || null
-  const groupedTabIds = useMemo(
-    () => new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
-    [groups],
-  )
+  const groupsKey = getTabGroupsKey(groups)
+  const groupedTabIds = useMemo(() => getGroupedTabIds(groups), [groupsKey])
   const tabIdsKey = tabs.map((tab) => tab.id).join('|')
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
   const tabIdSet = useMemo(() => new Set(tabs.map((tab) => tab.id)), [tabIdsKey])

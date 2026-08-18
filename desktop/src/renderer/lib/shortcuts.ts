@@ -20,7 +20,7 @@ export function handleShortcuts(e: {
     if (e.shiftKey || e.shift) {
       const history = tabs$.recentlyClosedTabs.get()
       if (history.length) {
-        tabs$.reopenClosedTab(history[0].id)
+        tabs$.reopenClosedTabBatch(history[0].id)
       }
     } else {
       openTabForActiveDesktopView()

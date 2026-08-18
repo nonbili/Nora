@@ -1,10 +1,11 @@
-import { observable, type Observable } from '@legendapp/state'
+import { batch, observable, type Observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
 import { ui$ } from './ui'
 import { settings$ } from './settings'
 import { DECK_VIEW_ID, savedViews$ } from './saved-views'
+import { getDefaultGroupName, sanitizeGroupTabIds, type TabGroupLayout } from '@/lib/tab-groups'
 import { tabGroups$ } from './tab-groups'
 import { sortBy } from 'es-toolkit'
 import {
@@ -48,7 +49,13 @@ export interface Tab {
 export interface ClosedTab extends Tab {
   closedAt: number
   groupId?: string | null
+  groupName?: string
+  groupLayout?: TabGroupLayout
+  // Slot count at close time, so a rebuilt split group keeps its empty panes.
+  groupSlotCount?: number
   groupSlotIndex?: number
+  // Shared by tabs closed in one action, so reopening restores them together.
+  closedBatchId?: string
   precedingTabId?: string | null
 }
 
@@ -64,9 +71,11 @@ interface Store {
   openTab: (url: string, options?: OpenTabOptions) => string | undefined
   duplicateTab: (tabId: string) => string | undefined
   closeTab: (index: number) => void
+  closeTabsByIds: (tabIds: string[]) => void
   closeAll: () => void
   deleteProfileData: (profileId: string) => void
   reopenClosedTab: (tabId: string) => string | undefined
+  reopenClosedTabBatch: (tabId: string) => string | undefined
   removeClosedTab: (tabId: string) => void
   clearRecentlyClosedTabs: () => void
   updateTabUrl: (url: string, index?: number) => void
@@ -92,7 +101,13 @@ const findGroupForTab = (tabId: string) => {
   for (const group of groups) {
     const slotIndex = group.tabIds.findIndex((currentTabId) => currentTabId === tabId)
     if (slotIndex !== -1) {
-      return { groupId: group.id, groupSlotIndex: slotIndex }
+      return {
+        groupId: group.id,
+        groupName: group.name,
+        groupLayout: group.layout,
+        groupSlotCount: group.tabIds.length,
+        groupSlotIndex: slotIndex,
+      }
     }
   }
   return undefined
@@ -117,7 +132,23 @@ const restoreTabOrder = (tabId: string, precedingTabId?: string | null) => {
   tabs$.orders.set(Object.fromEntries(nextOrder.map((id, index) => [id, index])))
 }
 
-const pushRecentlyClosedTabs = (closedTabs: Tab[]) => {
+// Trim to the cap without cutting a batch in half: a half-kept batch would reopen a
+// group with tabs missing, so the newest batch is allowed to overflow the limit.
+const trimClosedTabHistory = (history: ClosedTab[]) => {
+  if (history.length <= MAX_RECENTLY_CLOSED_TABS) {
+    return history
+  }
+  let cutIndex = MAX_RECENTLY_CLOSED_TABS
+  const cutBatchId = history[cutIndex - 1]?.closedBatchId
+  if (cutBatchId) {
+    while (cutIndex < history.length && history[cutIndex].closedBatchId === cutBatchId) {
+      cutIndex += 1
+    }
+  }
+  return history.slice(0, cutIndex)
+}
+
+const pushRecentlyClosedTabs = (closedTabs: Tab[], closedBatchId?: string) => {
   const orderedTabIds = getOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get())
   const nextClosedTabs = closedTabs
     .filter((tab): tab is Tab => tab != null && Boolean(tab.url))
@@ -125,7 +156,7 @@ const pushRecentlyClosedTabs = (closedTabs: Tab[]) => {
       const groupInfo = findGroupForTab(tab.id)
       const orderIndex = orderedTabIds.indexOf(tab.id)
       const precedingTabId = orderIndex > 0 ? orderedTabIds[orderIndex - 1] : null
-      return { ...tab, closedAt: Date.now(), ...groupInfo, precedingTabId }
+      return { ...tab, closedAt: Date.now(), ...groupInfo, closedBatchId, precedingTabId }
     })
 
   if (!nextClosedTabs.length) {
@@ -134,7 +165,7 @@ const pushRecentlyClosedTabs = (closedTabs: Tab[]) => {
 
   const history = tabs$.recentlyClosedTabs.get()
   const nextHistory = [...nextClosedTabs.reverse(), ...history]
-  tabs$.recentlyClosedTabs.set(nextHistory.slice(0, MAX_RECENTLY_CLOSED_TABS))
+  tabs$.recentlyClosedTabs.set(trimClosedTabHistory(nextHistory))
 }
 
 export type OpenTabOptions = {
@@ -409,6 +440,64 @@ export const tabs$: Observable<Store> = observable<Store>({
     tabs$.setActiveTabById(nextActiveTabId || remainingTabs[0].id, 'close')
   },
 
+  closeTabsByIds: (tabIds) => {
+    const closingTabIds = new Set(tabIds)
+    if (!closingTabIds.size) {
+      return
+    }
+
+    const tabs = tabs$.tabs.get()
+    const closedTabs = tabs.filter((tab) => closingTabIds.has(tab.id))
+    if (!closedTabs.length) {
+      return
+    }
+
+    const activeTabId = tabs[tabs$.activeTabIndex.get()]?.id
+    const remainingTabs = tabs.filter((tab) => !closingTabIds.has(tab.id))
+    const remainingTabIds = remainingTabs.map((tab) => tab.id)
+    const firstClosedIndex = tabs.findIndex((tab) => closingTabIds.has(tab.id))
+    const lastClosedIndex = tabs.findLastIndex((tab) => closingTabIds.has(tab.id))
+    const adjacentTabId =
+      tabs.slice(lastClosedIndex + 1).find((tab) => !closingTabIds.has(tab.id))?.id ||
+      tabs
+        .slice(0, firstClosedIndex)
+        .findLast((tab) => !closingTabIds.has(tab.id))?.id
+    const nextActiveTabId =
+      activeTabId && closingTabIds.has(activeTabId)
+        ? resolveCloseTarget({
+            activeTabId,
+            closingTabId: activeTabId,
+            recentTabIds,
+            availableTabIds: remainingTabIds,
+            preferredTabIds: getClosePreferredTabIds(remainingTabIds),
+            adjacentTabId,
+          })
+        : activeTabId
+
+    // Tag the batch so reopening any of them restores the whole group at once.
+    pushRecentlyClosedTabs(closedTabs, closedTabs.length > 1 ? genId() : undefined)
+    batch(() => {
+      tabs$.tabs.set(remainingTabs)
+      const orders = tabs$.orders.get()
+      const nextOrders = Object.fromEntries(
+        Object.entries(orders).filter(([tabId]) => !closingTabIds.has(tabId)),
+      )
+      tabs$.orders.set(nextOrders)
+    })
+    const closedTabIds = closedTabs.map((tab) => tab.id)
+    savedViews$.cleanupClosedTabIds(closedTabIds)
+    tabGroups$.cleanupClosedTabIds(closedTabIds)
+    syncRuntimeTabMetadata()
+
+    if (!remainingTabs.length) {
+      tabs$.activeTabIndex.set(0)
+      ui$.activeCanGoBack.set(false)
+      return
+    }
+
+    tabs$.setActiveTabById(nextActiveTabId || remainingTabs[0].id, 'close')
+  },
+
   closeAll: () => {
     const closedTabs = tabs$.tabs.get()
     const closedTabIds = closedTabs.map((tab) => tab.id)
@@ -536,21 +625,49 @@ export const tabs$: Observable<Store> = observable<Store>({
     }
 
     tabs$.recentlyClosedTabs.set(recentlyClosedTabs.filter((tab) => tab.id !== tabId))
-    const { id: _closedTabId, closedAt: _closedAt, groupId, groupSlotIndex, precedingTabId, ...rest } = closedTab
+    const {
+      id: _closedTabId,
+      closedAt: _closedAt,
+      closedBatchId: _closedBatchId,
+      groupId,
+      groupName,
+      groupLayout,
+      groupSlotCount,
+      groupSlotIndex,
+      precedingTabId,
+      ...rest
+    } = closedTab
+
+    // The group may have been closed along with its tabs; rebuild it so the tab goes home.
+    if (groupId && groupLayout && !tabGroups$.groups.get().some((group) => group?.id === groupId)) {
+      tabGroups$.groups.set([
+        ...tabGroups$.groups.get(),
+        {
+          id: groupId,
+          name: groupName || getDefaultGroupName(tabGroups$.groups.get().length + 1),
+          layout: groupLayout,
+          tabIds:
+            groupLayout === 'split-view' && groupSlotCount
+              ? Array.from({ length: groupSlotCount }, () => null)
+              : sanitizeGroupTabIds(groupLayout, []),
+        },
+      ])
+      tabGroups$.setActiveGroup(groupId)
+    }
     const reopenedTab: Tab = { ...rest, id: genId(), isLoading: Boolean(rest.url) }
     tabs$.tabs.push(reopenedTab)
 
     if (groupId && tabGroups$.groups.get().some((group) => group?.id === groupId)) {
       const group = tabGroups$.groups.get().find((currentGroup) => currentGroup?.id === groupId)!
-      if (group.layout === 'grid-4') {
-        const targetSlot =
-          typeof groupSlotIndex === 'number' && groupSlotIndex >= 0 && groupSlotIndex < group.tabIds.length && !group.tabIds[groupSlotIndex]
-            ? groupSlotIndex
-            : group.tabIds.findIndex((slotTabId) => !slotTabId)
-        if (targetSlot !== -1) {
-          tabGroups$.assignGroupSlot(groupId, targetSlot, reopenedTab.id)
-        }
-      } else {
+      const isSlotLayout = group.layout === 'grid-4' || group.layout === 'split-view'
+      const targetSlot = !isSlotLayout
+        ? -1
+        : typeof groupSlotIndex === 'number' && groupSlotIndex >= 0 && groupSlotIndex < group.tabIds.length && !group.tabIds[groupSlotIndex]
+          ? groupSlotIndex
+          : group.tabIds.findIndex((slotTabId) => !slotTabId)
+      if (targetSlot !== -1) {
+        tabGroups$.assignGroupSlot(groupId, targetSlot, reopenedTab.id)
+      } else if (group.layout !== 'grid-4') {
         tabGroups$.moveTabToGroup(reopenedTab.id, groupId, groupSlotIndex)
       }
     } else {
@@ -559,6 +676,29 @@ export const tabs$: Observable<Store> = observable<Store>({
 
     tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
     return reopenedTab.id
+  },
+
+  reopenClosedTabBatch: (tabId) => {
+    const closedTab = tabs$.recentlyClosedTabs.get().find((tab) => tab.id === tabId)
+    if (!closedTab) {
+      return undefined
+    }
+    if (!closedTab.closedBatchId) {
+      return tabs$.reopenClosedTab(tabId)
+    }
+
+    // Oldest first, so the reopened tabs keep their original order.
+    const batchTabIds = tabs$.recentlyClosedTabs
+      .get()
+      .filter((tab) => tab.closedBatchId === closedTab.closedBatchId)
+      .map((tab) => tab.id)
+      .reverse()
+
+    let lastReopenedTabId: string | undefined
+    for (const batchTabId of batchTabIds) {
+      lastReopenedTabId = tabs$.reopenClosedTab(batchTabId) || lastReopenedTabId
+    }
+    return lastReopenedTabId
   },
 
   removeClosedTab: (tabId) => {
@@ -757,7 +897,7 @@ syncObservable(tabs$, {
               id: tab.id || genId(),
               closedAt: typeof tab.closedAt === 'number' ? tab.closedAt : Date.now(),
             }))
-            .slice(0, MAX_RECENTLY_CLOSED_TABS)
+          data.recentlyClosedTabs = trimClosedTabHistory(data.recentlyClosedTabs)
         }
         return data
       },

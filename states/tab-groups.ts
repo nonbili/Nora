@@ -34,6 +34,18 @@ interface Store {
 
 const findGroupIndex = (groupId: string) => tabGroups$.groups.get().findIndex((group) => group?.id === groupId)
 
+// Legend-State mutates arrays in place, so push/splice/nested sets keep the same array
+// reference and leave memoized consumers stale. Always replace the whole groups array.
+const setGroups = (groups: TabGroup[]) => tabGroups$.groups.set(groups)
+
+const updateGroup = (groupId: string, update: (group: TabGroup) => TabGroup) => {
+  const groups = tabGroups$.groups.get()
+  if (!groups.some((group) => group.id === groupId)) {
+    return
+  }
+  setGroups(groups.map((group) => (group.id === groupId ? update(group) : group)))
+}
+
 export const createDesktopTabGroupFromTab = (tabId: string, name?: string) => {
   const groupId = createTabGroupId()
   const group: TabGroup = {
@@ -42,8 +54,7 @@ export const createDesktopTabGroupFromTab = (tabId: string, name?: string) => {
     layout: 'deck',
     tabIds: [tabId],
   }
-  tabGroups$.groups.set(removeTabFromGroups(tabGroups$.groups.get(), tabId))
-  tabGroups$.groups.push(group)
+  setGroups([...removeTabFromGroups(tabGroups$.groups.get(), tabId), group])
   tabGroups$.activeGroupId.set(groupId)
   return groupId
 }
@@ -56,7 +67,7 @@ export const createDesktopTabGroup = (layout: TabGroupLayout, name?: string) => 
     layout,
     tabIds: sanitizeGroupTabIds(layout, []),
   }
-  tabGroups$.groups.push(group)
+  setGroups([...tabGroups$.groups.get(), group])
   tabGroups$.activeGroupId.set(groupId)
   return groupId
 }
@@ -73,21 +84,20 @@ export const tabGroups$: Observable<Store> = observable<Store>({
     if (!nextName) {
       return
     }
-    const index = findGroupIndex(groupId)
-    if (index !== -1) {
-      tabGroups$.groups[index].name.set(nextName)
-    }
+    updateGroup(groupId, (group) => ({ ...group, name: nextName }))
   },
 
   deleteGroup: (groupId) => {
-    const index = findGroupIndex(groupId)
-    if (index === -1) {
+    const groups = tabGroups$.groups.get()
+    if (!groups.some((group) => group.id === groupId)) {
       return
     }
-    tabGroups$.groups.splice(index, 1)
-    if (tabGroups$.activeGroupId.get() === groupId) {
-      tabGroups$.activeGroupId.set(null)
-    }
+    batch(() => {
+      setGroups(groups.filter((group) => group.id !== groupId))
+      if (tabGroups$.activeGroupId.get() === groupId) {
+        tabGroups$.activeGroupId.set(null)
+      }
+    })
   },
 
   setActiveGroup: (groupId) => {
@@ -97,13 +107,11 @@ export const tabGroups$: Observable<Store> = observable<Store>({
   },
 
   setGroupLayout: (groupId, layout) => {
-    const index = findGroupIndex(groupId)
-    if (index === -1) {
-      return
-    }
-    const group$ = tabGroups$.groups[index]
-    group$.layout.set(layout)
-    group$.tabIds.set(sanitizeGroupTabIds(layout, group$.tabIds.get()))
+    updateGroup(groupId, (group) => ({
+      ...group,
+      layout,
+      tabIds: sanitizeGroupTabIds(layout, group.tabIds),
+    }))
   },
 
   assignGroupSlot: (groupId, slotIndex, tabId) => {
@@ -127,16 +135,17 @@ export const tabGroups$: Observable<Store> = observable<Store>({
             }
           : currentGroup,
       )
-      tabGroups$.groups.set(nextGroups)
+      setGroups(nextGroups)
       return
     }
 
-    if (group.layout === 'grid-4') {
-      tabGroups$.groups[index].tabIds[slotIndex].set(null)
-      return
-    }
-
-    tabGroups$.groups[index].tabIds.splice(slotIndex, 1)
+    updateGroup(groupId, (currentGroup) => ({
+      ...currentGroup,
+      tabIds:
+        currentGroup.layout === 'grid-4'
+          ? currentGroup.tabIds.map((currentTabId, currentIndex) => (currentIndex === slotIndex ? null : currentTabId))
+          : currentGroup.tabIds.filter((_, currentIndex) => currentIndex !== slotIndex),
+    }))
   },
 
   moveTabToGroup: (tabId, groupId, targetIndex) => {
@@ -154,50 +163,42 @@ export const tabGroups$: Observable<Store> = observable<Store>({
       nextGroups = nextGroups.map((group) => (group.id === groupId ? addTabToGroup(group, tabId, targetIndex) : group))
     }
     batch(() => {
-      tabGroups$.groups.set(nextGroups)
+      setGroups(nextGroups)
       tabGroups$.activeGroupId.set(groupId)
     })
   },
 
   appendSplitGroupSlot: (groupId) => {
-    const index = findGroupIndex(groupId)
-    if (index !== -1 && tabGroups$.groups[index].layout.get() === 'split-view') {
-      const currentTabIds = tabGroups$.groups[index].tabIds.get()
-      tabGroups$.groups[index].tabIds.set([...currentTabIds, null])
-    }
+    updateGroup(groupId, (group) =>
+      group.layout === 'split-view' ? { ...group, tabIds: [...group.tabIds, null] } : group,
+    )
   },
 
   removeSplitGroupSlot: (groupId, slotIndex) => {
-    const index = findGroupIndex(groupId)
-    if (index === -1 || tabGroups$.groups[index].layout.get() !== 'split-view') {
-      return
-    }
-    const slotCount = tabGroups$.groups[index].tabIds.get().length
-    if (slotIndex >= 0 && slotIndex < slotCount) {
-      tabGroups$.groups[index].tabIds.splice(slotIndex, 1)
-    }
+    updateGroup(groupId, (group) =>
+      group.layout === 'split-view' && slotIndex >= 0 && slotIndex < group.tabIds.length
+        ? { ...group, tabIds: group.tabIds.filter((_, currentIndex) => currentIndex !== slotIndex) }
+        : group,
+    )
   },
 
   reorderGroupSlots: (groupId, fromSlotIndex, toSlotIndex) => {
-    const index = findGroupIndex(groupId)
-    if (index === -1) {
-      return
-    }
-    const currentTabIds = tabGroups$.groups[index].tabIds.get()
-    const slotCount = currentTabIds.length
-    if (
-      fromSlotIndex < 0 ||
-      fromSlotIndex >= slotCount ||
-      toSlotIndex < 0 ||
-      toSlotIndex >= slotCount ||
-      fromSlotIndex === toSlotIndex
-    ) {
-      return
-    }
-    const nextTabIds = [...currentTabIds]
-    const [moved] = nextTabIds.splice(fromSlotIndex, 1)
-    nextTabIds.splice(toSlotIndex, 0, moved)
-    tabGroups$.groups[index].tabIds.set(nextTabIds)
+    updateGroup(groupId, (group) => {
+      const slotCount = group.tabIds.length
+      if (
+        fromSlotIndex < 0 ||
+        fromSlotIndex >= slotCount ||
+        toSlotIndex < 0 ||
+        toSlotIndex >= slotCount ||
+        fromSlotIndex === toSlotIndex
+      ) {
+        return group
+      }
+      const nextTabIds = [...group.tabIds]
+      const [moved] = nextTabIds.splice(fromSlotIndex, 1)
+      nextTabIds.splice(toSlotIndex, 0, moved)
+      return { ...group, tabIds: nextTabIds }
+    })
   },
 
   cleanupClosedTabIds: (tabIds) => {
@@ -205,7 +206,7 @@ export const tabGroups$: Observable<Store> = observable<Store>({
       return
     }
     const closedTabIds = new Set(tabIds)
-    tabGroups$.groups.set(
+    setGroups(
       tabGroups$.groups.get().map((group) => ({
         ...group,
         tabIds:

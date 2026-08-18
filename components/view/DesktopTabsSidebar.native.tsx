@@ -10,11 +10,13 @@ import type { Item, NouMenuHandle } from '@/components/menu/NouMenu'
 import { ServiceIcon } from '@/components/service/Services'
 import { MaterialButton } from '@/components/button/IconButtons'
 import { colors } from '@/lib/colors'
+import { closeDesktopGroupWithTabs } from '@/lib/desktop-view-actions'
 import { clsx, isIos } from '@/lib/utils'
 import { getTabWebview } from '@/lib/webview'
 import { NouLongPressMenu } from '@/components/menu/NouLongPressMenu'
 import { getProfileColor } from '@/lib/profile'
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
+import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
 import { openDesktopTab, sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
@@ -285,9 +287,14 @@ const GroupSection: React.FC<{
       handler: () => ui$.renameGroupModalTargetGroupId.set(group.id),
     },
     {
-      label: t('menus.delete'),
-      icon: <MaterialIcons name="delete" size={18} color="#f87171" />,
+      label: t('views.desktop.ungroup'),
+      icon: <MaterialIcons name="layers-clear" size={18} color={iconColor} />,
       handler: () => tabGroups$.deleteGroup(group.id),
+    },
+    {
+      label: t('views.desktop.closeGroup'),
+      icon: <MaterialIcons name="delete" size={18} color="#f87171" />,
+      handler: () => closeDesktopGroupWithTabs(group.id),
     },
   ]
 
@@ -375,11 +382,8 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const tabIdsKey = tabs.map((tab) => tab.id).join('|')
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
   const activeTabId = tabs[activeTabIndex]?.id
-  const groupedTabIds = useMemo(
-    () =>
-      new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
-    [groups],
-  )
+  const groupsKey = getTabGroupsKey(groups)
+  const groupedTabIds = useMemo(() => getGroupedTabIds(groups), [groupsKey])
   const tabById = useMemo(() => new Map(tabs.map((tab) => [tab.id, tab])), [tabIdsKey])
   const ungroupedTabs = orderedTabs.filter((tab) => !groupedTabIds.has(tab.id))
 

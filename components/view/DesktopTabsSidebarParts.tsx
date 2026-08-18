@@ -6,6 +6,7 @@ import { Pressable, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
 import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
+import { closeDesktopGroupWithTabs } from '@/lib/desktop-view-actions'
 import { clsx } from '@/lib/utils'
 import { tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
 import { openDesktopTab, sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
@@ -124,10 +125,15 @@ export const GroupHeader = memo<{
       handler: () => ui$.renameGroupModalTargetGroupId.set(group.id),
     },
     {
-      label: t('menus.delete'),
+      label: t('views.desktop.ungroup'),
+      icon: <MaterialIcons name="layers-clear" size={14} color={menuIconColor} />,
+      handler: () => tabGroups$.deleteGroup(group.id),
+    },
+    {
+      label: t('views.desktop.closeGroup'),
       icon: <MaterialIcons name="delete" size={14} color="#f87171" />,
       color: 'red',
-      handler: () => tabGroups$.deleteGroup(group.id),
+      handler: () => closeDesktopGroupWithTabs(group.id),
     },
   ]
 

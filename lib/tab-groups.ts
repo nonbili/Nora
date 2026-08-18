@@ -106,3 +106,11 @@ export const normalizeTabGroups = <
 
   return data
 }
+
+export const getGroupedTabIds = (groups: TabGroup[]) =>
+  new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string')))
+
+// The observable store mutates the groups array in place, so its reference is not a
+// reliable memo dependency. Use a content signature instead.
+export const getTabGroupsKey = (groups: TabGroup[]) =>
+  groups.map((group) => `${group.id}:${group.layout}:${group.tabIds.join(',')}`).join('|')

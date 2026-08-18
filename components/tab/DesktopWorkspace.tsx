@@ -5,6 +5,7 @@ import { SortableContext, arrayMove, horizontalListSortingStrategy, rectSortingS
 import { useValue } from '@legendapp/state/react'
 import { Pressable } from 'react-native'
 import { clsx } from '@/lib/utils'
+import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { tabGroups$, type TabGroupLayout } from '@/states/tab-groups'
 import { getOrderedTabIds, openDesktopTab, sortTabsByOrder, tabs$ } from '@/states/tabs'
 import { GroupEmptySlot } from './desktop/GroupEmptySlot'
@@ -22,10 +23,8 @@ export const DesktopWorkspace: React.FC = () => {
   const prevTabCountRef = useRef(tabs.length)
 
   const activeGroup = groups.find((group) => group.id === activeGroupId) || null
-  const groupedTabIds = useMemo(
-    () => new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
-    [groups],
-  )
+  const groupsKey = getTabGroupsKey(groups)
+  const groupedTabIds = useMemo(() => getGroupedTabIds(groups), [groupsKey])
   const tabIdsKey = tabs.map((tab) => tab.id).join('|')
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
   const orderedTabIds = useMemo(() => getOrderedTabIds(tabs, orders), [tabIdsKey, orders])

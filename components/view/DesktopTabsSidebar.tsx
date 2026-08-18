@@ -9,6 +9,7 @@ import { t } from 'i18next'
 import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
 import { colors } from '@/lib/colors'
+import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
 import { sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
 import {
@@ -51,10 +52,8 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
   const activeTabId = tabs[activeTabIndex]?.id
   const draggingTab = draggingTabId ? tabs.find((tab) => tab.id === draggingTabId) ?? null : null
-  const groupedTabIds = useMemo(
-    () => new Set(groups.flatMap((group) => group.tabIds.filter((tabId): tabId is string => typeof tabId === 'string'))),
-    [groups],
-  )
+  const groupsKey = getTabGroupsKey(groups)
+  const groupedTabIds = useMemo(() => getGroupedTabIds(groups), [groupsKey])
   const tabById = useMemo(() => new Map(tabs.map((tab) => [tab.id, tab])), [tabIdsKey])
   const ungroupedTabs = useMemo(() => orderedTabs.filter((tab) => !groupedTabIds.has(tab.id)), [orderedTabs, groupedTabIds])
 
@@ -226,7 +225,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
           {
             label: t('buttons.reopenLastClosedTab'),
             icon: <MaterialIcons name="restore" size={14} color={menuIconColor} />,
-            handler: () => tabs$.reopenClosedTab(recentlyClosedTabs[0].id),
+            handler: () => tabs$.reopenClosedTabBatch(recentlyClosedTabs[0].id),
           },
           {
             label: t('tabs.clearRecentlyClosed'),
