@@ -1,26 +1,32 @@
-import { afterAll, describe, expect, it, jest } from 'bun:test'
-import { clearPersistedState, seedPersistedState } from '../test/setup'
+import { afterAll, beforeAll, describe, expect, it, jest } from 'bun:test'
+import { restoreTabsState, tabs$ } from './tabs'
 
-// The store hydrates from MMKV at import time, and arms the dormant-wake fallback timer
-// while doing so, so both the persisted payload and the fake timers have to be in place
-// before the module is pulled in.
-seedPersistedState('tabs', {
-  tabs: [
-    { id: 'tab-a', url: 'https://a.test' },
-    { id: 'tab-b', url: 'https://b.test' },
-    { id: 'tab-c', url: 'https://c.test' },
-  ],
-  activeTabIndex: 1,
-})
-jest.useFakeTimers()
-
-const { tabs$ } = await import('./tabs')
-
+// bun shares one module registry across test files, so this module may already have
+// hydrated (and been mutated) by the time this file runs. Drive the cold-start restore
+// explicitly instead of relying on import-time hydration from a seeded MMKV payload.
 const dormancy = () => tabs$.tabs.get().map((tab) => Boolean(tab.isDormant))
+
+beforeAll(() => {
+  jest.useFakeTimers()
+  // The restore arms the dormant-wake fallback timer, so fake timers go in first.
+  const restored = restoreTabsState({
+    tabs: [
+      { id: 'tab-a', url: 'https://a.test' },
+      { id: 'tab-b', url: 'https://b.test', isDormant: true, isLoading: true },
+      { id: 'tab-c', url: 'https://c.test' },
+    ],
+    activeTabIndex: 1,
+    orders: { 'tab-a': 0, 'tab-b': 1, 'tab-c': 2 },
+    recentlyClosedTabs: [],
+  })
+  tabs$.tabs.set(restored.tabs)
+  tabs$.orders.set(restored.orders)
+  tabs$.recentlyClosedTabs.set(restored.recentlyClosedTabs)
+  tabs$.activeTabIndex.set(restored.activeTabIndex)
+})
 
 afterAll(() => {
   jest.useRealTimers()
-  clearPersistedState()
 })
 
 describe('cold-start restore', () => {

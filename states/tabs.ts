@@ -844,63 +844,73 @@ export const tabs$: Observable<Store> = observable<Store>({
   },
 })
 
+type PersistedTabs = Pick<Store, 'tabs' | 'activeTabIndex' | 'orders' | 'recentlyClosedTabs'>
+
+// Exported so the cold-start tests can drive a restore directly: bun shares one module
+// registry across test files, so seeding MMKV before importing this module only works for
+// whichever file happens to import it first.
+export const restoreTabsState = <T extends PersistedTabs>(data: T): T => {
+  if (data?.tabs) {
+    const seenIds = new Set<string>()
+    data.tabs = data.tabs
+      .filter((tab) => tab != null)
+      .map((tab) => {
+        if (!tab.id || seenIds.has(tab.id)) {
+          tab.id = genId()
+        }
+        tab.isLoading = false
+        if (isSiteProfileId(tab.profile)) {
+          tab.profileMode = 'auto'
+          recordAutoProfile(tab.profile)
+        } else if (tab.profileMode !== 'auto' && tab.profileMode !== 'manual') {
+          tab.profileMode = undefined
+        }
+        tab.backToNewTab = Boolean(tab.backToNewTab || !tab.url)
+        seenIds.add(tab.id)
+        return tab
+      })
+    if (!data.tabs.length) {
+      data.tabs = [{ id: genId(), url: '' }]
+    }
+    if (typeof data.activeTabIndex !== 'number' || data.activeTabIndex < 0) {
+      data.activeTabIndex = 0
+    }
+    if (data.activeTabIndex >= data.tabs.length) {
+      data.activeTabIndex = data.tabs.length - 1
+    }
+
+    // Restore lazily: only the active tab mounts a webview now, the rest wait for
+    // wakeDormantTabs() (or for the user to switch to them). The flag is recomputed
+    // from scratch on every hydrate, so a persisted value never leaks across starts.
+    data.tabs.forEach((tab, index) => {
+      tab.isDormant = shouldTabStartDormant(data.tabs, data.activeTabIndex, index)
+    })
+    if (data.tabs.some((tab) => tab.isDormant)) {
+      if (dormantWakeTimer) {
+        clearTimeout(dormantWakeTimer)
+      }
+      dormantWakeTimer = setTimeout(() => tabs$.wakeDormantTabs(), DORMANT_WAKE_FALLBACK_DELAY)
+    }
+  }
+  if (data?.recentlyClosedTabs) {
+    data.recentlyClosedTabs = data.recentlyClosedTabs
+      .filter((tab): tab is ClosedTab => tab != null && typeof tab.url === 'string')
+      .map((tab) => ({
+        ...tab,
+        id: tab.id || genId(),
+        closedAt: typeof tab.closedAt === 'number' ? tab.closedAt : Date.now(),
+      }))
+    data.recentlyClosedTabs = trimClosedTabHistory(data.recentlyClosedTabs)
+  }
+  return data
+}
+
 syncObservable(tabs$, {
   persist: {
     name: 'tabs',
     plugin: ObservablePersistMMKV,
     transform: {
-      load: (data: Store) => {
-        if (data?.tabs) {
-          const seenIds = new Set<string>()
-          data.tabs = data.tabs
-            .filter((tab) => tab != null)
-            .map((tab) => {
-              if (!tab.id || seenIds.has(tab.id)) {
-                tab.id = genId()
-              }
-              tab.isLoading = false
-              if (isSiteProfileId(tab.profile)) {
-                tab.profileMode = 'auto'
-                recordAutoProfile(tab.profile)
-              } else if (tab.profileMode !== 'auto' && tab.profileMode !== 'manual') {
-                tab.profileMode = undefined
-              }
-              tab.backToNewTab = Boolean(tab.backToNewTab || !tab.url)
-              seenIds.add(tab.id)
-              return tab
-            })
-          if (!data.tabs.length) {
-            data.tabs = [{ id: genId(), url: '' }]
-          }
-          if (typeof data.activeTabIndex !== 'number' || data.activeTabIndex < 0) {
-            data.activeTabIndex = 0
-          }
-          if (data.activeTabIndex >= data.tabs.length) {
-            data.activeTabIndex = data.tabs.length - 1
-          }
-
-          // Restore lazily: only the active tab mounts a webview now, the rest wait for
-          // wakeDormantTabs() (or for the user to switch to them). The flag is recomputed
-          // from scratch on every hydrate, so a persisted value never leaks across starts.
-          data.tabs.forEach((tab, index) => {
-            tab.isDormant = shouldTabStartDormant(data.tabs, data.activeTabIndex, index)
-          })
-          if (data.tabs.some((tab) => tab.isDormant)) {
-            dormantWakeTimer = setTimeout(() => tabs$.wakeDormantTabs(), DORMANT_WAKE_FALLBACK_DELAY)
-          }
-        }
-        if (data?.recentlyClosedTabs) {
-          data.recentlyClosedTabs = data.recentlyClosedTabs
-            .filter((tab): tab is ClosedTab => tab != null && typeof tab.url === 'string')
-            .map((tab) => ({
-              ...tab,
-              id: tab.id || genId(),
-              closedAt: typeof tab.closedAt === 'number' ? tab.closedAt : Date.now(),
-            }))
-          data.recentlyClosedTabs = trimClosedTabHistory(data.recentlyClosedTabs)
-        }
-        return data
-      },
+      load: restoreTabsState,
     },
   },
 })
