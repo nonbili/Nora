@@ -1,0 +1,3 @@
+- Support creating a profile from the new tab screen
+- Strip more tracking parameters from URLs
+- Fix Facebook freezing when scanning ads
