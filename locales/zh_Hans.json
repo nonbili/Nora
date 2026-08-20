@@ -132,8 +132,13 @@
       "description": "主题和工具栏设置。",
       "theme": "主题",
       "toolbar": "工具栏",
-      "deckTabWidth": "分组标签页宽度",
-      "deckTabWidthHint": "当前：{{value}}px"
+      "deckTabWidth": "卡片标签页宽度",
+      "deckTabWidthHint": "当前：{{value}}px",
+      "desktopLayout": "桌面布局",
+      "desktopLayoutHint": "在大屏幕上显示标签页分组和卡片/分屏/网格视图，类似于桌面模式。",
+      "desktopLayoutAuto": "自动",
+      "desktopLayoutOn": "始终",
+      "desktopLayoutOff": "从不"
     },
     "profiles": {
       "description": "支持多账号，各自拥有独立的 Cookie 和浏览状态。",
@@ -210,6 +215,9 @@
         },
         "hideXHomeTabs": {
           "label": "隐藏 X 首页时间线标签页"
+        },
+        "hideFacebookFeed": {
+          "label": "隐藏 Facebook 订阅源"
         }
       },
       "preview": "预览",
@@ -416,7 +424,12 @@
       "tabCount": "{{count}} 个标签页",
       "tabCount_plural": "{{count}} 个标签页",
       "ungrouped": "未分组",
-      "newDeckView": "新卡片视图"
+      "newDeckView": "新卡片视图",
+      "closeGroup": "关闭分组和标签页",
+      "ungroup": "取消分组",
+      "newGroup": "新建分组",
+      "moveToGroup": "移动到 {{name}}",
+      "moveToUngrouped": "移出分组"
     }
   },
   "blocklist": {
