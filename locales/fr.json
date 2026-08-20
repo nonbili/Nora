@@ -106,7 +106,12 @@
       "theme": "Thème",
       "toolbar": "Barre d'outils",
       "deckTabWidth": "Largeur des onglets du Deck",
-      "deckTabWidthHint": "Actuel : {{value}}px"
+      "deckTabWidthHint": "Actuel : {{value}}px",
+      "desktopLayout": "Disposition de bureau",
+      "desktopLayoutHint": "Affichez les groupes d'onglets et les vues deck/split/grille sur les grands écrans, comme en mode bureau.",
+      "desktopLayoutAuto": "Auto",
+      "desktopLayoutOn": "Toujours",
+      "desktopLayoutOff": "Jamais"
     },
     "profiles": {
       "description": "Plusieurs comptes avec des cookies distincts et un état de navigation séparé.",
@@ -186,6 +191,9 @@
         },
         "hideXHomeTabs": {
           "label": "Masquer les onglets du fil d'accueil de X"
+        },
+        "hideFacebookFeed": {
+          "label": "Masquer le flux Facebook"
         }
       },
       "custom": {
@@ -315,7 +323,12 @@
         "split": "Vue divisée",
         "grid": "Vue en grille",
         "gridFour": "Grille à 4 onglets"
-      }
+      },
+      "newGroup": "Nouveau groupe",
+      "moveToGroup": "Déplacer vers {{name}}",
+      "moveToUngrouped": "Quitter le groupe",
+      "closeGroup": "Fermer le groupe et les onglets",
+      "ungroup": "Dégrouper"
     }
   },
   "blocklist": {

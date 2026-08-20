@@ -150,7 +150,12 @@
       "theme": "Tema",
       "toolbar": "Araç çubuğu",
       "deckTabWidth": "Sekme genişliği",
-      "deckTabWidthHint": "Mevcut: {{value}}px"
+      "deckTabWidthHint": "Mevcut: {{value}}px",
+      "desktopLayout": "Masaüstü düzeni",
+      "desktopLayoutHint": "Masaüstü modunda olduğu gibi, geniş ekranlarda sekme gruplarını ve deste/bölünmüş/ızgara görünümlerini göster.",
+      "desktopLayoutAuto": "Otomatik",
+      "desktopLayoutOn": "Her zaman",
+      "desktopLayoutOff": "Hiçbir zaman"
     },
     "profiles": {
       "description": "Her hesap için ayrı çerez ve tarama durumu.",
@@ -429,7 +434,12 @@
       "renameGroup": "Grubun adını değiştir",
       "tabCount": "{{count}} sekmesi",
       "tabCount_plural": "{{count}} sekme",
-      "ungrouped": "Gruplanmamış"
+      "ungrouped": "Gruplanmamış",
+      "newGroup": "Yeni grup",
+      "moveToGroup": "{{name}} grubuna taşı",
+      "moveToUngrouped": "Gruptan çıkar",
+      "closeGroup": "Grubu ve sekmeleri kapat",
+      "ungroup": "Grubu kaldır"
     }
   },
   "newTab": {

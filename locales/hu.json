@@ -1,6 +1,6 @@
 {
   "about": {
-    "label": "Névjegy",
+    "label": "A Nora névjegye",
     "code": "Forráskód",
     "donate": "Adakozás",
     "hint": "Verzióinformációk, forráskód és támogatási hivatkozások."
@@ -46,7 +46,12 @@
         "split": "Osztott nézet",
         "grid": "Rácsnézet",
         "gridFour": "4 lapos rács"
-      }
+      },
+      "newGroup": "Új csoport",
+      "moveToGroup": "Áthelyezés ide: {{name}}",
+      "moveToUngrouped": "Áthelyezés csoporton kívülre",
+      "closeGroup": "Csoport és lapok bezárása",
+      "ungroup": "Csoportbontás"
     }
   },
   "blocklist": {
@@ -77,7 +82,7 @@
     "desktop": "Asztali webhely",
     "duplicate": "Lap megkettőzése",
     "addBookmark": "Könyvjelző hozzáadása",
-    "editUrl": "Lap hivatkozásának szerkesztése",
+    "editUrl": "Laphivatkozás szerkesztése",
     "more": "Több",
     "openInProfile": "Megnyitás profilban",
     "pause": "Lap szüneteltetése",
@@ -140,7 +145,7 @@
   "settings": {
     "label": "Beállítások",
     "zoom": {
-      "label": "Oldal nagyítása",
+      "label": "Oldalnagyítás",
       "defaultLabel": "Alapértelmezett nagyítás",
       "defaultHint": "Összes weboldal alapértelmezett nagyítási szintjének beállítása.",
       "siteZoomLabel": "Webhelyenkénti nagyítás",
@@ -222,7 +227,12 @@
       "theme": "Téma",
       "toolbar": "Eszköztár",
       "deckTabWidth": "Lap szélessége",
-      "deckTabWidthHint": "Jelenlegi: {{value}}px"
+      "deckTabWidthHint": "Jelenlegi: {{value}}px",
+      "desktopLayout": "Asztali elrendezés",
+      "desktopLayoutHint": "A lapcsoportok, valamint a kártyás/osztott/rácsos nézetek megjelenítése nagy képernyőkön, például asztali módban.",
+      "desktopLayoutAuto": "Automatikus",
+      "desktopLayoutOn": "Mindig",
+      "desktopLayoutOff": "Soha"
     },
     "profiles": {
       "description": "Több fiók külön sütikkel és böngészési állapottal.",
