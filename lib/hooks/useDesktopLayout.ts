@@ -9,13 +9,28 @@ import { settings$ } from '@/states/settings'
 // foldables that are wide enough for the desktop workspace.
 export const DESKTOP_LAYOUT_MIN_WIDTH = 900
 
+// Phones get wide enough in landscape to pass the width threshold on their own
+// (an iPhone Pro Max is 926pt wide, a 1080p Android phone lands around 914dp),
+// which would swap the whole tab tree on every rotation and remount every
+// WebView, reloading the page and losing video playback. The short side never
+// changes with rotation, so requiring a tablet-sized one keeps rotation out of
+// the decision.
+export const DESKTOP_LAYOUT_MIN_SHORT_SIDE = 600
+
+/**
+ * Pure form of the auto-mode decision, so the rotation behaviour is testable
+ * without mounting a component.
+ */
+export const shouldUseDesktopLayout = (width: number, height: number) =>
+  width >= DESKTOP_LAYOUT_MIN_WIDTH && Math.min(width, height) >= DESKTOP_LAYOUT_MIN_SHORT_SIDE
+
 /**
  * True when the desktop workspace (tab groups plus deck/split/grid views) should
  * replace the single fullscreen tab. Always true on web, where the desktop app
  * has no other layout.
  */
 export const useDesktopLayout = () => {
-  const { width } = useWindowDimensions()
+  const { width, height } = useWindowDimensions()
   const mode = useValue(settings$.desktopLayout)
 
   if (isWeb) {
@@ -27,5 +42,5 @@ export const useDesktopLayout = () => {
   if (mode === 'off') {
     return false
   }
-  return width >= DESKTOP_LAYOUT_MIN_WIDTH
+  return shouldUseDesktopLayout(width, height)
 }

@@ -6,7 +6,7 @@ import { NouHeader } from '../header/NouHeader'
 import { View } from 'react-native'
 import { clsx, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
-import { NoraTab } from '../tab/NoraTab'
+import { NativeTabHost } from '../tab/NativeTabHost'
 import { NavModalContent } from '../modal/NavModal'
 import { DesktopWorkspace } from '../tab/DesktopWorkspace'
 import { auth$ } from '@/states/auth'
@@ -21,7 +21,6 @@ const logger = createLogger('sync')
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
   const tabs = useValue(tabs$.tabs)
-  const activeTabIndex = useValue(tabs$.activeTabIndex)
   const desktopLayout = useDesktopLayout()
   // Android desktop mode gets the same workspace as the desktop app, laid out with
   // native views instead of DOM ones.
@@ -58,16 +57,14 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     >
       <NouHeader />
       {isWeb ? <SettingsModal /> : null}
-      {desktopLayout && tabs.length ? (
-        <View className="relative flex-1 min-h-0 overflow-hidden bg-zinc-200 dark:bg-black">
-          <DesktopWorkspace />
-          <UsageLockout />
-        </View>
-      ) : tabs.length ? (
-        <View className="relative flex-1">
-          {tabs.map((tab, index) => (
-            <NoraTab tab={tab} index={index} isActive={activeTabIndex === index} key={tab.id || index} />
-          ))}
+      {tabs.length ? (
+        <View
+          className={clsx('relative flex-1', desktopLayout && 'min-h-0 overflow-hidden bg-zinc-200 dark:bg-black')}
+        >
+          {/* Native keeps one host across both layouts, so a rotation that crosses the
+              desktop-layout width threshold never remounts a webview. `isWeb` is a
+              constant, so this branch itself never flips at runtime. */}
+          {isWeb ? <DesktopWorkspace /> : <NativeTabHost desktopLayout={desktopLayout} />}
           <UsageLockout />
         </View>
       ) : (

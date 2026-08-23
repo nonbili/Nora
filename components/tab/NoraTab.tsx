@@ -889,14 +889,37 @@ export const NoraTab: React.FC<{
     )
   }
 
-  if (desktopChrome) {
-    return (
-      <View
-        className={clsx(
-          'h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border bg-white dark:bg-zinc-900',
-          isActive ? 'border-indigo-400/60 dark:border-indigo-400/50' : 'border-zinc-300 dark:border-zinc-800',
-        )}
-      >
+  // One tree for both layouts: the desktop chrome is a conditional child, so switching
+  // between the phone layout and the workspace (a rotation crossing the width threshold,
+  // or the setting) only toggles props. Reparenting the webview would remount it
+  // natively and reload the page, losing scroll position and video playback.
+  return (
+    <TabRoot
+      pointerEvents={desktopChrome || isActive ? 'auto' : 'none'}
+      className={clsx(
+        desktopChrome && 'h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border bg-white dark:bg-zinc-900',
+        desktopChrome &&
+          (isActive ? 'border-indigo-400/60 dark:border-indigo-400/50' : 'border-zinc-300 dark:border-zinc-800'),
+      )}
+      style={
+        desktopChrome
+          ? undefined
+          : [
+              {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                opacity: isActive ? 1 : 0,
+                zIndex: isActive ? 1 : 0,
+              },
+              tabAnimationStyle,
+            ]
+      }
+    >
+      {nIf(
+        desktopChrome,
         <View
           ref={desktopHeaderRef}
           collapsable={false}
@@ -916,98 +939,63 @@ export const NoraTab: React.FC<{
               className="min-w-0 flex-1 flex-row items-center justify-center"
               onLongPress={isIos ? undefined : openDesktopMenu}
             >
-            {slotSwitcher || (
-              <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
-                <View
-                  className="shrink-0"
-                  style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}
-                >
-                  {tab.isPaused ? (
-                    <MaterialIcons name="pause-circle-filled" size={16} color="#a1a1aa" />
-                  ) : tab.isLoading ? (
-                    <ActivityIndicator size="small" color="#a1a1aa" />
-                  ) : (
-                    <ServiceIcon url={tab.url} icon={tab.icon} />
-                  )}
+              {slotSwitcher || (
+                <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
+                  <View
+                    className="shrink-0"
+                    style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    {tab.isPaused ? (
+                      <MaterialIcons name="pause-circle-filled" size={16} color="#a1a1aa" />
+                    ) : tab.isLoading ? (
+                      <ActivityIndicator size="small" color="#a1a1aa" />
+                    ) : (
+                      <ServiceIcon url={tab.url} icon={tab.icon} />
+                    )}
+                  </View>
+                  <NouText
+                    className={clsx(
+                      'min-w-0 flex-1 text-center text-[11px] font-bold tracking-wider',
+                      isActive ? 'text-zinc-600 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400',
+                    )}
+                    numberOfLines={1}
+                  >
+                    {getTabLabel(tab)}
+                  </NouText>
                 </View>
-                <NouText
-                  className={clsx(
-                    'min-w-0 flex-1 text-center text-[11px] font-bold tracking-wider',
-                    isActive ? 'text-zinc-600 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400',
-                  )}
-                  numberOfLines={1}
-                >
-                  {getTabLabel(tab)}
-                </NouText>
-              </View>
-            )}
+              )}
             </Pressable>
           </NouLongPressMenu>
           <View className="shrink-0 flex-row items-center">
             <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
           </View>
-        </View>
-        {/* Pausing is not a discard on native -- it stops the load and the media, so the
-            webview stays mounted and only the header shows the paused state. */}
-        {isDormant ? (
-          <View className="flex-1 min-h-0 items-center justify-center">
-            <ActivityIndicator size="small" color="#a1a1aa" />
-          </View>
-        ) : (
-          <NoraView
-            key={viewInstanceKey}
-            ref={onNativeRef}
-            className={clsx('flex-1', !tab.url && 'hidden')}
-            profile={tab.profile || 'default'}
-            scriptOnStart={contentJs}
-            scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
-            useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
-            onLoad={onLoad}
-            onMessage={onMessage}
-            inspectable={inspectable}
-            textZoom={resolvedZoom}
-          />
-        )}
-        {nIf(
-          !tab.url,
-          <View className="flex-1 min-h-0">
-            <NavModalContent index={index} />
-          </View>,
-        )}
-        <NouMenu ref={desktopMenuRef} items={[]} hideTrigger />
-      </View>
-    )
-  }
-
-  return (
-    <TabRoot
-      pointerEvents={isActive ? 'auto' : 'none'}
-      style={[
-        {
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          opacity: isActive ? 1 : 0,
-          zIndex: isActive ? 1 : 0,
-        },
-        tabAnimationStyle,
-      ]}
-    >
+        </View>,
+      )}
+      {/* Pausing is not a discard on native -- it stops the load and the media, so the
+          webview stays mounted and only the header shows the paused state. */}
+      {nIf(
+        desktopChrome && isDormant,
+        <View className="flex-1 min-h-0 items-center justify-center">
+          <ActivityIndicator size="small" color="#a1a1aa" />
+        </View>,
+      )}
       {nIf(
         !isDormant,
         <NoraView
           key={viewInstanceKey}
           ref={onNativeRef}
-          className={clsx(!tab.url && 'hidden')}
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-          }}
+          className={clsx(!tab.url && 'hidden', desktopChrome && 'flex-1')}
+          style={
+            desktopChrome
+              ? undefined
+              : {
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }
+          }
           profile={tab.profile || 'default'}
           scriptOnStart={contentJs}
           scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
@@ -1018,7 +1006,13 @@ export const NoraTab: React.FC<{
           textZoom={resolvedZoom}
         />,
       )}
-      {nIf(!tab.url && isActive, <NavModalContent index={index} />)}
+      {nIf(
+        !tab.url && (desktopChrome || isActive),
+        <View className="flex-1 min-h-0">
+          <NavModalContent index={index} />
+        </View>,
+      )}
+      {nIf(desktopChrome, <NouMenu ref={desktopMenuRef} items={[]} hideTrigger />)}
     </TabRoot>
   )
 }
