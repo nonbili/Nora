@@ -1,0 +1,5 @@
+- Block YouTube ads, including embedded players
+- Keep webviews mounted across layout changes to prevent page reload on rotation
+- Fix scroll jumping on touch interactions
+- Fix Facebook reels jumping back to previous clip when hiding ads
+- Translation updates
