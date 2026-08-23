@@ -5,6 +5,8 @@ import {
   isFacebookDesktopSponsoredPost,
   isFacebookHomePath,
   isFacebookMessagesPath,
+  isFacebookReelPagerAdCandidate,
+  isFacebookReelsPath,
   isFacebookSponsoredText,
   shouldHideFacebookOpenAppBanner,
   shouldScanFacebookDesktopContainer,
@@ -27,6 +29,22 @@ describe('isFacebookMessagesPath', () => {
     expect(isFacebookMessagesPath('/messages')).toBe(true)
     expect(isFacebookMessagesPath('/messages/t/123')).toBe(true)
     expect(isFacebookMessagesPath('/watch')).toBe(false)
+  })
+})
+
+describe('isFacebookReelsPath', () => {
+  it('detects the reel pager routes', () => {
+    expect(isFacebookReelsPath('/reel')).toBe(true)
+    expect(isFacebookReelsPath('/reel/404248063485974')).toBe(true)
+    expect(isFacebookReelsPath('/reels/')).toBe(true)
+    expect(isFacebookReelsPath('/reels/tab/123')).toBe(true)
+  })
+
+  it('leaves the rest of the site scanned', () => {
+    expect(isFacebookReelsPath('/')).toBe(false)
+    expect(isFacebookReelsPath('/watch')).toBe(false)
+    expect(isFacebookReelsPath('/reeling')).toBe(false)
+    expect(isFacebookReelsPath('/groups/reel/')).toBe(false)
   })
 })
 
@@ -100,6 +118,22 @@ describe('isFacebookDesktopSponsoredPost', () => {
       querySelectorAll: () => [child],
     }
     expect(isFacebookDesktopSponsoredPost(root as unknown as HTMLElement)).toBe(false)
+  })
+})
+
+describe('isFacebookReelPagerAdCandidate', () => {
+  const container = (hasNestedCandidate: boolean) =>
+    ({
+      querySelector: (selector: string) =>
+        selector === facebookDesktopAdContainerSelector && hasNestedCandidate ? {} : null,
+    }) as unknown as HTMLElement
+
+  it('accepts an innermost container, which is a single reel', () => {
+    expect(isFacebookReelPagerAdCandidate(container(false))).toBe(true)
+  })
+
+  it('rejects a wrapper holding other candidates, which would be the pager', () => {
+    expect(isFacebookReelPagerAdCandidate(container(true))).toBe(false)
   })
 })
 

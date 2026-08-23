@@ -4,6 +4,8 @@ import {
   invalidateFacebookDesktopAdVerdict,
   isFacebookDesktopSponsoredPost,
   isFacebookMessagesPath,
+  isFacebookReelPagerAdCandidate,
+  isFacebookReelsPath,
   shouldHideFacebookOpenAppBanner,
   shouldScanFacebookDesktopContainer,
 } from './services/facebook'
@@ -13,8 +15,46 @@ import { emit } from './utils'
 
 const { host } = document.location
 
+// Facebook's reel pager is a mandatory scroll-snap container. Chromium re-runs snap
+// selection whenever such a scroller is relaid out, and it re-snaps to the target it
+// remembers -- the reel the user just swiped away from. Collapsing an ad above the
+// viewport therefore rewinds playback to the previous clip a beat after the swipe.
+const findSnapScroller = (element: HTMLElement) => {
+  if (typeof getComputedStyle !== 'function') {
+    return null
+  }
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    const { scrollSnapType } = getComputedStyle(node)
+    if (scrollSnapType && scrollSnapType !== 'none' && node.scrollHeight > node.clientHeight) {
+      return node
+    }
+  }
+  return null
+}
+
 const hideElement = (element: HTMLElement) => {
+  const scroller = findSnapScroller(element)
+  if (!scroller) {
+    element.style.display = 'none'
+    return
+  }
+
+  // Only content above the viewport moves what is on screen; anything below it collapses
+  // harmlessly. An ad that is on screen has no scroll-neutral answer -- it is the item the
+  // user is looking at -- so the scroller is left to snap wherever it lands.
+  const wasAbove = element.getBoundingClientRect().bottom <= scroller.getBoundingClientRect().top
+  const { scrollTop } = scroller
+  const heightBefore = scroller.scrollHeight
+
   element.style.display = 'none'
+
+  // Reading scrollHeight forces the layout the hide just invalidated, which is the point:
+  // the offset is corrected in the same frame, before snap selection can run.
+  const shrunkBy = wasAbove ? heightBefore - scroller.scrollHeight : 0
+  const restored = Math.max(0, scrollTop - shrunkBy)
+  if (scroller.scrollTop !== restored) {
+    scroller.scrollTop = restored
+  }
 }
 
 const scanFacebookDesktopContainer = (container: HTMLElement) => {
@@ -110,11 +150,19 @@ const sweepAds = () => {
       break
     }
     case 'www.facebook.com': {
-      if (isFacebookMessagesPath(document.location.pathname)) {
+      const { pathname } = document.location
+      if (isFacebookMessagesPath(pathname)) {
         break
       }
+      // Desktop mode serves reels from this host too, so they are still scanned; only the
+      // candidates are narrowed, because a false positive on the pager itself would hide
+      // the viewer. hideElement keeps the collapse scroll-neutral inside the pager.
+      const onReels = isFacebookReelsPath(pathname)
       const items = document.querySelectorAll<HTMLElement>(facebookDesktopAdContainerSelector)
       for (const item of items) {
+        if (onReels && !isFacebookReelPagerAdCandidate(item)) {
+          continue
+        }
         scanFacebookDesktopContainer(item)
       }
       break

@@ -49,6 +49,12 @@ export const isFacebookSponsoredText = (value?: string | null) => {
 
 export const isFacebookMessagesPath = (pathname: string) => pathname === '/messages' || pathname.startsWith('/messages/')
 
+// Reel routes render a full-screen pager rather than a feed, so the candidate
+// containers are filtered differently there. See isFacebookReelPagerAdCandidate.
+export const isFacebookReelsPath = (pathname: string) => {
+  return /^\/reels?(\/|$)/.test(pathname)
+}
+
 export const isFacebookHomePath = (pathname: string) => pathname === '/' || pathname === '/home.php'
 
 export const shouldHideFacebookOpenAppBanner = (element: HTMLElement | null) => {
@@ -184,6 +190,13 @@ export const invalidateFacebookDesktopAdVerdict = (node: Node | null) => {
   if (container && container.dataset.noraHiddenAd !== '1') {
     delete container.dataset.noraAdChecked
   }
+}
+
+// The selector also matches the reel pager's own wrappers, and hiding one of those takes
+// the whole viewer with it. Only an innermost match can be a single reel, so a container
+// that still holds another candidate is left alone.
+export const isFacebookReelPagerAdCandidate = (container: HTMLElement) => {
+  return !container.querySelector(facebookDesktopAdContainerSelector)
 }
 
 export const shouldScanFacebookDesktopContainer = (container: HTMLElement) => {
