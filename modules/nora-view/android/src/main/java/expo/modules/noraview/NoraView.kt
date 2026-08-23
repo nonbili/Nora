@@ -26,6 +26,7 @@ import android.view.GestureDetector
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.DownloadListener
@@ -415,6 +416,31 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var lastTouchX = 0f
   private var lastTouchY = 0f
 
+  // Resolving the context menu targets runs elementFromPoint in the page, which forces a
+  // synchronous style+layout flush. On a busy site mid-scroll that costs ~70ms, and pages
+  // whose scrolling is main-thread gated (x.com, whose own pointermove handler is
+  // non-passive) turn that stall into a visible jump under the finger. So it is not run
+  // on every touch: it is posted on the long-press delay and cancelled as soon as the
+  // gesture turns out to be a scroll.
+  private val touchHandler = Handler(Looper.getMainLooper())
+  private var contextMenuPrewarm: Runnable? = null
+  private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+
+  private fun cancelContextMenuPrewarm() {
+    contextMenuPrewarm?.let { touchHandler.removeCallbacks(it) }
+    contextMenuPrewarm = null
+  }
+
+  private fun scheduleContextMenuPrewarm() {
+    cancelContextMenuPrewarm()
+    val runnable = Runnable {
+      contextMenuPrewarm = null
+      resolveContextMenuTargetsFromPoint()
+    }
+    contextMenuPrewarm = runnable
+    touchHandler.postDelayed(runnable, ViewConfiguration.getLongPressTimeout() / 2L)
+  }
+
   internal val currentActivity: Activity?
     get() = appContext.currentActivity
 
@@ -554,10 +580,18 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
   }
 
+  // A touch sample carries one bridge message per ACTION_MOVE (~120/s), so it is only
+  // emitted when a setting actually consumes it. Both header auto-hide settings default
+  // to off, which left every scroll paying for messages the JS side discarded.
+  internal var scrollEventsEnabled = false
+
   inner class NoraGestureListener : GestureDetector.SimpleOnGestureListener() {
     override fun onDown(e: MotionEvent): Boolean = true
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+      if (!scrollEventsEnabled) {
+        return true
+      }
       var dy = distanceY
       if (e1 != null) {
         dy = e2.y - e1.y
@@ -863,13 +897,27 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       )
       setOnTouchListener { v, event ->
         gestureDetector.onTouchEvent(event)
-        if (event.action == MotionEvent.ACTION_DOWN) {
-          lastTouchX = event.x
-          lastTouchY = event.y
-          contextMenuLinkUrl = null
-          contextMenuImageUrl = null
-          resolveContextMenuTargetsFromPoint()
-          v.requestFocus()
+        when (event.actionMasked) {
+          MotionEvent.ACTION_DOWN -> {
+            lastTouchX = event.x
+            lastTouchY = event.y
+            contextMenuLinkUrl = null
+            contextMenuImageUrl = null
+            scheduleContextMenuPrewarm()
+            v.requestFocus()
+          }
+          MotionEvent.ACTION_MOVE -> {
+            val moved = Math.hypot(
+              (event.x - lastTouchX).toDouble(),
+              (event.y - lastTouchY).toDouble()
+            )
+            if (moved > touchSlop) {
+              cancelContextMenuPrewarm()
+            }
+          }
+          MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_POINTER_DOWN -> {
+            cancelContextMenuPrewarm()
+          }
         }
         false
       }

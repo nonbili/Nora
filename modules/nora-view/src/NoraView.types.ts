@@ -25,6 +25,8 @@ export type NoraViewProps = {
   /** Injected before page scripts run (WebRTC guard). Native platforms only. */
   scriptOnDocumentStart?: string
   textZoom?: number
+  /** Emit `scroll` messages per touch sample. Android only; off unless a setting reads them. */
+  scrollEvents?: boolean
   onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
   onMessage?: (event: { nativeEvent: OnMessageEventPayload }) => void
 }

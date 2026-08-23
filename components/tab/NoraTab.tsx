@@ -1006,6 +1006,7 @@ export const NoraTab: React.FC<{
           onMessage={onMessage}
           inspectable={inspectable}
           textZoom={resolvedZoom}
+          scrollEvents={autoHideHeader || hideToolbarWhenScrolled}
         />,
       )}
       {nIf(

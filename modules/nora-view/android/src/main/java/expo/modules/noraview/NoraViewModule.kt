@@ -258,6 +258,10 @@ class NoraViewModule : Module() {
         WebView.setWebContentsDebuggingEnabled(inspectable)
       }
 
+      Prop("scrollEvents") { view: NoraView, enabled: Boolean ->
+        view.scrollEventsEnabled = enabled
+      }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { view: NoraView, url: String, fileName: String? ->

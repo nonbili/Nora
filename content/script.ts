@@ -292,12 +292,17 @@ function runVideoLongPressScript() {
     }
   })
 
-  document.addEventListener('pointerdown', onPointerDown, true)
-  document.addEventListener('pointermove', onPointerMove, true)
-  document.addEventListener('pointerup', onPointerEnd, true)
-  document.addEventListener('pointercancel', onPointerCancel, true)
-  document.addEventListener('touchend', onTouchEnd, true)
-  document.addEventListener('touchcancel', onTouchCancel, true)
+  // None of these ever preventDefault -- only the click and contextmenu handlers below do.
+  // Registering them non-passive marks the whole document a blocking touch region, which
+  // makes the compositor wait on the main thread before every scroll update; the page then
+  // lurches instead of tracking the finger whenever a frame runs long.
+  const passiveCapture = { capture: true, passive: true } as const
+  document.addEventListener('pointerdown', onPointerDown, passiveCapture)
+  document.addEventListener('pointermove', onPointerMove, passiveCapture)
+  document.addEventListener('pointerup', onPointerEnd, passiveCapture)
+  document.addEventListener('pointercancel', onPointerCancel, passiveCapture)
+  document.addEventListener('touchend', onTouchEnd, passiveCapture)
+  document.addEventListener('touchcancel', onTouchCancel, passiveCapture)
   document.addEventListener('click', onClick, true)
   document.addEventListener('pause', onPause, true)
   document.addEventListener(
@@ -325,7 +330,7 @@ function runVideoLongPressScript() {
         positionIndicator(activeVideo)
       }
     },
-    true,
+    { capture: true, passive: true },
   )
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
