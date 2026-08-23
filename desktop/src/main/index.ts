@@ -148,6 +148,11 @@ function createWindow(): void {
   mainWindow.webContents.on('will-attach-webview', (_, webPreferences) => {
     webPreferences.sandbox = false
     webPreferences.preload = join(__dirname, '../preload/index.js')
+    // Load the preload in iframes too, so the YouTube ad guard reaches embedded
+    // players (a YouTube video on Reddit is an iframe on youtube.com, and it
+    // fetches its own player response). The preload keeps the renderer bridge
+    // main-frame only, and context isolation still applies per frame.
+    webPreferences.nodeIntegrationInSubFrames = true
   })
 
   attachDownloadHandler(mainWindow.webContents.session)

@@ -29,6 +29,7 @@ import { ServiceIcon } from '../service/Services'
 import { getUserAgent } from '@/lib/useragent'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { webRtcGuardScript$ } from '@/lib/webrtc'
+import { composeDocumentStartScript, youTubeGuardScript$ } from '@/lib/youtube-guard'
 import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 import { useTabAnimation } from './tab-animation'
@@ -231,6 +232,7 @@ export const NoraTab: React.FC<{
   const inspectable = useValue(settings$.inspectable)
   const protectWebRtcIp = useValue(settings$.protectWebRtcIp)
   const webRtcGuardScript = useValue(webRtcGuardScript$)
+  const youTubeGuardScript = useValue(youTubeGuardScript$)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
   const translateOnDoubleTap = useValue(settings$.translateOnDoubleTap)
   const translationTargetLanguage = useValue(settings$.translationTargetLanguage)
@@ -998,7 +1000,7 @@ export const NoraTab: React.FC<{
           }
           profile={tab.profile || 'default'}
           scriptOnStart={contentJs}
-          scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
+          scriptOnDocumentStart={composeDocumentStartScript(protectWebRtcIp && webRtcGuardScript, youTubeGuardScript)}
           useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
           onLoad={onLoad}
           onMessage={onMessage}

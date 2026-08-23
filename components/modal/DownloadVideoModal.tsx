@@ -7,6 +7,7 @@ import { ui$ } from '@/states/ui'
 import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
 import { webRtcGuardScript$ } from '@/lib/webrtc'
+import { composeDocumentStartScript, youTubeGuardScript$ } from '@/lib/youtube-guard'
 import { settings$ } from '@/states/settings'
 import { delay } from 'es-toolkit'
 import { getUserAgent } from '@/lib/useragent'
@@ -34,6 +35,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   const inspectable = useValue(settings$.inspectable)
   const protectWebRtcIp = useValue(settings$.protectWebRtcIp)
   const webRtcGuardScript = useValue(webRtcGuardScript$)
+  const youTubeGuardScript = useValue(youTubeGuardScript$)
   const onClose = () => ui$.downloadVideoModalUrl.set('')
   const [title, setTitle] = useState('')
   const [downloadOptions, setDownloadOptions] = useState<DownloadOption[]>([])
@@ -192,7 +194,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
                 className="bg-white"
                 style={{ flex: 1 }}
                 scriptOnStart={contentJs}
-                scriptOnDocumentStart={protectWebRtcIp ? webRtcGuardScript : ''}
+                scriptOnDocumentStart={composeDocumentStartScript(protectWebRtcIp && webRtcGuardScript, youTubeGuardScript)}
                 useragent={userAgent}
                 onLoad={onLoad}
                 onMessage={onMessage}

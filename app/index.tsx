@@ -15,6 +15,7 @@ import { tabs$ } from '@/states/tabs'
 import { useBlocklistSync } from '@/lib/hooks/useBlocklistSync'
 import { showToast } from '@/lib/toast'
 import { loadWebRtcGuardScript } from '@/lib/webrtc'
+import { loadYouTubeGuardScript } from '@/lib/youtube-guard'
 import { t } from 'i18next'
 
 let Notifications: typeof import('expo-notifications') | undefined
@@ -134,6 +135,7 @@ export default function HomeScreen() {
       // over later only takes effect on the next navigation, which would leave
       // the restored tabs unprotected.
       await loadWebRtcGuardScript().catch((e) => console.error('[nora] failed to load WebRTC guard', e))
+      await loadYouTubeGuardScript().catch((e) => console.error('[nora] failed to load YouTube guard', e))
       if (localUri) {
         const res = await fetch(localUri)
         const content = await res.text()
