@@ -60,6 +60,16 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.7" date="2026-08-25">
+      <description>
+        <ul>
+          <li>Block YouTube ads, including embedded players in iframes</li>
+          <li>Fix Facebook Reels jumping back to the previous clip when an ad is hidden</li>
+          <li>Fix blocklist fetching stability</li>
+          <li>Translation updates and bug fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.6" date="2026-08-18">
       <description>
         <ul>

@@ -1,0 +1,4 @@
+- Block YouTube ads, including embedded players in iframes
+- Fix Facebook Reels jumping back to the previous clip when an ad is hidden
+- Fix blocklist fetching stability
+- Translation updates and bug fixes
