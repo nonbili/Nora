@@ -52,8 +52,13 @@ const interfaces = {
   },
   fetchText: async (url: string, headers: Record<string, string> = {}) => {
     // Bounded so a stalled request cannot keep a blocklist refresh running
-    // forever in the renderer.
-    const res = await fetch(url, { headers, signal: AbortSignal.timeout(FETCH_TEXT_TIMEOUT_MS) })
+    // forever in the renderer. Use Electron's Chromium network stack instead
+    // of Node's global fetch: Electron 43 bundles an Undici version that can
+    // crash the main process if a peer closes while its parser is paused.
+    const res = await session.defaultSession.fetch(url, {
+      headers,
+      signal: AbortSignal.timeout(FETCH_TEXT_TIMEOUT_MS),
+    })
     return {
       status: res.status,
       body: await res.text(),
