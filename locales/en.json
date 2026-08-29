@@ -82,6 +82,7 @@
     "desktop": "Desktop site",
     "duplicate": "Duplicate tab",
     "addBookmark": "Add bookmark",
+  "addToHomeScreen": "Add to Home screen",
     "editUrl": "Edit tab URL",
     "more": "More",
     "openInProfile": "Open in profile",
@@ -440,6 +441,7 @@
     "profileCookieExportFailed": "Failed to export profile cookies.txt",
     "siteDataCleared": "Site data cleared",
     "siteDataClearFailed": "Failed to clear site data",
+  "addToHomeScreenFailed": "This launcher does not support home screen shortcuts",
     "pressBackAgainToExit": "Press back again to exit"
   },
   "usageLimits": {

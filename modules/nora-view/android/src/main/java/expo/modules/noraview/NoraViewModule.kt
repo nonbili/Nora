@@ -224,6 +224,22 @@ class NoraViewModule : Module() {
       handleExternalAppUrl(appContext.reactContext ?: appContext.throwingActivity, url)
     }
 
+    Function("isPinShortcutSupported") {
+      val context = appContext.reactContext
+      context != null && NoraShortcuts.isSupported(context)
+    }
+
+    AsyncFunction("pinTabShortcut") Coroutine { id: String, link: String, label: String, iconUrl: String? ->
+      val context = appContext.reactContext
+      if (context == null) {
+        false
+      } else {
+        withContext(Dispatchers.IO) {
+          NoraShortcuts.pinTab(context, id, link, label, iconUrl, this@NoraViewModule::log)
+        }
+      }
+    }
+
     AsyncFunction("translateText") Coroutine { text: String, targetLanguage: String ->
       NoraTranslation.translateText(text, targetLanguage)
     }

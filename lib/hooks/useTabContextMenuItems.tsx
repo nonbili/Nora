@@ -13,6 +13,7 @@ import { isWeb } from '@/lib/utils'
 import { clearHostData } from '@/lib/profile-data'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { showToast } from '@/lib/toast'
+import { canPinTabToHomeScreen, pinTabToHomeScreen } from '@/lib/home-shortcut'
 
 export interface TabContextMenuOptions {
   runWebviewAction: (action: (webview: any) => void) => void
@@ -138,6 +139,17 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
       icon: <MaterialIcons name="share" size={16} color={menuIconColor} />,
       handler: () => share(tab.url || ''),
     },
+    ...(canPinTabToHomeScreen(tab)
+      ? [
+          {
+            label: t('menus.addToHomeScreen'),
+            icon: <MaterialIcons name="add-to-home-screen" size={16} color={menuIconColor} />,
+            handler: () => {
+              void pinTabToHomeScreen(tab)
+            },
+          },
+        ]
+      : []),
     ...(host
       ? [
           {

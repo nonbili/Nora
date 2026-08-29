@@ -7,6 +7,9 @@ declare class NoraViewModule extends NativeModule {
   getCookies(url: string, profile?: string | null): Promise<string>
   getProfileCookies(profile: string): Promise<ProfileCookie[]>
   openExternalUrl(url: string): Promise<boolean>
+  // Android only: the iOS module has no equivalent, so both are optional.
+  isPinShortcutSupported?(): boolean
+  pinTabShortcut?(id: string, link: string, label: string, iconUrl?: string | null): Promise<boolean>
   reloadBlocklistFromDisk?(enabled: boolean, revision: number): Promise<boolean>
   reloadBlocklistFromSourceFiles?(enabled: boolean, revision: number): Promise<boolean>
   setSettings(settings: object): void

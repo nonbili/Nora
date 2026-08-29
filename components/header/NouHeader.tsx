@@ -17,6 +17,7 @@ import { NouText } from '../NouText'
 import type { SharedValue } from 'react-native-reanimated'
 import NoraViewModule from '@/modules/nora-view'
 import { share } from '@/lib/share'
+import { canPinTabToHomeScreen, pinTabToHomeScreen } from '@/lib/home-shortcut'
 import { isDirectlyDownloadable } from '@/content/download'
 import { t } from 'i18next'
 import { bookmarks$ } from '@/states/bookmarks'
@@ -475,6 +476,17 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       systemImage: 'square.and.arrow.up',
                       handler: () => (currentTab ? share(currentTab.url) : {}),
                     },
+                    ...(currentTab && canPinTabToHomeScreen(currentTab)
+                      ? [
+                          {
+                            label: t('menus.addToHomeScreen'),
+                            icon: <MaterialIcons name="add-to-home-screen" size={18} color={headerControlColor} />,
+                            handler: () => {
+                              void pinTabToHomeScreen(currentTab)
+                            },
+                          },
+                        ]
+                      : []),
                   ]),
               ...(isWeb
                 ? []
