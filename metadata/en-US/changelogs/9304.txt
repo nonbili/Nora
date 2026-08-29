@@ -1,0 +1,4 @@
+- Support adding tabs to the home screen as pinned shortcuts
+- Add a per-site toggle to disable ad blocking
+- Add a pull-to-refresh setting
+- Clear parent-domain cookies when clearing site data

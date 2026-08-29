@@ -1,4 +1,4 @@
-const chromeVersion = 142
+const chromeVersion = 150
 
 // Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/144.0.7559.95 Mobile/15E148 Safari/604.1
 export function getUserAgent(platform: string, isDesktop = false) {
