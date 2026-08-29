@@ -33,6 +33,28 @@ class NoraViewModule : Module() {
 
   private var lastProxyKey: String? = null
 
+  // "www.example.com" -> www.example.com, .www.example.com, example.com,
+  // .example.com. Stops at two labels so we never walk up to a bare TLD, and
+  // leaves IP literals alone.
+  private fun cookieDomains(host: String): List<String> {
+    val labelList = host.split(".")
+    // IPv6 literal, or an IPv4 address whose labels must not be stripped.
+    if (host.contains(":") || labelList.all { it.toIntOrNull() != null }) {
+      return listOf(host)
+    }
+
+    val domains = mutableListOf<String>()
+    var current = host
+    while (true) {
+      domains.add(current)
+      domains.add(".$current")
+      val labels = current.split(".")
+      if (labels.size <= 2) break
+      current = labels.drop(1).joinToString(".")
+    }
+    return domains
+  }
+
   private fun applyProxy(settings: NoraSettings) {
     if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) {
       val proxyKey = "${settings.proxyEnabled}|${settings.proxyType}|${settings.proxyHost}|${settings.proxyPort}"
@@ -173,6 +195,12 @@ class NoraViewModule : Module() {
           webStorage = WebStorage.getInstance()
         }
 
+        // getCookie() returns cookies visible to the origin, including ones set
+        // on a parent domain (a ".example.com" cookie shows up on
+        // "www.example.com"), but it does not report their domain. Expire each
+        // name against every parent domain so parent-scoped session cookies are
+        // actually removed; the cookie store drops attempts on a public suffix.
+        val domains = cookieDomains(host)
         for (scheme in listOf("https", "http")) {
           val origin = "$scheme://$host"
           webStorage.deleteOrigin(origin)
@@ -182,7 +210,7 @@ class NoraViewModule : Module() {
           for (pair in cookies.split(";")) {
             val name = pair.substringBefore("=").trim()
             if (name.isEmpty()) continue
-            for (domain in listOf(host, ".$host")) {
+            for (domain in domains) {
               cookieManager.setCookie(origin, "$name=; Max-Age=0; path=/; domain=$domain")
             }
           }
