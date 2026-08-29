@@ -20,6 +20,11 @@ const injectedStyleId = '_nora_injected_css'
 
 const css = (raw: ArrayLike<string>, ...values: any[]) => String.raw({ raw }, ...values)
 
+// The blocklist's own cosmetic rules already drop out for an excluded site (see
+// `getCosmeticCssForHost`); these hand-written ad rules have to honour the same
+// switch, while the app-promo and layout fixes below stay regardless.
+const adCss = (settings: any, rules: string) => (settings.adBlockingEnabled === false ? '' : rules)
+
 const styles: Record<string, (settings: any) => string> = {
   base: (settings) => css`
     ._nora_hidden_ {
@@ -48,15 +53,20 @@ const styles: Record<string, (settings: any) => string> = {
       display: none !important;
     }
 
-    /* Server-rendered ads */
-    article:has(.x1fhwpqd.x132q4wb.x5n08af) {
-      visibility: hidden !important;
-      pointer-events: none !important;
-    }
+    ${adCss(
+      settings,
+      css`
+        /* Server-rendered ads */
+        article:has(.x1fhwpqd.x132q4wb.x5n08af) {
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
 
-    article:has(.x1fhwpqd.x132q4wb.x5n08af) video {
-      display: none !important;
-    }
+        article:has(.x1fhwpqd.x132q4wb.x5n08af) video {
+          display: none !important;
+        }
+      `,
+    )}
 
     /* blocking div */
     ._aagv + div {
@@ -65,14 +75,22 @@ const styles: Record<string, (settings: any) => string> = {
   `,
 
   reddit: (settings) => css`
-    .promotedlink,
     .sitetable .rank,
-    #xpromo-small-header,
-    li:has(ad-event-tracker),
-    shreddit-ad-post,
-    shreddit-comments-page-ad {
+    #xpromo-small-header {
       display: none !important;
     }
+
+    ${adCss(
+      settings,
+      css`
+        .promotedlink,
+        li:has(ad-event-tracker),
+        shreddit-ad-post,
+        shreddit-comments-page-ad {
+          display: none !important;
+        }
+      `,
+    )}
 
     .sitetable .midcol {
       width: 1rem !important;
@@ -89,9 +107,17 @@ const styles: Record<string, (settings: any) => string> = {
   `,
 
   x: (settings) => css`
-    /* Ads on search page */
-    [data-testid="eventHero"],
-    [data-testid="cellInnerDiv"]:has(.css-175oi2r.r-xoduu5.r-1awozwy.r-18u37iz),
+    ${adCss(
+      settings,
+      css`
+        /* Ads on search page */
+        [data-testid='eventHero'],
+        [data-testid='cellInnerDiv']:has(.css-175oi2r.r-xoduu5.r-1awozwy.r-18u37iz) {
+          display: none !important;
+        }
+      `,
+    )}
+
     /* Subscribe */
     a[href="/i/premium_sign_up"],
     /* Upgrade */

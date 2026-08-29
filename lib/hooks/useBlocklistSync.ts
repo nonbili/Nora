@@ -70,6 +70,9 @@ export function useBlocklistSync() {
 
   useObserveEffect(() => {
     blocklist$.excludedHosts.get()
+    // Switching the blocklist off drops every per-site exception with it, so the
+    // built-in ad blocking goes back on for the sites that had turned it off.
+    blocklist$.enabled.get()
     void applyBlocklistExclusions()
   })
 

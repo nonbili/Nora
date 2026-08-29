@@ -101,9 +101,12 @@ public class NoraViewModule: Module {
       NouController.shared.settings = settings
     }
 
-    Function("setBlocklistExcludedHosts") { (hosts: String) in
+    // On the main queue, and awaited by the caller: the per-site switch reloads
+    // the page as soon as this resolves, and the reload must not outrun the
+    // document start scripts the new exceptions are reinstalled into.
+    AsyncFunction("setBlocklistExcludedHosts") { (hosts: String) in
       NouController.shared.setBlocklistExcludedHosts(hosts)
-    }
+    }.runOnQueue(.main)
 
     Function("setBlocklist") { (blocklist: NoraBlocklist) in
       NouController.shared.setBlocklist(blocklist)

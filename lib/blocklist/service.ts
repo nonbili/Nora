@@ -343,6 +343,42 @@ export function supportsRuntimeBlocklist() {
   return !isWeb || hasElectron()
 }
 
+/**
+ * The sites ad blocking is off for, under the condition the header's per-site
+ * switch appears under: with no runtime blocklist there is no switch to flip,
+ * and a leftover exception must not keep blocking off for a site the user can
+ * no longer re-enable it on once the blocklist is disabled.
+ */
+function adBlockingExclusions() {
+  if (!supportsRuntimeBlocklist() || !blocklist$.enabled.get()) {
+    return []
+  }
+  return blocklist$.excludedHosts.get() || []
+}
+
+export function isAdBlockingDisabledForHost(host?: string | null) {
+  return isBlocklistExcludedHost(host, adBlockingExclusions())
+}
+
+/**
+ * A snippet handing the page its exceptions before the content script runs, so
+ * the built-in blocking knows to stay out of the way from the first request.
+ * Blocking is irreversible in the ways that matter -- an XHR response is
+ * rewritten once, an element gets an inline `display: none` -- so waiting for
+ * the app to push its settings after load would be too late.
+ *
+ * It carries the hosts rather than a resolved flag because the script is
+ * installed before the view has navigated: only the page itself knows in time
+ * which site it turned out to be.
+ *
+ * Desktop only. The native views build the same snippet themselves from the
+ * exceptions `setBlocklistExcludedHosts` already hands them, so that flipping a
+ * site's switch and reloading it go through one setter, in that order.
+ */
+export function buildAdBlockingExclusionsScript() {
+  return `try{window.__noraBlocklistExcludedHosts=${JSON.stringify(adBlockingExclusions())}}catch(e){}`
+}
+
 export async function waitForBlocklistPersist() {
   await when(syncState(blocklist$).isPersistLoaded)
 }
@@ -415,7 +451,9 @@ async function applyBlocklistExclusionsNow() {
     return
   }
 
-  const excludedHosts = [...(blocklist$.excludedHosts.get() || [])].sort()
+  // Not the stored list but the effective one: a leftover exception must not keep
+  // blocking off for a site whose switch is hidden because the whole blocklist is.
+  const excludedHosts = [...adBlockingExclusions()].sort()
   const partitions = hasElectron() ? getDesktopPartitions() : undefined
   const key = `${partitions?.join(',') || ''}|${excludedHosts.join(',')}`
   if (key === lastAppliedExclusionsKey) {
@@ -426,7 +464,9 @@ async function applyBlocklistExclusionsNow() {
     const payload: BlocklistExclusionsPayload = { excludedHosts, partitions }
     await window.electron.ipcRenderer.invoke(MAIN_CHANNEL, 'setBlocklistExcludedHosts', payload)
   } else {
-    NoraViewModule.setBlocklistExcludedHosts?.(encodeHosts(excludedHosts))
+    // Awaited: it lands on the main thread, and the caller reloads the page
+    // once it has, so the reload cannot outrun the exceptions.
+    await NoraViewModule.setBlocklistExcludedHosts?.(encodeHosts(excludedHosts))
   }
 
   // Only once it landed: a failed IPC must not leave the filter blocking a site

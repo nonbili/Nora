@@ -15,6 +15,7 @@ import androidx.webkit.ProxyConfig
 import androidx.webkit.ProxyController
 import androidx.webkit.WebViewFeature
 import expo.modules.kotlin.functions.Coroutine
+import expo.modules.kotlin.functions.Queues
 import expo.modules.kotlin.jni.JavaScriptObject
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -142,9 +143,12 @@ class NoraViewModule : Module() {
       applyProxy(settings)
     }
 
-    Function("setBlocklistExcludedHosts") { hosts: String ->
+    // On the main queue, and awaited by the caller: the per-site switch reloads
+    // the page as soon as this resolves, and the reload must not outrun the
+    // document start script the new exceptions are reinstalled into.
+    AsyncFunction("setBlocklistExcludedHosts") { hosts: String ->
       nouController.setBlocklistExcludedHosts(hosts)
-    }
+    }.runOnQueue(Queues.MAIN)
 
     Function("setBlocklist") { blocklist: NoraBlocklist ->
       nouController.setBlocklist(blocklist)

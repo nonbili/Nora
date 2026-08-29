@@ -47,7 +47,13 @@ import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { getEnabledUserScripts } from '@/lib/user-styles'
 import { DECK_VIEW_ID, savedViews$ } from '@/states/saved-views'
 import { tabGroups$ } from '@/states/tab-groups'
-import { blocklistMatcherRevision$, getCosmeticCssForHost, loadCosmeticFilters } from '@/lib/blocklist'
+import {
+  blocklistMatcherRevision$,
+  buildAdBlockingExclusionsScript,
+  getCosmeticCssForHost,
+  isAdBlockingDisabledForHost,
+  loadCosmeticFilters,
+} from '@/lib/blocklist'
 import { blocklist$ } from '@/states/blocklist'
 
 const LOAD_URL_MAX_RETRIES = 5
@@ -352,6 +358,9 @@ export const NoraTab: React.FC<{
         translateOnDoubleTap: !isWeb && translateOnDoubleTap && Boolean(translationTargetLanguage),
         xDefaultHomeTimeline,
         cosmeticCss: getCosmeticCssForHost(currentHost),
+        // Also switches off the built-in ad blocking in the content script, so the
+        // per-site switch covers every kind of blocking and not just the lists.
+        adBlockingEnabled: !isAdBlockingDisabledForHost(currentHost),
       })})`
       const userStylesScript = `window.Nora?.setUserStyles?.(${JSON.stringify(getUserStylesSnapshot())})`
       void executeWebviewJavaScriptQuietly(webview, settingsScript)
@@ -434,7 +443,9 @@ export const NoraTab: React.FC<{
         if (isActiveRef.current || !ui$.webview.get()) {
           ui$.webview.set(ObservableHint.opaque(webview))
         }
-        void executeWebviewJavaScript(webview, contentJsRef.current)
+        // Desktop has no document-start hook for the content script, so the
+        // exceptions ride in front of it -- still before it installs anything.
+        void executeWebviewJavaScript(webview, composeDocumentStartScript(buildAdBlockingExclusionsScript(), contentJsRef.current))
           .catch(() => {})
           .finally(() => applyContentStateRef.current(webview))
         void refreshCanGoBack(webview)

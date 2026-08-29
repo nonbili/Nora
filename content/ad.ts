@@ -11,9 +11,17 @@ import {
 } from './services/facebook'
 import { linkedinL10nPromoted } from './services/linkedin'
 import { getService } from './services/manager'
+import { isAdBlockingDisabledHere } from './site-blocking'
 import { emit } from './utils'
 
 const { host } = document.location
+
+// The per-site "Block ads" switch reaches the page as a setting, which is only
+// pushed once the page has loaded, so it is read at call time rather than
+// captured. `blockAds` runs before `window.Nora` exists at all, and the first
+// requests can go out before the push lands, so until then the switch is
+// resolved from the exceptions injected at document start.
+const adBlockingEnabled = () => window.Nora?.getSettings?.().adBlockingEnabled ?? !isAdBlockingDisabledHere()
 
 // Facebook's reel pager is a mandatory scroll-snap container. Chromium re-runs snap
 // selection whenever such a scroller is relaid out, and it re-snaps to the target it
@@ -76,6 +84,9 @@ export function blockAds() {
     return
   }
   function interceptResponse(url: string, response: string) {
+    if (!adBlockingEnabled()) {
+      return response
+    }
     try {
       const service = getService(document.location.href)
       console.log('[nora][xhr] intercept candidate', {
@@ -138,6 +149,10 @@ const scheduleSweep = () => {
 }
 
 const sweepAds = () => {
+  if (!adBlockingEnabled()) {
+    return
+  }
+
   switch (host) {
     case 'm.facebook.com': {
       const target = document.querySelector('.fixed-container.bottom') as HTMLElement | null
@@ -185,6 +200,10 @@ const sweepAds = () => {
 }
 
 export function hideAds(mutations: MutationRecord[]) {
+  if (!adBlockingEnabled()) {
+    return
+  }
+
   for (const mutation of mutations) {
     switch (host) {
       case 'm.facebook.com': {

@@ -23,7 +23,7 @@ declare class NoraViewModule extends NativeModule {
   setSettings(settings: object): void
   setBlocklist(blocklist: object): void
   // Newline-encoded host keys; optional so older native builds keep working.
-  setBlocklistExcludedHosts?(hosts: string): void
+  setBlocklistExcludedHosts?(hosts: string): Promise<void>
   setLocaleStrings(strings: object): void
   translateText(text: string, targetLanguage: string): Promise<{ text: string; sourceLanguage?: string }>
   getTranslationSupportedLanguages(): Promise<string[]>

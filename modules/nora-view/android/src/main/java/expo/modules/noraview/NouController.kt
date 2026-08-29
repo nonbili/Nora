@@ -3,6 +3,7 @@ package expo.modules.noraview
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
+import org.json.JSONArray
+import java.util.Collections
+import java.util.WeakHashMap
 
 class NoraSettings : Record {
   @Field
@@ -68,6 +72,7 @@ class NouController {
   private var blocklistAllowedHosts = emptySet<String>()
   private var blocklistExcludedHosts = emptySet<String>()
   internal var blocklistRevision = 0
+  private val registeredViews = Collections.newSetFromMap(WeakHashMap<NoraView, Boolean>())
 
   private fun decodeHosts(value: String): Set<String> {
     if (value.isEmpty()) {
@@ -122,8 +127,32 @@ class NouController {
     blocklistRevision = blocklist.revision
   }
 
+  fun register(view: NoraView) {
+    registeredViews.add(view)
+  }
+
   fun setBlocklistExcludedHosts(hosts: String) {
     blocklistExcludedHosts = decodeHosts(hosts)
+    // Every view has to be carrying the new list before the reload that follows
+    // the switch is issued, which is why the exceptions are handed out from here
+    // rather than travelling as a prop: a prop lands on React's own schedule.
+    // The setter runs on the main queue, so this is done by the time it returns.
+    for (view in registeredViews.toList()) {
+      if (Looper.myLooper() == Looper.getMainLooper()) {
+        view.refreshDocumentStartScript()
+      } else {
+        view.post { view.refreshDocumentStartScript() }
+      }
+    }
+  }
+
+  /**
+   * The snippet handing a page its per-site exceptions before any of its own
+   * script runs, so the content script's built-in ad blocking knows to stay out
+   * of the way from the first request rather than from the first setting push.
+   */
+  fun blocklistExclusionsScript(): String {
+    return "try{window.__noraBlocklistExcludedHosts=${JSONArray(blocklistExcludedHosts.toList())}}catch(e){}"
   }
 
   /**

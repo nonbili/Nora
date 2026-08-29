@@ -13,6 +13,8 @@ declare global {
     _lact: number
     NoraI: NoraI
     Nora: any
+    /** Sites ad blocking is off for, injected at document start. */
+    __noraBlocklistExcludedHosts?: string[]
     electron: ElectronAPI
   }
 }

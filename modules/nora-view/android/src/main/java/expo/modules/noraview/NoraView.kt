@@ -694,8 +694,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             }
             // Only a fallback: when the WebView supports document start scripts the
             // guard is already installed before any page script has run.
-            if (documentStartScript.isNotEmpty() && documentStartScriptHandler == null) {
-              evaluateJavascript(documentStartScript, null)
+            if (documentStartScriptHandler == null) {
+              evaluateJavascript(documentStartSource(), null)
             }
             evaluateJavascript(scriptOnStart, null)
           }
@@ -1057,6 +1057,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
     swipeRefresh.addView(webView)
     addView(swipeRefresh)
+    nouController.register(this)
 
     val activity = currentActivity
     activity?.registerForContextMenu(webView)
@@ -1153,17 +1154,33 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
     documentStartScript = script
+    refreshDocumentStartScript()
+  }
+
+  /** Re-installs the document start script, picking up the current exceptions. */
+  internal fun refreshDocumentStartScript() {
     documentStartScriptHandler?.remove()
     documentStartScriptHandler = installDocumentStartScript(webView)
   }
 
+  /**
+   * The guards and the per-site ad blocking exceptions share the one document
+   * start script the WebView takes. Each part is self-contained, so they are
+   * separated by a newline and a semicolon: a part ending in an expression must
+   * not swallow the next one.
+   */
+  private fun documentStartSource(): String {
+    return listOf(nouController.blocklistExclusionsScript(), documentStartScript)
+      .filter { it.isNotEmpty() }
+      .joinToString("\n;\n")
+  }
+
   private fun installDocumentStartScript(target: WebView): ScriptHandler? {
-    if (documentStartScript.isEmpty() ||
-      !WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+    if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
       return null
     }
     return try {
-      WebViewCompat.addDocumentStartJavaScript(target, documentStartScript, setOf("*"))
+      WebViewCompat.addDocumentStartJavaScript(target, documentStartSource(), setOf("*"))
     } catch (e: Exception) {
       log("addDocumentStartJavaScript failed: ${e.message}")
       null

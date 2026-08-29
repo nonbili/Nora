@@ -162,8 +162,27 @@ class NouController {
       self.blocklistExcludedHosts = next
       for view in self.registeredViews.allObjects {
         view.refreshBlocklist()
+        // Every view has to be carrying the new list before the reload that
+        // follows the switch is issued, which is why the exceptions are handed
+        // out from here rather than travelling as a prop: a prop lands on
+        // React's own schedule.
+        view.refreshUserScripts()
       }
     }
+  }
+
+  /**
+   * The snippet handing a page its per-site exceptions before any of its own
+   * script runs, so the content script's built-in ad blocking knows to stay out
+   * of the way from the first request rather than from the first setting push.
+   */
+  func blocklistExclusionsScript() -> String {
+    let hosts = blocklistExcludedHosts.sorted()
+    guard let data = try? JSONSerialization.data(withJSONObject: hosts),
+          let json = String(data: data, encoding: .utf8) else {
+      return ""
+    }
+    return "try{window.__noraBlocklistExcludedHosts=\(json)}catch(e){}"
   }
 
   /**

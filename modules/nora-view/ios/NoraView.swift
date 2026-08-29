@@ -206,6 +206,11 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     """
     controller.addUserScript(WKUserScript(source: bridgeScript, injectionTime: .atDocumentStart, forMainFrameOnly: false))
 
+    let exclusionsScript = NouController.shared.blocklistExclusionsScript()
+    if !exclusionsScript.isEmpty {
+      controller.addUserScript(WKUserScript(source: exclusionsScript, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+    }
+
     if !documentStartScript.isEmpty {
       controller.addUserScript(WKUserScript(source: documentStartScript, injectionTime: .atDocumentStart, forMainFrameOnly: false))
     }
@@ -383,6 +388,14 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     self.textZoom = zoom
     if #available(iOS 14.0, *) {
       webView.pageZoom = CGFloat(zoom) / 100.0
+    }
+  }
+
+  /// Re-installs the document start scripts, picking up the current exceptions.
+  /// Takes effect on the next page load, which is what the switch triggers.
+  func refreshUserScripts() {
+    if let controller = webView?.configuration.userContentController {
+      installUserScripts(controller)
     }
   }
 
