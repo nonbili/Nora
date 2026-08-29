@@ -37,9 +37,9 @@ export interface Tab {
   manifest?: string
   isLoading?: boolean
   isPaused?: boolean
-  // Set on cold start for every restored tab except the active one: the webview is not
-  // mounted, so the active tab gets the network and renderer to itself. Cleared when the
-  // tab is activated, or by wakeDormantTabs() once the active tab has finished loading.
+  // Set on cold start for every restored tab except the active one: no webview is
+  // mounted, so a restored tab costs nothing until it is shown. Cleared when the tab is
+  // activated, navigated, or wakeTab()'d by a layout that puts it on screen.
   isDormant?: boolean
   desktopMode?: boolean
   profile?: string
@@ -82,7 +82,7 @@ interface Store {
   updateTabUrl: (url: string, index?: number) => void
   setTabLoading: (loading: boolean, index?: number) => void
   setTabPaused: (paused: boolean, index?: number) => void
-  wakeDormantTabs: () => void
+  wakeTab: (tabId: string) => void
   setActiveTabIndex: (index: number, reason?: TabActivationReason) => void
   setActiveTabById: (tabId: string, reason?: TabActivationReason) => void
   handleBackPress: () => boolean
@@ -90,10 +90,6 @@ interface Store {
 
 let lastOpenedUrl = ''
 let recentTabIds: string[] = []
-let dormantWakeTimer: ReturnType<typeof setTimeout> | null = null
-// If the active tab never reports a finished load (offline, a hung page, a URL the
-// webview silently drops), the background tabs must still come back on their own.
-const DORMANT_WAKE_FALLBACK_DELAY = 10000
 let childBackParentByTabId: ChildBackParentByTabId = {}
 const MAX_RECENTLY_CLOSED_TABS = 10
 
@@ -762,23 +758,19 @@ export const tabs$: Observable<Store> = observable<Store>({
       tab$.isPaused.set(paused)
       if (paused) {
         tab$.isLoading.set(false)
-      } else {
-        tab$.isDormant.set(false)
       }
+      // Resuming does not clear dormancy: a tab that was never mounted stays unloaded
+      // until it is on screen, and NoraTab wakes it there.
     }
   },
 
-  wakeDormantTabs: () => {
-    if (dormantWakeTimer) {
-      clearTimeout(dormantWakeTimer)
-      dormantWakeTimer = null
+  // A dormant tab holds no webview at all, so it must load as soon as it is on screen:
+  // NoraTab calls this when a dormant tab becomes visible in a multi-tab layout.
+  wakeTab: (tabId) => {
+    const index = tabs$.tabs.get().findIndex((tab) => tab?.id === tabId)
+    if (index !== -1 && tabs$.tabs[index].isDormant.get()) {
+      tabs$.tabs[index].isDormant.set(false)
     }
-    const tabs = tabs$.tabs.get()
-    tabs.forEach((tab, index) => {
-      if (tab?.isDormant) {
-        tabs$.tabs[index].isDormant.set(false)
-      }
-    })
   },
 
   setActiveTabIndex: (index, reason = 'user') => {
@@ -880,18 +872,12 @@ export const restoreTabsState = <T extends PersistedTabs>(data: T): T => {
       data.activeTabIndex = data.tabs.length - 1
     }
 
-    // Restore lazily: only the active tab mounts a webview now, the rest wait for
-    // wakeDormantTabs() (or for the user to switch to them). The flag is recomputed
+    // Restore lazily: only the active tab mounts a webview, the rest wait until they are
+    // shown -- switched to, or laid out visibly by a group layout. The flag is recomputed
     // from scratch on every hydrate, so a persisted value never leaks across starts.
     data.tabs.forEach((tab, index) => {
       tab.isDormant = shouldTabStartDormant(data.tabs, data.activeTabIndex, index)
     })
-    if (data.tabs.some((tab) => tab.isDormant)) {
-      if (dormantWakeTimer) {
-        clearTimeout(dormantWakeTimer)
-      }
-      dormantWakeTimer = setTimeout(() => tabs$.wakeDormantTabs(), DORMANT_WAKE_FALLBACK_DELAY)
-    }
   }
   if (data?.recentlyClosedTabs) {
     data.recentlyClosedTabs = data.recentlyClosedTabs

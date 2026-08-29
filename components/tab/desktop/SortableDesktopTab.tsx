@@ -94,6 +94,7 @@ export const SortableDesktopTab: React.FC<{
           index={index}
           isActive={isActive}
           desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
+          isVisible={isVisible}
           slotSwitcher={slotSwitcher}
         />
       </div>

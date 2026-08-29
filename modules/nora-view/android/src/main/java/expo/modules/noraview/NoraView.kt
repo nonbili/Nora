@@ -647,6 +647,23 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     return super.onInterceptTouchEvent(ev)
   }
 
+  private var contentVisible = true
+
+  /**
+   * Put an off-screen tab to sleep. WebView derives the page's visibility from the view's,
+   * so an INVISIBLE WebView stops rendering and has its timers throttled, while the page,
+   * its scroll position and any playing audio stay alive. GONE would relayout the page to
+   * zero size, which loses the scroll position on most sites, and onPause() would stop
+   * media playing in a background tab.
+   */
+  internal fun setContentVisible(visible: Boolean) {
+    if (contentVisible == visible) {
+      return
+    }
+    contentVisible = visible
+    webView.visibility = if (visible) View.VISIBLE else View.INVISIBLE
+  }
+
   internal fun setPullToRefresh(enabled: Boolean) {
     pullToRefreshEnabled = enabled
     swipeRefresh.isEnabled = enabled && customView == null

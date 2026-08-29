@@ -58,6 +58,10 @@ import { blocklist$ } from '@/states/blocklist'
 
 const LOAD_URL_MAX_RETRIES = 5
 const LOAD_URL_RETRY_DELAY = 100
+// A tab that just went off screen is often coming straight back (a switch between two
+// tabs, a rotation), and putting a webview to sleep costs a repaint when it returns. Wait
+// a moment before sleeping; waking is immediate.
+const SLEEP_DELAY = 2000
 
 const getRedirectTo = (str: string) => {
   try {
@@ -215,8 +219,9 @@ export const NoraTab: React.FC<{
   desktopVariant?: 'deck' | 'saved-view' | 'single'
   /** Native only: render the desktop tab chrome and fill the slot instead of the screen. */
   desktopChrome?: boolean
-  /** Native desktop only: hidden webviews stay mounted but must not claim pointer hit tests. */
-  desktopVisible?: boolean
+  /** Whether this tab occupies a slot on screen. Hidden tabs stay mounted, but they must
+   *  not claim pointer hit tests, and their webview is put to sleep. */
+  isVisible?: boolean
   /** Native desktop only: the viewport clips horizontally scrolled deck columns. */
   desktopClipRef?: React.RefObject<{
     measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void
@@ -227,7 +232,7 @@ export const NoraTab: React.FC<{
   index,
   isActive = false,
   desktopChrome = false,
-  desktopVisible = true,
+  isVisible = true,
   desktopClipRef,
   desktopVariant = 'deck',
   slotSwitcher,
@@ -279,8 +284,10 @@ export const NoraTab: React.FC<{
   const viewKey = getProfileViewKey(tab)
   const viewInstanceKey = `${viewKey}:${tab.url ? 'page' : 'blank'}`
   // Deferred cold-start restore: no webview is mounted while dormant, so the tab costs
-  // nothing until the active tab has loaded (or the user switches to it).
-  const isDormant = Boolean(tab.isDormant) && !tab.isPaused
+  // nothing until it is shown. Pausing does not lift it -- a paused tab is the last one
+  // that should be mounted and loaded -- and the web branch below renders the paused
+  // state ahead of the dormant one either way.
+  const isDormant = Boolean(tab.isDormant)
 
   useEffect(() => {
     contentJsRef.current = contentJs
@@ -289,6 +296,33 @@ export const NoraTab: React.FC<{
   useEffect(() => {
     isActiveRef.current = isActive
   }, [isActive])
+
+  // A dormant tab holds no webview at all, so anything that puts it on screen -- the user
+  // switching to it, or a group layout that shows several tabs at once -- has to load it.
+  // A paused tab is the exception: it stays unloaded until the user resumes it.
+  useEffect(() => {
+    if (isDormant && !tab.isPaused && (isVisible || isActive)) {
+      tabs$.wakeTab(tab.id)
+    }
+  }, [isActive, isDormant, isVisible, tab.id, tab.isPaused])
+
+  // Off-screen tabs stay mounted -- they keep their page, scroll position and media state
+  // -- but the native view is hidden from the engine, which stops its rendering and
+  // throttles its timers instead of paying for a page nobody is looking at.
+  const [isSleeping, setIsSleeping] = useState(false)
+  const isAwake = isVisible || !isSleeping
+  useEffect(() => {
+    if (isVisible) {
+      return
+    }
+    const timer = setTimeout(() => setIsSleeping(true), SLEEP_DELAY)
+    // Waking is immediate -- `isAwake` is already true the moment the tab is visible
+    // again -- so the cleanup only rearms the delay for the next time it is hidden.
+    return () => {
+      clearTimeout(timer)
+      setIsSleeping(false)
+    }
+  }, [isVisible])
 
   const refreshCanGoBack = useCallback(async (target?: any) => {
     const webview = target || webviewRef.current || nativeRef.current
@@ -336,11 +370,6 @@ export const NoraTab: React.FC<{
       const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
       if (currentIndex !== -1) {
         tabs$.setTabLoading(loading, currentIndex)
-      }
-      // The active tab is done competing for bandwidth, so let the tabs held back by the
-      // deferred cold-start restore load now. A no-op once nothing is dormant.
-      if (!loading && isActiveRef.current) {
-        tabs$.wakeDormantTabs()
       }
     },
     [tab.id],
@@ -783,7 +812,7 @@ export const NoraTab: React.FC<{
   })
 
   useEffect(() => {
-    if (!desktopChrome || !desktopVisible || isWeb) return
+    if (!desktopChrome || !isVisible || isWeb) return
     const subscription = DeviceEventEmitter.addListener('noraSecondaryMouseClick', ({ x, y }) => {
       desktopClipRef?.current?.measureInWindow((clipLeft, clipTop, clipWidth, clipHeight) => {
         if (x < clipLeft || x > clipLeft + clipWidth || y < clipTop || y > clipTop + clipHeight) return
@@ -795,7 +824,7 @@ export const NoraTab: React.FC<{
       })
     })
     return () => subscription.remove()
-  }, [desktopChrome, desktopVisible, desktopClipRef, tab.id])
+  }, [desktopChrome, isVisible, desktopClipRef, tab.id])
 
   const openDesktopMenu = () => {
     desktopHeaderRef.current?.measureInWindow((left, top, width, height) => {
@@ -1020,6 +1049,7 @@ export const NoraTab: React.FC<{
           textZoom={resolvedZoom}
           scrollEvents={autoHideHeader || hideToolbarWhenScrolled}
           pullToRefresh={pullToRefresh}
+          visible={isAwake}
         />,
       )}
       {nIf(

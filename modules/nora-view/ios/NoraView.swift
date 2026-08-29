@@ -16,6 +16,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   let onMessage = EventDispatcher()
 
   var webView: WKWebView!
+  private var contentVisible = true
   var scriptOnStart: String = ""
   var documentStartScript: String = ""
   var userAgent: String?
@@ -248,6 +249,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     }
 
     addSubview(webView)
+    webView.isHidden = !contentVisible
     applyBlocklist(NouController.shared.blocklistRuleList)
     
     if #available(iOS 14.0, *) {
@@ -267,6 +269,14 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       return
     }
     webView.reload()
+  }
+
+  /// Put an off-screen tab to sleep. WebKit derives the page's visibility from the view's,
+  /// so a hidden WKWebView stops rendering and has its timers throttled, while the page,
+  /// its scroll position and any playing audio stay alive.
+  func setContentVisible(_ visible: Bool) {
+    contentVisible = visible
+    webView?.isHidden = !visible
   }
 
   func setPullToRefresh(_ enabled: Bool) {

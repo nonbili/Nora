@@ -96,17 +96,14 @@ describe('shouldTabStartDormant', () => {
     expect(tabs.map((_, index) => shouldTabStartDormant(tabs, 1, index))).toEqual([true, false, true])
   })
 
-  it('holds nothing back when the active tab is blank', () => {
+  it('still holds the background tabs back when the active tab is blank', () => {
     const withBlankActive = [{ url: '' }, { url: 'https://b.test' }]
-    expect(withBlankActive.map((_, index) => shouldTabStartDormant(withBlankActive, 0, index))).toEqual([false, false])
+    expect(withBlankActive.map((_, index) => shouldTabStartDormant(withBlankActive, 0, index))).toEqual([false, true])
   })
 
-  it('holds nothing back when the active tab is paused', () => {
+  it('still holds the background tabs back when the active tab is paused', () => {
     const withPausedActive = [{ url: 'https://a.test', isPaused: true }, { url: 'https://b.test' }]
-    expect(withPausedActive.map((_, index) => shouldTabStartDormant(withPausedActive, 0, index))).toEqual([
-      false,
-      false,
-    ])
+    expect(withPausedActive.map((_, index) => shouldTabStartDormant(withPausedActive, 0, index))).toEqual([false, true])
   })
 
   it('leaves blank and paused background tabs alone', () => {

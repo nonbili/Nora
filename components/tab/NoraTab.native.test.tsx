@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import React, { act } from 'react'
 import TestRenderer from 'react-test-renderer'
-import { noraViewLoads, noraViewMountCount, resetNoraViewEvents } from '../../test/component'
+import { noraViewLoads, noraViewMountCount, noraViewVisibility, resetNoraViewEvents } from '../../test/component'
 import type { Tab } from '@/states/tabs'
 
 // Pin the platform rather than relying on `document` being absent: lib/utils captures
@@ -25,18 +25,18 @@ const seed = (tab: Tab) => {
   tabs$.activeTabIndex.set(0)
 }
 
-const render = async (tab: Tab) => {
+const render = async (tab: Tab, isVisible = true) => {
   let renderer!: TestRenderer.ReactTestRenderer
   seed(tab)
   await act(async () => {
-    renderer = TestRenderer.create(<NoraTab tab={tab} index={0} isActive={false} />)
+    renderer = TestRenderer.create(<NoraTab tab={tab} index={0} isActive={false} isVisible={isVisible} />)
   })
   await settle()
   return {
-    update: async (nextTab: Tab) => {
+    update: async (nextTab: Tab, nextVisible = isVisible) => {
       seed(nextTab)
       await act(async () => {
-        renderer.update(<NoraTab tab={nextTab} index={0} isActive={false} />)
+        renderer.update(<NoraTab tab={nextTab} index={0} isActive={false} isVisible={nextVisible} />)
       })
       await settle()
     },
@@ -95,6 +95,64 @@ describe('NoraTab dormancy (native)', () => {
 
     expect(noraViewMountCount()).toBe(0)
     expect(noraViewLoads()).toEqual([])
+    await view.unmount()
+  })
+
+  it('mounts nothing when a dormant tab is paused, even on screen', async () => {
+    const view = await render({ id: 'tab-1', url: TAB_URL, isDormant: true, isPaused: true }, true)
+
+    expect(tabs$.tabs[0].isDormant.get()).toBe(true)
+    expect(noraViewMountCount()).toBe(0)
+    expect(noraViewLoads()).toEqual([])
+    await view.unmount()
+  })
+
+  it('loads a dormant tab a layout puts on screen without activating it', async () => {
+    const view = await render({ id: 'tab-1', url: TAB_URL, isDormant: true }, true)
+
+    expect(tabs$.tabs[0].isDormant.get()).toBe(false)
+    await view.unmount()
+  })
+
+  it('leaves a dormant tab that is off screen alone', async () => {
+    const view = await render({ id: 'tab-1', url: TAB_URL, isDormant: true }, false)
+
+    expect(tabs$.tabs[0].isDormant.get()).toBe(true)
+    expect(noraViewMountCount()).toBe(0)
+    await view.unmount()
+  })
+})
+
+describe('NoraTab sleep (native)', () => {
+  beforeEach(resetNoraViewEvents)
+
+  // The sleep is delayed so that a quick switch between two tabs does not churn, so this
+  // has to outwait SLEEP_DELAY.
+  const outwaitSleepDelay = () => act(async () => void (await new Promise((resolve) => setTimeout(resolve, 2100))))
+
+  it('sleeps a tab that goes off screen, and wakes it immediately when it comes back', async () => {
+    const tab: Tab = { id: 'tab-1', url: TAB_URL }
+    const view = await render(tab, true)
+    expect(noraViewVisibility()).toEqual([])
+
+    await view.update(tab, false)
+    // Still awake: a tab that comes straight back never sleeps at all.
+    expect(noraViewVisibility()).toEqual([])
+
+    await outwaitSleepDelay()
+    expect(noraViewVisibility()).toEqual([false])
+
+    await view.update(tab, true)
+    expect(noraViewVisibility()).toEqual([false, true])
+    await view.unmount()
+  })
+
+  it('keeps the visible tab awake', async () => {
+    const tab: Tab = { id: 'tab-1', url: TAB_URL }
+    const view = await render(tab, true)
+
+    await outwaitSleepDelay()
+    expect(noraViewVisibility()).toEqual([])
     await view.unmount()
   })
 })

@@ -216,6 +216,10 @@ public class NoraViewModule: Module {
         view.setPullToRefresh(enabled)
       }
 
+      Prop("visible") { (view: NoraView, visible: Bool) in
+        view.setContentVisible(visible)
+      }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { (view: NoraView, url: String, fileName: String?) in

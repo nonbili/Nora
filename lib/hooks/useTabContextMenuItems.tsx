@@ -59,8 +59,10 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
 
     // On desktop, flipping isPaused unmounts the webview (a real discard that frees
     // CPU/memory and is reloaded on resume). On native we can't discard cleanly, so
-    // fall back to stopping the load and pausing any playing media.
-    if (nextPaused && !isWeb) {
+    // fall back to stopping the load and pausing any playing media. A dormant tab holds
+    // no webview at all, so there is nothing to stop -- and reaching for one would
+    // activate the tab and load the page the pause is meant to avoid.
+    if (nextPaused && !isWeb && !tab.isDormant) {
       const tabWebview = getTabWebview(tab.id)
       if (tabWebview) {
         pauseWebview(tabWebview)
@@ -74,7 +76,15 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
     {
       label: t('menus.reload'),
       icon: <MaterialIcons name="refresh" size={16} color={menuIconColor} />,
-      handler: () => options.runWebviewAction((webview) => reloadWebview(webview)),
+      // A restored tab the user has never opened holds no webview yet, so a reload is a
+      // request to load it for the first time.
+      handler: () => {
+        if (tab.isDormant) {
+          tabs$.wakeTab(tab.id)
+          return
+        }
+        options.runWebviewAction((webview) => reloadWebview(webview))
+      },
     },
     {
       label: tab.isPaused ? t('menus.resume') : t('menus.pause'),

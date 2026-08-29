@@ -29,6 +29,12 @@ export type NoraViewProps = {
   pullToRefresh?: boolean
   /** Emit `scroll` messages per touch sample. Android only; off unless a setting reads them. */
   scrollEvents?: boolean
+  /**
+   * Whether the view is on screen. A hidden view keeps its page, scroll position and
+   * media, but is hidden from the web engine so it stops rendering and its timers are
+   * throttled. Native platforms only. Defaults to true.
+   */
+  visible?: boolean
   onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
   onMessage?: (event: { nativeEvent: OnMessageEventPayload }) => void
 }

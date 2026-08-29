@@ -179,7 +179,7 @@ export const NativeTabHost: React.FC<{ desktopLayout: boolean }> = ({ desktopLay
                   isActive={activeTabId === tab.id}
                   desktopChrome={desktopLayout}
                   desktopClipRef={workspaceViewportRef}
-                  desktopVisible={isVisible}
+                  isVisible={isVisible}
                   desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
                 />
               </View>

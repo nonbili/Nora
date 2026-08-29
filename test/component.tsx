@@ -50,6 +50,8 @@ export type NoraViewEvent =
   // Native loads go through the imperative handle; desktop loads assign to `src`.
   | { type: 'loadUrl'; url: string }
   | { type: 'src'; url: string }
+  // Native only: the tab asks the view to sleep when it goes off screen.
+  | { type: 'visible'; visible: boolean }
 
 export const noraViewEvents: NoraViewEvent[] = []
 
@@ -62,12 +64,15 @@ export const noraViewLoads = () =>
 
 export const noraViewMountCount = () => noraViewEvents.filter((event) => event.type === 'mount').length
 
+export const noraViewVisibility = () =>
+  noraViewEvents.filter((event) => event.type === 'visible').map((event) => event.visible)
+
 /**
  * Stands in for both the native view and the Electron <webview>: it records mounts and
  * every load the tab issues, through either the imperative handle or the `src` assignment
  * the desktop ref callback uses.
  */
-const NoraViewMock = React.forwardRef<unknown, Record<string, unknown>>((_props, ref) => {
+const NoraViewMock = React.forwardRef<unknown, Record<string, unknown>>((props, ref) => {
   React.useImperativeHandle(ref, () => {
     const handle = {
       loadUrl: (url: string) => {
@@ -101,6 +106,17 @@ const NoraViewMock = React.forwardRef<unknown, Record<string, unknown>>((_props,
       noraViewEvents.push({ type: 'unmount' })
     }
   }, [])
+
+  // Only the changes matter: the view mounts visible, so a test asserts on the sleep and
+  // wake edges rather than on the value at every render.
+  const visible = props.visible !== false
+  const previousVisible = React.useRef(visible)
+  React.useEffect(() => {
+    if (previousVisible.current !== visible) {
+      previousVisible.current = visible
+      noraViewEvents.push({ type: 'visible', visible })
+    }
+  }, [visible])
 
   return null
 })

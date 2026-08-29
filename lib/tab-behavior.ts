@@ -117,15 +117,17 @@ type DormantTabInput = {
 }
 
 /**
- * Deferred cold-start restore: decides which restored tabs should stay unloaded so the
- * active tab gets the network and renderer to itself. A blank or paused active tab never
- * loads anything, so there is nothing to prioritise and no tab is held back.
+ * Deferred cold-start restore: decides which restored tabs should stay unloaded. A
+ * restored background tab stays dormant until it is actually shown -- nothing wakes it on
+ * a timer -- so a cold start costs one page load instead of one per tab, and tabs the
+ * user never visits never spend battery. Only the active tab is exempt, because it is on
+ * screen immediately; the other tabs a layout shows (deck, split, grid) wake themselves
+ * when they mount visible.
  */
 export function shouldTabStartDormant(tabs: DormantTabInput[], activeTabIndex: number, index: number) {
-  const activeTab = tabs[activeTabIndex]
-  if (!activeTab?.url || activeTab.isPaused) {
+  if (index === activeTabIndex) {
     return false
   }
   const tab = tabs[index]
-  return index !== activeTabIndex && Boolean(tab?.url) && !tab?.isPaused
+  return Boolean(tab?.url) && !tab?.isPaused
 }
