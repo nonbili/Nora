@@ -17,6 +17,7 @@ import androidx.core.graphics.drawable.IconCompat
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import org.json.JSONObject
 
 // Pins a tab as its own document-style activity, separate from Nora's main browser task.
 object NoraShortcuts {
@@ -45,6 +46,7 @@ object NoraShortcuts {
     url: String,
     label: String,
     iconUrl: String?,
+    manifestUrl: String?,
     profile: String,
     userAgent: String,
     log: (String) -> Unit,
@@ -67,7 +69,7 @@ object NoraShortcuts {
       val shortcut = ShortcutInfoCompat.Builder(context, "tab-$id")
         .setShortLabel(shortLabel)
         .setLongLabel(shortLabel)
-        .setIcon(buildIcon(context, iconUrl, log))
+        .setIcon(buildIcon(context, url, iconUrl, manifestUrl, log))
         .setIntent(intent)
         .build()
       // A tab may already be pinned. Pixel Launcher reuses the stored bitmap for a
@@ -80,36 +82,57 @@ object NoraShortcuts {
     }
   }
 
-  private fun buildIcon(context: Context, iconUrl: String?, log: (String) -> Unit): IconCompat {
+  private fun buildIcon(
+    context: Context,
+    pageUrl: String,
+    iconUrl: String?,
+    manifestUrl: String?,
+    log: (String) -> Unit,
+  ): IconCompat {
     val size = launcherIconSize(context)
-    val favicon = iconUrl?.takeIf { it.isNotEmpty() }?.let { loadBestBitmap(it, size, log) }
+    val manifestIcon = manifestUrl?.takeIf { it.isNotEmpty() }?.let { loadManifestBitmap(it, size, log) }
+    if (manifestIcon != null) {
+      composeIcon(size, manifestIcon.first, preserveCanvas = true)?.let {
+        return if (manifestIcon.second) IconCompat.createWithAdaptiveBitmap(it) else IconCompat.createWithBitmap(it)
+      }
+    }
+    val favicon = iconUrl?.takeIf { it.isNotEmpty() }?.let { loadBestBitmap(pageUrl, it, size, log) }
     if (favicon != null) {
       composeIcon(size, favicon)?.let { return IconCompat.createWithAdaptiveBitmap(it) }
     }
     return IconCompat.createWithResource(context, context.applicationInfo.icon)
   }
 
-  private fun composeIcon(size: Int, favicon: Bitmap): Bitmap? =
+  private fun composeIcon(size: Int, favicon: Bitmap, preserveCanvas: Boolean = false): Bitmap? =
     try {
       val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
       val canvas = Canvas(output)
-      val backgroundColor = backgroundColorFor(favicon)
-      canvas.drawColor(backgroundColor)
+      if (preserveCanvas) {
+        canvas.drawBitmap(
+          favicon,
+          Rect(0, 0, favicon.width, favicon.height),
+          Rect(0, 0, size, size),
+          Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG),
+        )
+      } else {
+        val backgroundColor = backgroundColorFor(favicon)
+        canvas.drawColor(backgroundColor)
 
-      val box = (size * ICON_SAFE_ZONE).toInt()
-      val source = contentBoundsFor(favicon, backgroundColor)
-      val longestEdge = maxOf(source.width(), source.height()).coerceAtLeast(1)
-      val scale = box.toFloat() / longestEdge
-      val width = (source.width() * scale).toInt().coerceAtLeast(1)
-      val height = (source.height() * scale).toInt().coerceAtLeast(1)
-      val left = (size - width) / 2
-      val top = (size - height) / 2
-      canvas.drawBitmap(
-        favicon,
-        source,
-        Rect(left, top, left + width, top + height),
-        Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG),
-      )
+        val box = (size * ICON_SAFE_ZONE).toInt()
+        val source = contentBoundsFor(favicon, backgroundColor)
+        val longestEdge = maxOf(source.width(), source.height()).coerceAtLeast(1)
+        val scale = box.toFloat() / longestEdge
+        val width = (source.width() * scale).toInt().coerceAtLeast(1)
+        val height = (source.height() * scale).toInt().coerceAtLeast(1)
+        val left = (size - width) / 2
+        val top = (size - height) / 2
+        canvas.drawBitmap(
+          favicon,
+          source,
+          Rect(left, top, left + width, top + height),
+          Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG),
+        )
+      }
       output
     } catch (e: Exception) {
       null
@@ -214,24 +237,71 @@ object NoraShortcuts {
   // Most favicons are 16 or 32 pixels, which is a 4-8x upscale on a launcher icon and
   // looks like it. A site's touch icon is the same artwork at 180 pixels, so it is worth
   // one extra request when the declared favicon comes back that small.
-  private fun loadBestBitmap(iconUrl: String, targetSize: Int, log: (String) -> Unit): Bitmap? {
+  private fun loadBestBitmap(pageUrl: String, iconUrl: String, targetSize: Int, log: (String) -> Unit): Bitmap? {
     val favicon = loadBitmap(iconUrl, targetSize, log)
     val faviconEdge = favicon?.let { maxOf(it.width, it.height) } ?: 0
     if (faviconEdge >= MIN_SHARP_ICON_SIZE) {
       return favicon
     }
-    for (candidate in touchIconUrls(iconUrl)) {
-      val touchIcon = loadBitmap(candidate, targetSize, log) ?: continue
+    for (candidate in touchIconUrls(pageUrl)) {
+      val touchIcon = loadBitmap(candidate, targetSize, log, requireImage = true) ?: continue
       if (maxOf(touchIcon.width, touchIcon.height) > faviconEdge) {
         return touchIcon
+      }
+    }
+    // Some sites publish only a tiny favicon and no useful touch icon. Ask the same
+    // high-resolution favicon service used by Nora search before accepting a blurry
+    // upscale; first-party manifest and icon assets always remain preferred.
+    highResolutionFaviconUrl(pageUrl)?.let { candidate ->
+      val highResolutionIcon = loadBitmap(candidate, targetSize, log, requireImage = true)
+      if (highResolutionIcon != null && maxOf(highResolutionIcon.width, highResolutionIcon.height) > faviconEdge) {
+        return highResolutionIcon
       }
     }
     return favicon
   }
 
-  private fun touchIconUrls(iconUrl: String): List<String> =
+  private fun highResolutionFaviconUrl(pageUrl: String): String? =
     try {
-      val url = URL(iconUrl)
+      val url = URL(pageUrl)
+      if (url.protocol != "http" && url.protocol != "https") {
+        null
+      } else {
+        val origin = "${url.protocol}://${url.authority}"
+        "https://www.google.com/s2/favicons?domain_url=${Uri.encode(origin)}&sz=256"
+      }
+    } catch (e: Exception) {
+      null
+    }
+
+  // Manifest purpose describes how launchers should treat the pixels. "maskable" artwork
+  // is a full-bleed adaptive foreground; "any" and unspecified icons are regular bitmaps.
+  private fun loadManifestBitmap(manifestUrl: String, targetSize: Int, log: (String) -> Unit): Pair<Bitmap, Boolean>? =
+    try {
+      val bytes = download(manifestUrl) ?: return null
+      val icons = JSONObject(bytes.toString(Charsets.UTF_8)).optJSONArray("icons") ?: return null
+      val candidates = (0 until icons.length()).mapNotNull { index ->
+        val icon = icons.optJSONObject(index) ?: return@mapNotNull null
+        val src = icon.optString("src").takeIf { it.isNotEmpty() } ?: return@mapNotNull null
+        val size = Regex("\\d+").findAll(icon.optString("sizes"))
+          .map { it.value.toIntOrNull() ?: 0 }
+          .maxOrNull() ?: 0
+        Triple(size, URL(URL(manifestUrl), src).toString(), icon.optString("purpose").split(' ').contains("maskable"))
+      }.sortedWith(compareByDescending<Triple<Int, String, Boolean>> { it.third }.thenByDescending { it.first })
+      candidates.firstNotNullOfOrNull { (_, url, maskable) ->
+        loadBitmap(url, targetSize, log, requireImage = true)?.let { it to maskable }
+      }
+    } catch (e: Exception) {
+      log("shortcut manifest failed: ${e.message}")
+      null
+    }
+
+  // Guessed from the page's own origin, never the favicon's: sites commonly serve their
+  // favicon from a shared CDN, and that CDN's /apple-touch-icon.png belongs to whichever
+  // sibling site owns the host (static.cdninstagram.com hands back Facebook's logo).
+  private fun touchIconUrls(pageUrl: String): List<String> =
+    try {
+      val url = URL(pageUrl)
       if (url.protocol != "http" && url.protocol != "https") {
         emptyList()
       } else {
@@ -242,11 +312,16 @@ object NoraShortcuts {
       emptyList()
     }
 
-  private fun loadBitmap(iconUrl: String, targetSize: Int, log: (String) -> Unit): Bitmap? =
+  private fun loadBitmap(
+    iconUrl: String,
+    targetSize: Int,
+    log: (String) -> Unit,
+    requireImage: Boolean = false,
+  ): Bitmap? =
     try {
       val bytes = when {
         iconUrl.startsWith("data:") -> decodeDataUri(iconUrl)
-        iconUrl.startsWith("http://") || iconUrl.startsWith("https://") -> download(iconUrl)
+        iconUrl.startsWith("http://") || iconUrl.startsWith("https://") -> download(iconUrl, requireImage)
         else -> null
       }
       bytes?.let { decodeBitmap(it, targetSize) }
@@ -291,7 +366,10 @@ object NoraShortcuts {
     return Base64.decode(payload, Base64.DEFAULT)
   }
 
-  private fun download(iconUrl: String): ByteArray? {
+  // requireImage is for the guessed touch-icon paths: a single-page app answers any
+  // unknown path with its whole HTML shell, and there is no point streaming that in only
+  // for BitmapFactory to reject it.
+  private fun download(iconUrl: String, requireImage: Boolean = false): ByteArray? {
     val connection = URL(iconUrl).openConnection() as HttpURLConnection
     return try {
       connection.connectTimeout = ICON_TIMEOUT_MS
@@ -300,6 +378,9 @@ object NoraShortcuts {
       connection.doInput = true
       connection.connect()
       if (connection.responseCode !in 200..299) {
+        return null
+      }
+      if (requireImage && connection.contentType?.startsWith("image/") != true) {
         return null
       }
       val buffer = ByteArrayOutputStream()

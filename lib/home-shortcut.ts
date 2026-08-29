@@ -26,7 +26,7 @@ export function canPinTabToHomeScreen(tab: Pick<Tab, 'url'>) {
   }
 }
 
-export async function pinTabToHomeScreen(tab: Pick<Tab, 'id' | 'url' | 'title' | 'icon' | 'profile' | 'desktopMode'>) {
+export async function pinTabToHomeScreen(tab: Pick<Tab, 'id' | 'url' | 'title' | 'icon' | 'manifest' | 'profile' | 'desktopMode'>) {
   if (!tab.url) {
     return
   }
@@ -38,6 +38,7 @@ export async function pinTabToHomeScreen(tab: Pick<Tab, 'id' | 'url' | 'title' |
       tab.url,
       label,
       tab.icon ?? null,
+      tab.manifest ?? null,
       tab.profile || 'default',
       getUserAgent('android', tab.desktopMode),
     )

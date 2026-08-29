@@ -14,6 +14,7 @@ declare class NoraViewModule extends NativeModule {
     url: string,
     label: string,
     iconUrl: string | null,
+    manifestUrl: string | null,
     profile: string,
     userAgent: string,
   ): Promise<boolean>

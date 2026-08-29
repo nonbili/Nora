@@ -34,6 +34,7 @@ export interface Tab {
   url: string
   title?: string
   icon?: string
+  manifest?: string
   isLoading?: boolean
   isPaused?: boolean
   // Set on cold start for every restored tab except the active one: the webview is not

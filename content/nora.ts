@@ -27,7 +27,8 @@ let userScripts: CustomUserScript[] = []
 
 function getMeta(url: string) {
   const icon = document.querySelector('link[rel*=icon]')?.getAttribute('href') || 'favicon.ico'
-  return JSON.stringify({ title: document.title, icon: new URL(icon, document.location.href).href })
+  const manifest = document.querySelector<HTMLLinkElement>('link[rel~="manifest"]')?.href
+  return JSON.stringify({ title: document.title, icon: new URL(icon, document.location.href).href, manifest })
 }
 
 async function blobToBase64(blob: Blob) {

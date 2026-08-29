@@ -234,6 +234,7 @@ class NoraViewModule : Module() {
       url: String,
       label: String,
       iconUrl: String?,
+      manifestUrl: String?,
       profile: String,
       userAgent: String ->
       val context = appContext.reactContext
@@ -241,7 +242,7 @@ class NoraViewModule : Module() {
         false
       } else {
         withContext(Dispatchers.IO) {
-          NoraShortcuts.pinTab(context, id, url, label, iconUrl, profile, userAgent, this@NoraViewModule::log)
+          NoraShortcuts.pinTab(context, id, url, label, iconUrl, manifestUrl, profile, userAgent, this@NoraViewModule::log)
         }
       }
     }
