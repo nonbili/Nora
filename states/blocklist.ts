@@ -1,6 +1,7 @@
 import { observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
+import { toBlocklistSiteKey, updateBlocklistExclusions } from '@/lib/blocklist/policy'
 import { BLOCKLIST_SOURCE_IDS, BlocklistSnapshot, BlocklistSourceCache } from '@/lib/blocklist/types'
 
 const BLOCKLIST_SCHEMA_VERSION = 1
@@ -22,6 +23,7 @@ function createSources() {
 
 interface Store extends BlocklistSnapshot {
   setEnabled: (enabled: boolean) => void
+  setHostExcluded: (host: string, excluded: boolean) => void
 }
 
 export function normalizeBlocklist<T extends Partial<BlocklistSnapshot> | undefined>(data: T) {
@@ -37,6 +39,13 @@ export function normalizeBlocklist<T extends Partial<BlocklistSnapshot> | undefi
   const revision = typeof data.revision === 'number' ? data.revision : 0
   const lastUpdatedAt = typeof data.lastUpdatedAt === 'number' ? data.lastUpdatedAt : undefined
   const lastError = typeof data.lastError === 'string' ? data.lastError : undefined
+  const excludedHosts = Array.from(
+    new Set(
+      (Array.isArray(data.excludedHosts) ? data.excludedHosts : [])
+        .map((host) => toBlocklistSiteKey(typeof host === 'string' ? host : ''))
+        .filter(Boolean),
+    ),
+  )
 
   const fallbackSources = createSources()
   const currentSources = data.sources || fallbackSources
@@ -60,6 +69,7 @@ export function normalizeBlocklist<T extends Partial<BlocklistSnapshot> | undefi
     hasSnapshot,
     lastUpdatedAt,
     lastError,
+    excludedHosts,
     revision,
     schemaVersion: BLOCKLIST_SCHEMA_VERSION,
     sources,
@@ -70,11 +80,15 @@ export const blocklist$ = observable<Store>({
   enabled: true,
   phase: 'idle',
   hasSnapshot: false,
+  excludedHosts: [],
   revision: 0,
   schemaVersion: BLOCKLIST_SCHEMA_VERSION,
   sources: createSources(),
   setEnabled: (enabled) => {
     blocklist$.enabled.set(enabled)
+  },
+  setHostExcluded: (host, excluded) => {
+    blocklist$.excludedHosts.set(updateBlocklistExclusions(blocklist$.excludedHosts.get() || [], host, excluded))
   },
 })
 

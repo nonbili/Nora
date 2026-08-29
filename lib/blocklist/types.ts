@@ -22,6 +22,8 @@ export interface BlocklistSnapshot {
   hasSnapshot: boolean
   lastUpdatedAt?: number
   lastError?: string
+  /** Sites the user turned blocking off for, as `toBlocklistSiteKey` keys. */
+  excludedHosts: string[]
   revision: number
   schemaVersion: number
   sources: Record<BlocklistSourceId, BlocklistSourceCache>
@@ -64,6 +66,11 @@ export interface BlocklistPayload {
 
 export interface DesktopBlocklistPayload extends BlocklistPayload {
   partitions: string[]
+}
+
+export interface BlocklistExclusionsPayload {
+  excludedHosts: string[]
+  partitions?: string[]
 }
 
 export interface RemoteTextResponse {

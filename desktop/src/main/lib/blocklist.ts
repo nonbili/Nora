@@ -1,8 +1,15 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { app, session } from 'electron'
+import type { OnBeforeRequestListenerDetails } from 'electron'
 import { shouldBlockHost } from '@/lib/blocklist/parser'
-import type { BlocklistSourceId, DesktopBlocklistPayload, PersistedBlocklistMatcherSnapshot } from '@/lib/blocklist/types'
+import { isBlocklistExcludedHost } from '@/lib/blocklist/policy'
+import type {
+  BlocklistExclusionsPayload,
+  BlocklistSourceId,
+  DesktopBlocklistPayload,
+  PersistedBlocklistMatcherSnapshot,
+} from '@/lib/blocklist/types'
 
 const attachedPartitions = new Set<string>()
 const STORAGE_DIR_NAME = 'blocklist'
@@ -17,6 +24,7 @@ const SOURCE_FILENAMES: Record<BlocklistSourceId, string> = {
 let enabled = false
 let blockedHosts = new Set<string>()
 let allowedHosts = new Set<string>()
+let excludedHosts = new Set<string>()
 
 function decodeHosts(value: string) {
   if (!value) {
@@ -37,12 +45,28 @@ function getBlocklistMatcherPath() {
   return path.join(getBlocklistDirPath(), MATCHER_FILENAME)
 }
 
-function shouldCancel(url: string, resourceType: string) {
-  if (!enabled || resourceType === 'mainFrame') {
+function getDocumentHost(details: OnBeforeRequestListenerDetails) {
+  // The exception is per site, so it is the page the request belongs to that
+  // decides, not the request's own host.
+  try {
+    // A frame that already navigated away throws when touched, so the whole
+    // lookup is guarded rather than just the URL parse.
+    const documentUrl = details.frame?.top?.url || details.webContents?.getURL() || details.referrer
+    return documentUrl ? new URL(documentUrl).hostname : ''
+  } catch {
+    return ''
+  }
+}
+
+function shouldCancel(details: OnBeforeRequestListenerDetails) {
+  if (!enabled || details.resourceType === 'mainFrame') {
+    return false
+  }
+  if (excludedHosts.size && isBlocklistExcludedHost(getDocumentHost(details), excludedHosts)) {
     return false
   }
   try {
-    const { hostname } = new URL(url)
+    const { hostname } = new URL(details.url)
     return shouldBlockHost(hostname, blockedHosts, allowedHosts)
   } catch {
     return false
@@ -55,7 +79,7 @@ function attachPartition(partition: string) {
   }
   const targetSession = session.fromPartition(partition)
   targetSession.webRequest.onBeforeRequest((details, callback) => {
-    callback({ cancel: shouldCancel(details.url, details.resourceType) })
+    callback({ cancel: shouldCancel(details) })
   })
   attachedPartitions.add(partition)
 }
@@ -115,6 +139,11 @@ export async function hasDesktopBlocklistSourceFiles(ids: BlocklistSourceId[]) {
     }),
   )
   return stats.every(Boolean)
+}
+
+export function setDesktopBlocklistExcludedHosts(payload: BlocklistExclusionsPayload) {
+  excludedHosts = new Set(payload.excludedHosts)
+  return { excludedHosts: payload.excludedHosts.length }
 }
 
 export function setDesktopBlocklist(payload: DesktopBlocklistPayload) {

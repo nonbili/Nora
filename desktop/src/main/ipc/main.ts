@@ -10,6 +10,7 @@ import {
   readDesktopBlocklistMatcherSnapshot,
   readDesktopBlocklistSource,
   setDesktopBlocklist,
+  setDesktopBlocklistExcludedHosts,
   writeDesktopBlocklistMatcherSnapshot,
   writeDesktopBlocklistSource,
 } from '../lib/blocklist.js'
@@ -134,6 +135,7 @@ const interfaces = {
   writeBlocklistSource: writeDesktopBlocklistSource,
   writeBlocklistMatcherSnapshot: writeDesktopBlocklistMatcherSnapshot,
   setBlocklist: setDesktopBlocklist,
+  setBlocklistExcludedHosts: setDesktopBlocklistExcludedHosts,
   setLinkHandlingSettings,
   setWebRtcProtection,
 }

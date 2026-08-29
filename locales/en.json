@@ -75,6 +75,7 @@
     "toggleSidebar": "Toggle sidebar"
   },
   "menus": {
+    "blockAds": "Block ads on this site",
     "clearSiteData": "Clear site data",
     "clearSiteDataConfirm": "Clear all cookies and site data for \"{{host}}\"? This signs you out of this site.",
     "close": "Close",

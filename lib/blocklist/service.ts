@@ -5,7 +5,7 @@ import { settings$ } from '@/states/settings'
 import { autoProfiles$ } from '@/states/auto-profiles'
 import { blocklist$ } from '@/states/blocklist'
 import { BLOCKLIST_PARSER_VERSION, mergeFilterListsText, mergeFilterListsAsync } from './parser'
-import { shouldAutoRefresh } from './policy'
+import { isBlocklistExcludedHost, shouldAutoRefresh } from './policy'
 import { createWorkletRuntime, runOnRuntime, type WorkletRuntime } from 'react-native-worklets'
 import {
   deleteBlocklistMatcherSnapshot,
@@ -18,6 +18,7 @@ import {
 } from './storage'
 import {
   BLOCKLIST_SOURCE_IDS,
+  BlocklistExclusionsPayload,
   BlocklistFetchSourceResult,
   BlocklistMatcherData,
   BlocklistPayload,
@@ -280,6 +281,10 @@ export function getCosmeticCssForHost(host?: string | null) {
     return ''
   }
 
+  if (isBlocklistExcludedHost(host, blocklist$.excludedHosts.get() || [])) {
+    return ''
+  }
+
   const matcherData = payloadCache.matcherData
   const exceptions = new Set(
     matcherData.cosmeticExceptions
@@ -400,6 +405,47 @@ export async function applyBlocklist() {
   }
 
   NoraViewModule.setBlocklist(activePayload)
+}
+
+let lastAppliedExclusionsKey: string | undefined
+let pendingExclusions: Promise<void> = Promise.resolve()
+
+async function applyBlocklistExclusionsNow() {
+  if (!supportsRuntimeBlocklist()) {
+    return
+  }
+
+  const excludedHosts = [...(blocklist$.excludedHosts.get() || [])].sort()
+  const partitions = hasElectron() ? getDesktopPartitions() : undefined
+  const key = `${partitions?.join(',') || ''}|${excludedHosts.join(',')}`
+  if (key === lastAppliedExclusionsKey) {
+    return
+  }
+
+  if (partitions) {
+    const payload: BlocklistExclusionsPayload = { excludedHosts, partitions }
+    await window.electron.ipcRenderer.invoke(MAIN_CHANNEL, 'setBlocklistExcludedHosts', payload)
+  } else {
+    NoraViewModule.setBlocklistExcludedHosts?.(encodeHosts(excludedHosts))
+  }
+
+  // Only once it landed: a failed IPC must not leave the filter blocking a site
+  // the user turned blocking off for, with nothing to retry it.
+  lastAppliedExclusionsKey = key
+}
+
+/**
+ * Per-site exceptions are independent of the downloaded lists, so they travel on
+ * their own instead of forcing a payload rebuild whenever the user flips one.
+ *
+ * Calls are chained rather than run in parallel: the returned promise resolves
+ * once every application queued before it has finished, so a caller that
+ * reloads the page afterwards cannot outrun an in-flight update -- on desktop
+ * that is an IPC round trip to the main process.
+ */
+export function applyBlocklistExclusions() {
+  pendingExclusions = pendingExclusions.catch(() => {}).then(applyBlocklistExclusionsNow)
+  return pendingExclusions
 }
 
 async function fetchSource(id: BlocklistSourceId, now: number): Promise<BlocklistFetchSourceResult> {

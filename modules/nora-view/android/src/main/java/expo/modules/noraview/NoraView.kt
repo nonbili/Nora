@@ -701,7 +701,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           }
 
           override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-            if (!request.isForMainFrame && nouController.shouldBlockRequestHost(request.url.host)) {
+            if (!request.isForMainFrame && nouController.shouldBlockRequestHost(request.url.host, Uri.parse(pageUrl).host)) {
               return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
             }
             if (request.url.scheme == "http" && !nouController.settings.allowHttpWebsite) {

@@ -1,7 +1,13 @@
 import { useEffect } from 'react'
 import { AppState } from 'react-native'
 import { useObserveEffect } from '@legendapp/state/react'
-import { applyBlocklist, refreshBlocklistIfDue, supportsRuntimeBlocklist, waitForBlocklistPersist } from '@/lib/blocklist'
+import {
+  applyBlocklist,
+  applyBlocklistExclusions,
+  refreshBlocklistIfDue,
+  supportsRuntimeBlocklist,
+  waitForBlocklistPersist,
+} from '@/lib/blocklist'
 import { blocklist$ } from '@/states/blocklist'
 import { settings$ } from '@/states/settings'
 import { autoProfiles$ } from '@/states/auto-profiles'
@@ -35,6 +41,7 @@ export function useBlocklistSync() {
         return
       }
       await applyBlocklist()
+      await applyBlocklistExclusions()
       refreshIfDue()
     }
 
@@ -61,12 +68,19 @@ export function useBlocklistSync() {
     void applyBlocklist()
   })
 
+  useObserveEffect(() => {
+    blocklist$.excludedHosts.get()
+    void applyBlocklistExclusions()
+  })
+
   // New profiles mean new Electron partitions that need the request handler.
   useObserveEffect(settings$.profiles, () => {
     void applyBlocklist()
+    void applyBlocklistExclusions()
   })
 
   useObserveEffect(autoProfiles$.profiles, () => {
     void applyBlocklist()
+    void applyBlocklistExclusions()
   })
 }

@@ -29,6 +29,8 @@ import { DesktopTabsSidebar } from '../view/DesktopTabsSidebar'
 import { ServiceIcon } from '../service/Services'
 import { Tooltip } from '../tooltip/Tooltip'
 import { userStyles$ } from '@/states/user-styles'
+import { blocklist$ } from '@/states/blocklist'
+import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
 import { buildUserScriptExecutionSource, matchesAnyHostGlob, type CustomUserScript } from '@/lib/user-styles'
 import { useHeaderAnimation } from './header-animation'
 import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
@@ -113,6 +115,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const defaultZoom = useValue(settings$.defaultZoom)
   const siteZoom = useValue(settings$.siteZoom)
+  const blocklistEnabled = useValue(blocklist$.enabled)
+  const blocklistExcludedHosts = useValue(blocklist$.excludedHosts)
 
   if (currentTab?.url) {
     try {
@@ -123,6 +127,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
       canDownload = isDirectlyDownloadable(currentTab.url)
     } catch (e) {}
   }
+
+  const blockingSite = toBlocklistSiteKey(hostname)
+  const showBlocklistToggle = supportsRuntimeBlocklist() && blocklistEnabled && !!blockingSite
+  const blockingOnThisSite = !isBlocklistExcludedHost(hostname, blocklistExcludedHosts || [])
 
   const isFacebookMessenger = hostname.endsWith('.facebook.com') && (pathname === '/messages' || pathname.startsWith('/messages/'))
   const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com')
@@ -172,6 +180,21 @@ export const NouHeader: React.FC<{}> = ({}) => {
     }
   }
 
+  const toggleSiteBlocking = () => {
+    blocklist$.setHostExcluded(blockingSite, blockingOnThisSite)
+    // The page has already loaded whatever it loaded; only a reload can undo it,
+    // and it has to wait until the new exception has reached the request filter.
+    // Hold on to the tab this was for: the user can switch tabs while an
+    // Electron round trip is in flight.
+    const target = activeWebview()
+    const targetUrl = currentTab?.url
+    void applyBlocklistExclusions()
+      .then(() => reloadWebview(target, targetUrl))
+      // A failed update leaves the filter as it was, so there is nothing a
+      // reload would show; the next change retries it.
+      .catch(() => {})
+  }
+
   const editTabUrl = () => {
     ui$.assign({
       urlModalOpen: true,
@@ -208,6 +231,37 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const runPinnedScript = (script: (typeof pinnedScripts)[number]) => {
     void executeWebviewJavaScriptQuietly(activeWebview(), buildUserScriptExecutionSource(script))
   }
+
+  const blocklistMenuItems = showBlocklistToggle
+    ? [
+        {
+          label: t('menus.blockAds'),
+          icon: <MaterialCommunityIcons name="shield-outline" size={18} color={headerControlColor} />,
+          systemImage: 'shield',
+          metaLabel: blockingOnThisSite ? t('common.on') : t('common.off'),
+          meta: (
+            <View
+              className={clsx(
+                'rounded-full px-2 py-1',
+                blockingOnThisSite
+                  ? 'bg-indigo-100 border border-indigo-300 dark:bg-indigo-500/20 dark:border-indigo-400/40'
+                  : 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700',
+              )}
+            >
+              <Text
+                className={clsx(
+                  'text-[11px] font-medium',
+                  blockingOnThisSite ? 'text-indigo-700 dark:text-indigo-200' : 'text-zinc-600 dark:text-zinc-400',
+                )}
+              >
+                {blockingOnThisSite ? t('common.on') : t('common.off')}
+              </Text>
+            </View>
+          ),
+          handler: toggleSiteBlocking,
+        },
+      ]
+    : []
 
   const ret = (
     <HeaderRoot
@@ -457,6 +511,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                             },
                           },
                         ]),
+                    ...blocklistMenuItems,
                     {
                       label: t('menus.zoom') || 'Zoom',
                       icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,
@@ -488,7 +543,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
                         ]
                       : []),
                   ]),
-              ...(isWeb
+              ...(isWeb ? blocklistMenuItems : []),
+              ...(isWeb && !blocklistMenuItems.length
                 ? []
                 : [{ label: '', handler: () => {}, kind: 'separator' as const }]),
               {

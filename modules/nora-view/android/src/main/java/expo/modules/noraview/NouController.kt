@@ -66,6 +66,7 @@ class NouController {
   private var blocklistEnabled = false
   private var blocklistBlockedHosts = emptySet<String>()
   private var blocklistAllowedHosts = emptySet<String>()
+  private var blocklistExcludedHosts = emptySet<String>()
   internal var blocklistRevision = 0
 
   private fun decodeHosts(value: String): Set<String> {
@@ -121,8 +122,39 @@ class NouController {
     blocklistRevision = blocklist.revision
   }
 
-  fun shouldBlockRequestHost(host: String?): Boolean {
+  fun setBlocklistExcludedHosts(hosts: String) {
+    blocklistExcludedHosts = decodeHosts(hosts)
+  }
+
+  /**
+   * Per-site exceptions are keyed by the page host with any `www.` prefix
+   * dropped, and cover every subdomain of what is stored.
+   */
+  fun isBlocklistExcludedHost(host: String?): Boolean {
+    if (blocklistExcludedHosts.isEmpty() || host == null) {
+      return false
+    }
+
+    val normalized = host.lowercase().trimEnd('.').removePrefix("www.")
+    if (normalized.isEmpty()) {
+      return false
+    }
+
+    val parts = normalized.split(".")
+    for (index in parts.indices) {
+      if (blocklistExcludedHosts.contains(parts.drop(index).joinToString("."))) {
+        return true
+      }
+    }
+    return false
+  }
+
+  fun shouldBlockRequestHost(host: String?, pageHost: String?): Boolean {
     if (!blocklistEnabled || host == null) {
+      return false
+    }
+
+    if (isBlocklistExcludedHost(pageHost)) {
       return false
     }
 

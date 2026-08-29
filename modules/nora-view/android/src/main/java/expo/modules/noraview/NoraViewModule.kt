@@ -142,6 +142,10 @@ class NoraViewModule : Module() {
       applyProxy(settings)
     }
 
+    Function("setBlocklistExcludedHosts") { hosts: String ->
+      nouController.setBlocklistExcludedHosts(hosts)
+    }
+
     Function("setBlocklist") { blocklist: NoraBlocklist ->
       nouController.setBlocklist(blocklist)
     }

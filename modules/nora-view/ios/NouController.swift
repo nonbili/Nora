@@ -116,6 +116,7 @@ class NouController {
   var i18nStrings: [String: String] = [:]
   var logFn: ((String) -> Void)?
   var blocklistRuleList: WKContentRuleList?
+  private var blocklistExcludedHosts = Set<String>()
   private let blocklistIdentifier = "nora.runtime.blocklist"
   private let blocklistStorageDirectory = "blocklist"
   private let blocklistMatcherFilename = "matcher.json"
@@ -153,6 +154,43 @@ class NouController {
     runOnMain {
       self.registeredViews.remove(view)
     }
+  }
+
+  func setBlocklistExcludedHosts(_ hosts: String) {
+    let next = Set(decodeHosts(hosts).map { $0.lowercased() })
+    runOnMain {
+      self.blocklistExcludedHosts = next
+      for view in self.registeredViews.allObjects {
+        view.refreshBlocklist()
+      }
+    }
+  }
+
+  /**
+   * Per-site exceptions are keyed by the page host with any `www.` prefix
+   * dropped, and cover every subdomain of what is stored.
+   */
+  func isBlocklistExcludedHost(_ host: String?) -> Bool {
+    guard !blocklistExcludedHosts.isEmpty, var normalized = host?.lowercased() else {
+      return false
+    }
+    while normalized.hasSuffix(".") {
+      normalized.removeLast()
+    }
+    if normalized.hasPrefix("www.") {
+      normalized = String(normalized.dropFirst(4))
+    }
+    guard !normalized.isEmpty else {
+      return false
+    }
+
+    let parts = normalized.split(separator: ".").map(String.init)
+    for index in parts.indices {
+      if blocklistExcludedHosts.contains(parts[index...].joined(separator: ".")) {
+        return true
+      }
+    }
+    return false
   }
 
   func setBlocklist(_ next: NoraBlocklist) {

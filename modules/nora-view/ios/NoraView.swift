@@ -24,6 +24,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   var lastContextMenuLocation: CGPoint?
   var currentProfile: String = "default"
   var appliedBlocklistRuleList: WKContentRuleList?
+  private var blocklistHost: String?
   private var popupContainer: UIView?
   private var popupWebView: WKWebView?
   private var popupCommittedToGoogleOAuth = false
@@ -385,17 +386,32 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     }
   }
 
+  /// A content rule list is attached per web view, so a site the user turned
+  /// blocking off for simply keeps the list detached while it is the page host.
+  func refreshBlocklist() {
+      applyBlocklist(NouController.shared.blocklistRuleList)
+  }
+
+  func setBlocklistHost(_ host: String?) {
+      guard blocklistHost != host else {
+          return
+      }
+      blocklistHost = host
+      refreshBlocklist()
+  }
+
   func applyBlocklist(_ ruleList: WKContentRuleList?) {
+      let target = NouController.shared.isBlocklistExcludedHost(blocklistHost) ? nil : ruleList
       guard webView != nil else {
-          appliedBlocklistRuleList = ruleList
+          appliedBlocklistRuleList = target
           return
       }
       let controller = webView.configuration.userContentController
       if let current = appliedBlocklistRuleList {
           controller.remove(current)
       }
-      appliedBlocklistRuleList = ruleList
-      if let ruleList = ruleList {
+      appliedBlocklistRuleList = target
+      if let ruleList = target {
           controller.add(ruleList)
       }
   }
@@ -406,6 +422,9 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
           targetUrl = url.replacingOccurrences(of: "https://m.facebook.com", with: "https://www.facebook.com", options: .anchored)
       }
       guard let u = URL(string: targetUrl) else { return }
+      // Settle the rule list before the load starts; a change made once a
+      // navigation is under way only takes effect on the next one.
+      setBlocklistHost(u.host)
       let urlString = u.absoluteString
       if isMessengerUrl(u) ||
         urlString.hasPrefix("https://www.tiktok.com") {
@@ -451,6 +470,12 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       let scheme = url.scheme?.lowercased() ?? ""
       let isInternalScheme = INTERNAL_SCHEMES.contains(scheme)
       let isMainFrame = navigationAction.targetFrame?.isMainFrame ?? true
+
+      // Attach or detach the rule list before the page loads: a change only
+      // takes effect on the next navigation.
+      if webView != popupWebView && isMainFrame && !isInternalScheme {
+          setBlocklistHost(url.host)
+      }
 
       // `<a download>` clicks, including the `blob:` URLs image generators hand out.
       // WebKit reads the blob itself, so this never goes through the page's CSP.

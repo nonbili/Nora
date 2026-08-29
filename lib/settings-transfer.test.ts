@@ -21,13 +21,14 @@ describe('settings transfer', () => {
     settings$.defaultZoom.set(125)
     bookmarks$.bookmarks.set([{ url: 'https://example.com', title: 'Example', icon: '' }])
     blocklist$.enabled.set(false)
+    blocklist$.excludedHosts.set(['example.com'])
 
     const backup = JSON.parse(exportSettingsJson())
     expect(backup.kind).toBe(SETTINGS_BACKUP_KIND)
     expect(backup.settings.headerPosition).toBe('bottom')
     expect(backup.settings.defaultZoom).toBe(125)
     expect(backup.bookmarks).toEqual([{ url: 'https://example.com', title: 'Example', icon: '' }])
-    expect(backup.blocklist).toEqual({ enabled: false })
+    expect(backup.blocklist).toEqual({ enabled: false, excludedHosts: ['example.com'] })
     expect(backup.userStyles.schemaVersion).toBeGreaterThan(0)
   })
 
@@ -79,15 +80,22 @@ describe('settings transfer', () => {
   it('applies only the sections present in the file', () => {
     settings$.headerPosition.set('top')
     blocklist$.enabled.set(true)
+    blocklist$.excludedHosts.set([])
     bookmarks$.bookmarks.set([])
 
     const restored = applySettingsBackup(
-      parseSettingsBackup(backupOf({ settings: { headerPosition: 'bottom' }, blocklist: { enabled: false } })),
+      parseSettingsBackup(
+        backupOf({
+          settings: { headerPosition: 'bottom' },
+          blocklist: { enabled: false, excludedHosts: ['www.Example.com', 'example.com', ''] },
+        }),
+      ),
     )
 
     expect(restored).toEqual(['settings', 'blocklist'])
     expect(settings$.headerPosition.get()).toBe('bottom')
     expect(blocklist$.enabled.get()).toBe(false)
+    expect(blocklist$.excludedHosts.get()).toEqual(['example.com'])
     expect(bookmarks$.bookmarks.get()).toEqual([])
   })
 })

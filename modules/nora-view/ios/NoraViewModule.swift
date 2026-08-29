@@ -101,6 +101,10 @@ public class NoraViewModule: Module {
       NouController.shared.settings = settings
     }
 
+    Function("setBlocklistExcludedHosts") { (hosts: String) in
+      NouController.shared.setBlocklistExcludedHosts(hosts)
+    }
+
     Function("setBlocklist") { (blocklist: NoraBlocklist) in
       NouController.shared.setBlocklist(blocklist)
     }

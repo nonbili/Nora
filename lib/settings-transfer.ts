@@ -1,4 +1,5 @@
 import { blocklist$ } from '@/states/blocklist'
+import { toBlocklistSiteKey } from '@/lib/blocklist/policy'
 import { bookmarks$, type Bookmark } from '@/states/bookmarks'
 import { getSettingsSnapshot, settings$, type Settings } from '@/states/settings'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
@@ -16,7 +17,12 @@ export interface SettingsBackup {
   settings: Settings
   bookmarks: Bookmark[]
   userStyles: UserStylesSnapshot
-  blocklist: { enabled: boolean }
+  blocklist: BlocklistBackup
+}
+
+interface BlocklistBackup {
+  enabled: boolean
+  excludedHosts?: string[]
 }
 
 const normalizeBookmarks = (bookmarks?: (Partial<Bookmark> | null | undefined)[]): Bookmark[] =>
@@ -38,7 +44,7 @@ export const createSettingsBackup = (): SettingsBackup => ({
   userStyles: getUserStylesSnapshot(),
   // Only the toggle travels: the rest of the blocklist state is a device-local
   // download cache (etags, timestamps).
-  blocklist: { enabled: blocklist$.enabled.get() },
+  blocklist: { enabled: blocklist$.enabled.get(), excludedHosts: blocklist$.excludedHosts.get() || [] },
 })
 
 export const exportSettingsJson = () => JSON.stringify(createSettingsBackup(), null, 2)
@@ -49,7 +55,7 @@ export interface ParsedSettingsBackup {
   settings?: Settings
   bookmarks?: Bookmark[]
   userStyles?: UserStylesSnapshot
-  blocklist?: { enabled: boolean }
+  blocklist?: BlocklistBackup
 }
 
 /**
@@ -93,7 +99,16 @@ export const parseSettingsBackup = (text: string): ParsedSettingsBackup => {
     result.userStyles = normalizeUserStyles(backup.userStyles)
   }
   if (isObject(backup.blocklist) && typeof backup.blocklist?.enabled === 'boolean') {
-    result.blocklist = { enabled: backup.blocklist.enabled }
+    result.blocklist = {
+      enabled: backup.blocklist.enabled,
+      excludedHosts: Array.from(
+        new Set(
+          (Array.isArray(backup.blocklist.excludedHosts) ? backup.blocklist.excludedHosts : [])
+            .map((host) => toBlocklistSiteKey(typeof host === 'string' ? host : ''))
+            .filter(Boolean),
+        ),
+      ),
+    }
   }
 
   if (!result.settings && !result.bookmarks && !result.userStyles && !result.blocklist) {
@@ -125,6 +140,7 @@ export const applySettingsBackup = (backup: ParsedSettingsBackup) => {
   }
   if (backup.blocklist) {
     blocklist$.enabled.set(backup.blocklist.enabled)
+    blocklist$.excludedHosts.set(backup.blocklist.excludedHosts || [])
     restored.push('blocklist')
   }
 
