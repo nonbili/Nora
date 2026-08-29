@@ -11,8 +11,10 @@ import android.content.ClipboardManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -46,6 +48,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.webkit.ScriptHandler
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewCompat
@@ -601,6 +604,57 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
   }
 
+  // Pull down from the top of the page to reload, like Chrome and Firefox do. Off unless
+  // the setting turns it on, so pages with their own overscroll gestures are untouched.
+  private var pullToRefreshEnabled = false
+  private val swipeRefresh = SwipeRefreshLayout(context)
+
+  // The refresh layout only sees the WebView's own scroll position, which stays at 0 on
+  // pages that scroll an inner element instead of the document. The page reports where
+  // those scrolled away elements are (through NouJsInterface, so off the main thread),
+  // and a drag starting inside one of them is left to the page.
+  @Volatile
+  private var scrolledRegions: List<RectF> = emptyList()
+  private var lastDownX = 0f
+  private var lastDownY = 0f
+
+  internal fun setScrolledRegions(json: String) {
+    scrolledRegions = try {
+      val array = JSONArray(json)
+      (0 until array.length()).mapNotNull { i ->
+        val rect = array.optJSONArray(i) ?: return@mapNotNull null
+        RectF(
+          rect.optDouble(0).toFloat(),
+          rect.optDouble(1).toFloat(),
+          rect.optDouble(2).toFloat(),
+          rect.optDouble(3).toFloat()
+        )
+      }
+    } catch (e: Exception) {
+      emptyList()
+    }
+  }
+
+  private fun isInScrolledRegion(x: Float, y: Float) = scrolledRegions.any { it.contains(x, y) }
+
+  // Runs before the refresh layout's own interception, so the callback below can ask
+  // where this gesture started rather than where the last one did.
+  override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+    if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+      lastDownX = ev.x
+      lastDownY = ev.y
+    }
+    return super.onInterceptTouchEvent(ev)
+  }
+
+  internal fun setPullToRefresh(enabled: Boolean) {
+    pullToRefreshEnabled = enabled
+    swipeRefresh.isEnabled = enabled && customView == null
+    if (!enabled) {
+      swipeRefresh.isRefreshing = false
+    }
+  }
+
   internal val webView =
     NouWebView(context).apply {
       layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
@@ -628,8 +682,13 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             )
           }
 
+          override fun onPageFinished(view: WebView, url: String) {
+            swipeRefresh.isRefreshing = false
+          }
+
           override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             pageUrl = url
+            scrolledRegions = emptyList()
             if (Uri.parse(url).host in GOOGLE_AUTH_HOSTS) {
               evaluateJavascript(OAUTH_SHIM_SCRIPT, null)
             }
@@ -743,6 +802,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
         override fun onShowCustomView(view: View, cllback: CustomViewCallback) {
           customView = view
+          swipeRefresh.isEnabled = false
           val activity = currentActivity
           if (activity == null) {
             return
@@ -766,6 +826,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           }
           val window = activity.window
           (window.decorView as FrameLayout).removeView(customView)
+          customView = null
+          swipeRefresh.isEnabled = pullToRefreshEnabled
           val controller = WindowCompat.getInsetsController(window, window.decorView)
           controller.show(WindowInsetsCompat.Type.systemBars())
         }
@@ -981,7 +1043,20 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   }
 
   init {
-    addView(webView)
+    val nightMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+      Configuration.UI_MODE_NIGHT_YES
+    swipeRefresh.apply {
+      layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+      isEnabled = false
+      setColorSchemeColors(if (nightMode) 0xFFE4E4E7.toInt() else 0xFF3F3F46.toInt())
+      setProgressBackgroundColorSchemeColor(if (nightMode) 0xFF27272A.toInt() else 0xFFFFFFFF.toInt())
+      setOnRefreshListener { webView.reload() }
+      setOnChildScrollUpCallback { _, _ ->
+        webView.canScrollVertically(-1) || isInScrolledRegion(lastDownX, lastDownY)
+      }
+    }
+    swipeRefresh.addView(webView)
+    addView(swipeRefresh)
 
     val activity = currentActivity
     activity?.registerForContextMenu(webView)

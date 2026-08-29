@@ -4,6 +4,8 @@ interface NoraI {
   onMessage: (payload: string) => void
   notify: (title: string, author: string, seconds: number, thumbnail: string) => void
   notifyProgress: (playing: boolean, pos: number) => void
+  /** Android only, and only on builds that ship the pull to refresh gesture. */
+  setScrolledRegions?: (rects: string) => void
 }
 
 declare global {

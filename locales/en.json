@@ -171,6 +171,7 @@
       "portPlaceholder": "e.g. 1080"
     },
     "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
+    "pullToRefresh": "Pull down to reload page",
     "translation": {
       "enable": "Double-tap text to translate",
       "hint": "Double-tap a post, comment, or paragraph to translate it on your device.",

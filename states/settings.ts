@@ -51,6 +51,7 @@ export interface Settings {
   allowHttpWebsite: boolean
   inspectable: boolean
   videoEdgeLongPressTo2x: boolean
+  pullToRefresh: boolean
   translateOnDoubleTap: boolean
   translationTargetLanguage: string | null
   doubleBackToExitApp: boolean
@@ -148,6 +149,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     allowHttpWebsite: bool(value?.allowHttpWebsite, true),
     inspectable: bool(value?.inspectable),
     videoEdgeLongPressTo2x: bool(value?.videoEdgeLongPressTo2x, true),
+    pullToRefresh: bool(value?.pullToRefresh),
     translateOnDoubleTap: bool(value?.translateOnDoubleTap),
     translationTargetLanguage:
       typeof value?.translationTargetLanguage === 'string' && value.translationTargetLanguage.trim()
@@ -205,6 +207,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   )
   if (typeof data.videoEdgeLongPressTo2x !== 'boolean') {
     data.videoEdgeLongPressTo2x = true
+  }
+  if (typeof data.pullToRefresh !== 'boolean') {
+    data.pullToRefresh = false
   }
   if (typeof data.translateOnDoubleTap !== 'boolean') {
     data.translateOnDoubleTap = (data as any).translateOnTwoFingerTap === true
@@ -284,6 +289,7 @@ export const settings$: Observable<Store> = observable<Store>({
   allowHttpWebsite: true,
   inspectable: false,
   videoEdgeLongPressTo2x: true,
+  pullToRefresh: false,
   translateOnDoubleTap: false,
   translationTargetLanguage: null,
   doubleBackToExitApp: false,

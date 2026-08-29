@@ -313,6 +313,10 @@ class NoraViewModule : Module() {
         view.scrollEventsEnabled = enabled
       }
 
+      Prop("pullToRefresh") { view: NoraView, enabled: Boolean ->
+        view.setPullToRefresh(enabled)
+      }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { view: NoraView, url: String, fileName: String? ->

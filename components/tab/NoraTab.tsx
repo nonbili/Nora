@@ -234,6 +234,7 @@ export const NoraTab: React.FC<{
   const webRtcGuardScript = useValue(webRtcGuardScript$)
   const youTubeGuardScript = useValue(youTubeGuardScript$)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
+  const pullToRefresh = useValue(settings$.pullToRefresh)
   const translateOnDoubleTap = useValue(settings$.translateOnDoubleTap)
   const translationTargetLanguage = useValue(settings$.translationTargetLanguage)
   const xDefaultHomeTimeline = useValue(settings$.xDefaultHomeTimeline)
@@ -1007,6 +1008,7 @@ export const NoraTab: React.FC<{
           inspectable={inspectable}
           textZoom={resolvedZoom}
           scrollEvents={autoHideHeader || hideToolbarWhenScrolled}
+          pullToRefresh={pullToRefresh}
         />,
       )}
       {nIf(

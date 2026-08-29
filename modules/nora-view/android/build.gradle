@@ -54,6 +54,7 @@ android {
 dependencies {
   implementation "org.apache.tika:tika-core:3.2.3"
   implementation "androidx.webkit:webkit:1.13.0"
+  implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
   fullImplementation "com.google.mlkit:translate:17.0.3"
   fullImplementation "com.google.mlkit:language-id:17.0.6"
 }

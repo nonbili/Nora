@@ -175,6 +175,16 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                 />
               </SettingsRow>,
             )}
+            {nIf(
+              isAndroid || isIos,
+              <SettingsRow>
+                <NouSwitch
+                  label={<NouText>{t('settings.pullToRefresh')}</NouText>}
+                  value={settings.pullToRefresh}
+                  onPress={() => settings$.pullToRefresh.toggle()}
+                />
+              </SettingsRow>,
+            )}
             <SettingsRow isLast>
               <NouSwitch
                 label={<NouText>{t('settings.enterInsertsNewline')}</NouText>}

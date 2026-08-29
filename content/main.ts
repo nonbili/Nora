@@ -6,6 +6,7 @@ import { emit } from './utils'
 import { handleDialogs } from './dialogs'
 import { initNora } from './nora'
 import { interceptClipboard } from './clipboard'
+import { trackInnerScrollers } from './scroller'
 
 try {
   blockAds()
@@ -21,6 +22,7 @@ try {
     })
   }
   interceptClipboard()
+  trackInnerScrollers()
 } catch (e) {
   console.error('NouScript: ', e)
 }

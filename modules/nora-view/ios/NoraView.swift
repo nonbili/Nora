@@ -27,6 +27,14 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   private var popupContainer: UIView?
   private var popupWebView: WKWebView?
   private var popupCommittedToGoogleOAuth = false
+  /// Pull down from the top of the page to reload, like Safari and Firefox do. Off unless
+  /// the setting turns it on, so pages with their own overscroll gestures are untouched.
+  private var pullToRefreshEnabled = false
+  private lazy var refreshControl: UIRefreshControl = {
+    let control = UIRefreshControl()
+    control.addTarget(self, action: #selector(handlePullToRefresh), for: .valueChanged)
+    return control
+  }()
   /// Destination picked for each in-flight WKDownload, read back when it finishes.
   private var downloadDestinations: [WKDownload: URL] = [:]
 
@@ -243,6 +251,36 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     // Observe title and URL changes
     webView.addObserver(self, forKeyPath: "title", options: .new, context: nil)
     webView.addObserver(self, forKeyPath: "url", options: .new, context: nil)
+
+    applyPullToRefresh()
+  }
+
+  @objc private func handlePullToRefresh() {
+    guard let webView = webView else {
+      refreshControl.endRefreshing()
+      return
+    }
+    webView.reload()
+  }
+
+  func setPullToRefresh(_ enabled: Bool) {
+    pullToRefreshEnabled = enabled
+    applyPullToRefresh()
+  }
+
+  private func applyPullToRefresh() {
+    guard let webView = webView else { return }
+    if pullToRefreshEnabled {
+      webView.scrollView.bounces = true
+      if webView.scrollView.refreshControl !== refreshControl {
+        webView.scrollView.refreshControl = refreshControl
+      }
+    } else {
+      refreshControl.endRefreshing()
+      if webView.scrollView.refreshControl === refreshControl {
+        webView.scrollView.refreshControl = nil
+      }
+    }
   }
 
   private func isGoogleOAuthPopupUrl(_ url: URL) -> Bool {
@@ -511,6 +549,8 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
           return
       }
 
+      refreshControl.endRefreshing()
+
       let url = webView.url?.absoluteString ?? ""
       let title = webView.title ?? ""
 
@@ -522,6 +562,14 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
       // Signal to fetch icon, matching Android's onReceivedIcon
       emitCustomEvent(type: "icon", data: "")
+  }
+
+  func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+      refreshControl.endRefreshing()
+  }
+
+  func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+      refreshControl.endRefreshing()
   }
 
   func download(url: String, fileName: String?, mimeType: String?) {
