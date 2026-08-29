@@ -2,5 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools">
   <application>
+    <activity
+      android:name="expo.modules.noraview.NoraStandaloneActivity"
+      android:autoRemoveFromRecents="false"
+      android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode|smallestScreenSize|locale|layoutDirection"
+      android:documentLaunchMode="intoExisting"
+      android:exported="false"
+      android:launchMode="standard"
+      android:resizeableActivity="true"
+      android:theme="@android:style/Theme.Material.NoActionBar"
+      android:windowSoftInputMode="adjustResize" />
   </application>
 </manifest>

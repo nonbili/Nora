@@ -9,7 +9,14 @@ declare class NoraViewModule extends NativeModule {
   openExternalUrl(url: string): Promise<boolean>
   // Android only: the iOS module has no equivalent, so both are optional.
   isPinShortcutSupported?(): boolean
-  pinTabShortcut?(id: string, link: string, label: string, iconUrl?: string | null): Promise<boolean>
+  pinTabShortcut?(
+    id: string,
+    url: string,
+    label: string,
+    iconUrl: string | null,
+    profile: string,
+    userAgent: string,
+  ): Promise<boolean>
   reloadBlocklistFromDisk?(enabled: boolean, revision: number): Promise<boolean>
   reloadBlocklistFromSourceFiles?(enabled: boolean, revision: number): Promise<boolean>
   setSettings(settings: object): void

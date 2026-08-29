@@ -2,7 +2,7 @@ import { Platform } from 'react-native'
 import { t } from 'i18next'
 import NoraViewModule from '@/modules/nora-view'
 import { showToast } from '@/lib/toast'
-import { buildTabShortcutUrl } from '@/lib/tab-shortcut'
+import { getUserAgent } from '@/lib/useragent'
 import type { Tab } from '@/states/tabs'
 
 const getHost = (url: string) => {
@@ -26,7 +26,7 @@ export function canPinTabToHomeScreen(tab: Pick<Tab, 'url'>) {
   }
 }
 
-export async function pinTabToHomeScreen(tab: Pick<Tab, 'id' | 'url' | 'title' | 'icon'>) {
+export async function pinTabToHomeScreen(tab: Pick<Tab, 'id' | 'url' | 'title' | 'icon' | 'profile' | 'desktopMode'>) {
   if (!tab.url) {
     return
   }
@@ -35,9 +35,11 @@ export async function pinTabToHomeScreen(tab: Pick<Tab, 'id' | 'url' | 'title' |
   try {
     const pinned = await NoraViewModule.pinTabShortcut?.(
       tab.id,
-      buildTabShortcutUrl({ id: tab.id, url: tab.url }),
+      tab.url,
       label,
       tab.icon ?? null,
+      tab.profile || 'default',
+      getUserAgent('android', tab.desktopMode),
     )
     // A launcher can refuse the request outright (some OEM launchers do), and the system
     // dialog itself is not confirmed here -- so only report the request being accepted.

@@ -229,13 +229,19 @@ class NoraViewModule : Module() {
       context != null && NoraShortcuts.isSupported(context)
     }
 
-    AsyncFunction("pinTabShortcut") Coroutine { id: String, link: String, label: String, iconUrl: String? ->
+    AsyncFunction("pinTabShortcut") Coroutine {
+      id: String,
+      url: String,
+      label: String,
+      iconUrl: String?,
+      profile: String,
+      userAgent: String ->
       val context = appContext.reactContext
       if (context == null) {
         false
       } else {
         withContext(Dispatchers.IO) {
-          NoraShortcuts.pinTab(context, id, link, label, iconUrl, this@NoraViewModule::log)
+          NoraShortcuts.pinTab(context, id, url, label, iconUrl, profile, userAgent, this@NoraViewModule::log)
         }
       }
     }

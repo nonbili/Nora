@@ -18,8 +18,7 @@ import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-// Pins a tab to the launcher home screen. The shortcut fires the nora:// deep link the
-// JS side built, so tapping it comes back to the tab it was created from.
+// Pins a tab as its own document-style activity, separate from Nora's main browser task.
 object NoraShortcuts {
   private const val MAX_LABEL_LENGTH = 48
   private const val MAX_ICON_BYTES = 512 * 1024
@@ -43,9 +42,11 @@ object NoraShortcuts {
   fun pinTab(
     context: Context,
     id: String,
-    link: String,
+    url: String,
     label: String,
     iconUrl: String?,
+    profile: String,
+    userAgent: String,
     log: (String) -> Unit,
   ): Boolean {
     if (!isSupported(context)) {
@@ -53,9 +54,13 @@ object NoraShortcuts {
     }
 
     val shortLabel = label.trim().ifEmpty { "Nora" }.take(MAX_LABEL_LENGTH)
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link)).apply {
-      setPackage(context.packageName)
-      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    val intent = Intent(context, NoraStandaloneActivity::class.java).apply {
+      action = Intent.ACTION_VIEW
+      data = Uri.parse(url)
+      putExtra(NoraStandaloneActivity.EXTRA_LABEL, shortLabel)
+      putExtra(NoraStandaloneActivity.EXTRA_PROFILE, profile)
+      putExtra(NoraStandaloneActivity.EXTRA_USER_AGENT, userAgent)
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
     }
 
     return try {
