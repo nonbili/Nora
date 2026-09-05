@@ -110,7 +110,9 @@ mock.module('react-native', () => ({
   Animated: {
     View: host('Animated.View'),
     Text: host('Animated.Text'),
+    ScrollView: host('Animated.ScrollView'),
     createAnimatedComponent: (component: unknown) => component,
+    multiply: (a: unknown, b: unknown) => ({ multiply: [a, b] }),
     Value: class {
       setValue() {}
       interpolate() {

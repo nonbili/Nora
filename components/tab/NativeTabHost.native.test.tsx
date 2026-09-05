@@ -10,6 +10,7 @@ mock.module('@/lib/utils', () => ({ ...utils, isWeb: false, isIos: false, isAndr
 mock.module('@/components/menu/NouMenu', () => ({ NouMenu: () => null }))
 
 const { NativeTabHost } = await import('./NativeTabHost')
+const { NoraTab } = await import('./NoraTab')
 const { tabs$ } = await import('@/states/tabs')
 const { tabGroups$ } = await import('@/states/tab-groups')
 
@@ -83,6 +84,30 @@ describe('NativeTabHost', () => {
     await settle()
 
     expect(noraViewMountCount()).toBe(2)
+    await act(async () => renderer.unmount())
+  })
+
+  // A webview inside a horizontal ScrollView gets no mouse wheel: React Native drops every
+  // generic motion event while the scroll view is disabled. The deck scrolls an empty
+  // surface instead, so no tab may end up under it in any layout.
+  it.each([
+    ['phone', false, 'deck' as const],
+    ['deck', true, 'deck' as const],
+    ['split-view', true, 'split-view' as const],
+  ])('keeps the tabs out of the deck scroll surface (%s)', async (_name, desktopLayout, layout) => {
+    seedTabs()
+    tabGroups$.groups.set([{ id: 'group-1', name: 'Group', layout, tabIds: ['tab-1', 'tab-2'] }])
+    tabGroups$.activeGroupId.set('group-1')
+    let renderer!: TestRenderer.ReactTestRenderer
+    await act(async () => {
+      renderer = TestRenderer.create(<NativeTabHost desktopLayout={desktopLayout} />)
+    })
+    await settle()
+
+    const scrollSurface = renderer.root.findByType('Animated.ScrollView' as unknown as React.ComponentType)
+    expect(renderer.root.findAllByType(NoraTab).length).toBe(2)
+    expect(scrollSurface.findAllByType(NoraTab).length).toBe(0)
+
     await act(async () => renderer.unmount())
   })
 })

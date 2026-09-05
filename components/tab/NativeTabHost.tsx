@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useValue } from '@legendapp/state/react'
-import { LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native'
+import { Animated, LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native'
 import { settings$ } from '@/states/settings'
 import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { tabGroups$, type TabGroupLayout } from '@/states/tab-groups'
@@ -40,6 +40,7 @@ export const NativeTabHost: React.FC<{ desktopLayout: boolean }> = ({ desktopLay
   const scrollRef = useRef<ScrollView>(null)
   const workspaceViewportRef = useRef<View>(null)
   const prevTabCountRef = useRef(tabs.length)
+  const deckScrollX = useRef(new Animated.Value(0)).current
 
   const activeGroup = (desktopLayout && groups.find((group) => group.id === activeGroupId)) || null
   const groupsKey = getTabGroupsKey(groups)
@@ -80,6 +81,14 @@ export const NativeTabHost: React.FC<{ desktopLayout: boolean }> = ({ desktopLay
     slotCount,
   })
   const contentWidth = getWorkspaceContentWidth({ deckTabWidth, isDeck, size, slotCount })
+  const deckScrolling = desktopLayout && isDeck
+
+  // The tab layer only borrows the deck's offset, so an offset left behind by another deck
+  // would place every tab off screen in a layout that has no way to scroll it back.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ x: 0, animated: false })
+    deckScrollX.setValue(0)
+  }, [activeGroupId, deckScrolling])
 
   useEffect(() => {
     if (desktopLayout && isDeck && tabs.length > prevTabCountRef.current) {
@@ -134,91 +143,114 @@ export const NativeTabHost: React.FC<{ desktopLayout: boolean }> = ({ desktopLay
     : ({ width: '100%', height: '100%' } as const)
 
   return (
-    <View ref={workspaceViewportRef} className="flex-1" onLayout={onLayout}>
-      <ScrollView
+    <View ref={workspaceViewportRef} className="flex-1 overflow-hidden" onLayout={onLayout}>
+      {/* The deck scrolls this empty surface rather than the tabs themselves. A webview
+          inside a horizontal ScrollView never sees a mouse wheel: ReactHorizontalScrollView
+          drops every generic motion event while scrolling is disabled, and steals horizontal
+          drags from the page while it is enabled. The tabs sit in the sibling layer below,
+          which only borrows this surface's offset. */}
+      <Animated.ScrollView
         ref={scrollRef}
         horizontal
-        scrollEnabled={desktopLayout && isDeck}
-        showsHorizontalScrollIndicator={desktopLayout && isDeck}
-        // The host wraps webviews in both layouts: neither the keyboard-dismiss tap nor
-        // the iOS content inset adjustment may touch a page the user is typing in.
+        scrollEnabled={deckScrolling}
+        showsHorizontalScrollIndicator={deckScrolling}
+        // The tab layer covers the viewport, so only the gaps around the deck reach this
+        // surface: a tap that lands here must never dismiss a keyboard the page owns, and
+        // the iOS inset adjustment must not shift the offset the tabs are placed from.
         keyboardShouldPersistTaps="always"
         automaticallyAdjustContentInsets={false}
         contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={contentStyle}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: deckScrollX } } }], {
+          useNativeDriver: true,
+        })}
+        scrollEventThrottle={16}
+        style={FILL}
       >
-        <View style={contentStyle}>
-          {tabs.map((tab, index) => {
-            const rectIndex = isDeck ? deckOrderByTabId.get(tab.id) : slotIndexByTabId.get(tab.id)
-            const rect = rectIndex == null ? undefined : rects[rectIndex]
-            const isVisible = desktopLayout ? Boolean(rect) : activeTabId === tab.id
-            return (
-              <View
-                key={tab.id}
-                pointerEvents={isVisible ? 'auto' : 'none'}
-                style={
-                  desktopLayout
-                    ? {
-                        position: 'absolute',
-                        ...(rect ?? hiddenRect),
-                        opacity: isVisible ? 1 : 0,
-                        zIndex: isVisible ? 1 : 0,
-                      }
-                    : { ...FILL, opacity: isVisible ? 1 : 0, zIndex: isVisible ? 1 : 0 }
+        <View style={{ width: contentWidth, height: size.height }} />
+      </Animated.ScrollView>
+
+      <Animated.View
+        // Transparent to touches itself, so a drag in the gaps between deck tabs falls
+        // through to the scroll surface while a drag on a tab stays with the page.
+        pointerEvents="box-none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          ...contentStyle,
+          transform: deckScrolling ? [{ translateX: Animated.multiply(deckScrollX, -1) }] : [],
+        }}
+      >
+        {tabs.map((tab, index) => {
+          const rectIndex = isDeck ? deckOrderByTabId.get(tab.id) : slotIndexByTabId.get(tab.id)
+          const rect = rectIndex == null ? undefined : rects[rectIndex]
+          const isVisible = desktopLayout ? Boolean(rect) : activeTabId === tab.id
+          return (
+            <View
+              key={tab.id}
+              pointerEvents={isVisible ? 'auto' : 'none'}
+              style={
+                desktopLayout
+                  ? {
+                      position: 'absolute',
+                      ...(rect ?? hiddenRect),
+                      opacity: isVisible ? 1 : 0,
+                      zIndex: isVisible ? 1 : 0,
+                    }
+                  : { ...FILL, opacity: isVisible ? 1 : 0, zIndex: isVisible ? 1 : 0 }
+              }
+              onStartShouldSetResponderCapture={() => {
+                if (desktopLayout && isVisible && activeTabId !== tab.id) {
+                  tabs$.setActiveTabById(tab.id, 'user')
                 }
-                onStartShouldSetResponderCapture={() => {
-                  if (desktopLayout && isVisible && activeTabId !== tab.id) {
-                    tabs$.setActiveTabById(tab.id, 'user')
-                  }
-                  return false
-                }}
-              >
-                <NoraTab
-                  tab={tab}
-                  index={index}
-                  isActive={activeTabId === tab.id}
-                  desktopChrome={desktopLayout}
-                  desktopClipRef={workspaceViewportRef}
-                  desktopVisible={isVisible}
-                  desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
-                />
-              </View>
-            )
-          })}
-
-          {activeGroup && !isDeck
-            ? activeGroup.tabIds.map((tabId, slotIndex) =>
-                tabId && tabIdSet.has(tabId) ? null : (
-                  <NativeEmptySlot
-                    key={`${activeGroup.id}-${slotIndex}`}
-                    group={activeGroup}
-                    isActive={slotIndex === activeSlotIndex}
-                    orderedTabs={orderedTabs}
-                    rect={rects[slotIndex] ?? hiddenRect}
-                    slotIndex={slotIndex}
-                    tabIdSet={tabIdSet}
-                  />
-                ),
-              )
-            : null}
-
-          {desktopLayout && isDeck ? (
-            <Pressable
-              className="items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950/40"
-              style={{
-                position: 'absolute',
-                left: WORKSPACE_PADDING + slotCount * (deckTabWidth + WORKSPACE_GAP),
-                top: WORKSPACE_PADDING,
-                width: DECK_NEW_TAB_WIDTH - WORKSPACE_GAP,
-                height: Math.max(0, size.height - WORKSPACE_PADDING * 2),
+                return false
               }}
-              onPress={createDeckTab}
             >
-              <MaterialIcons name="add" size={22} color="#a1a1aa" />
-            </Pressable>
-          ) : null}
-        </View>
-      </ScrollView>
+              <NoraTab
+                tab={tab}
+                index={index}
+                isActive={activeTabId === tab.id}
+                desktopChrome={desktopLayout}
+                desktopClipRef={workspaceViewportRef}
+                desktopVisible={isVisible}
+                desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
+              />
+            </View>
+          )
+        })}
+
+        {activeGroup && !isDeck
+          ? activeGroup.tabIds.map((tabId, slotIndex) =>
+              tabId && tabIdSet.has(tabId) ? null : (
+                <NativeEmptySlot
+                  key={`${activeGroup.id}-${slotIndex}`}
+                  group={activeGroup}
+                  isActive={slotIndex === activeSlotIndex}
+                  orderedTabs={orderedTabs}
+                  rect={rects[slotIndex] ?? hiddenRect}
+                  slotIndex={slotIndex}
+                  tabIdSet={tabIdSet}
+                />
+              ),
+            )
+          : null}
+
+        {desktopLayout && isDeck ? (
+          <Pressable
+            className="items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950/40"
+            style={{
+              position: 'absolute',
+              left: WORKSPACE_PADDING + slotCount * (deckTabWidth + WORKSPACE_GAP),
+              top: WORKSPACE_PADDING,
+              width: DECK_NEW_TAB_WIDTH - WORKSPACE_GAP,
+              height: Math.max(0, size.height - WORKSPACE_PADDING * 2),
+            }}
+            onPress={createDeckTab}
+          >
+            <MaterialIcons name="add" size={22} color="#a1a1aa" />
+          </Pressable>
+        ) : null}
+      </Animated.View>
     </View>
   )
 }

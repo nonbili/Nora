@@ -17,11 +17,18 @@ const SECONDARY_MOUSE_CLICK_BRIDGE = `
     val density = resources.displayMetrics.density.toDouble()
     val visibleWindowFrame = android.graphics.Rect()
     window.decorView.getWindowVisibleDisplayFrame(visibleWindowFrame)
+    // getWindowVisibleDisplayFrame() reports display coordinates while the event
+    // already carries window ones, so the inset the visible frame stands for is
+    // its distance from the decor view, not its position on the display. Taking
+    // the frame as-is subtracted the window's own origin a second time, which is
+    // zero only for a fullscreen window: in a freeform (desktop mode) or
+    // split-screen window every reported point landed short by that origin.
+    val decorOnScreen = intArrayOf(0, 0)
+    window.decorView.getLocationOnScreen(decorOnScreen)
     val payload = com.facebook.react.bridge.Arguments.createMap().apply {
-      // Fabric measureInWindow coordinates are relative to this same visible
-      // frame, including in edge-to-edge, split-screen and freeform windows.
-      putDouble("x", (event.x.toDouble() - visibleWindowFrame.left) / density)
-      putDouble("y", (event.y.toDouble() - visibleWindowFrame.top) / density)
+      // Fabric measureInWindow coordinates are relative to the same window.
+      putDouble("x", (event.x.toDouble() - (visibleWindowFrame.left - decorOnScreen[0])) / density)
+      putDouble("y", (event.y.toDouble() - (visibleWindowFrame.top - decorOnScreen[1])) / density)
     }
     (application as? com.facebook.react.ReactApplication)?.reactHost?.currentReactContext
       ?.getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
