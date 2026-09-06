@@ -42,7 +42,9 @@
     "signOut": "Déconnexion",
     "tools": "Outils",
     "viewInSplitView": "Voir en mode divisé",
-    "zoom": "Zoom"
+    "zoom": "Zoom",
+    "blockAds": "Bloquer les publicités sur ce site",
+    "addToHomeScreen": "Ajouter à l'écran d'accueil"
   },
   "settings": {
     "label": "Paramètres",
@@ -280,7 +282,8 @@
       "label": "WebRTC",
       "protectIp": "Empêcher les fuites d'IP WebRTC",
       "protectIpHint": "Empêche les pages de découvrir votre adresse IP réelle via WebRTC, qui contourne le proxy et le VPN. Les appels utilisant un serveur de relais continuent de fonctionner ; désactivez ceci si un appel vidéo ou vocal échoue à se connecter. Prend effet au prochain chargement de page."
-    }
+    },
+    "pullToRefresh": "Tirez vers le bas pour recharger la page"
   },
   "changelog": {
     "label": "Journal des modifs",
@@ -446,7 +449,8 @@
     "cookieExportOpenPage": "Ouvrez une page avant d'exporter les cookies",
     "profileCookieExported": "Cookies du profil exportés",
     "profileCookieExportEmpty": "Aucun cookie trouvé dans ce profil",
-    "profileCookieExportFailed": "Échec de l'exportation des cookies du profil"
+    "profileCookieExportFailed": "Échec de l'exportation des cookies du profil",
+    "addToHomeScreenFailed": "Ce lanceur ne prend pas en charge les raccourcis de l'écran d'accueil"
   },
   "usageLimits": {
     "label": "Limites d'utilisation",

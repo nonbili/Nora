@@ -1,0 +1,502 @@
+{
+  "settings": {
+    "sections": {
+      "about": "Tentang",
+      "general": "Umum",
+      "accounts": "Akun & Data",
+      "bookmarksSearch": "Bookmark & Pencarian",
+      "notifications": "Notifikasi",
+      "advanced": "Lanjutan"
+    },
+    "label": "Pengaturan",
+    "zoom": {
+      "label": "Perbesar halaman",
+      "defaultLabel": "Perbesar default",
+      "defaultHint": "Atur tingkat perbesaran default untuk semua halaman web.",
+      "siteZoomLabel": "Perbesar per situs",
+      "usingDefault": "Menggunakan perbesaran default"
+    },
+    "openExternalLink": "Buka tautan eksternal di peramban sistem",
+    "redirectToOldReddit": "Alihkan ke Old Reddit",
+    "allowHttpWebsite": "Izinkan situs web HTTP",
+    "inspectable": "Jadikan webview dapat diperiksa",
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "Cegah kebocoran IP WebRTC",
+      "protectIpHint": "Mencegah halaman menemukan alamat IP asli Anda melalui WebRTC, yang melewati proksi dan VPN. Panggilan yang menggunakan server relay tetap berfungsi; matikan ini jika panggilan video atau suara gagal terhubung. Berlangsung pada muatan halaman berikutnya."
+    },
+    "proxy": {
+      "label": "Proksi",
+      "enabled": "Aktifkan proksi",
+      "type": "Jenis proksi",
+      "host": "Host proksi",
+      "port": "Port proksi",
+      "hostPlaceholder": "mis. 127.0.0.1 atau proxy.example.com",
+      "portPlaceholder": "mis. 1080"
+    },
+    "videoEdgeLongPressTo2x": "Tekan lama di tepi untuk pemutaran 2x",
+    "pullToRefresh": "Tarik ke bawah untuk memuat ulang halaman",
+    "translation": {
+      "enable": "Ketuk dua kali teks untuk menerjemahkan",
+      "hint": "Ketuk dua kali pos, komentar, atau paragraf untuk menerjemahkannya di perangkat Anda.",
+      "targetLanguage": "Terjemahkan ke",
+      "appLanguage": "Aplikasi",
+      "systemLanguage": "Sistem",
+      "notSelected": "Pilih bahasa",
+      "chooseLanguage": "Pilih bahasa terjemahan terlebih dahulu",
+      "loading": "Menerjemahkan…",
+      "copy": "Salin terjemahan",
+      "copySource": "Salin sumber",
+      "pin": "Sematkan terjemahan",
+      "unpin": "Lepas sematan terjemahan",
+      "failed": "Tidak dapat menerjemahkan teks ini",
+      "unsupported": "Pasangan bahasa ini tidak tersedia di perangkat ini"
+    },
+    "enterInsertsNewline": "Enter menyisipkan baris baru (Shift+Enter)",
+    "doubleBackToExitApp": "Ketuk dua kali kembali untuk keluar dari aplikasi",
+    "oneProfilePerSite": "Satu profil per situs",
+    "oneProfilePerSiteHint": "Gunakan sesi otomatis terpisah untuk setiap situs. Tautan yang dibuka dari suatu situs tetap menggunakan profil situs tersebut.",
+    "hideHeader": "Sembunyikan dan tampilkan bilah alat berdasarkan arah gulir",
+    "doubleTapToToggleHeader": "Ketuk dua kali halaman untuk menyembunyikan atau menampilkan bilah alat",
+    "hideToolbarWhenScrolled": "Sembunyikan bilah alat saat halaman tidak di atas",
+    "xHomeTimeline": {
+      "label": "Linimasa beranda default",
+      "forYou": "Untuk Anda",
+      "following": "Mengikuti"
+    },
+    "mentionNotifications": "Notifikasi sosial",
+    "mentionNotificationsHint": "Karena batasan latar belakang OS, pengiriman mungkin tertunda dan tidak dijamin.",
+    "pages": {
+      "browsing": "Preferensi",
+      "appearance": "Tampilan",
+      "services": "Layanan",
+      "profiles": "Profil & Sesi",
+      "bookmarks": "Bookmark",
+      "search": "Pencarian",
+      "backup": "Cadangan"
+    },
+    "browsing": {
+      "descriptionNative": "Sakelar fitur.",
+      "descriptionWeb": "Pemblokiran jaringan dan kontrol perambanan lanjutan.",
+      "features": "Fitur"
+    },
+    "appearance": {
+      "description": "Pengaturan tema dan bilah alat.",
+      "theme": "Tema",
+      "toolbar": "Bilah alat",
+      "deckTabWidth": "Lebar tab dek",
+      "deckTabWidthHint": "Saat ini: {{value}}px",
+      "desktopLayout": "Tata letak desktop",
+      "desktopLayoutHint": "Tampilkan grup tab dan tampilan dek/pisah/grid di layar besar, seperti mode desktop.",
+      "desktopLayoutAuto": "Otomatis",
+      "desktopLayoutOn": "Selalu",
+      "desktopLayoutOff": "Jangan pernah"
+    },
+    "profiles": {
+      "description": "Beberapa akun dengan cookie dan status perambanan terpisah.",
+      "sessionMode": "Mode sesi",
+      "injectCookie": "Suntik Cookie",
+      "injectCookieHint": "Tempel header Cookie dari peramban lain untuk memulihkan sesi secara manual."
+    },
+    "bookmarks": {
+      "description": "Kelola situs yang disematkan.",
+      "saved": "Bookmark Tersimpan",
+      "empty": "Belum ada bookmark."
+    },
+    "backup": {
+      "description": "Ekspor atau pulihkan pengaturan, bookmark, dan gaya pengguna.",
+      "export": "Ekspor pengaturan",
+      "exportDescription": "Simpan pengaturan, bookmark, gaya pengguna, dan skrip kustom sebagai file JSON",
+      "exportFailed": "Ekspor gagal: {{message}}",
+      "import": "Impor pengaturan",
+      "importDescription": "Pulihkan pengaturan dari file pengaturan Nora",
+      "importConfirm": "Ini akan menggantikan pengaturan, bookmark, gaya pengguna, dan skrip kustom Anda saat ini. Lanjutkan?",
+      "importWithScriptsConfirm": "File ini berisi {{count}} skrip kustom yang diaktifkan, yang dapat menjalankan kode di dalam situs web. Lanjutkan hanya jika Anda memercayai file ini. Pengaturan, bookmark, gaya pengguna, dan skrip kustom Anda saat ini akan diganti.",
+      "importDone": "Diimpor: {{sections}}",
+      "importFailed": "Impor gagal: {{message}}"
+    },
+    "services": {
+      "title": "Layanan Bawaan",
+      "description": "Kelola layanan bawaan."
+    },
+    "search": {
+      "description": "Kelola penyedia pencarian.",
+      "builtin": "Penyedia Pencarian Bawaan",
+      "builtinHint": "Aktifkan penyedia yang ingin ditampilkan di menu pencarian tab baru.",
+      "custom": "Penyedia Pencarian Kustom",
+      "empty": "Belum ada penyedia pencarian kustom.",
+      "urlHint": "Selalu tersedia untuk entri URL langsung.",
+      "addTitle": "Tambahkan Pencarian Kustom",
+      "editTitle": "Edit Pencarian Kustom",
+      "addAction": "Tambahkan Pencarian",
+      "templateHint": "Gunakan `%s` di tempat kueri harus disisipkan.",
+      "fields": {
+        "name": "Nama",
+        "namePlaceholder": "Contoh Pencarian",
+        "template": "Templat URL Pencarian",
+        "templatePlaceholder": "https://example.com/search?q=%s"
+      },
+      "validation": {
+        "name": "Tambahkan nama penyedia pencarian",
+        "template": "Gunakan URL templat http(s) yang valid berisi `%s`",
+        "duplicateName": "Penyedia pencarian kustom dengan nama ini sudah ada"
+      },
+      "deleteConfirm": "Yakin ingin menghapus pencarian kustom ini?"
+    },
+    "userStyles": {
+      "label": "Gaya & Skrip Pengguna",
+      "hint": "Aktifkan penyesuaian CSS bawaan dan tambahkan gaya serta skrip berbasis host Anda sendiri.",
+      "customHint": "Sesuaikan situs web apa pun dengan CSS atau JavaScript.",
+      "copyCss": "Salin CSS",
+      "cssCopied": "CSS disalin",
+      "copyFailed": "Gagal menyalin CSS",
+      "importCss": "Impor CSS",
+      "importFailed": "Gagal mengimpor CSS",
+      "preview": "Pratinjau",
+      "previewApplied": "Pratinjau diterapkan",
+      "noActiveTab": "Tidak ada tab aktif",
+      "add": "Tambahkan gaya",
+      "addTitle": "Tambahkan gaya kustom",
+      "editTitle": "Edit gaya kustom",
+      "deleteConfirm": "Yakin ingin menghapus gaya kustom ini?",
+      "nameLabel": "Nama",
+      "namePlaceholder": "Nama gaya",
+      "hostGlobs": {
+        "label": "Glob host",
+        "placeholder": "*.reddit.com, x.com (dipisahkan koma)"
+      },
+      "validation": {
+        "hostGlobs": "Tambahkan setidaknya satu glob host yang valid",
+        "css": "Tambahkan CSS sebelum menyimpan"
+      },
+      "builtin": {
+        "label": "Gaya Bawaan",
+        "hideFacebookFeed": {
+          "label": "Sembunyikan umpan Facebook"
+        },
+        "hideRedditGame": {
+          "label": "Sembunyikan pos game Reddit"
+        },
+        "compactTiktokLayout": {
+          "label": "Gunakan tata letak TikTok ringkas"
+        },
+        "hideXBottomNav": {
+          "label": "Sembunyikan bilah nav bawah X saat menggulir"
+        },
+        "hideXHomeTabs": {
+          "label": "Sembunyikan tab linimasa beranda X"
+        }
+      },
+      "custom": {
+        "label": "Gaya Kustom",
+        "empty": "Belum ada gaya kustom. Tambahkan satu untuk menyuntikkan CSS Anda sendiri pada host yang cocok."
+      },
+      "scripts": {
+        "label": "Skrip Kustom",
+        "add": "Tambahkan skrip",
+        "addTitle": "Tambahkan skrip kustom",
+        "editTitle": "Edit skrip kustom",
+        "deleteConfirm": "Yakin ingin menghapus skrip kustom ini?",
+        "empty": "Belum ada skrip kustom. Tambahkan satu untuk menjalankan JavaScript Anda sendiri pada host yang cocok.",
+        "namePlaceholder": "Nama skrip",
+        "import": "Impor",
+        "importFailed": "Gagal mengimpor skrip",
+        "pinToHeader": "Sematkan ke bilah alat",
+        "pinToHeaderHint": "Tampilkan skrip ini sebagai tindakan bilah alat pada situs yang cocok.",
+        "pinnedScripts": "Skrip yang disematkan",
+        "run": "Jalankan",
+        "runComplete": "Skrip dijalankan",
+        "runFailed": "Skrip gagal",
+        "validation": {
+          "js": "Tambahkan JavaScript sebelum menyimpan"
+        }
+      }
+    },
+    "headerPosition": {
+      "label": "Posisi bilah alat",
+      "top": "Atas",
+      "bottom": "Bawah"
+    },
+    "showNewTabButton": "Tampilkan tombol tab baru",
+    "showBackButton": "Tampilkan tombol kembali",
+    "showForwardButton": "Tampilkan tombol maju",
+    "showReloadButton": "Tampilkan tombol muat ulang",
+    "showScrollButton": "Tampilkan tombol gulir ke atas",
+    "oneHandMode": "Mode satu tangan",
+    "oneTabPerSite": "Satu tab per situs saat membuka tautan bersama",
+    "theme": {
+      "label": "Tema",
+      "system": "Sistem",
+      "dark": "Gelap",
+      "light": "Terang",
+      "hint": "Tema aplikasi dan webview. Jika halaman tidak segera diperbarui, muat ulang tab."
+    },
+    "language": {
+      "label": "Bahasa",
+      "system": "Sistem",
+      "hint": "Pilih bahasa atau ikuti bahasa sistem."
+    },
+    "injectCookie": "Suntik cookie"
+  },
+  "about": {
+    "code": "Kode sumber",
+    "donate": "Donasi",
+    "hint": "Info versi, kode sumber, dan tautan dukungan.",
+    "label": "Tentang"
+  },
+  "changelog": {
+    "label": "Catatan perubahan",
+    "hint": "Rilis dan perbaikan terbaru dari GitHub.",
+    "loading": "Memuat catatan rilis...",
+    "error": "Gagal memuat catatan rilis.",
+    "retry": "Coba lagi",
+    "empty": "Tidak ada catatan rilis yang ditemukan.",
+    "current": "Saat ini",
+    "noNotes": "Tidak ada catatan rilis yang disediakan untuk versi ini."
+  },
+  "common": {
+    "about": "Tentang",
+    "edit": "Edit",
+    "off": "Mati",
+    "on": "Hidup",
+    "reset": "Setel ulang",
+    "save": "Simpan",
+    "theme": "Tema"
+  },
+  "views": {
+    "rename": "Ubah nama tampilan",
+    "namePlaceholder": "Nama tampilan",
+    "desktop": {
+      "blankTab": "Tab kosong",
+      "deck": "Dek",
+      "groupNamePlaceholder": "Nama grup",
+      "newDeckView": "Tampilan dek baru",
+      "newGroupFromTab": "Grup baru dari tab",
+      "newSplitView": "Tampilan pisah baru",
+      "newGridView": "Tampilan grid baru",
+      "closeGroup": "Tutup grup dan tab",
+      "renameGroup": "Ubah nama grup",
+      "ungroup": "Pisahkan grup",
+      "tabCount": "{{count}} tab",
+      "tabCount_plural": "{{count}} tab",
+      "ungrouped": "Tidak dikelompokkan",
+      "chooseTabToAdd": "Pilih tab untuk ditambahkan ke {{layout}}",
+      "createBlankTabInSlot": "Buat tab kosong baru di slot ini",
+      "layout": {
+        "deck": "Tampilan dek",
+        "split": "Tampilan pisah",
+        "grid": "Tampilan grid",
+        "gridFour": "Grid 4 tab"
+      },
+      "newGroup": "Grup baru",
+      "moveToGroup": "Pindahkan ke {{name}}",
+      "moveToUngrouped": "Pindahkan keluar dari grup"
+    }
+  },
+  "blocklist": {
+    "label": "Daftar blokir jaringan",
+    "description": "Blokir iklan dan pelacak dengan aturan host EasyList dan EasyPrivacy.",
+    "enable": "Aktifkan daftar blokir jaringan",
+    "statusFetching": "Mengambil daftar blokir",
+    "lastUpdated": "Terakhir diperbarui: {{value}}",
+    "refreshNow": "Perbarui daftar blokir"
+  },
+  "buttons": {
+    "cancel": "Batal",
+    "closeAll": "Tutup Semua",
+    "confirm": "Konfirmasi",
+    "continue": "Lanjutkan",
+    "openUrl": "Buka URL",
+    "open": "Buka",
+    "reopenLastClosedTab": "Buka kembali tab terakhir yang ditutup",
+    "restoreTabs": "Tab yang baru saja ditutup",
+    "save": "Simpan",
+    "toggleSidebar": "Alihkan bilah sisi"
+  },
+  "menus": {
+    "blockAds": "Blokir iklan di situs ini",
+    "clearSiteData": "Hapus data situs",
+    "clearSiteDataConfirm": "Hapus semua cookie dan data situs untuk \"{{host}}\"? Ini akan mengeluarkan Anda dari situs ini.",
+    "close": "Tutup",
+    "delete": "Hapus",
+    "desktop": "Situs desktop",
+    "duplicate": "Duplikat tab",
+    "addBookmark": "Tambahkan bookmark",
+    "addToHomeScreen": "Tambahkan ke Layar Utama",
+    "editUrl": "Edit URL tab",
+    "more": "Lainnya",
+    "openInProfile": "Buka di profil",
+    "pause": "Jeda tab",
+    "resume": "Lanjutkan tab",
+    "reload": "Muat ulang",
+    "scroll": "Gulir ke atas",
+    "share": "Bagikan",
+    "signOut": "Keluar",
+    "tools": "Alat",
+    "zoom": "Perbesar",
+    "viewInSplitView": "Lihat dalam tampilan pisah"
+  },
+  "modals": {
+    "downloadVideo": "Unduh video",
+    "downloadOnCobalt": "Unduh video di cobalt.tools",
+    "downloadTab": "Unduh",
+    "cookiesTab": "Data Situs",
+    "exportCookies": "Ekspor cookie situs saat ini",
+    "exportCookiesHint": "Simpan cookie untuk situs saat ini sebagai file cookies.txt.",
+    "exportCookiesButton": "Ekspor cookies.txt",
+    "clearSiteDataHint": "Hapus cookie dan data perambanan untuk situs dan profil saat ini."
+  },
+  "native": {
+    "menu_saveImage": "Simpan gambar",
+    "menu_copyImageLink": "Salin tautan gambar",
+    "menu_copyLink": "Salin tautan",
+    "menu_openInProfile": "Buka di profil",
+    "menu_openInNewTab": "Buka di tab baru",
+    "menu_openImageInNewTab": "Buka gambar di tab baru",
+    "toast_downloadStarted": "Unduhan dimulai, periksa notifikasi sistem",
+    "toast_downloadSucceeded": "Disimpan ke folder Unduhan",
+    "toast_downloadFailed": "Gagal mengunduh",
+    "httpBlocked_title": "Situs HTTP diblokir",
+    "httpBlocked_body": "Situs web ini menggunakan koneksi HTTP yang tidak aman. Untuk mengizinkan memuat situs web HTTP, aktifkan \"Izinkan situs web HTTP\" di Pengaturan."
+  },
+  "profiles": {
+    "label": "Profil",
+    "auto": "Otomatis",
+    "autoProfiles": "Profil otomatis",
+    "autoProfilesEmpty": "Belum ada profil otomatis.",
+    "openLinkInProfile": "Buka tautan di profil",
+    "autoProfileLastUsed": "Terakhir digunakan: {{value}}",
+    "autoProfileLastUsedLabel": "Terakhir digunakan",
+    "manageAutoProfiles": "Kelola profil otomatis ({{count}})",
+    "deleteAutoProfileConfirm": "Hapus profil otomatis untuk {{site}}? Ini akan menghapus data perambanan yang tersimpan dan menutup tab yang menggunakannya.",
+    "deleteAllAutoProfiles": "Hapus semua",
+    "deleteAllAutoProfilesConfirm": "Hapus semua {{count}} profil otomatis? Ini akan menghapus data perambanan yang tersimpan dan menutup tab yang menggunakannya.",
+    "deleteStaleAutoProfiles": "Hapus yang tidak digunakan 14 hari",
+    "deleteStaleAutoProfilesConfirm": "Hapus {{count}} profil otomatis yang tidak digunakan dalam 14 hari terakhir? Ini akan menghapus data perambanan yang tersimpan dan menutup tab yang menggunakannya.",
+    "add": "Tambah",
+    "edit": "Edit",
+    "save": "Simpan",
+    "namePlaceholder": "Nama profil",
+    "clearData": "Hapus data",
+    "clearDataConfirm": "Hapus semua data perambanan untuk \"{{name}}\"? Ini akan mengeluarkan Anda dan menutup tab yang menggunakan profil ini.",
+    "exportCookies": "Ekspor cookie profil",
+    "exportCookiesConfirm": "Ekspor semua cookie dari \"{{name}}\"? File ini mungkin berisi sesi login untuk setiap situs di profil ini. Simpan secara pribadi.",
+    "deleteConfirm": "Hapus \"{{name}}\"? Ini akan menghapus data perambanan yang tersimpan dan menutup tab yang menggunakan profil ini."
+  },
+  "sync": {
+    "label": "Sinkronisasi",
+    "hint": "Sinkronisasi bookmark dan pengaturan di seluruh perangkat.",
+    "upgradeHint": "Tingkatkan untuk menyinkronkan bookmark dan pengaturan di seluruh perangkat.",
+    "currentPlan": "Rencana saat ini",
+    "managePlan": "Kelola rencana",
+    "deleteAccount": "Hapus akun",
+    "buy": "Berlangganan dengan App Store",
+    "restore": "Pulihkan pembelian",
+    "manageIos": "Kelola di App Store",
+    "purchaseTitle": "Tautkan langganan",
+    "purchaseConfirm": "Langganan ini akan ditautkan ke {{email}} dan membuka sinkronisasi di mana pun Anda masuk ke akun Nora ini.",
+    "priceLoading": "Memuat harga App Store...",
+    "activeViaIos": "Aktif melalui App Store",
+    "freePlan": "Gratis",
+    "purchasePending": "Pembelian menunggu persetujuan.",
+    "restoreConflict": "Langganan App Store ini sudah ditautkan ke {{email}}.",
+    "signOutSwitch": "Keluar dan ganti akun",
+    "signedInAs": "Masuk sebagai {{email}}",
+    "productUnavailable": "Produk App Store belum tersedia.",
+    "expiresAt": "Diperbarui atau berakhir: {{value}}",
+    "legalNotice": "Langganan diperbarui secara otomatis kecuali dibatalkan. Dengan berlangganan, Anda menyetujui Ketentuan Penggunaan (EULA) dan Kebijakan Privasi.",
+    "termsOfUse": "Ketentuan Penggunaan (EULA)",
+    "privacyPolicy": "Kebijakan Privasi",
+    "signInRequired": "Masuk untuk melanjutkan."
+  },
+  "tabs": {
+    "new": "Tab baru",
+    "recentlyClosed": "Baru saja ditutup",
+    "noRecentlyClosed": "Tidak ada tab yang baru saja ditutup",
+    "removeFromHistory": "Hapus dari riwayat",
+    "clearRecentlyClosed": "Hapus riwayat",
+    "paused": "Tab dijeda",
+    "pausedHint": "Kontennya dibongkar untuk menghemat sumber daya.",
+    "resume": "Lanjutkan"
+  },
+  "newTab": {
+    "presets": {
+      "open": "Tambahkan bookmark preset",
+      "title": "Bookmark preset"
+    },
+    "search": {
+      "urlPlaceholder": "Masukkan URL",
+      "searchPlaceholder": "Telusuri web"
+    }
+  },
+  "toast": {
+    "pinned": "Disematkan ke halaman tab baru",
+    "blocklistUpdated": "Daftar blokir diperbarui",
+    "profileDataCleared": "Data profil dihapus",
+    "profileDataClearFailed": "Gagal menghapus data profil",
+    "cookieExported": "cookies.txt diekspor",
+    "cookieExportEmpty": "Tidak ada cookie yang ditemukan untuk situs ini",
+    "cookieExportFailed": "Gagal mengekspor cookies.txt",
+    "cookieExportOpenPage": "Buka halaman sebelum mengekspor cookie",
+    "profileCookieExported": "cookies.txt profil diekspor",
+    "profileCookieExportEmpty": "Tidak ada cookie yang ditemukan di profil ini",
+    "profileCookieExportFailed": "Gagal mengekspor cookies.txt profil",
+    "siteDataCleared": "Data situs dihapus",
+    "siteDataClearFailed": "Gagal menghapus data situs",
+    "addToHomeScreenFailed": "Peluncur ini tidak mendukung pintasan layar utama",
+    "pressBackAgainToExit": "Tekan kembali lagi untuk keluar"
+  },
+  "usageLimits": {
+    "label": "Batas penggunaan",
+    "description": "Atur batas waktu harian untuk layanan yang dipilih atau seluruh aplikasi.",
+    "limits": "Batas",
+    "empty": "Belum ada batas penggunaan.",
+    "emptyHint": "Tambahkan batas untuk mulai melacak waktu perambanan harian.",
+    "usageLine": "Hari ini: {{used}} dari {{limit}}",
+    "deleteConfirm": "Hapus batas penggunaan ini?",
+    "scope": {
+      "all": "Seluruh aplikasi",
+      "none": "Tidak ada layanan yang dipilih"
+    },
+    "editor": {
+      "addTitle": "Tambahkan batas penggunaan",
+      "editTitle": "Edit batas penggunaan",
+      "name": "Nama",
+      "namePlaceholder": "mis. Media sosial",
+      "defaultName": "Batas",
+      "dailyLimit": "Batas harian",
+      "hours": "Jam",
+      "minutes": "Menit",
+      "scope": "Terapkan ke",
+      "add": "Tambahkan",
+      "errorMinutes": "Atur batas harian minimal 1 menit",
+      "errorScope": "Pilih setidaknya satu layanan atau terapkan ke seluruh aplikasi"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "PIN diperlukan untuk mengelola batas dan untuk membuka kunci saat batas tercapai. Direset pada tengah malam lokal.",
+      "set": "PIN diatur",
+      "notSet": "Tidak ada PIN yang diatur",
+      "setAction": "Atur PIN",
+      "change": "Ubah",
+      "remove": "Hapus",
+      "currentPlaceholder": "PIN saat ini",
+      "newPlaceholder": "PIN baru",
+      "confirmPlaceholder": "Konfirmasi PIN baru",
+      "errorEmpty": "PIN tidak boleh kosong",
+      "errorMismatch": "PIN tidak cocok",
+      "errorIncorrect": "PIN salah",
+      "requiredFirst": "Atur PIN terlebih dahulu",
+      "confirmEdit": "Masukkan PIN untuk mengedit",
+      "confirmDelete": "Masukkan PIN untuk menghapus"
+    },
+    "lockout": {
+      "title": "Waktu habis untuk hari ini",
+      "body": "Anda telah menggunakan {{used}} dari {{limit}} batas harian untuk {{name}}.",
+      "pinPlaceholder": "Masukkan PIN untuk membuka kunci",
+      "pinIncorrect": "PIN salah",
+      "unlock": "Buka kunci untuk hari ini",
+      "noPinHint": "Atur PIN di Pengaturan → Batas penggunaan untuk membuka kunci lebih awal."
+    }
+  }
+}

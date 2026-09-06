@@ -43,7 +43,9 @@
     "clearSiteDataConfirm": "清除“{{host}}”的所有 Cookie 和网站数据？这会让您退出登录此网站。",
     "pause": "暂停标签页",
     "resume": "恢复标签页",
-    "zoom": "缩放"
+    "zoom": "缩放",
+    "blockAds": "屏蔽此网站上的广告",
+    "addToHomeScreen": "添加到主屏幕"
   },
   "modals": {
     "downloadVideo": "下载视频",
@@ -304,7 +306,8 @@
       "label": "WebRTC",
       "protectIp": "防止 WebRTC IP 泄漏",
       "protectIpHint": "阻止网页通过 WebRTC 发现您的真实 IP 地址，WebRTC 会绕过代理和 VPN。使用中继服务器的通话仍可正常工作；如果视频或语音通话无法连接，请关闭此功能。此设置将在下次页面加载时生效。"
-    }
+    },
+    "pullToRefresh": "下拉以重新加载页面"
   },
   "tabs": {
     "new": "新标签页",
@@ -330,7 +333,8 @@
     "cookieExportOpenPage": "导出 Cookie 前请先打开页面",
     "profileCookieExported": "已导出配置文件 cookies.txt",
     "profileCookieExportEmpty": "此配置文件中未找到 Cookie",
-    "profileCookieExportFailed": "无法导出配置文件 cookies.txt"
+    "profileCookieExportFailed": "无法导出配置文件 cookies.txt",
+    "addToHomeScreenFailed": "此启动器不支持主屏幕快捷方式"
   },
   "profiles": {
     "label": "配置文件",

@@ -43,7 +43,9 @@
     "openInProfile": "Profilde aç",
     "pause": "Sekmeyi duraklat",
     "resume": "Sekmeyi devam ettir",
-    "zoom": "Yakınlaştır"
+    "zoom": "Yakınlaştır",
+    "blockAds": "Bu sitedeki reklamları engelle",
+    "addToHomeScreen": "Ana ekrana ekle"
   },
   "modals": {
     "downloadVideo": "Video indir",
@@ -330,7 +332,8 @@
       "label": "WebRTC",
       "protectIp": "WebRTC IP sızıntılarını önle",
       "protectIpHint": "Vekil sunucu ve VPN'i atlayan WebRTC aracılığıyla sayfaların gerçek IP adresinizi tespit etmesini engeller. Aktarım sunucusu kullanan aramalar çalışmaya devam eder; bir video veya sesli arama bağlantısı kurulamıyorsa bu özelliği devre dışı bırakın. Bir sonraki sayfa yüklemesinde etkili olur."
-    }
+    },
+    "pullToRefresh": "Sayfayı yeniden yüklemek için aşağı kaydır"
   },
   "sync": {
     "label": "Senkronize et",
@@ -382,7 +385,8 @@
     "cookieExportOpenPage": "Çerezleri dışa aktarmadan önce bir sayfa açın",
     "profileCookieExported": "Dışa aktarılan profil çerezleri",
     "profileCookieExportEmpty": "Bu profilde hiçbir çerez bulunamadı",
-    "profileCookieExportFailed": "Profil çerezlerini dışa aktarma başarısız oldu"
+    "profileCookieExportFailed": "Profil çerezlerini dışa aktarma başarısız oldu",
+    "addToHomeScreenFailed": "Bu başlatıcı, ana ekran kısayollarını desteklemiyor"
   },
   "changelog": {
     "label": "Değişiklik günlüğü",
