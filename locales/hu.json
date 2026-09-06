@@ -93,7 +93,9 @@
     "signOut": "Kijelentkezés",
     "tools": "Eszközök",
     "zoom": "Nagyítás",
-    "viewInSplitView": "Megtekintés osztott nézetben"
+    "viewInSplitView": "Megtekintés osztott nézetben",
+    "blockAds": "Reklámok tiltása ezen az oldalon",
+    "addToHomeScreen": "Hozzáadás a kezdőképernyőhöz"
   },
   "modals": {
     "downloadVideo": "Videó letöltése",
@@ -378,7 +380,8 @@
       "system": "Rendszer",
       "hint": "Egy nyelv kiválasztása vagy kövesse a rendszer nyelvét."
     },
-    "injectCookie": "Süti hozzáadása"
+    "injectCookie": "Süti hozzáadása",
+    "pullToRefresh": "Húzza le az oldal újratöltéséhez"
   },
   "sync": {
     "label": "Szinkronizálás",
@@ -440,7 +443,8 @@
     "profileCookieExportFailed": "Profil sütijeinek exportálása nem sikerült (cookies.txt)",
     "siteDataCleared": "Weboldaladatok törölve",
     "siteDataClearFailed": "Weboldaladatok törlése nem sikerült",
-    "pressBackAgainToExit": "A kilépéshez nyomja meg ismét a vissza gombot"
+    "pressBackAgainToExit": "A kilépéshez nyomja meg ismét a vissza gombot",
+    "addToHomeScreenFailed": "Ez az indító nem támogatja a kezdőképernyő-parancsikonokat"
   },
   "usageLimits": {
     "label": "Használati korlátok",

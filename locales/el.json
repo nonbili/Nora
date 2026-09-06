@@ -125,7 +125,12 @@
       "description": "Ρυθμίσεις θέματος και γραμμής εργαλείων.",
       "toolbar": "Γραμμή εργαλείων",
       "deckTabWidth": "Πλάτος καρτέλας στοίβας",
-      "deckTabWidthHint": "Τρέχουσα τιμή: {{value}}px"
+      "deckTabWidthHint": "Τρέχουσα τιμή: {{value}}px",
+      "desktopLayout": "Εμφάνιση σε διάταξη υπολογιστή",
+      "desktopLayoutHint": "Εμφάνιση ομάδων καρτελών και προβολών διάταξης/διαχωρισμένης/πλέγματος σε μεγάλες οθόνες, όπως στη λειτουργία υπολογιστή.",
+      "desktopLayoutAuto": "Αυτόματο",
+      "desktopLayoutOn": "Πάντα",
+      "desktopLayoutOff": "Ποτέ"
     },
     "proxy": {
       "hostPlaceholder": "π.χ. 127.0.0.1 ή proxy.example.com (διεύθυνση proxy)",
@@ -204,6 +209,9 @@
         },
         "hideXHomeTabs": {
           "label": "Απόκρυψη καρτελών της αρχικής ροής του X"
+        },
+        "hideFacebookFeed": {
+          "label": "Απόκρυψη ροής Facebook"
         }
       },
       "scripts": {
@@ -403,7 +411,12 @@
         "gridFour": "Πλέγμα 4 καρτελών"
       },
       "deck": "Στοίβα",
-      "newDeckView": "Νέα προβολή στοίβας"
+      "newDeckView": "Νέα προβολή στοίβας",
+      "closeGroup": "Κλείσιμο ομάδας και καρτελών",
+      "ungroup": "Αφαίρεση από την ομάδα",
+      "newGroup": "Νέα ομάδα",
+      "moveToGroup": "Μετακίνηση στο {{name}}",
+      "moveToUngrouped": "Μετακίνηση εκτός ομάδας"
     },
     "rename": "Μετονομασία προβολής",
     "namePlaceholder": "Όνομα προβολής"
