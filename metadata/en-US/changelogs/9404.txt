@@ -1,0 +1,3 @@
+- Fix mouse scrolling and right click menus in desktop mode
+- Support Indonesian language
+- Translation updates
