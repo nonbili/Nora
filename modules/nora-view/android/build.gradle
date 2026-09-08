@@ -57,4 +57,5 @@ dependencies {
   implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
   fullImplementation "com.google.mlkit:translate:17.0.3"
   fullImplementation "com.google.mlkit:language-id:17.0.6"
+  testImplementation "junit:junit:4.13.2"
 }

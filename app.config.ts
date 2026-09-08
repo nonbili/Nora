@@ -72,6 +72,10 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
             // emulator-only and dropping them cuts CI time and disk (see the
             // matching abiCodes in plugins/withAndroidPlugin.ts).
             buildArchs: ['armeabi-v7a', 'arm64-v8a'],
+            // Run R8 on release builds: without it Play Console reports ~0%
+            // shrinking/obfuscation and flags the app as unoptimized.
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
           },
           ios: {
             deploymentTarget: '17.0',

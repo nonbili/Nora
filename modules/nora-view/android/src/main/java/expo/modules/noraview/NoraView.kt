@@ -178,6 +178,63 @@ val INTERNAL_SCHEMES = setOf("about", "blob", "data", "file", "http", "https", "
 
 const val SAVED_FILE_CHANNEL_ID = "nora-saved-files"
 
+// Sites serve real images under decoy extensions so browsers render them inline
+// instead of downloading them: Discord's .pnj is a PNG, .gifv a GIF. Imgur's
+// .gifv holds an MP4 though, so a detected MIME type outranks this table.
+val FILE_EXTENSION_ALIASES = mapOf(
+  "pnj" to "png",
+  "gifv" to "gif",
+  "jfif" to "jpg",
+  "jpe" to "jpg",
+)
+
+// Extension/MIME lookups, behind a seam so `normalizeFileName` can be tested
+// without the framework's MimeTypeMap.
+interface MimeTypeLookup {
+  fun mimeTypeFor(extension: String): String?
+
+  fun extensionFor(mimeType: String): String?
+}
+
+val systemMimeTypes = object : MimeTypeLookup {
+  override fun mimeTypeFor(extension: String) =
+    MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+
+  override fun extensionFor(mimeType: String) =
+    MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
+}
+
+// Gives a saved file an extension the media scanner understands. `detected` marks
+// a MIME type read off the bytes or the blob itself, which can overrule the name;
+// a type merely guessed from context only fills in a name with nothing usable.
+// An unrecognized extension is otherwise left alone, private formats included --
+// renaming one can be what stops the user loading the file back where it came from.
+fun normalizeFileName(
+  name: String,
+  mimeType: String?,
+  detected: Boolean = false,
+  mimeTypes: MimeTypeLookup = systemMimeTypes
+): String {
+  val ext = name.substringAfterLast('.', "").lowercase()
+  val extMimeType = if (ext == "") null else mimeTypes.mimeTypeFor(ext)
+  val fromMimeType = mimeType?.let(mimeTypes::extensionFor)
+  val alias = FILE_EXTENSION_ALIASES[ext]
+  // Only a disagreement about the kind of file counts: sniffing routinely reads a
+  // .csv as text/plain, and that must not rename it.
+  val contradicted = detected &&
+    fromMimeType != null &&
+    extMimeType?.substringBefore('/') != mimeType.orEmpty().substringBefore('/')
+
+  val replacement = when {
+    extMimeType != null -> if (contradicted) fromMimeType else return name
+    alias != null -> if (detected) fromMimeType ?: alias else alias
+    ext == "" -> fromMimeType
+    else -> null
+  } ?: return name
+
+  return if (ext == "") "$name.$replacement" else name.dropLast(ext.length) + replacement
+}
+
 // Hosts where Google runs WebView-detection for OAuth.
 val GOOGLE_AUTH_HOSTS = setOf("accounts.google.com", "accounts.youtube.com")
 val GOOGLE_AUTH_ORIGIN_RULES = GOOGLE_AUTH_HOSTS.map { "https://$it" }.toSet()
@@ -1208,15 +1265,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       try {
         val uri = Uri.parse(url)
         val request = DownloadManager.Request(uri)
-        var name = fileName
-        if (name == null) {
-          val mimeTypeMap = MimeTypeMap.getSingleton()
-          val ext = MimeTypeMap.getFileExtensionFromUrl(url)
-          name = uri.getLastPathSegment()
-          if (ext == "" && mimeType != null) {
-            name += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
-          }
-        }
+        // A name from Content-Disposition is the server's own, leave it alone.
+        val name = fileName ?: normalizeFileName(uri.getLastPathSegment() ?: "download", mimeType)
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         val downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -1288,11 +1338,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           val tika = Tika()
           mimeType = tika.detect(bytes)
         }
-        var fileName = _fileName
-        if (!fileName.contains(".")) {
-          val mimeTypeMap = MimeTypeMap.getSingleton()
-          fileName += "." + mimeTypeMap.getExtensionFromMimeType(mimeType)
-        }
+        val fileName = normalizeFileName(_fileName, mimeType, detected = true)
         val contentValues = ContentValues().apply {
           put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
           put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
