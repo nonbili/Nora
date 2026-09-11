@@ -357,6 +357,12 @@ const saveSeenIds = (ids: Set<string>) => {
 const itemKey = (i: PollItem) => `${i.source}:${i.profileId || 'default'}:${i.kind}:${i.id}`
 
 export const runPollAndNotify = async (source: 'foreground' | 'background' | 'manual' = 'manual'): Promise<number> => {
+  if (!settings$.mentionNotificationsEnabled.get()) {
+    // The background task can outlive the setting being turned off (unregister
+    // failing, or work already enqueued by WorkManager), so re-check here.
+    await disableMentionNotifications()
+    return 0
+  }
   const now = Date.now()
   storage.set(LAST_POLL_KEY, now)
   if (source === 'background') {
@@ -366,12 +372,16 @@ export const runPollAndNotify = async (source: 'foreground' | 'background' | 'ma
   if (r.errors.length) {
     console.warn('mention notification poll errors', r.errors)
   }
+  // The setting can be turned off while the poll above is in flight.
+  if (!settings$.mentionNotificationsEnabled.get()) return 0
   if (!r.loggedIn) return 0
   await ensureNotificationChannel()
   const seen = loadSeenIds()
   const fresh = r.items.filter((i) => !seen.has(itemKey(i)))
   let fired = 0
   for (const item of fresh) {
+    // Each await below is another chance for the setting to be turned off.
+    if (!settings$.mentionNotificationsEnabled.get()) break
     try {
       if (Notifications) {
         await Notifications.scheduleNotificationAsync({
@@ -508,8 +518,8 @@ export const disableMentionNotifications = async () => {
   if (!BackgroundTask) return
   try {
     await BackgroundTask.unregisterTaskAsync(POLL_TASK)
-  } catch {
-    // ignore
+  } catch (e) {
+    console.warn('failed to unregister mention poll task', e)
   }
 }
 

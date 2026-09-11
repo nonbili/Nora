@@ -221,8 +221,8 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     }
                     settings$.mentionNotificationsEnabled.set(true)
                   } else {
-                    await disableMentionNotifications()
                     settings$.mentionNotificationsEnabled.set(false)
+                    await disableMentionNotifications()
                   }
                 }}
               />
