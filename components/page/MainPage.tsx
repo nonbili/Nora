@@ -22,6 +22,8 @@ import i18n from 'i18next'
 import NoraViewModule from '@/modules/nora-view'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query/client'
+import { listenIosTransactions, reconcileIosTransactions } from '@/lib/ios-billing'
+import { auth$ } from '@/states/auth'
 import { resolveI18nLanguageFromExpoLocale } from '@/lib/i18n'
 import { TranslationCard } from '@/components/translation/TranslationCard'
 
@@ -29,6 +31,16 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const locales = useLocales()
   const selectedLanguage = useValue(settings$.language)
   const [, setLanguageRevision] = useState(0)
+  const userId = useValue(auth$.userId)
+
+  useEffect(() => listenIosTransactions(), [])
+
+  // Deliver purchases a failed sync or a killed app left unfinished.
+  useEffect(() => {
+    if (userId) {
+      void reconcileIosTransactions()
+    }
+  }, [userId])
 
   useEffect(() => {
     let active = true

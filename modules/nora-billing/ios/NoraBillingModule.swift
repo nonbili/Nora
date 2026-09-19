@@ -45,8 +45,26 @@ struct NoraBillingEntitlementRecord: Record {
 }
 
 public class NoraBillingModule: Module {
+  private var updatesTask: Task<Void, Never>?
+
   public func definition() -> ModuleDefinition {
     Name("NoraBilling")
+
+    Events("onTransactionUpdated")
+
+    // Ask to Buy approvals, renewals, refunds and purchases made on other
+    // devices arrive here rather than as a purchase() result. They stay
+    // unfinished until JS has synced them to the backend and calls
+    // finishTransaction, so a missed event is picked up again by
+    // getUnfinishedTransactions.
+    OnStartObserving {
+      self.startObservingUpdates()
+    }
+
+    OnStopObserving {
+      self.updatesTask?.cancel()
+      self.updatesTask = nil
+    }
 
     AsyncFunction("getProducts") { (productIds: [String]) async throws -> [NoraBillingProductRecord] in
       let products = try await Product.products(for: productIds)
@@ -72,8 +90,8 @@ public class NoraBillingModule: Module {
       let result = try await product.purchase(options: [.appAccountToken(token)])
       switch result {
       case .success(let verification):
-        let transaction = try self.unwrap(verification)
-        await transaction.finish()
+        // Finished by finishTransaction once the backend has the purchase.
+        _ = try self.unwrap(verification)
         return self.serialize(verification)
       case .pending:
         throw NSError(domain: "NoraBilling", code: 202, userInfo: [NSLocalizedDescriptionKey: "Purchase pending approval"])
@@ -89,8 +107,23 @@ public class NoraBillingModule: Module {
       return try await self.collectCurrentEntitlements()
     }
 
-    AsyncFunction("getCurrentEntitlements") { () async throws -> [NoraBillingEntitlementRecord] in
-      try await self.collectCurrentEntitlements()
+    AsyncFunction("getUnfinishedTransactions") { () async -> [NoraBillingEntitlementRecord] in
+      var records: [NoraBillingEntitlementRecord] = []
+      for await verification in StoreKit.Transaction.unfinished {
+        if case .verified = verification {
+          records.append(self.serialize(verification))
+        }
+      }
+      return records
+    }
+
+    AsyncFunction("finishTransaction") { (transactionId: String) async in
+      for await verification in StoreKit.Transaction.unfinished {
+        if case .verified(let transaction) = verification, String(transaction.id) == transactionId {
+          await transaction.finish()
+          return
+        }
+      }
     }
 
     AsyncFunction("manageSubscriptions") { () async throws in
@@ -98,6 +131,18 @@ public class NoraBillingModule: Module {
         throw NSError(domain: "NoraBilling", code: 500, userInfo: [NSLocalizedDescriptionKey: "No active scene"])
       }
       try await AppStore.showManageSubscriptions(in: scene)
+    }
+  }
+
+  private func startObservingUpdates() {
+    updatesTask?.cancel()
+    updatesTask = Task { [weak self] in
+      for await verification in StoreKit.Transaction.updates {
+        guard let self, case .verified = verification else {
+          continue
+        }
+        self.sendEvent("onTransactionUpdated", self.serialize(verification).toDictionary())
+      }
     }
   }
 
@@ -136,7 +181,7 @@ public class NoraBillingModule: Module {
       expirationDate: transaction.expirationDate?.ISO8601Format(),
       revocationDate: transaction.revocationDate?.ISO8601Format(),
       appAccountToken: transaction.appAccountToken?.uuidString.lowercased(),
-      environment: transaction.environmentStringRepresentation,
+      environment: transaction.environment.rawValue,
       signedTransactionInfo: verification.jwsRepresentation
     )
   }

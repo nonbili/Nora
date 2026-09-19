@@ -13,14 +13,13 @@ import { MaterialButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
 import NoraBilling from '@/modules/nora-billing'
 import { useEffect, useMemo, useState } from 'react'
-import { prepareIosPurchase, syncIosTransaction } from '@/lib/query'
-import { queryClient } from '@/lib/query/client'
+import { prepareIosPurchase } from '@/lib/query'
+import { deliverIosTransaction, IOS_SYNC_PRODUCT_ID } from '@/lib/ios-billing'
 import { useMe } from '@/lib/hooks/useMe'
 import { settingsUi } from './SettingsPrimitives'
 
 const surfaceCls = settingsUi.surfaceCls
 const sectionLabelCls = settingsUi.sectionLabelCls
-const IOS_SYNC_PRODUCT_ID = 'jp.nonbili.nora.sync'
 const TERMS_OF_USE_URL = 'https://www.apple.com/legal/macapps/stdeula/'
 const PRIVACY_POLICY_URL = 'https://inks.page/p/privacy'
 
@@ -34,11 +33,12 @@ const SettingsBadge: React.FC<{ label: string }> = ({ label }) => {
 
 export const SettingsModalTabSync = () => {
   const { user, userEmail, plan, userId, accessToken } = use$(auth$)
-  const { me, refetchMe } = useMe()
+  const { me } = useMe()
   const syncHint = userId && (!plan || plan === 'free') ? t('sync.upgradeHint') : t('sync.hint')
   const [loadingProduct, setLoadingProduct] = useState(isIos)
   const [productPrice, setProductPrice] = useState<string>()
   const [actionError, setActionError] = useState<string>()
+  const [notice, setNotice] = useState<string>()
   const [busyAction, setBusyAction] = useState<'buy' | 'restore' | 'manage' | null>(null)
 
   useEffect(() => {
@@ -81,17 +81,21 @@ export const SettingsModalTabSync = () => {
     return t('sync.expiresAt', { value, interpolation: { escapeValue: false } })
   }, [me?.ios?.expiresAt])
 
-  const refreshEntitlement = async () => {
-    await Promise.all([refetchMe(), queryClient.invalidateQueries({ queryKey: ['me'] })])
-  }
-
   const withBusyAction = async (action: 'buy' | 'restore' | 'manage', run: () => Promise<void>) => {
     setBusyAction(action)
     setActionError(undefined)
+    setNotice(undefined)
     try {
       await run()
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : String(error))
+      const message = error instanceof Error ? error.message : String(error)
+      if (message.includes('Purchase pending approval')) {
+        // Ask to Buy: the approved transaction arrives via Transaction.updates.
+        setNotice(t('sync.purchasePending'))
+      } else if (!message.includes('Purchase cancelled')) {
+        // StoreKit reports a dismissed payment sheet as an error.
+        setActionError(message)
+      }
     } finally {
       setBusyAction(null)
     }
@@ -125,9 +129,8 @@ export const SettingsModalTabSync = () => {
         return
       }
       const prepared = await prepareIosPurchase()
-      const result = await NoraBilling.purchase(IOS_SYNC_PRODUCT_ID, prepared.appAccountToken)
-      await syncIosTransaction(result.signedTransactionInfo)
-      await refreshEntitlement()
+      const transaction = await NoraBilling.purchase(IOS_SYNC_PRODUCT_ID, prepared.appAccountToken)
+      await deliverIosTransaction(transaction)
     })
 
   const onRestore = () =>
@@ -144,8 +147,7 @@ export const SettingsModalTabSync = () => {
       if (!syncEntitlement) {
         throw new Error('No Nora Sync purchase found to restore')
       }
-      await syncIosTransaction(syncEntitlement.signedTransactionInfo)
-      await refreshEntitlement()
+      await deliverIosTransaction(syncEntitlement)
     })
 
   const onManageSubscriptions = () =>
@@ -237,6 +239,7 @@ export const SettingsModalTabSync = () => {
             </View>
             <NouText className="mt-4 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{syncHint}</NouText>
             {iosStatusText ? <NouText className="mt-3 text-xs text-zinc-600 dark:text-zinc-500">{iosStatusText}</NouText> : null}
+            {notice ? <NouText className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">{notice}</NouText> : null}
             {actionError ? <NouText className="mt-3 text-sm text-red-400">{actionError}</NouText> : null}
             {restoreConflict ? (
               <View className="mt-3">

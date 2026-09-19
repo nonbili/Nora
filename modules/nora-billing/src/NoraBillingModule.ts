@@ -20,11 +20,17 @@ export interface NoraBillingEntitlement {
   signedTransactionInfo: string
 }
 
-declare class NoraBillingModule extends NativeModule {
+type NoraBillingEvents = {
+  onTransactionUpdated: (transaction: NoraBillingEntitlement) => void
+}
+
+declare class NoraBillingModule extends NativeModule<NoraBillingEvents> {
   getProducts(productIds: string[]): Promise<NoraBillingProduct[]>
+  /* Resolves with an unfinished transaction; call finishTransaction once the backend has it. */
   purchase(productId: string, appAccountToken: string): Promise<NoraBillingEntitlement>
   restore(): Promise<NoraBillingEntitlement[]>
-  getCurrentEntitlements(): Promise<NoraBillingEntitlement[]>
+  getUnfinishedTransactions(): Promise<NoraBillingEntitlement[]>
+  finishTransaction(transactionId: string): Promise<void>
   manageSubscriptions(): Promise<void>
 }
 
@@ -36,8 +42,10 @@ const NoraBilling = isIos
       getProducts: unsupportedError,
       purchase: unsupportedError,
       restore: unsupportedError,
-      getCurrentEntitlements: unsupportedError,
+      getUnfinishedTransactions: unsupportedError,
+      finishTransaction: unsupportedError,
       manageSubscriptions: unsupportedError,
+      addListener: () => ({ remove: () => {} }),
     } as unknown as NoraBillingModule)
 
 export default NoraBilling
