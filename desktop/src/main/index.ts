@@ -181,6 +181,10 @@ function createWindow(): void {
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
       callback(permission === 'notifications')
     })
+    // Keep the synchronous check path in sync with the request handler above,
+    // so a site querying navigator.permissions doesn't see a permission it
+    // would then be denied.
+    wc.session.setPermissionCheckHandler((_wc, permission) => permission === 'notifications')
     attachContextMenu(wc, mainWindow)
     wc.setWindowOpenHandler((details) => {
       const url = normalizeExternalTargetUrl(details.url)
@@ -206,8 +210,10 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  // Set app user model id for windows. It has to match the appId in
+  // electron-builder.yml, which is the AUMID electron-builder stamps on the
+  // installed shortcut, otherwise Windows drops our toast notifications.
+  electronApp.setAppUserModelId('jp.nonbili.nora')
 
   initMainChannel()
 

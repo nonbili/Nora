@@ -1,0 +1,5 @@
+- Mix tab groups and ungrouped tabs in one reorderable sidebar list
+- Open dropped URLs on tabs, empty space, or the sidebar
+- Add a per-site toggle to disable ad blocking
+- Fix notifications on Windows
+- Translation updates and bug fixes

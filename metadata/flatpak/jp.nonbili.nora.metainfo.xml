@@ -60,6 +60,17 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.2.8" date="2026-09-20">
+      <description>
+        <ul>
+          <li>Mix tab groups and ungrouped tabs in one reorderable sidebar list</li>
+          <li>Open dropped URLs on tabs, empty space, or the sidebar</li>
+          <li>Add a per-site toggle to disable ad blocking</li>
+          <li>Fix notifications on Windows</li>
+          <li>Translation updates and bug fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.7" date="2026-08-25">
       <description>
         <ul>
