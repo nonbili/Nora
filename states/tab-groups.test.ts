@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { addTabToGroup, normalizeTabGroups, removeTabFromGroups, sanitizeGroupTabIds, type TabGroup } from '../lib/tab-groups'
-import { closeDesktopGroupWithTabs } from '../lib/desktop-view-actions'
+import { closeDesktopGroupWithTabs, ungroupDesktopGroup } from '../lib/desktop-view-actions'
 import { createDesktopTabGroupFromTab, tabGroups$ } from './tab-groups'
 import { tabs$ } from './tabs'
 
@@ -226,5 +226,104 @@ describe('reopenClosedTabBatch', () => {
     tabs$.reopenClosedTabBatch(tabs$.recentlyClosedTabs.get()[0].id)
     expect(tabs$.tabs.get()).toHaveLength(12)
     expect(tabGroups$.groups.get()[0].tabIds).toHaveLength(11)
+  })
+})
+
+describe('ungroupDesktopGroup', () => {
+  beforeEach(() => {
+    tabGroups$.groups.set([])
+    tabGroups$.activeGroupId.set(null)
+    tabGroups$.sidebarOrder.set([])
+  })
+
+  it('leaves the freed tabs where the group was in a sidebar nobody has reordered', () => {
+    tabs$.tabs.set([
+      { id: 'tab-1', url: 'https://one.example' },
+      { id: 'tab-2', url: 'https://two.example' },
+      { id: 'tab-3', url: 'https://three.example' },
+    ])
+    tabs$.orders.set({ 'tab-1': 0, 'tab-2': 1, 'tab-3': 2 })
+
+    // The sidebar renders [tab-1, tab-2, group(tab-3)] while the stored order is empty.
+    const groupId = createDesktopTabGroupFromTab('tab-3')
+    ungroupDesktopGroup(groupId)
+
+    expect(tabGroups$.groups.get()).toEqual([])
+    expect(tabGroups$.sidebarOrder.get()).toEqual(['tab:tab-1', 'tab:tab-2', 'tab:tab-3'])
+    expect(tabs$.orders.get()).toEqual({ 'tab-1': 0, 'tab-2': 1, 'tab-3': 2 })
+  })
+
+  it('keeps a group that sits between two tabs in place', () => {
+    tabs$.tabs.set([
+      { id: 'tab-1', url: 'https://one.example' },
+      { id: 'tab-2', url: 'https://two.example' },
+      { id: 'tab-3', url: 'https://three.example' },
+    ])
+    tabs$.orders.set({ 'tab-1': 0, 'tab-2': 1, 'tab-3': 2 })
+
+    const groupId = createDesktopTabGroupFromTab('tab-2')
+    tabGroups$.setSidebarOrder(['tab:tab-1', `group:${groupId}`, 'tab:tab-3'])
+    ungroupDesktopGroup(groupId)
+
+    expect(tabGroups$.sidebarOrder.get()).toEqual(['tab:tab-1', 'tab:tab-2', 'tab:tab-3'])
+    expect(tabs$.orders.get()).toEqual({ 'tab-1': 0, 'tab-2': 1, 'tab-3': 2 })
+  })
+
+  it('moves the freed tabs in the tab order to where the sidebar shows them', () => {
+    tabs$.tabs.set([
+      { id: 'tab-1', url: 'https://one.example' },
+      { id: 'tab-2', url: 'https://two.example' },
+      { id: 'tab-3', url: 'https://three.example' },
+    ])
+    tabs$.orders.set({ 'tab-1': 0, 'tab-2': 1, 'tab-3': 2 })
+
+    // Grouping tab-2 moves its section below the ungrouped tabs, so ungrouping it leaves
+    // the sidebar showing [tab-1, tab-3, tab-2] -- and the tab order has to agree.
+    const groupId = createDesktopTabGroupFromTab('tab-2')
+    ungroupDesktopGroup(groupId)
+
+    expect(tabGroups$.sidebarOrder.get()).toEqual(['tab:tab-1', 'tab:tab-3', 'tab:tab-2'])
+    expect(tabs$.orders.get()).toEqual({ 'tab-1': 0, 'tab-3': 1, 'tab-2': 2 })
+  })
+})
+
+describe('reopening a closed tab', () => {
+  beforeEach(() => {
+    tabGroups$.groups.set([])
+    tabGroups$.activeGroupId.set(null)
+    tabGroups$.sidebarOrder.set([])
+    tabs$.recentlyClosedTabs.set([])
+  })
+
+  it('puts the tab back where it was in a sidebar that has been reordered', () => {
+    tabs$.tabs.set([
+      { id: 'tab-a', url: 'https://a.example' },
+      { id: 'tab-b', url: 'https://b.example' },
+      { id: 'tab-c', url: 'https://c.example' },
+    ])
+    tabs$.orders.set({ 'tab-a': 0, 'tab-b': 1, 'tab-c': 2 })
+    tabGroups$.setSidebarOrder(['tab:tab-a', 'tab:tab-b', 'tab:tab-c'])
+    tabs$.activeTabIndex.set(0)
+
+    tabs$.closeTab(1)
+    const closedTab = tabs$.recentlyClosedTabs.get()[0]
+    const reopenedTabId = tabs$.reopenClosedTab(closedTab.id)
+
+    expect(reopenedTabId).toBeTruthy()
+    expect(tabGroups$.sidebarOrder.get()).toEqual(['tab:tab-a', `tab:${reopenedTabId}`, 'tab:tab-c'])
+  })
+
+  it('leaves the stored order alone when the sidebar has never been reordered', () => {
+    tabs$.tabs.set([
+      { id: 'tab-a', url: 'https://a.example' },
+      { id: 'tab-b', url: 'https://b.example' },
+    ])
+    tabs$.orders.set({ 'tab-a': 0, 'tab-b': 1 })
+    tabs$.activeTabIndex.set(0)
+
+    tabs$.closeTab(1)
+    tabs$.reopenClosedTab(tabs$.recentlyClosedTabs.get()[0].id)
+
+    expect(tabGroups$.sidebarOrder.get()).toEqual([])
   })
 })

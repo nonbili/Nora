@@ -1,22 +1,24 @@
-import React, { memo, useState, type ReactNode } from 'react'
+import React, { memo, type ReactNode } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useDndContext, useDroppable } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Pressable, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
 import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
-import { closeDesktopGroupWithTabs, openTabInDesktopGroup } from '@/lib/desktop-view-actions'
-import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
+import { closeDesktopGroupWithTabs, openTabInDesktopGroup, ungroupDesktopGroup } from '@/lib/desktop-view-actions'
+import { groupItemKey } from '@/lib/sidebar-order'
 import { clsx } from '@/lib/utils'
 import { tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
-import { sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
+import { type Tab } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
 import { TAB_DND_PREFIX } from './DesktopTabsSidebarConstants'
 import { TabRow } from './DesktopTabsSidebarTabRow'
+import { useUrlDropTarget } from './useUrlDropTarget'
 
 const UNGROUPED_ID = 'ungrouped'
-const GROUP_DND_PREFIX = 'group:'
+const GAP_DND_PREFIX = 'gap:'
 
 const isMacPlatform = typeof window !== 'undefined' && window.electron?.process?.platform === 'darwin'
 export const NEW_TAB_SHORTCUT = isMacPlatform ? '⌘T' : 'Ctrl+T'
@@ -34,81 +36,53 @@ const ViewTypeIcon = ({ layout, size = 18, color = '#71717a' }: { layout: TabGro
   return <MaterialIcons name={name} size={size} color={color} />
 }
 
-const getGlobalOrderedTabIds = (tabs: Tab[], orders: Record<string, number>) => sortTabsByOrder(tabs, orders).map((tab) => tab.id)
-
-export const reorderUngroupedTabs = (tabId: string, ungroupedIds: string[], targetIndex?: number) => {
-  const withoutTab = ungroupedIds.filter((currentTabId) => currentTabId !== tabId)
-  const boundedIndex = typeof targetIndex === 'number' ? Math.max(0, Math.min(targetIndex, withoutTab.length)) : withoutTab.length
-  const nextUngrouped = [...withoutTab.slice(0, boundedIndex), tabId, ...withoutTab.slice(boundedIndex)]
-  const globalIds = getGlobalOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get())
-  const ungroupedSet = new Set(ungroupedIds.concat([tabId]))
-  const nextQueue = [...nextUngrouped]
-  const nextGlobal = globalIds.map((currentTabId) => {
-    if (currentTabId === tabId) return null
-    if (ungroupedSet.has(currentTabId)) return nextQueue.shift() ?? currentTabId
-    return currentTabId
-  }).filter((id): id is string => id !== null)
-  while (nextQueue.length) {
-    const id = nextQueue.shift()
-    if (id) nextGlobal.push(id)
-  }
-  tabs$.orders.set(Object.fromEntries(nextGlobal.map((currentTabId, index) => [currentTabId, index])))
-}
-
+// The surface the whole list sits on. A tab dropped on it leaves whatever group it was
+// in, and a URL dropped on it opens a new ungrouped tab.
 export const SectionDropTarget: React.FC<{
   children: ReactNode
   groupId: string | null
 }> = ({ children, groupId }) => {
   const { isOver, setNodeRef } = useDroppable({
-    id: groupId ? `${GROUP_DND_PREFIX}${groupId}` : UNGROUPED_ID,
+    id: UNGROUPED_ID,
     data: { type: 'section', groupId },
   })
   const { active, over } = useDndContext()
-  const [isUrlOver, setIsUrlOver] = useState(false)
+  const { isUrlOver, dropProps } = useUrlDropTarget((url) => openTabInDesktopGroup(groupId, url))
   const activeGroupId = (active?.data.current?.groupId ?? null) as string | null | undefined
   const overGroupId = (over?.data.current?.groupId ?? null) as string | null | undefined
   const isCrossSectionTarget = !!active && !!over && activeGroupId !== groupId && overGroupId === groupId
   const showHighlight = isOver || isCrossSectionTarget || isUrlOver
 
-  // Reordering rows is a dnd-kit pointer drag, so these native handlers only ever see a
-  // URL dragged in from a page: dropped on a section it opens as a new tab there, which
-  // for a split view means its first free slot.
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!claimsHostDrop(e.dataTransfer)) {
-      return
-    }
-    e.preventDefault()
-    e.stopPropagation()
-    e.dataTransfer.dropEffect = 'copy'
-    setIsUrlOver(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    if (e.currentTarget.contains(e.relatedTarget as Node | null)) {
-      return
-    }
-    setIsUrlOver(false)
-  }
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsUrlOver(false)
-    const url = readDraggedUrl(e.dataTransfer)
-    if (url) {
-      openTabInDesktopGroup(groupId, url)
-    }
-  }
-
   return (
     <div
       ref={setNodeRef}
-      className={clsx('rounded-md transition-colors', showHighlight && 'bg-indigo-50/80 dark:bg-indigo-400/10')}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      className={clsx('flex-1 rounded-md transition-colors', showHighlight && 'bg-indigo-50/80 dark:bg-indigo-400/10')}
+      {...dropProps}
     >
       {children}
+    </div>
+  )
+}
+
+// The space between two items of the list. Without it there is nowhere to drop a tab that
+// belongs between two groups, and no way to pull a tab out of the last group: every other
+// pixel of the list belongs to a section that would swallow the drop.
+export const ItemGapDropZone: React.FC<{ collapsed?: boolean; index: number }> = ({ collapsed = false, index }) => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `${GAP_DND_PREFIX}${index}`,
+    data: { type: 'gap', groupId: null, index },
+  })
+  const { active } = useDndContext()
+  const isDragging = active?.data.current?.type === 'tab' || active?.data.current?.type === 'section'
+
+  return (
+    <div ref={setNodeRef} className={clsx('flex items-center', collapsed ? 'h-2 w-9' : 'h-2 w-full')}>
+      <div
+        className={clsx(
+          'h-0.5 w-full rounded-full transition-colors',
+          isDragging && isOver ? 'bg-indigo-400 dark:bg-indigo-300' : 'bg-transparent',
+        )}
+      />
     </div>
   )
 }
@@ -144,7 +118,7 @@ export const GroupHeader = memo<{
     {
       label: t('views.desktop.ungroup'),
       icon: <MaterialIcons name="layers-clear" size={14} color={menuIconColor} />,
-      handler: () => tabGroups$.deleteGroup(group.id),
+      handler: () => ungroupDesktopGroup(group.id),
     },
     {
       label: t('views.desktop.closeGroup'),
@@ -167,15 +141,22 @@ export const GroupHeader = memo<{
   ]
 
   if (collapsed) {
-    const collapsedIconColor = isDark ? '#a1a1aa' : '#52525b'
+    // Squat and full width, so the eye reads it as the lid of the card rather than as one
+    // more tab in the stack below it.
+    const collapsedIconColor = isActive ? (isDark ? '#c7d2fe' : '#4338ca') : isDark ? '#a1a1aa' : '#71717a'
     return (
       <NouContextMenu items={mergedContextItems}>
         <div title={group.name}>
           <Pressable
-            className="h-9 w-9 items-center justify-center rounded-md border border-transparent transition-colors hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900"
+            className={clsx(
+              'h-5 w-9 items-center justify-center rounded-md transition-colors',
+              isActive
+                ? 'bg-indigo-200/70 dark:bg-indigo-400/25'
+                : 'bg-zinc-300/70 hover:bg-zinc-400/60 dark:bg-zinc-800 dark:hover:bg-zinc-700',
+            )}
             onPress={onFocus}
           >
-            <ViewTypeIcon layout={group.layout} size={20} color={collapsedIconColor} />
+            <ViewTypeIcon layout={group.layout} size={14} color={collapsedIconColor} />
           </Pressable>
         </div>
       </NouContextMenu>
@@ -212,8 +193,24 @@ export const SidebarGroupSection: React.FC<{
   focusSection: (groupId: string | null, tabIds: string[]) => void
   group: TabGroup
   groupTabs: Tab[]
-}> = ({ activeGroupId, activeTabId, collapsed = false, focusSection, group, groupTabs }) => {
+  isDragging?: boolean
+}> = ({ activeGroupId, activeTabId, collapsed = false, focusSection, group, groupTabs, isDragging = false }) => {
+  // A group section is an item of the sidebar list, so it both sorts among the ungrouped
+  // tabs around it and takes tabs dropped into it. Only the header carries the drag
+  // listeners -- the rows inside drag on their own.
+  const { attributes, listeners, setNodeRef, transform, transition, isOver } = useSortable({
+    id: groupItemKey(group.id),
+    data: { type: 'section', groupId: group.id },
+  })
+  const { active, over } = useDndContext()
+  const { isUrlOver, dropProps } = useUrlDropTarget((url) => openTabInDesktopGroup(group.id, url))
   const isActiveGroup = group.id === activeGroupId
+  const activeDragGroupId = (active?.data.current?.groupId ?? null) as string | null | undefined
+  const overGroupId = (over?.data.current?.groupId ?? null) as string | null | undefined
+  const isTabDrag = active?.data.current?.type === 'tab'
+  const isCrossSectionTarget = isTabDrag && !!over && activeDragGroupId !== group.id && overGroupId === group.id
+  const showHighlight = (isTabDrag && isOver) || isCrossSectionTarget || isUrlOver
+
   const tabRows = groupTabs.map((tab, index) => (
     <TabRow
       collapsed={collapsed}
@@ -226,27 +223,74 @@ export const SidebarGroupSection: React.FC<{
   ))
 
   return (
-    <SectionDropTarget groupId={group.id}>
+    <div
+      ref={setNodeRef}
+      className={clsx('rounded-xl transition-colors', showHighlight && 'bg-indigo-50/80 dark:bg-indigo-400/10')}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.3 : 1 }}
+      {...dropProps}
+    >
       <div
         className={clsx(
-          collapsed ? 'rounded-xl border px-1 py-1 transition-colors' : 'rounded-xl border p-1 transition-colors',
-          isActiveGroup ? 'border-indigo-200 dark:border-indigo-300/45' : 'border-zinc-200/80 dark:border-zinc-700/80',
+          'rounded-xl border transition-colors',
+          collapsed ? 'px-1 py-1' : 'p-1',
+          isActiveGroup
+            ? 'border-indigo-300 bg-indigo-100/60 dark:border-indigo-300/50 dark:bg-indigo-400/10'
+            : 'border-zinc-300 bg-zinc-200/60 dark:border-zinc-700 dark:bg-zinc-950/50',
         )}
       >
         <View className={clsx(collapsed && 'gap-1 items-center')}>
-          <GroupHeader
-            collapsed={collapsed}
-            group={group}
-            isActive={isActiveGroup}
-            onFocus={() => focusSection(group.id, groupTabs.map((tab) => tab.id))}
-          />
+          <div className="cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+            <GroupHeader
+              collapsed={collapsed}
+              group={group}
+              isActive={isActiveGroup}
+              onFocus={() => focusSection(group.id, groupTabs.map((tab) => tab.id))}
+            />
+          </div>
           {groupTabs.length > 0 && (
             <SortableContext items={groupTabs.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
-              <View className={collapsed ? 'gap-1 items-center' : 'mt-1 gap-1'}>{tabRows}</View>
+              <View
+                className={clsx(
+                  'border-t pt-1',
+                  collapsed ? 'mt-1 gap-1 items-center' : 'mt-1 gap-1',
+                  isActiveGroup ? 'border-indigo-200/70 dark:border-indigo-300/25' : 'border-zinc-300/80 dark:border-zinc-800',
+                )}
+              >
+                {tabRows}
+              </View>
             </SortableContext>
           )}
         </View>
       </div>
-    </SectionDropTarget>
+    </div>
   )
 }
+
+// What follows the cursor while a whole group is being dragged. The list shows where it
+// will land; this shows what is being moved.
+export const GroupSectionPreview: React.FC<{ collapsed?: boolean; group: TabGroup; tabCount: number }> = ({
+  collapsed = false,
+  group,
+  tabCount,
+}) => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      padding: collapsed ? '4px 6px' : '6px 10px',
+      borderRadius: 10,
+      background: '#ffffff',
+      boxShadow: '0 10px 20px rgba(0,0,0,0.18)',
+      cursor: 'grabbing',
+      zIndex: 9999,
+    }}
+  >
+    <ViewTypeIcon layout={group.layout} size={14} color="#52525b" />
+    {collapsed ? null : (
+      <span style={{ fontSize: 12, fontWeight: 700, color: '#18181b', whiteSpace: 'nowrap' }}>{group.name}</span>
+    )}
+    <span style={{ fontSize: 11, fontWeight: 500, color: '#71717a' }}>{tabCount}</span>
+  </div>
+)

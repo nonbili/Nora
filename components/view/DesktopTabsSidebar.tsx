@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
-import { DndContext, DragOverlay, PointerSensor, rectIntersection, useSensor, useSensors, type DragEndEvent, type DragOverEvent, type DragStartEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay, PointerSensor, rectIntersection, useSensor, useSensors, type CollisionDetection, type DragEndEvent, type DragOverEvent, type DragStartEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { batch } from '@legendapp/state'
 import { useValue } from '@legendapp/state/react'
@@ -10,27 +10,63 @@ import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMe
 import { NouText } from '@/components/NouText'
 import { colors } from '@/lib/colors'
 import { openTabInDesktopGroup } from '@/lib/desktop-view-actions'
-import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
+import {
+  getSidebarItems,
+  getTabOrdersFromSidebarItems,
+  groupItemKey,
+  moveSidebarItem,
+  moveSidebarItemToGap,
+  placeTabItem,
+  tabItemKey,
+  type SidebarItem,
+} from '@/lib/sidebar-order'
 import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
 import { sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
 import {
+  GroupSectionPreview,
+  ItemGapDropZone,
   NEW_TAB_SHORTCUT,
   SectionDropTarget,
   SidebarGroupSection,
-  reorderUngroupedTabs,
 } from './DesktopTabsSidebarParts'
-import { TAB_DND_PREFIX } from './DesktopTabsSidebarConstants'
 import { TabRow, TabRowPreview } from './DesktopTabsSidebarTabRow'
+import { useUrlDropTarget } from './useUrlDropTarget'
+
+type PreviewState = { items: SidebarItem[]; groups: TabGroup[] }
+
+// A group is as tall as its contents, so ranking its drag by overlapping area hands every
+// collision to the full-height surface behind the list and the drag resolves to nothing.
+// A dragged group is aimed by the pointer instead, at the gap it is closest to, which also
+// makes "put it below everything" reachable.
+const collisionDetection: CollisionDetection = (args) => {
+  if (args.active.data.current?.type !== 'section') {
+    return rectIntersection(args)
+  }
+
+  const pointerY = args.pointerCoordinates?.y ?? args.collisionRect.top
+  let closestId: string | number | null = null
+  let closestDistance = Number.POSITIVE_INFINITY
+  args.droppableContainers.forEach((container) => {
+    const rect = container.rect.current
+    if (container.data.current?.type !== 'gap' || !rect) {
+      return
+    }
+    const distance = Math.abs(rect.top + rect.height / 2 - pointerY)
+    if (distance < closestDistance) {
+      closestId = container.id
+      closestDistance = distance
+    }
+  })
+
+  return closestId == null ? [] : [{ id: closestId }]
+}
 
 const sameIds = (left: (string | null)[], right: (string | null)[]) =>
   left.length === right.length && left.every((id, index) => id === right[index])
 
-const samePreviewState = (
-  left: { groups: TabGroup[]; ungroupedTabs: Tab[] },
-  right: { groups: TabGroup[]; ungroupedTabs: Tab[] },
-) =>
-  sameIds(left.ungroupedTabs.map((tab) => tab.id), right.ungroupedTabs.map((tab) => tab.id)) &&
+const samePreviewState = (left: PreviewState, right: PreviewState) =>
+  sameIds(left.items.map((item) => item.key), right.items.map((item) => item.key)) &&
   left.groups.length === right.groups.length &&
   left.groups.every((group, index) => group.id === right.groups[index]?.id && sameIds(group.tabIds, right.groups[index].tabIds))
 
@@ -40,14 +76,14 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const activeGroupId = useValue(tabGroups$.activeGroupId)
   const groups = useValue(tabGroups$.groups)
+  const sidebarOrder = useValue(tabGroups$.sidebarOrder)
 
   const [draggingTabId, setDraggingTabId] = useState<string | null>(null)
-  const [dragState, setDragState] = useState<{
-    groups: TabGroup[]
-    ungroupedTabs: Tab[]
-  } | null>(null)
+  const [draggingGroupId, setDraggingGroupId] = useState<string | null>(null)
+  const [dragState, setDragState] = useState<PreviewState | null>(null)
 
-  const lastTarget = useRef<{ groupId: string | null; index: number | undefined } | null>(null)
+  const lastTarget = useRef<{ groupId: string | null; index: number | undefined; isGap: boolean } | null>(null)
+  const lastSectionTarget = useRef<{ gapIndex?: number; overKey?: string } | null>(null)
   const lastUpdateAt = useRef<number>(0)
 
   const tabIdsKey = tabs.map((tab) => tab.id).join('|')
@@ -57,7 +93,15 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const groupsKey = getTabGroupsKey(groups)
   const groupedTabIds = useMemo(() => getGroupedTabIds(groups), [groupsKey])
   const tabById = useMemo(() => new Map(tabs.map((tab) => [tab.id, tab])), [tabIdsKey])
-  const ungroupedTabs = useMemo(() => orderedTabs.filter((tab) => !groupedTabIds.has(tab.id)), [orderedTabs, groupedTabIds])
+  const ungroupedTabIds = useMemo(
+    () => orderedTabs.filter((tab) => !groupedTabIds.has(tab.id)).map((tab) => tab.id),
+    [orderedTabs, groupedTabIds],
+  )
+  // Ungrouped tabs and group sections in one order, so a group can sit between two tabs.
+  const items = useMemo(
+    () => getSidebarItems(ungroupedTabIds, groups.map((group) => group.id), sidebarOrder),
+    [ungroupedTabIds, groupsKey, sidebarOrder],
+  )
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -65,23 +109,26 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     }),
   )
 
-  // The sections claim their own drops; this is the space around them. A URL dropped
-  // there opens as a new ungrouped tab -- and claiming it also keeps Chromium from
-  // navigating the app window to a drop nothing handled.
-  const handleSidebarDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!claimsHostDrop(e.dataTransfer)) {
-      return
-    }
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
+  // The list is also what orders tabs for the workspace, so every change to it is written
+  // back to both: the keys the sidebar renders from, and the flattened tab order.
+  const commitItems = (nextItems: SidebarItem[]) => {
+    tabGroups$.setSidebarOrder(nextItems.map((item) => item.key))
+    tabs$.orders.set(
+      getTabOrdersFromSidebarItems(nextItems, tabGroups$.groups.get(), tabs$.tabs.get().map((tab) => tab.id)),
+    )
   }
 
-  const handleSidebarDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    const url = readDraggedUrl(e.dataTransfer)
-    if (url) {
-      openTabInDesktopGroup(null, url)
-    }
+  const { dropProps: sidebarDropProps } = useUrlDropTarget((url) => openTabInDesktopGroup(null, url), {
+    stopPropagation: false,
+  })
+
+  const resetDrag = () => {
+    setDraggingTabId(null)
+    setDraggingGroupId(null)
+    setDragState(null)
+    lastTarget.current = null
+    lastSectionTarget.current = null
+    lastUpdateAt.current = 0
   }
 
   const focusSection = (groupId: string | null, tabIds: string[]) => {
@@ -95,18 +142,20 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   }
 
   const handleDragStart = ({ active }: DragStartEvent) => {
-    const tabId = active.data.current?.tabId as string | undefined
-    setDraggingTabId(tabId ?? null)
-    setDragState({
-      groups: JSON.parse(JSON.stringify(groups)),
-      ungroupedTabs: [...ungroupedTabs],
-    })
+    const data = active.data.current
+    setDraggingTabId(data?.type === 'tab' ? (data.tabId as string) : null)
+    setDraggingGroupId(data?.type === 'section' ? (data.groupId as string) : null)
+    setDragState({ items, groups: JSON.parse(JSON.stringify(groups)) })
     lastTarget.current = null
+    lastSectionTarget.current = null
     lastUpdateAt.current = 0
   }
 
   const getDropTarget = (over: DragOverEvent['over']) => {
     const overData = over?.data.current
+    if (overData?.type === 'gap') {
+      return { groupId: null, index: overData.index as number, isGap: true }
+    }
     const groupId = (overData?.type === 'section' ? overData.groupId : overData?.groupId) as string | null | undefined
     if (typeof groupId === 'undefined') {
       return null
@@ -114,17 +163,87 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     return {
       groupId,
       index: overData?.type === 'tab' ? (overData.index as number) : undefined,
+      isGap: false,
     }
   }
 
+  // A gap is addressed by the slot it sits in, so a tab that is already above it lands one
+  // place earlier once it has been lifted out of the list.
+  const getInsertIndex = (list: SidebarItem[], tabId: string, target: { index: number | undefined; isGap: boolean }) => {
+    if (!target.isGap || typeof target.index !== 'number') {
+      return target.index
+    }
+    const currentIndex = list.findIndex((item) => item.key === tabItemKey(tabId))
+    return currentIndex !== -1 && currentIndex < target.index ? target.index - 1 : target.index
+  }
+
+  // Which item of the list the pointer is over. A row inside a group answers with its
+  // group, because that is the item that moves.
+  const getTopLevelKey = (over: DragOverEvent['over']) => {
+    const data = over?.data.current
+    if (!data) {
+      return null
+    }
+    if (data.type === 'section') {
+      return data.groupId ? groupItemKey(data.groupId as string) : null
+    }
+    if (data.type === 'tab') {
+      const groupId = data.groupId as string | null
+      return groupId ? groupItemKey(groupId) : tabItemKey(data.tabId as string)
+    }
+    return null
+  }
+
+  const getSectionTarget = (over: DragOverEvent['over']) => {
+    if (over?.data.current?.type === 'gap') {
+      return { gapIndex: over.data.current.index as number }
+    }
+    const overKey = getTopLevelKey(over)
+    return overKey ? { overKey } : null
+  }
+
+  const applySectionTarget = (
+    list: SidebarItem[],
+    activeKey: string,
+    target: { gapIndex?: number; overKey?: string },
+  ) => {
+    if (typeof target.gapIndex === 'number') {
+      return moveSidebarItemToGap(list, activeKey, target.gapIndex)
+    }
+    return target.overKey && target.overKey !== activeKey ? moveSidebarItem(list, activeKey, target.overKey) : list
+  }
+
   const handleDragOver = ({ active, over }: DragOverEvent) => {
-    const tabId = active.data.current?.tabId as string | undefined
-    if (!tabId || !over || over.id === active.id) {
+    const data = active.data.current
+    if (!over || over.id === active.id) {
       return
     }
 
     const now = Date.now()
     if (now - lastUpdateAt.current < 100) {
+      return
+    }
+
+    if (data?.type === 'section') {
+      const activeKey = groupItemKey(data.groupId as string)
+      const target = getSectionTarget(over)
+      if (!target || target.overKey === activeKey) {
+        return
+      }
+      if (
+        target.overKey === lastSectionTarget.current?.overKey &&
+        target.gapIndex === lastSectionTarget.current?.gapIndex
+      ) {
+        return
+      }
+      lastUpdateAt.current = now
+      lastSectionTarget.current = target
+      setDragState((current) => (current ? { ...current, items: applySectionTarget(current.items, activeKey, target) } : current))
+      return
+    }
+
+    const tabId = data?.tabId as string | undefined
+    if (!tabId) {
       return
     }
 
@@ -138,81 +257,81 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
       return
     }
 
-    const tab = tabs.find((currentTab) => currentTab.id === tabId)
-    if (!tab) {
-      return
-    }
-
     lastUpdateAt.current = now
-    lastTarget.current = { groupId: targetGroupId, index: targetIndex }
+    lastTarget.current = { groupId: targetGroupId, index: targetIndex, isGap: target.isGap }
 
     setDragState((current) => {
       if (!current) {
         return current
       }
 
-      let nextGroups = current.groups.map((group) => ({
-        ...group,
-        tabIds:
+      const nextGroups = current.groups.map((group) => {
+        const withoutTab =
           group.layout === 'grid-4'
             ? group.tabIds.map((currentTabId) => (currentTabId === tabId ? null : currentTabId))
-            : group.tabIds.filter((currentTabId) => currentTabId !== tabId),
-      }))
-      let nextUngrouped = current.ungroupedTabs.filter((currentTab) => currentTab.id !== tabId)
+            : group.tabIds.filter((currentTabId) => currentTabId !== tabId)
+        if (group.id !== targetGroupId) {
+          return { ...group, tabIds: withoutTab }
+        }
+        const tabIds = withoutTab.filter((currentTabId): currentTabId is string => typeof currentTabId === 'string')
+        const boundedIndex = typeof targetIndex === 'number' ? Math.max(0, Math.min(targetIndex, tabIds.length)) : tabIds.length
+        return { ...group, tabIds: [...tabIds.slice(0, boundedIndex), tabId, ...tabIds.slice(boundedIndex)] }
+      })
 
-      if (targetGroupId) {
-        nextGroups = nextGroups.map((group) => {
-          if (group.id !== targetGroupId) return group
-          const tabIds = group.tabIds.filter((currentTabId): currentTabId is string => typeof currentTabId === 'string')
-          const boundedIndex = typeof targetIndex === 'number' ? Math.max(0, Math.min(targetIndex, tabIds.length)) : tabIds.length
-          return {
-            ...group,
-            tabIds: [...tabIds.slice(0, boundedIndex), tabId, ...tabIds.slice(boundedIndex)],
-          }
-        })
-      } else {
-        const boundedIndex = typeof targetIndex === 'number' ? Math.max(0, Math.min(targetIndex, nextUngrouped.length)) : nextUngrouped.length
-        nextUngrouped = [...nextUngrouped.slice(0, boundedIndex), tab, ...nextUngrouped.slice(boundedIndex)]
-      }
+      const nextItems = targetGroupId
+        ? current.items.filter((item) => item.key !== tabItemKey(tabId))
+        : placeTabItem(current.items, tabId, getInsertIndex(current.items, tabId, target))
 
-      const next = { groups: nextGroups, ungroupedTabs: nextUngrouped }
-      if (samePreviewState(current, next)) {
-        return current
-      }
-
-      return next
+      const next = { groups: nextGroups, items: nextItems }
+      return samePreviewState(current, next) ? current : next
     })
   }
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    const tabId = active.data.current?.tabId as string | undefined
+    const data = active.data.current
+
+    // The gaps the pointer aims at were rendered from the preview, so the drop resolves
+    // against the preview too. Against the pre-drag list the same gap index means a
+    // different slot, and the drop would undo what the preview promised.
+    const baseItems = dragState?.items ?? items
+
+    if (data?.type === 'section') {
+      const activeKey = groupItemKey(data.groupId as string)
+      const target = getSectionTarget(over) ?? lastSectionTarget.current
+      // The preview has usually already reached the target gap, so applying it again is a
+      // no-op. What is on screen is what was asked for either way, so commit it rather
+      // than test whether this last step changed anything -- resetting the preview
+      // without committing is what puts the group back where it started.
+      commitItems(target ? applySectionTarget(baseItems, activeKey, target) : baseItems)
+      resetDrag()
+      return
+    }
+
+    const tabId = data?.tabId as string | undefined
     const target = over?.id === active.id ? lastTarget.current : getDropTarget(over) ?? lastTarget.current
 
     if (!tabId || !target) {
-      setDraggingTabId(null)
-      setDragState(null)
-      lastTarget.current = null
-      lastUpdateAt.current = 0
+      resetDrag()
       return
     }
 
     const { groupId: targetGroupId, index: targetIndex } = target
+    const insertIndex = getInsertIndex(baseItems, tabId, target)
 
     batch(() => {
       tabGroups$.moveTabToGroup(tabId, targetGroupId, targetIndex)
-      if (!targetGroupId) {
-        const ungroupedIds = ungroupedTabs.map((tab) => tab.id)
-        reorderUngroupedTabs(tabId, ungroupedIds, targetIndex)
-      }
-      setDraggingTabId(null)
-      setDragState(null)
-      lastTarget.current = null
-      lastUpdateAt.current = 0
+      commitItems(
+        targetGroupId
+          ? baseItems.filter((item) => item.key !== tabItemKey(tabId))
+          : placeTabItem(baseItems, tabId, insertIndex),
+      )
+      resetDrag()
     })
   }
 
+  const currentItems = dragState?.items ?? items
   const currentGroups = dragState?.groups ?? groups
-  const currentUngrouped = dragState?.ungroupedTabs ?? ungroupedTabs
+  const groupById = useMemo(() => new Map(currentGroups.map((group) => [group.id, group])), [currentGroups])
 
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
@@ -236,10 +355,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     {
       label: `${t('tabs.new')} (${NEW_TAB_SHORTCUT})`,
       icon: <MaterialIcons name="add" size={14} color={menuIconColor} />,
-      handler: () => {
-        tabGroups$.setActiveGroup(null)
-        tabs$.openTab('')
-      },
+      handler: () => openTabInDesktopGroup(null),
     },
     ...(recentlyClosedTabs.length
       ? ([
@@ -266,142 +382,122 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     },
   ]
 
-  if (collapsed) {
-    return (
-      <DndContext
-        collisionDetection={rectIntersection}
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => {
-          setDraggingTabId(null)
-          setDragState(null)
-          lastTarget.current = null
-          lastUpdateAt.current = 0
-        }}
-      >
-        <NouContextMenu items={sidebarContextItems}>
-        <div className="h-full w-full" onDragOver={handleSidebarDragOver} onDrop={handleSidebarDrop}>
-        <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
-          <ScrollView className="flex-1" contentContainerClassName="gap-2 items-center px-1 pb-2 pt-1">
-            <SectionDropTarget groupId={null}>
-              <View className="items-center mb-1">
-                <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
-                  <Pressable
-                    className="h-9 w-9 items-center justify-center rounded-md border border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900"
-                    onPress={() => {
-                      tabGroups$.setActiveGroup(null)
-                      tabs$.openTab('')
-                    }}
-                  >
-                    <MaterialIcons name="add" size={20} color={newTabIconColor} />
-                  </Pressable>
-                </div>
-              </View>
-              <SortableContext items={currentUngrouped.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
-                <View className="gap-1 items-center">
-                  {currentUngrouped.map((tab, index) => (
-                    <TabRow collapsed groupId={null} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
-                  ))}
-                </View>
-              </SortableContext>
-            </SectionDropTarget>
+  const draggingGroup = draggingGroupId ? currentGroups.find((group) => group.id === draggingGroupId) ?? null : null
 
-            {currentGroups.map((group) => {
-              const groupTabs = group.tabIds
-                .filter((tabId): tabId is string => typeof tabId === 'string')
-                .map((tabId) => tabById.get(tabId))
-                .filter((tab): tab is Tab => tab != null)
-              return (
-                <SidebarGroupSection
-                  activeGroupId={activeGroupId}
-                  activeTabId={activeTabId}
-                  collapsed
-                  focusSection={focusSection}
-                  group={group}
-                  groupTabs={groupTabs}
-                  key={group.id}
-                />
-              )
-            })}
-          </ScrollView>
-        </View>
-        </div>
-        </NouContextMenu>
-        <DragOverlay dropAnimation={null}>
-          {draggingTab ? <TabRowPreview collapsed tab={draggingTab} /> : null}
-        </DragOverlay>
-      </DndContext>
+  const renderItem = (item: SidebarItem, index: number) => {
+    if (item.kind === 'tab') {
+      const tab = tabById.get(item.tabId)
+      if (!tab) {
+        return null
+      }
+      return (
+        <TabRow
+          collapsed={collapsed}
+          groupId={null}
+          index={index}
+          isActive={tab.id === activeTabId}
+          key={item.key}
+          tab={tab}
+        />
+      )
+    }
+
+    const group = groupById.get(item.groupId)
+    if (!group) {
+      return null
+    }
+    const groupTabs = group.tabIds
+      .filter((tabId): tabId is string => typeof tabId === 'string')
+      .map((tabId) => tabById.get(tabId))
+      .filter((tab): tab is Tab => tab != null)
+    return (
+      <SidebarGroupSection
+        activeGroupId={activeGroupId}
+        activeTabId={activeTabId}
+        collapsed={collapsed}
+        focusSection={focusSection}
+        group={group}
+        groupTabs={groupTabs}
+        isDragging={draggingGroupId === group.id}
+        key={item.key}
+      />
     )
   }
 
+  const list = (
+    <SortableContext items={currentItems.map((item) => item.key)} strategy={verticalListSortingStrategy}>
+      <View className={collapsed ? 'items-center' : undefined}>
+        <ItemGapDropZone collapsed={collapsed} index={0} />
+        {currentItems.map((item, index) => (
+          <React.Fragment key={item.key}>
+            {renderItem(item, index)}
+            <ItemGapDropZone collapsed={collapsed} index={index + 1} />
+          </React.Fragment>
+        ))}
+      </View>
+    </SortableContext>
+  )
+
   return (
     <DndContext
-      collisionDetection={rectIntersection}
+      collisionDetection={collisionDetection}
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => {
-        setDraggingTabId(null)
-        setDragState(null)
-        lastTarget.current = null
-        lastUpdateAt.current = 0
-      }}
+      onDragCancel={resetDrag}
     >
       <NouContextMenu items={sidebarContextItems}>
-      <div className="h-full w-full" onDragOver={handleSidebarDragOver} onDrop={handleSidebarDrop}>
-      <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
-        <ScrollView className="flex-1" contentContainerClassName="gap-3 px-2 pb-3 pt-1">
-          <SectionDropTarget groupId={null}>
-            <View className="flex-row items-center justify-between px-2 py-1 mb-1">
-              <NouText className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                {t('views.desktop.ungrouped')}
-              </NouText>
-              <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
-                <Pressable
-                  className="h-5 w-5 items-center justify-center rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800"
-                  onPress={() => {
-                    tabGroups$.setActiveGroup(null)
-                    tabs$.openTab('')
-                  }}
-                >
-                  <MaterialIcons name="add" size={16} color="#71717a" />
-                </Pressable>
-              </div>
-            </View>
-            <SortableContext items={currentUngrouped.map((tab) => `${TAB_DND_PREFIX}${tab.id}`)} strategy={verticalListSortingStrategy}>
-              <View className="gap-1">
-                {currentUngrouped.map((tab, index) => (
-                  <TabRow groupId={null} index={index} isActive={tab.id === activeTabId} key={tab.id} tab={tab} />
-                ))}
-              </View>
-            </SortableContext>
-          </SectionDropTarget>
-
-          {currentGroups.map((group) => {
-            const groupTabs = group.tabIds
-              .filter((tabId): tabId is string => typeof tabId === 'string')
-              .map((tabId) => tabById.get(tabId))
-              .filter((tab): tab is Tab => tab != null)
-            return (
-              <SidebarGroupSection
-                activeGroupId={activeGroupId}
-                activeTabId={activeTabId}
-                focusSection={focusSection}
-                group={group}
-                groupTabs={groupTabs}
-                key={group.id}
-              />
-            )
-          })}
-        </ScrollView>
-      </View>
-      </div>
+        <div className="h-full w-full" {...sidebarDropProps}>
+          <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
+            <ScrollView
+              className="flex-1"
+              contentContainerClassName={
+                collapsed ? 'min-h-full gap-2 items-center px-1 pb-2 pt-1' : 'min-h-full gap-3 px-2 pb-3 pt-1'
+              }
+            >
+              <SectionDropTarget groupId={null}>
+                {collapsed ? (
+                  <View className="items-center mb-1">
+                    <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
+                      <Pressable
+                        className="h-9 w-9 items-center justify-center rounded-md border border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900"
+                        onPress={() => openTabInDesktopGroup(null)}
+                      >
+                        <MaterialIcons name="add" size={20} color={newTabIconColor} />
+                      </Pressable>
+                    </div>
+                  </View>
+                ) : (
+                  <View className="flex-row items-center justify-between px-2 py-1 mb-1">
+                    <NouText className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                      {t('views.desktop.allTabs')}
+                    </NouText>
+                    <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
+                      <Pressable
+                        className="h-5 w-5 items-center justify-center rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                        onPress={() => openTabInDesktopGroup(null)}
+                      >
+                        <MaterialIcons name="add" size={16} color="#71717a" />
+                      </Pressable>
+                    </div>
+                  </View>
+                )}
+                {list}
+              </SectionDropTarget>
+            </ScrollView>
+          </View>
+        </div>
       </NouContextMenu>
       <DragOverlay dropAnimation={null}>
-        {draggingTab ? <TabRowPreview tab={draggingTab} /> : null}
+        {draggingTab ? <TabRowPreview collapsed={collapsed} tab={draggingTab} /> : null}
+        {draggingGroup ? (
+          <GroupSectionPreview
+            collapsed={collapsed}
+            group={draggingGroup}
+            tabCount={draggingGroup.tabIds.filter(Boolean).length}
+          />
+        ) : null}
       </DragOverlay>
     </DndContext>
   )

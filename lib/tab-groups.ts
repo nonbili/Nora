@@ -68,7 +68,7 @@ export const addTabToGroup = (group: TabGroup, tabId: string, targetIndex?: numb
 }
 
 export const normalizeTabGroups = <
-  T extends { activeGroupId?: string | null; groups?: Partial<TabGroup>[] } | undefined,
+  T extends { activeGroupId?: string | null; groups?: Partial<TabGroup>[]; sidebarOrder?: unknown } | undefined,
 >(
   data: T,
 ) => {
@@ -103,6 +103,17 @@ export const normalizeTabGroups = <
   if (typeof data.activeGroupId !== 'string' || !data.groups.some((group) => group.id === data.activeGroupId)) {
     data.activeGroupId = null
   }
+
+  // Stale or duplicated keys are harmless -- the sidebar resolves the order against what
+  // actually exists -- but anything that is not a key at all is dropped here.
+  const seenKeys = new Set<string>()
+  data.sidebarOrder = (Array.isArray(data.sidebarOrder) ? data.sidebarOrder : []).filter((key: unknown) => {
+    if (typeof key !== 'string' || !key || seenKeys.has(key)) {
+      return false
+    }
+    seenKeys.add(key)
+    return true
+  })
 
   return data
 }

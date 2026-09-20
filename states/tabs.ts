@@ -5,7 +5,8 @@ import { genId } from '@/lib/utils'
 import { ui$ } from './ui'
 import { settings$ } from './settings'
 import { DECK_VIEW_ID, savedViews$ } from './saved-views'
-import { getDefaultGroupName, sanitizeGroupTabIds, type TabGroupLayout } from '@/lib/tab-groups'
+import { getDefaultGroupName, getGroupedTabIds, sanitizeGroupTabIds, type TabGroupLayout } from '@/lib/tab-groups'
+import { getSidebarItems, groupItemKey, tabItemKey } from '@/lib/sidebar-order'
 import { tabGroups$ } from './tab-groups'
 import { sortBy } from 'es-toolkit'
 import {
@@ -131,6 +132,43 @@ const restoreTabOrder = (tabId: string, precedingTabId?: string | null) => {
   const insertIndex = precedingIndex + 1
   const nextOrder = [...withoutTab.slice(0, insertIndex), tabId, ...withoutTab.slice(insertIndex)]
   tabs$.orders.set(Object.fromEntries(nextOrder.map((id, index) => [id, index])))
+}
+
+// The sidebar keeps an order of its own, and a reopened tab comes back under a new id, so
+// restoring `orders` alone leaves it at the bottom of the list -- where the next sidebar
+// drag would write it back over the order just restored.
+const restoreSidebarOrder = (tabId: string, precedingTabId?: string | null) => {
+  const storedOrder = tabGroups$.sidebarOrder.get()
+  // Nothing has been reordered yet, so the list follows `orders`, which is already right.
+  if (!storedOrder.length) {
+    return
+  }
+
+  const groups = tabGroups$.groups.get()
+  const groupedTabIds = getGroupedTabIds(groups)
+  const ungroupedTabIds = getOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get()).filter(
+    (currentTabId) => !groupedTabIds.has(currentTabId),
+  )
+  const key = tabItemKey(tabId)
+  const keys = getSidebarItems(ungroupedTabIds, groups.map((group) => group.id), storedOrder).map((item) => item.key)
+  const without = keys.filter((currentKey) => currentKey !== key)
+
+  if (precedingTabId == null) {
+    tabGroups$.setSidebarOrder([key, ...without])
+    return
+  }
+
+  // The tab it followed may since have joined a group, and then the group is the item it
+  // sits behind in the list.
+  const precedingGroupId = findGroupForTab(precedingTabId)?.groupId
+  const precedingIndex = without.indexOf(precedingGroupId ? groupItemKey(precedingGroupId) : tabItemKey(precedingTabId))
+  // Whatever it followed is gone from the list; leave it at the end, as the tab order does.
+  if (precedingIndex === -1) {
+    return
+  }
+
+  const insertIndex = precedingIndex + 1
+  tabGroups$.setSidebarOrder([...without.slice(0, insertIndex), key, ...without.slice(insertIndex)])
 }
 
 // Trim to the cap without cutting a batch in half: a half-kept batch would reopen a
@@ -673,6 +711,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       }
     } else {
       restoreTabOrder(reopenedTab.id, precedingTabId)
+      restoreSidebarOrder(reopenedTab.id, precedingTabId)
     }
 
     tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')

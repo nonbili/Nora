@@ -17,6 +17,8 @@ export type { TabGroup, TabGroupLayout } from '@/lib/tab-groups'
 interface Store {
   activeGroupId: string | null
   groups: TabGroup[]
+  /** The sidebar's single list: ungrouped tabs and group sections share one order. */
+  sidebarOrder: string[]
 
   createGroupFromTab: (tabId: string, name?: string) => string
   createGroup: (layout: TabGroupLayout, name?: string) => string
@@ -30,6 +32,7 @@ interface Store {
   removeSplitGroupSlot: (groupId: string, slotIndex: number) => void
   reorderGroupSlots: (groupId: string, fromSlotIndex: number, toSlotIndex: number) => void
   cleanupClosedTabIds: (tabIds: string[]) => void
+  setSidebarOrder: (keys: string[]) => void
 }
 
 const findGroupIndex = (groupId: string) => tabGroups$.groups.get().findIndex((group) => group?.id === groupId)
@@ -75,6 +78,7 @@ export const createDesktopTabGroup = (layout: TabGroupLayout, name?: string) => 
 export const tabGroups$: Observable<Store> = observable<Store>({
   activeGroupId: null,
   groups: [],
+  sidebarOrder: [],
 
   createGroupFromTab: (tabId, name) => createDesktopTabGroupFromTab(tabId, name),
   createGroup: (layout, name) => createDesktopTabGroup(layout, name),
@@ -89,11 +93,12 @@ export const tabGroups$: Observable<Store> = observable<Store>({
 
   deleteGroup: (groupId) => {
     const groups = tabGroups$.groups.get()
-    if (!groups.some((group) => group.id === groupId)) {
+    const group = groups.find((currentGroup) => currentGroup.id === groupId)
+    if (!group) {
       return
     }
     batch(() => {
-      setGroups(groups.filter((group) => group.id !== groupId))
+      setGroups(groups.filter((currentGroup) => currentGroup.id !== groupId))
       if (tabGroups$.activeGroupId.get() === groupId) {
         tabGroups$.activeGroupId.set(null)
       }
@@ -199,6 +204,10 @@ export const tabGroups$: Observable<Store> = observable<Store>({
       nextTabIds.splice(toSlotIndex, 0, moved)
       return { ...group, tabIds: nextTabIds }
     })
+  },
+
+  setSidebarOrder: (keys) => {
+    tabGroups$.sidebarOrder.set(keys)
   },
 
   cleanupClosedTabIds: (tabIds) => {
