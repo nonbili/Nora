@@ -37,6 +37,7 @@ import { handleShortcuts } from '@/desktop/src/renderer/lib/shortcuts'
 import { t } from 'i18next'
 import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
+import { openUrlInDesktopTab } from '@/lib/desktop-view-actions'
 import {
   executeWebviewJavaScript,
   executeWebviewJavaScriptQuietly,
@@ -391,17 +392,7 @@ export const NoraTab: React.FC<{
 
   // A URL dropped onto this tab's page navigates the tab it was dropped on, so a link
   // can be dragged from one tab of a deck or split view into another.
-  const openDroppedUrl = useCallback(
-    (url: string) => {
-      const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
-      if (currentIndex === -1) {
-        return
-      }
-      tabs$.setActiveTabById(tab.id, 'user')
-      tabs$.updateTabUrl(url, currentIndex)
-    },
-    [tab.id],
-  )
+  const openDroppedUrl = useCallback((url: string) => openUrlInDesktopTab(tab.id, url), [tab.id])
 
   const noraViewRef = useCallback(
     (webview: WebviewTag | null) => {

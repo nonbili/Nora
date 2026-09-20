@@ -1,5 +1,5 @@
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
-import React, { memo } from 'react'
+import React, { memo, useState } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -9,6 +9,8 @@ import { NouContextMenu } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
 import { ServiceIcon } from '@/components/service/Services'
 import { clsx } from '@/lib/utils'
+import { openUrlInDesktopTab } from '@/lib/desktop-view-actions'
+import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
 import { getProfileColor } from '@/lib/profile'
 import { tabGroups$ } from '@/states/tab-groups'
 import { tabs$, type Tab } from '@/states/tabs'
@@ -28,6 +30,7 @@ export const TabRow = memo<{
     id: `${TAB_DND_PREFIX}${tab.id}`,
     data: { type: 'tab', tabId: tab.id, groupId, index },
   })
+  const [isUrlOver, setIsUrlOver] = useState(false)
   const profileColor = getProfileColor(tab.profile)
   const tabLabel = getTabLabel(tab)
   const favicon = (
@@ -129,15 +132,51 @@ export const TabRow = memo<{
   const items = useTabContextMenuItems(tab, { runWebviewAction })
   const titleAttr = collapsed ? [tabLabel, tab.url].filter(Boolean).join('\n') : tab.url || undefined
 
+  // A URL dragged in from a page and dropped on a row opens in that tab, the same as
+  // dropping it on the tab itself. The section around the row would open a new tab, so
+  // the row keeps the drop to itself.
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!claimsHostDrop(e.dataTransfer)) {
+      return
+    }
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+    setIsUrlOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) {
+      return
+    }
+    setIsUrlOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsUrlOver(false)
+    const url = readDraggedUrl(e.dataTransfer)
+    if (!url) {
+      return
+    }
+    tabGroups$.setActiveGroup(groupId)
+    openUrlInDesktopTab(tab.id, url)
+  }
+
   return (
     <div
       ref={setNodeRef}
       title={titleAttr}
+      className={clsx('rounded-md', isUrlOver && 'ring-2 ring-indigo-400/70')}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0 : 1,
       }}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       {...attributes}
       {...listeners}
     >

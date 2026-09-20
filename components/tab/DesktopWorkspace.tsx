@@ -6,6 +6,7 @@ import { useValue } from '@legendapp/state/react'
 import { Pressable } from 'react-native'
 import { clsx } from '@/lib/utils'
 import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
+import { openTabInDesktopGroup, openUrlInDesktopTab } from '@/lib/desktop-view-actions'
 import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { tabGroups$, type TabGroupLayout } from '@/states/tab-groups'
 import { getOrderedTabIds, openDesktopTab, sortTabsByOrder, tabs$ } from '@/states/tabs'
@@ -138,26 +139,9 @@ export const DesktopWorkspace: React.FC = () => {
     // app window to.
     e.preventDefault()
     const url = readDraggedUrl(e.dataTransfer)
-    if (!url) {
-      return
+    if (url) {
+      openTabInDesktopGroup(activeGroup?.id ?? null, url)
     }
-    const tabId = openDesktopTab(url)
-    if (!tabId) {
-      return
-    }
-    if (activeGroup) {
-      tabGroups$.moveTabToGroup(tabId, activeGroup.id)
-    }
-    tabs$.setActiveTabById(tabId, 'open')
-  }
-
-  const openDroppedUrlInTab = (tabId: string, url: string) => {
-    const tabIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tabId)
-    if (tabIndex === -1) {
-      return
-    }
-    tabs$.setActiveTabById(tabId, 'user')
-    tabs$.updateTabUrl(url, tabIndex)
   }
 
   const createDeckTab = () => {
@@ -206,7 +190,7 @@ export const DesktopWorkspace: React.FC = () => {
                   slotIndex={slotIndex ?? null}
                   tab={tab}
                   viewLayout={viewLayout}
-                  onDropUrl={openDroppedUrlInTab}
+                  onDropUrl={openUrlInDesktopTab}
                 />
               )
             })}

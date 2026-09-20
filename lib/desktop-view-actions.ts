@@ -2,36 +2,49 @@ import { batch } from '@legendapp/state'
 import { tabGroups$ } from '@/states/tab-groups'
 import { openDesktopTab, tabs$ } from '@/states/tabs'
 
-export const openTabForActiveDesktopView = () => {
-  const activeGroupId = tabGroups$.activeGroupId.get()
-  const activeGroup = activeGroupId ? tabGroups$.groups.get().find((group) => group.id === activeGroupId) : null
-  if (activeGroup) {
-    const tabId = openDesktopTab('')
-    if (!tabId) {
-      return
-    }
-    if (activeGroup.layout === 'split-view') {
-      const emptySlotIndex = activeGroup.tabIds.findIndex((slotTabId) => !slotTabId)
-      if (emptySlotIndex >= 0) {
-        tabGroups$.assignGroupSlot(activeGroup.id, emptySlotIndex, tabId)
-      } else {
-        const newSlotIndex = activeGroup.tabIds.length
-        tabGroups$.appendSplitGroupSlot(activeGroup.id)
-        tabGroups$.assignGroupSlot(activeGroup.id, newSlotIndex, tabId)
-      }
-    } else {
-      tabGroups$.moveTabToGroup(tabId, activeGroup.id)
-    }
-    tabs$.setActiveTabById(tabId, 'open')
-    return
+// Opens a tab in a specific view: a split view fills its first free slot and grows a new
+// one when it is full, any other view just takes the tab, and a null group means the
+// ungrouped section. Also the path for a URL dropped on a view.
+export const openTabInDesktopGroup = (groupId: string | null, url = '') => {
+  const group = groupId ? tabGroups$.groups.get().find((currentGroup) => currentGroup.id === groupId) : null
+  const tabId = openDesktopTab(url)
+  if (!tabId) {
+    return undefined
   }
 
-  const tabId = openDesktopTab('')
-  if (!tabId) {
+  tabGroups$.setActiveGroup(group?.id ?? null)
+  if (group) {
+    if (group.layout === 'split-view') {
+      const emptySlotIndex = group.tabIds.findIndex((slotTabId) => !slotTabId)
+      if (emptySlotIndex >= 0) {
+        tabGroups$.assignGroupSlot(group.id, emptySlotIndex, tabId)
+      } else {
+        const newSlotIndex = group.tabIds.length
+        tabGroups$.appendSplitGroupSlot(group.id)
+        tabGroups$.assignGroupSlot(group.id, newSlotIndex, tabId)
+      }
+    } else {
+      tabGroups$.moveTabToGroup(tabId, group.id)
+    }
+  }
+
+  tabs$.setActiveTabById(tabId, 'open')
+  return tabId
+}
+
+// A URL dropped on a tab -- on its page, on its header, or on its row in the sidebar --
+// replaces what that tab is showing.
+export const openUrlInDesktopTab = (tabId: string, url: string) => {
+  const tabIndex = tabs$.tabs.get().findIndex((tab) => tab?.id === tabId)
+  if (tabIndex === -1) {
     return
   }
-  tabGroups$.setActiveGroup(null)
-  tabs$.setActiveTabById(tabId, 'open')
+  tabs$.setActiveTabById(tabId, 'user')
+  tabs$.updateTabUrl(url, tabIndex)
+}
+
+export const openTabForActiveDesktopView = () => {
+  openTabInDesktopGroup(tabGroups$.activeGroupId.get())
 }
 
 export const closeDesktopGroupWithTabs = (groupId: string) => {

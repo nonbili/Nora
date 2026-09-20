@@ -1,4 +1,4 @@
-import React, { memo, type ReactNode } from 'react'
+import React, { memo, useState, type ReactNode } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useDndContext, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -6,10 +6,11 @@ import { Pressable, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
 import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
-import { closeDesktopGroupWithTabs } from '@/lib/desktop-view-actions'
+import { closeDesktopGroupWithTabs, openTabInDesktopGroup } from '@/lib/desktop-view-actions'
+import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
 import { clsx } from '@/lib/utils'
 import { tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
-import { openDesktopTab, sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
+import { sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
 import { TAB_DND_PREFIX } from './DesktopTabsSidebarConstants'
 import { TabRow } from './DesktopTabsSidebarTabRow'
@@ -63,15 +64,49 @@ export const SectionDropTarget: React.FC<{
     data: { type: 'section', groupId },
   })
   const { active, over } = useDndContext()
+  const [isUrlOver, setIsUrlOver] = useState(false)
   const activeGroupId = (active?.data.current?.groupId ?? null) as string | null | undefined
   const overGroupId = (over?.data.current?.groupId ?? null) as string | null | undefined
   const isCrossSectionTarget = !!active && !!over && activeGroupId !== groupId && overGroupId === groupId
-  const showHighlight = isOver || isCrossSectionTarget
+  const showHighlight = isOver || isCrossSectionTarget || isUrlOver
+
+  // Reordering rows is a dnd-kit pointer drag, so these native handlers only ever see a
+  // URL dragged in from a page: dropped on a section it opens as a new tab there, which
+  // for a split view means its first free slot.
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!claimsHostDrop(e.dataTransfer)) {
+      return
+    }
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+    setIsUrlOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) {
+      return
+    }
+    setIsUrlOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsUrlOver(false)
+    const url = readDraggedUrl(e.dataTransfer)
+    if (url) {
+      openTabInDesktopGroup(groupId, url)
+    }
+  }
 
   return (
     <div
       ref={setNodeRef}
       className={clsx('rounded-md transition-colors', showHighlight && 'bg-indigo-50/80 dark:bg-indigo-400/10')}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
       {children}
     </div>
@@ -98,25 +133,7 @@ export const GroupHeader = memo<{
     {
       label: t('tabs.new'),
       icon: <MaterialIcons name="add" size={14} color={menuIconColor} />,
-      handler: () => {
-        tabGroups$.setActiveGroup(group.id)
-        const tabId = openDesktopTab('')
-        if (tabId) {
-          if (group.layout === 'split-view') {
-            const emptySlotIndex = group.tabIds.findIndex((slotTabId) => !slotTabId)
-            if (emptySlotIndex >= 0) {
-              tabGroups$.assignGroupSlot(group.id, emptySlotIndex, tabId)
-            } else {
-              const newSlotIndex = group.tabIds.length
-              tabGroups$.appendSplitGroupSlot(group.id)
-              tabGroups$.assignGroupSlot(group.id, newSlotIndex, tabId)
-            }
-          } else {
-            tabGroups$.moveTabToGroup(tabId, group.id)
-          }
-          tabs$.setActiveTabById(tabId, 'open')
-        }
-      },
+      handler: () => openTabInDesktopGroup(group.id),
     },
     { kind: 'separator' },
     {

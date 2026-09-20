@@ -9,6 +9,8 @@ import { t } from 'i18next'
 import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
 import { colors } from '@/lib/colors'
+import { openTabInDesktopGroup } from '@/lib/desktop-view-actions'
+import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
 import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
 import { sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
@@ -62,6 +64,25 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
       activationConstraint: { distance: 4 },
     }),
   )
+
+  // The sections claim their own drops; this is the space around them. A URL dropped
+  // there opens as a new ungrouped tab -- and claiming it also keeps Chromium from
+  // navigating the app window to a drop nothing handled.
+  const handleSidebarDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!claimsHostDrop(e.dataTransfer)) {
+      return
+    }
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  const handleSidebarDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const url = readDraggedUrl(e.dataTransfer)
+    if (url) {
+      openTabInDesktopGroup(null, url)
+    }
+  }
 
   const focusSection = (groupId: string | null, tabIds: string[]) => {
     batch(() => {
@@ -261,6 +282,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
         }}
       >
         <NouContextMenu items={sidebarContextItems}>
+        <div className="h-full w-full" onDragOver={handleSidebarDragOver} onDrop={handleSidebarDrop}>
         <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
           <ScrollView className="flex-1" contentContainerClassName="gap-2 items-center px-1 pb-2 pt-1">
             <SectionDropTarget groupId={null}>
@@ -305,6 +327,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
             })}
           </ScrollView>
         </View>
+        </div>
         </NouContextMenu>
         <DragOverlay dropAnimation={null}>
           {draggingTab ? <TabRowPreview collapsed tab={draggingTab} /> : null}
@@ -328,6 +351,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
       }}
     >
       <NouContextMenu items={sidebarContextItems}>
+      <div className="h-full w-full" onDragOver={handleSidebarDragOver} onDrop={handleSidebarDrop}>
       <View className="h-full w-full flex-col bg-zinc-100 dark:bg-zinc-900">
         <ScrollView className="flex-1" contentContainerClassName="gap-3 px-2 pb-3 pt-1">
           <SectionDropTarget groupId={null}>
@@ -374,6 +398,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
           })}
         </ScrollView>
       </View>
+      </div>
       </NouContextMenu>
       <DragOverlay dropAnimation={null}>
         {draggingTab ? <TabRowPreview tab={draggingTab} /> : null}
