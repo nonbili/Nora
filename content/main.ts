@@ -3,6 +3,7 @@ import { injectCSS } from './css'
 import { injectScript } from './script'
 import { debounce, retry } from 'es-toolkit'
 import { emit } from './utils'
+import { forwardLinkDrops } from './drag'
 import { handleDialogs } from './dialogs'
 import { initNora } from './nora'
 import { interceptClipboard } from './clipboard'
@@ -23,6 +24,7 @@ try {
   }
   interceptClipboard()
   trackInnerScrollers()
+  forwardLinkDrops()
 } catch (e) {
   console.error('NouScript: ', e)
 }

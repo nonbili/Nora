@@ -389,6 +389,20 @@ export const NoraTab: React.FC<{
     void applyContentState()
   }, [applyContentState])
 
+  // A URL dropped onto this tab's page navigates the tab it was dropped on, so a link
+  // can be dragged from one tab of a deck or split view into another.
+  const openDroppedUrl = useCallback(
+    (url: string) => {
+      const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
+      if (currentIndex === -1) {
+        return
+      }
+      tabs$.setActiveTabById(tab.id, 'user')
+      tabs$.updateTabUrl(url, currentIndex)
+    },
+    [tab.id],
+  )
+
   const noraViewRef = useCallback(
     (webview: WebviewTag | null) => {
       const prevWebview = webviewRef.current
@@ -500,12 +514,22 @@ export const NoraTab: React.FC<{
           }
         }
       })
-      on('ipc-message', () => {})
+      // The content script reaches the host over `sendToHost`. Only the link drop is
+      // routed here; everything else still travels through `onMessage` on native.
+      on<Electron.IpcMessageEvent>('ipc-message', (e) => {
+        if (e.channel !== 'drop-url') {
+          return
+        }
+        const url = (e.args?.[0] as { url?: string } | undefined)?.url
+        if (url) {
+          openDroppedUrl(url)
+        }
+      })
       on<Electron.UpdateTargetUrlEvent>('update-target-url', (e) => {
         ui$.hoverLinkUrl.set(e.url || '')
       })
     },
-    [refreshCanGoBack, setPageUrl, setTabLoading, tab.id],
+    [openDroppedUrl, refreshCanGoBack, setPageUrl, setTabLoading, tab.id],
   )
 
   const setActiveNativeWebview = useCallback(
@@ -717,6 +741,11 @@ export const NoraTab: React.FC<{
         if (!isExternalAppUrl(data.url)) {
           const nextUrl = data.kind === 'image' ? buildImageViewerUrl(data.url, theme) : forceHttps(data.url)
           tabs$.openTab(nextUrl, { parentTabId: tab.id, source: 'child' })
+        }
+        break
+      case 'drop-url':
+        if (typeof data?.url === 'string') {
+          openDroppedUrl(data.url)
         }
         break
       case 'open-in-profile':

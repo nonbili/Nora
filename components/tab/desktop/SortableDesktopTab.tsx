@@ -2,6 +2,7 @@ import React, { type CSSProperties, type ReactNode } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { clsx } from '@/lib/utils'
+import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
 import { type TabGroupLayout } from '@/states/tab-groups'
 import { type Tab, tabs$ } from '@/states/tabs'
 import { NoraTab } from '@/components/tab/NoraTab'
@@ -19,6 +20,7 @@ export const SortableDesktopTab: React.FC<{
   slotSwitcher?: ReactNode
   tab: Tab
   viewLayout: TabGroupLayout
+  onDropUrl?: (tabId: string, url: string) => void
 }> = React.memo(
   ({
     index,
@@ -32,6 +34,7 @@ export const SortableDesktopTab: React.FC<{
     slotSwitcher,
     tab,
     viewLayout,
+    onDropUrl,
   }) => {
     const { attributes, listeners, setNodeRef, transform, transition, active } = useSortable({ id: tab.id })
 
@@ -69,6 +72,31 @@ export const SortableDesktopTab: React.FC<{
 
     const isDraggable = isVisible && (isDeck || isSplit || isGrid)
 
+    // The page fills most of the tab and forwards its own drops, so what reaches here is
+    // a drop on the tab chrome around it -- the header and the border. It still means
+    // "open this URL in this tab", and must not fall through to the workspace, which
+    // would open a new tab instead.
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+      if (!isVisible || !onDropUrl || !claimsHostDrop(e.dataTransfer)) {
+        return
+      }
+      e.preventDefault()
+      e.stopPropagation()
+      e.dataTransfer.dropEffect = 'copy'
+    }
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+      if (!isVisible || !onDropUrl) {
+        return
+      }
+      e.preventDefault()
+      e.stopPropagation()
+      const url = readDraggedUrl(e.dataTransfer)
+      if (url) {
+        onDropUrl(tab.id, url)
+      }
+    }
+
     return (
       <div
         ref={setNodeRef}
@@ -86,6 +114,8 @@ export const SortableDesktopTab: React.FC<{
         )}
         style={style}
         onMouseDown={() => tabs$.setActiveTabById(tab.id, 'user')}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         {...(isDraggable ? attributes : {})}
         {...(isDraggable ? listeners : {})}
       >

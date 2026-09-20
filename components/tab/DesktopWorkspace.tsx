@@ -5,6 +5,7 @@ import { SortableContext, arrayMove, horizontalListSortingStrategy, rectSortingS
 import { useValue } from '@legendapp/state/react'
 import { Pressable } from 'react-native'
 import { clsx } from '@/lib/utils'
+import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
 import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { tabGroups$, type TabGroupLayout } from '@/states/tab-groups'
 import { getOrderedTabIds, openDesktopTab, sortTabsByOrder, tabs$ } from '@/states/tabs'
@@ -121,6 +122,44 @@ export const DesktopWorkspace: React.FC = () => {
         ? slotIndexByTabId.get(activeTabId) ?? null
         : focusedEmptySlotByGroup[activeGroup.id] ?? (fallbackEmptySlotIndex >= 0 ? fallbackEmptySlotIndex : null)
 
+  // Dropping a URL on the workspace background (the gaps around the tabs, the space
+  // after the last deck column) opens it in a new tab. Drops that land on a tab are
+  // handled by that tab's page, which forwards them back through the content script.
+  const allowUrlDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!claimsHostDrop(e.dataTransfer)) {
+      return
+    }
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  const openDroppedUrlInNewTab = (e: React.DragEvent<HTMLDivElement>) => {
+    // Always swallow the drop: what the chrome does not consume, Chromium navigates the
+    // app window to.
+    e.preventDefault()
+    const url = readDraggedUrl(e.dataTransfer)
+    if (!url) {
+      return
+    }
+    const tabId = openDesktopTab(url)
+    if (!tabId) {
+      return
+    }
+    if (activeGroup) {
+      tabGroups$.moveTabToGroup(tabId, activeGroup.id)
+    }
+    tabs$.setActiveTabById(tabId, 'open')
+  }
+
+  const openDroppedUrlInTab = (tabId: string, url: string) => {
+    const tabIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tabId)
+    if (tabIndex === -1) {
+      return
+    }
+    tabs$.setActiveTabById(tabId, 'user')
+    tabs$.updateTabUrl(url, tabIndex)
+  }
+
   const createDeckTab = () => {
     const tabId = openDesktopTab('')
     if (tabId && activeGroup) {
@@ -140,6 +179,8 @@ export const DesktopWorkspace: React.FC = () => {
         <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
           <div
             ref={isDeck ? deckScrollRef : undefined}
+            onDragOver={allowUrlDrop}
+            onDrop={openDroppedUrlInNewTab}
             className={clsx(
               isDeck
                 ? 'flex min-h-0 flex-1 gap-2 overflow-x-auto overflow-y-hidden p-2'
@@ -165,6 +206,7 @@ export const DesktopWorkspace: React.FC = () => {
                   slotIndex={slotIndex ?? null}
                   tab={tab}
                   viewLayout={viewLayout}
+                  onDropUrl={openDroppedUrlInTab}
                 />
               )
             })}

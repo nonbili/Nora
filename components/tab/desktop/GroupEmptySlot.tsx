@@ -4,6 +4,7 @@ import { useValue } from '@legendapp/state/react'
 import { Pressable, View } from 'react-native'
 import { t } from 'i18next'
 import { clsx } from '@/lib/utils'
+import { claimsHostDrop, readDraggedUrl } from '@/lib/drag-url'
 import { getProfileColor } from '@/lib/profile'
 import { AUTO_PROFILE_ID } from '@/lib/site-profile'
 import { settings$ } from '@/states/settings'
@@ -34,15 +35,35 @@ export const GroupEmptySlot: React.FC<{
 
   const onActivate = () => focusDesktopGroupSlot(group.id, slotIndex)
 
-  const createTabInSlot = () => {
+  const createTabInSlot = (url = '') => {
     onActivate()
     const tabId =
       selectedProfileId === AUTO_PROFILE_ID
-        ? openDesktopTab('', { profileMode: 'auto' })
-        : openDesktopTab('', { profile: selectedProfileId, profileMode: 'manual' })
+        ? openDesktopTab(url, { profileMode: 'auto' })
+        : openDesktopTab(url, { profile: selectedProfileId, profileMode: 'manual' })
     if (tabId) {
       tabGroups$.assignGroupSlot(group.id, slotIndex, tabId)
       tabs$.setActiveTabById(tabId, 'open')
+    }
+  }
+
+  // An empty slot is the empty area of a split or grid view, so a URL dropped on it
+  // opens as a new tab in that slot rather than somewhere off screen.
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!claimsHostDrop(e.dataTransfer)) {
+      return
+    }
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const url = readDraggedUrl(e.dataTransfer)
+    if (url) {
+      createTabInSlot(url)
     }
   }
 
@@ -64,6 +85,8 @@ export const GroupEmptySlot: React.FC<{
       )}
       style={isSplit ? { flex: 1, minWidth: 0, order: slotIndex } : getSlotStyle(group.layout === 'grid-4' ? 'grid-4' : 'split-view', slotIndex)}
       onClick={onActivate}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
       <View className="flex h-full min-h-0 min-w-0 flex-col">
         <View
@@ -110,7 +133,7 @@ export const GroupEmptySlot: React.FC<{
               {t('views.desktop.chooseTabToAdd', { layout: getLayoutLabel(group.layout) })}
             </NouText>
             <View className="w-full overflow-hidden rounded-[28px] border border-zinc-200 bg-white/95 shadow-sm shadow-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-950/90">
-              <Pressable className="flex-row items-center gap-3 px-5 py-4 active:bg-zinc-100 dark:active:bg-zinc-900" onPress={createTabInSlot}>
+              <Pressable className="flex-row items-center gap-3 px-5 py-4 active:bg-zinc-100 dark:active:bg-zinc-900" onPress={() => createTabInSlot()}>
                 <View className="h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-900">
                   <MaterialIcons name="add" size={20} color="#f97316" />
                 </View>
