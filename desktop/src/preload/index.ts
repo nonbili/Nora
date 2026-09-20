@@ -1,4 +1,4 @@
-import { contextBridge, webFrame } from 'electron'
+import { contextBridge, ipcRenderer, webFrame } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import youTubeGuard from 'nora/assets/scripts/youtube.bjs?raw'
 
@@ -12,6 +12,16 @@ try {
   void webFrame.executeJavaScript(youTubeGuard)
 } catch (error) {
   console.error('[nora] failed to install YouTube ad guard', error)
+}
+
+// This preload also runs in Nora's own window. Only guest frames have a host.
+// Focus events can come from page scripts; require actual user input instead.
+if (process.argv.includes('--nora-tab-guest')) {
+  const activateTab = (event: Event) => {
+    if (event.isTrusted) ipcRenderer.sendToHost('activate-tab')
+  }
+  window.addEventListener('pointerdown', activateTab, true)
+  window.addEventListener('keydown', activateTab, true)
 }
 
 // The renderer bridge stays a main-frame API. Every top-level page already had

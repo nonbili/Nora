@@ -113,7 +113,10 @@ export const SortableDesktopTab: React.FC<{
           active?.id === tab.id && 'opacity-30 z-10',
         )}
         style={style}
-        onMouseDown={() => tabs$.setActiveTabById(tab.id, 'user')}
+        inert={!isVisible}
+        onMouseDown={() => {
+          if (isVisible) tabs$.setActiveTabById(tab.id, 'user')
+        }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         {...(isDraggable ? attributes : {})}
@@ -123,6 +126,7 @@ export const SortableDesktopTab: React.FC<{
           tab={tab}
           index={index}
           isActive={isActive}
+          desktopVisible={isVisible}
           desktopVariant={!isVisible || isSingle ? 'single' : isDeck ? 'deck' : 'saved-view'}
           slotSwitcher={slotSwitcher}
         />

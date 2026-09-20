@@ -80,7 +80,7 @@ export const DeckWorkspace: React.FC<{
       onDragCancel={() => setActiveId(null)}
     >
       <SortableContext items={orderedTabIds} strategy={horizontalListSortingStrategy}>
-        <div ref={deckScrollRef} className="flex-1 flex gap-2 overflow-x-auto overflow-y-hidden p-2">
+        <div ref={deckScrollRef} className="flex-1 flex gap-1 overflow-x-auto overflow-y-hidden p-2">
           {(() => {
             const seen = new Set<string>()
             return tabs.map((tab, index) => {

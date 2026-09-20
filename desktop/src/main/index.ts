@@ -147,6 +147,7 @@ function createWindow(): void {
 
   mainWindow.webContents.on('will-attach-webview', (_, webPreferences) => {
     webPreferences.sandbox = false
+    webPreferences.additionalArguments = [...(webPreferences.additionalArguments || []), '--nora-tab-guest']
     webPreferences.preload = join(__dirname, '../preload/index.js')
     // Load the preload in iframes too, so the YouTube ad guard reaches embedded
     // players (a YouTube video on Reddit is an iframe on youtube.com, and it

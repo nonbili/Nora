@@ -3,7 +3,7 @@ import { t } from 'i18next'
 import type { TabGroupLayout } from '@/states/tab-groups'
 import type { Tab } from '@/states/tabs'
 
-export const SLOT_GAP = 8
+export const SLOT_GAP = 4
 
 export const getHiddenTabStyle = (): CSSProperties => ({
   position: 'absolute',

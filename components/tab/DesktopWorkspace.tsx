@@ -167,9 +167,9 @@ export const DesktopWorkspace: React.FC = () => {
             onDrop={openDroppedUrlInNewTab}
             className={clsx(
               isDeck
-                ? 'flex min-h-0 flex-1 gap-2 overflow-x-auto overflow-y-hidden p-2'
+                ? 'flex min-h-0 flex-1 gap-1 overflow-x-auto overflow-y-hidden p-2'
                 : isSplit
-                  ? 'flex min-h-0 flex-1 min-w-0 flex-row gap-2 overflow-hidden p-2'
+                  ? 'flex min-h-0 flex-1 min-w-0 flex-row gap-1 overflow-hidden p-2'
                   : 'relative min-h-0 flex-1 overflow-hidden p-2',
             )}
           >

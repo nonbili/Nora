@@ -98,3 +98,44 @@ describe('NoraTab dormancy (desktop)', () => {
     await view.unmount()
   })
 })
+
+
+describe('desktop guest activation', () => {
+  it('ignores focus and hidden guest input, then accepts input after becoming visible', async () => {
+    const { getTabWebview } = await import('@/lib/webview')
+    const first: Tab = { id: 'first', url: TAB_URL }
+    const second: Tab = { id: 'second', url: 'https://second.test' }
+    tabs$.tabs.set([first, second])
+    tabs$.activeTabIndex.set(0)
+    let renderer!: TestRenderer.ReactTestRenderer
+    await act(async () => {
+      renderer = TestRenderer.create(<NoraTab tab={second} index={1} desktopVisible={false} />)
+    })
+    const guest = getTabWebview(second.id) as unknown as EventTarget
+    const input = () => {
+      const event = new Event('ipc-message')
+      Object.assign(event, { channel: 'activate-tab', args: [] })
+      guest.dispatchEvent(event)
+    }
+    await act(async () => {
+      guest.dispatchEvent(new Event('focus'))
+      input()
+    })
+    expect(tabs$.activeTabIndex.get()).toBe(0)
+
+    await act(async () => {
+      renderer.update(<NoraTab tab={second} index={1} desktopVisible />)
+    })
+    expect(getTabWebview(second.id)).toBe(guest)
+    await act(async () => guest.dispatchEvent(new Event('focus')))
+    expect(tabs$.activeTabIndex.get()).toBe(0)
+    await act(async () => input())
+    expect(tabs$.activeTabIndex.get()).toBe(1)
+
+    // Unmounting must remove the IPC listener from the old guest.
+    await act(async () => renderer.unmount())
+    tabs$.activeTabIndex.set(0)
+    input()
+    expect(tabs$.activeTabIndex.get()).toBe(0)
+  })
+})

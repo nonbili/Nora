@@ -216,7 +216,7 @@ export const NoraTab: React.FC<{
   desktopVariant?: 'deck' | 'saved-view' | 'single'
   /** Native only: render the desktop tab chrome and fill the slot instead of the screen. */
   desktopChrome?: boolean
-  /** Native desktop only: hidden webviews stay mounted but must not claim pointer hit tests. */
+  /** Hidden desktop webviews stay mounted but must not claim input or activation. */
   desktopVisible?: boolean
   /** Native desktop only: the viewport clips horizontally scrolled deck columns. */
   desktopClipRef?: React.RefObject<{
@@ -276,6 +276,8 @@ export const NoraTab: React.FC<{
   const contentJs = useContentJs()
   const contentJsRef = useRef(contentJs)
   const isActiveRef = useRef(isActive)
+  const desktopVisibleRef = useRef(desktopVisible)
+  desktopVisibleRef.current = desktopVisible
   const profileColor = getProfileColor(tab.profile)
   const viewKey = getProfileViewKey(tab)
   const viewInstanceKey = `${viewKey}:${tab.url ? 'page' : 'blank'}`
@@ -505,9 +507,12 @@ export const NoraTab: React.FC<{
           }
         }
       })
-      // The content script reaches the host over `sendToHost`. Only the link drop is
-      // routed here; everything else still travels through `onMessage` on native.
+      // Guest input and content-script link drops reach the host over `sendToHost`.
       on<Electron.IpcMessageEvent>('ipc-message', (e) => {
+        if (e.channel === 'activate-tab') {
+          if (desktopVisibleRef.current) tabs$.setActiveTabById(tab.id, 'user')
+          return
+        }
         if (e.channel !== 'drop-url') {
           return
         }
@@ -903,7 +908,8 @@ export const NoraTab: React.FC<{
           </View>
         ) : (
           <NoraView
-            className={clsx('flex-1', !tab.url && 'hidden')}
+            className={clsx('flex-1 min-h-0', !tab.url && 'hidden')}
+            style={{ clipPath: 'inset(0 round 0 0 11px 11px)' }}
             ref={noraViewRef}
             partition={`persist:${tab.profile || 'default'}`}
             useragent={getUserAgent(window.electron.process.platform, true)}

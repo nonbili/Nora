@@ -69,13 +69,15 @@ export const noraViewMountCount = () => noraViewEvents.filter((event) => event.t
  */
 const NoraViewMock = React.forwardRef<unknown, Record<string, unknown>>((_props, ref) => {
   React.useImperativeHandle(ref, () => {
+    const events = new EventTarget()
     const handle = {
       loadUrl: (url: string) => {
         noraViewEvents.push({ type: 'loadUrl', url })
         return Promise.resolve()
       },
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addEventListener: events.addEventListener.bind(events),
+      removeEventListener: events.removeEventListener.bind(events),
+      dispatchEvent: events.dispatchEvent.bind(events),
       getTitle: () => '',
       getURL: () => '',
       isLoading: () => false,
