@@ -8,7 +8,6 @@ import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
 import { t } from 'i18next'
 import { NouContextMenu, type ContextItem } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
-import { colors } from '@/lib/colors'
 import { openTabInDesktopGroup } from '@/lib/desktop-view-actions'
 import {
   getSidebarItems,
@@ -335,7 +334,8 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
 
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  const newTabIconColor = isDark ? colors.icon : colors.iconLightStrong
+  // Same tone as a tab row's label, so the row does not read as disabled.
+  const newTabIconColor = isDark ? '#e4e4e7' : '#27272a'
   const menuIconColor = isDark ? '#a1a1aa' : '#52525b'
 
   const newGroupItems: ContextItem[] = (
@@ -438,6 +438,46 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     </SortableContext>
   )
 
+  // New tab is pinned below the list, where the next tab it opens will appear.
+  const newTabButton = (
+    <View className={collapsed ? 'items-center' : undefined}>
+      <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
+        <Pressable
+          className={
+            collapsed
+              ? 'h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-zinc-200/70 dark:hover:bg-zinc-800'
+              : 'min-h-8 flex-row items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-zinc-200/70 dark:hover:bg-zinc-800'
+          }
+          onPress={() => openTabInDesktopGroup(null)}
+        >
+          {collapsed ? (
+            <MaterialIcons name="add" size={20} color={newTabIconColor} />
+          ) : (
+            <>
+              <View className="h-4 w-1 shrink-0" />
+              <View className="h-4 w-4 shrink-0 items-center justify-center">
+                <MaterialIcons name="add" size={16} color={newTabIconColor} />
+              </View>
+              <NouText className="min-w-0 flex-1 text-xs font-medium text-zinc-800 dark:text-zinc-200" numberOfLines={1}>
+                {t('tabs.new')}
+              </NouText>
+              <View className="flex-row shrink-0 items-center gap-1">
+                {NEW_TAB_SHORTCUT.split('+').map((key) => (
+                  <View
+                    className="rounded border border-zinc-300 px-1 py-[1px] dark:border-zinc-700"
+                    key={key}
+                  >
+                    <NouText className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">{key}</NouText>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+        </Pressable>
+      </div>
+    </View>
+  )
+
   return (
     <DndContext
       collisionDetection={collisionDetection}
@@ -453,37 +493,19 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
             <ScrollView
               className="flex-1"
               contentContainerClassName={
-                collapsed ? 'min-h-full gap-2 items-center px-1 pb-2 pt-1' : 'min-h-full gap-3 px-2 pb-3 pt-1'
+                collapsed
+                  ? 'min-h-full gap-2 items-center overflow-visible px-1 pb-2 pt-1'
+                  : 'min-h-full gap-3 overflow-visible px-2 pb-3 pt-1'
               }
             >
               <SectionDropTarget groupId={null}>
-                {collapsed ? (
-                  <View className="items-center mb-1">
-                    <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
-                      <Pressable
-                        className="h-9 w-9 items-center justify-center rounded-md border border-transparent hover:border-zinc-300 hover:bg-zinc-100 dark:hover:border-zinc-800 dark:hover:bg-zinc-900"
-                        onPress={() => openTabInDesktopGroup(null)}
-                      >
-                        <MaterialIcons name="add" size={20} color={newTabIconColor} />
-                      </Pressable>
-                    </div>
-                  </View>
-                ) : (
-                  <View className="flex-row items-center justify-between px-2 py-1 mb-1">
-                    <NouText className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                      {t('views.desktop.allTabs')}
-                    </NouText>
-                    <div title={`${t('tabs.new')} (${NEW_TAB_SHORTCUT})`}>
-                      <Pressable
-                        className="h-5 w-5 items-center justify-center rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800"
-                        onPress={() => openTabInDesktopGroup(null)}
-                      >
-                        <MaterialIcons name="add" size={16} color="#71717a" />
-                      </Pressable>
-                    </div>
-                  </View>
-                )}
-                {list}
+                {/* The wrapper is only as tall as the list, so the sticky row below sits
+                    right under the last tab and rides the bottom edge only once the list
+                    is long enough to scroll. */}
+                <div>
+                  {list}
+                  <div className="sticky bottom-0 bg-zinc-100 pt-1 dark:bg-zinc-900">{newTabButton}</div>
+                </div>
               </SectionDropTarget>
             </ScrollView>
           </View>

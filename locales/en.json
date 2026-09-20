@@ -40,7 +40,6 @@
       "ungroup": "Ungroup",
       "tabCount": "{{count}} tab",
       "tabCount_plural": "{{count}} tabs",
-      "allTabs": "Tabs",
       "ungrouped": "Ungrouped",
       "chooseTabToAdd": "Choose a tab to add to {{layout}}",
       "createBlankTabInSlot": "Create a new blank tab in this slot",

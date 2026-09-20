@@ -298,24 +298,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
       )}
       {nIf(
         desktopLayout && !sidebarCollapsed,
-        <View className={rc('lg:flex-row lg:items-center lg:justify-end lg:px-1 lg:pt-1', 'flex-row items-center justify-end px-1 pt-1')}>
-          <Tooltip title={t('buttons.toggleSidebar')}>
-            <MaterialButton name="chevron-left" color={headerControlColor} onPress={toggleSidebar} />
-          </Tooltip>
-        </View>,
-      )}
-      {nIf(
-        desktopLayout && !sidebarCollapsed,
         <View className={rc('min-w-0 lg:w-full lg:flex-1 lg:min-h-0', 'min-w-0 w-full flex-1 min-h-0')}>
           <DesktopTabsSidebar />
-        </View>,
-      )}
-      {nIf(
-        sidebarCollapsed,
-        <View className={rc('lg:flex-row lg:items-center lg:justify-center lg:pt-2', 'flex-row items-center justify-center pt-2')}>
-          <Tooltip title={t('buttons.toggleSidebar')}>
-            <MaterialButton name="chevron-right" color={headerControlColor} onPress={toggleSidebar} />
-          </Tooltip>
         </View>,
       )}
       {nIf(
@@ -341,6 +325,16 @@ export const NouHeader: React.FC<{}> = ({}) => {
             ),
         )}
       >
+        {nIf(
+          desktopLayout,
+          <Tooltip title={t('buttons.toggleSidebar')}>
+            <MaterialButton
+              name={sidebarCollapsed ? 'chevron-right' : 'chevron-left'}
+              color={headerControlColor}
+              onPress={toggleSidebar}
+            />
+          </Tooltip>,
+        )}
         {nIf(
           pinnedScripts.length === 1,
           (() => {
