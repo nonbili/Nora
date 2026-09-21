@@ -3,6 +3,7 @@ import React, { memo, useEffect } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useValue } from '@legendapp/state/react'
 import { Pressable, View } from 'react-native'
 import { t } from 'i18next'
 import { NouContextMenu } from '@/components/menu/NouContextMenu'
@@ -12,6 +13,8 @@ import { clsx } from '@/lib/utils'
 import { openUrlInDesktopTab } from '@/lib/desktop-view-actions'
 import { useUrlDropTarget } from './useUrlDropTarget'
 import { getProfileColor } from '@/lib/profile'
+import { getSiteFromProfileId } from '@/lib/site-profile'
+import { settings$ } from '@/states/settings'
 import { tabGroups$ } from '@/states/tab-groups'
 import { tabs$, type Tab } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
@@ -43,6 +46,12 @@ export const TabRow = memo<{
     openUrlInDesktopTab(tab.id, url)
   })
   const profileColor = getProfileColor(tab.profile)
+  const profileName = useValue(() => {
+    const site = getSiteFromProfileId(tab.profile)
+    if (site) return site
+    const profileId = tab.profile || 'default'
+    return settings$.profiles.get().find((profile) => profile.id === profileId)?.name || profileId
+  })
   const tabLabel = getTabLabel(tab)
   const favicon = (
     <View className="relative">
@@ -141,7 +150,11 @@ export const TabRow = memo<{
     setTimeout(performIfActive, 80)
   }
   const items = useTabContextMenuItems(tab, { runWebviewAction })
-  const titleAttr = collapsed ? [tabLabel, tab.url].filter(Boolean).join('\n') : tab.url || undefined
+  const titleAttr = [
+    collapsed && tabLabel,
+    tab.url,
+    t('profiles.currentProfile', { name: profileName }),
+  ].filter(Boolean).join('\n')
 
   return (
     <div

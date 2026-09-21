@@ -99,6 +99,7 @@ function ImagePreviewDialog({ dataUrl, error }: { dataUrl: string | null; error:
           <span className="image-preview-mark"><PreviewIcon name="image" /></span>
           <div>
             <h1>Image preview</h1>
+            {ready && <p className="image-preview-dimensions">{natural.width} × {natural.height} px</p>}
           </div>
         </div>
         <div className="image-preview-toolbar" role="group" aria-label="Image zoom controls">

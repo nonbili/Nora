@@ -122,6 +122,7 @@
   },
   "profiles": {
     "label": "Profiles",
+    "currentProfile": "Profile: {{name}}",
     "auto": "Auto",
     "autoProfiles": "Auto profiles",
     "autoProfilesEmpty": "No auto profiles yet.",
