@@ -5,6 +5,14 @@
     "donate": "Donate",
     "hint": "Version info, source code, and support links."
   },
+  "upgrade": {
+    "check": "Check for updates",
+    "checking": "Checking for updates…",
+    "available": "Nora {{version}} is available. Open the release page to download the update?",
+    "download": "Open download page",
+    "upToDate": "Nora {{version}} is up to date.",
+    "failed": "Could not check for updates. Please try again."
+  },
   "changelog": {
     "label": "Changelog",
     "hint": "Recent releases and fixes from GitHub.",

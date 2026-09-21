@@ -3,6 +3,7 @@ import { MAIN_CHANNEL } from './constants.js'
 import { ipcMain, session } from 'electron'
 import { setLinkHandlingSettings } from '../lib/link-handling.js'
 import { setWebRtcProtection } from '../lib/webrtc.js'
+import { supportsUpdateChecks } from '../lib/update-support.js'
 import {
   deleteDesktopBlocklistMatcherSnapshot,
   deleteDesktopBlocklistSources,
@@ -18,6 +19,7 @@ import {
 const FETCH_TEXT_TIMEOUT_MS = 20_000
 
 const interfaces = {
+  supportsUpdateChecks,
   clearData: () => {
     session.fromPartition('persist:webview').clearData()
   },

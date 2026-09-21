@@ -8,7 +8,8 @@ export const NouLongPressMenu = ({ children, items }: { children: ReactNode; ite
     .filter(({ item }) => item.kind !== 'separator' && item.kind !== 'label')
   const actions: MenuAction[] = actionableItems.map(({ item, index }) => ({
     id: String(index),
-    title: item.label,
+    title: item.metaLabel ? `${item.label} (${item.metaLabel})` : item.label,
+    image: item.systemImage as MenuAction['image'],
     attributes: item.disabled ? { disabled: true } : undefined,
   }))
 

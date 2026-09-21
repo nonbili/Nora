@@ -789,6 +789,9 @@ export const NoraTab: React.FC<{
       label: item.label || '',
       handler: item.handler || (() => {}),
       icon: item.icon,
+      meta: item.meta,
+      metaLabel: item.metaLabel,
+      systemImage: item.systemImage,
       kind: item.kind,
     }))
   useEffect(() => {

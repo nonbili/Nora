@@ -14,6 +14,10 @@ import { clearHostData } from '@/lib/profile-data'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { showToast } from '@/lib/toast'
 import { canPinTabToHomeScreen, pinTabToHomeScreen } from '@/lib/home-shortcut'
+import { useValue } from '@legendapp/state/react'
+import { blocklist$ } from '@/states/blocklist'
+import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
+import { NouText } from '@/components/NouText'
 
 export interface TabContextMenuOptions {
   runWebviewAction: (action: (webview: any) => void) => void
@@ -23,12 +27,25 @@ export interface TabContextMenuOptions {
 export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions) => {
   const colorScheme = useColorScheme()
   const menuIconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
+  const blocklistEnabled = useValue(blocklist$.enabled)
+  const excludedHosts = useValue(blocklist$.excludedHosts)
 
   let host = ''
   if (tab.url) {
     try {
       host = new URL(tab.url).hostname
     } catch {}
+  }
+
+  const blockingSite = toBlocklistSiteKey(host)
+  const blockingOnThisSite = !isBlocklistExcludedHost(host, excludedHosts || [])
+  const toggleSiteBlocking = () => {
+    blocklist$.setHostExcluded(blockingSite, blockingOnThisSite)
+    // Capture this tab's view before the async filter update, even if focus changes.
+    const target = getTabWebview(tab.id)
+    void applyBlocklistExclusions()
+      .then(() => reloadWebview(target, tab.url))
+      .catch(() => {})
   }
 
   const clearSiteData = () => {
@@ -98,6 +115,16 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
           void scrollWebviewToTop(webview)
         }),
     },
+    ...(supportsRuntimeBlocklist() && blocklistEnabled && blockingSite
+      ? [{
+          label: t('menus.blockAds'),
+          metaLabel: blockingOnThisSite ? t('common.on') : t('common.off'),
+          systemImage: 'shield',
+          icon: <MaterialIcons name="shield" size={16} color={menuIconColor} />,
+          meta: <NouText className="text-xs text-indigo-600 dark:text-indigo-300">{blockingOnThisSite ? t('common.on') : t('common.off')}</NouText>,
+          handler: toggleSiteBlocking,
+        }]
+      : []),
     { kind: 'separator' },
     {
       label: t('views.desktop.newGroupFromTab'),

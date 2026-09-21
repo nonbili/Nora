@@ -31,6 +31,8 @@ import { queryClient } from '@/lib/query/client'
 import { getReleaseFeedQuery } from '@/lib/query/changelog'
 import { settingsUi, SettingsSection, SettingsSurface } from './SettingsPrimitives'
 import { colors } from '@/lib/colors'
+import { useCheckForUpgrade } from '@/lib/hooks/useCheckForUpgrade'
+import { NouButton } from '../button/NouButton'
 
 const repo = 'https://github.com/nonbili/Nora'
 const donateLinks = [
@@ -109,6 +111,7 @@ function formatPlanLabel(plan?: string) {
 }
 
 export const SettingsModal = () => {
+  const { checking, checkForUpgrade, supported: supportsUpdateChecks } = useCheckForUpgrade()
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
   const urlModalOpen = useValue(ui$.urlModalOpen)
   const cookieModalOpen = useValue(ui$.cookieModalOpen)
@@ -414,6 +417,11 @@ export const SettingsModal = () => {
         <View className="rounded-[28px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100/90 dark:bg-zinc-900/80 px-5 py-5">
           <NouText className="text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-500">Nora</NouText>
           <NouText className="mt-2 text-xl font-semibold tracking-tight">v{appVersion}</NouText>
+          {isWeb && supportsUpdateChecks ? (
+            <NouButton className="mt-4 self-start" variant="soft" loading={checking} onPress={checkForUpgrade}>
+              {t(checking ? 'upgrade.checking' : 'upgrade.check')}
+            </NouButton>
+          ) : null}
         </View>
 
         <SettingsSection label={t('about.code')}>

@@ -505,7 +505,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                             },
                           },
                         ]),
-                    ...blocklistMenuItems,
+                    ...(!desktopLayout ? blocklistMenuItems : []),
                     {
                       label: t('menus.zoom') || 'Zoom',
                       icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,
@@ -537,8 +537,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                         ]
                       : []),
                   ]),
-              ...(isWeb ? blocklistMenuItems : []),
-              ...(isWeb && !blocklistMenuItems.length
+              ...(isWeb
                 ? []
                 : [{ label: '', handler: () => {}, kind: 'separator' as const }]),
               {

@@ -3,6 +3,7 @@ import { is } from '@electron-toolkit/utils'
 import { AppUpdaterEvents } from 'electron-updater/out/AppUpdater.js'
 import path from 'path'
 import { app } from 'electron'
+import { supportsUpdateChecks } from './update-support'
 
 function getAutoUpdater(): AppUpdater {
   // Using destructuring to access autoUpdater due to the CommonJS module of 'electron-updater'.
@@ -12,7 +13,7 @@ function getAutoUpdater(): AppUpdater {
 }
 
 export async function checkForUpdate() {
-  if (is.dev || process.env.SNAP) {
+  if (is.dev || !supportsUpdateChecks()) {
     return
   }
   const autoUpdater = getAutoUpdater()

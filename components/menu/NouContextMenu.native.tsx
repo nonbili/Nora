@@ -7,6 +7,8 @@ export interface ContextItem {
   color?: 'red' | 'gray'
   kind?: 'item' | 'separator'
   meta?: ReactNode
+  metaLabel?: string
+  systemImage?: string
 }
 
 export const NouContextMenu = ({ children }: { children: ReactNode; items: ContextItem[] }) => {
