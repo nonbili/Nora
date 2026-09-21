@@ -12,6 +12,8 @@ import { uiClient } from './ipc/ui'
 import { getUserAgent } from '@/lib/useragent'
 import { isHttpUrl, normalizeExternalTargetUrl, shouldOpenInSystemBrowser } from './lib/link-handling'
 import { attachWebRtcProtection } from './lib/webrtc'
+import { readImage } from './lib/image-preview'
+import { randomUUID } from 'node:crypto'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
 
@@ -57,7 +59,7 @@ function attachContextMenu(webContents: Electron.WebContents, ownerWindow: Brows
         label: 'Open in new tab',
         visible: isHttpUrl(params.linkURL),
         click: () => {
-          uiClient.openTab(params.linkURL)
+          uiClient.openTab(params.linkURL, webContents.id)
         },
       },
       {
@@ -68,6 +70,20 @@ function attachContextMenu(webContents: Electron.WebContents, ownerWindow: Brows
         },
       },
       { type: 'separator' },
+      {
+        label: 'View image',
+        visible: params.mediaType === 'image' && /^(https?:|data:image\/|blob:)/i.test(params.srcURL),
+        click: async () => {
+          const id = randomUUID()
+          uiClient.showImagePreview(id)
+          try {
+            const dataUrl = await readImage(webContents, params.srcURL, params.frame)
+            uiClient.updateImagePreview(id, dataUrl)
+          } catch {
+            uiClient.updateImagePreview(id, null)
+          }
+        },
+      },
       {
         label: 'Copy Image',
         visible: params.mediaType === 'image',
@@ -192,7 +208,7 @@ function createWindow(): void {
       if (shouldOpenInSystemBrowser(url, details.referrer.url || wc.getURL())) {
         shell.openExternal(url)
       } else if (isHttpUrl(url)) {
-        uiClient.openTab(url)
+        uiClient.openTab(url, wc.id)
       }
       return { action: 'deny' }
     })

@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { initUiChannel } from './ipc/ui'
 import { mainClient } from './ipc/main'
 import { handleShortcuts } from './lib/shortcuts'
+import { ImagePreview } from './components/ImagePreview'
 import { HoverLinkBar } from './components/HoverLinkBar'
 import { settings$ } from 'nora/states/settings'
 import { bookmarks$ } from 'nora/states/bookmarks'
@@ -70,6 +71,7 @@ function App(): React.JSX.Element {
     <>
       <MainPage contentJs={contentJs} />
       <HoverLinkBar />
+      <ImagePreview />
       <Toaster position="bottom-right" />
     </>
   )

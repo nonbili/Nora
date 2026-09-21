@@ -384,7 +384,8 @@ export const tabs$: Observable<Store> = observable<Store>({
           const existingTabIndex = tabs.findIndex((t) => {
             try {
               const tabUrl = new URL(t.url)
-              return tabUrl.hostname === newUrl.hostname
+              return tabUrl.hostname === newUrl.hostname &&
+                (!options?.profile || options.profile === AUTO_PROFILE_ID || (t.profile || 'default') === options.profile)
             } catch {
               return false
             }
@@ -396,7 +397,7 @@ export const tabs$: Observable<Store> = observable<Store>({
             if (existingTab && options?.source === 'child' && options.parentTabId && options.parentTabId !== existingTab.id) {
               childBackParentByTabId[existingTab.id] = options.parentTabId
             }
-            if (existingTab && shouldResolveTabUrlAsAutoProfile(existingTab)) {
+            if (existingTab && options?.source !== 'child' && shouldResolveTabUrlAsAutoProfile(existingTab)) {
               const siteProfile = getSiteProfileId(url)
               if (siteProfile) {
                 recordAutoProfile(siteProfile)

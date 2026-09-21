@@ -75,3 +75,35 @@ describe('cold-start restore', () => {
     expect(tabs$.tabs[0].isDormant.get()).toBe(false)
   })
 })
+
+it('opens a child in its supplied profile even with one tab per site enabled', async () => {
+  const { settings$ } = await import('./settings')
+  const { ui$ } = await import('./ui')
+  const previousTabs = tabs$.tabs.get()
+  const previousIndex = tabs$.activeTabIndex.get()
+  const previousOneTab = settings$.oneTabPerSite.get()
+  const previousOneProfile = settings$.oneProfilePerSite.get()
+  const previousProfile = ui$.lastSelectedProfileId.get()
+  try {
+    settings$.oneTabPerSite.set(true)
+    settings$.oneProfilePerSite.set(false)
+    ui$.lastSelectedProfileId.set('other')
+    tabs$.tabs.set([
+      { id: 'source', url: 'https://source.test', profile: 'work' },
+      { id: 'other', url: 'https://target.test', profile: 'other' },
+    ])
+    tabs$.activeTabIndex.set(1)
+    const id = tabs$.openTab('https://target.test/image-link', {
+      parentTabId: 'source', profile: 'work', source: 'child',
+    })
+    expect(id).not.toBe('other')
+    expect(tabs$.tabs.get().find((tab) => tab.id === id)?.profile).toBe('work')
+    expect(tabs$.tabs.get().find((tab) => tab.id === 'other')?.url).toBe('https://target.test')
+  } finally {
+    tabs$.tabs.set(previousTabs)
+    tabs$.activeTabIndex.set(previousIndex)
+    settings$.oneTabPerSite.set(previousOneTab)
+    settings$.oneProfilePerSite.set(previousOneProfile)
+    ui$.lastSelectedProfileId.set(previousProfile)
+  }
+})

@@ -3,6 +3,7 @@ type ScriptableWebview = {
 }
 
 type PausableWebview = ScriptableWebview & {
+  getWebContentsId?: () => number
   stop?: () => unknown
   stopLoading?: () => unknown
 }
@@ -135,4 +136,14 @@ export function pauseWebview(webview: PausableWebview | null | undefined) {
       })()
     `,
   )
+}
+
+export function getTabIdByWebContentsId(webContentsId: number) {
+  for (const [tabId, webview] of tabWebviews) {
+    try {
+      if (webview.getWebContentsId?.() === webContentsId) return tabId
+    } catch {
+      // A guest may have detached before its ref is cleared.
+    }
+  }
 }
