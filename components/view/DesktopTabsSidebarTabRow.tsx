@@ -1,5 +1,5 @@
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
-import React, { memo } from 'react'
+import React, { memo, useEffect } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -26,10 +26,16 @@ export const TabRow = memo<{
   isActive: boolean
   tab: Tab
 }>(({ collapsed = false, groupId, index, isActive, tab }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, node, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `${TAB_DND_PREFIX}${tab.id}`,
     data: { type: 'tab', tabId: tab.id, groupId, index },
   })
+  useEffect(() => {
+    if (isActive) {
+      node.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    }
+  }, [isActive, collapsed, node])
+
   // A URL dropped on a row opens in that tab, the same as dropping it on the tab itself.
   // The list behind the row would open a new tab, so the row keeps the drop to itself.
   const { isUrlOver, dropProps } = useUrlDropTarget((url) => {
@@ -143,6 +149,8 @@ export const TabRow = memo<{
       title={titleAttr}
       className={clsx('rounded-md', isUrlOver && 'ring-2 ring-indigo-400/70')}
       style={{
+        // Leave room for the sticky new-tab button when revealing this row.
+        scrollMarginBottom: collapsed ? 40 : 36,
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0 : 1,

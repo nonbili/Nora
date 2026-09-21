@@ -10,7 +10,6 @@ import React from 'react'
 mock.module('react-native/Libraries/Utilities/codegenNativeComponent', () => ({ default: () => null }))
 mock.module('react-native/Libraries/Image/resolveAssetSource', () => ({ default: (source: unknown) => source }))
 
-mock.module('@/desktop/src/renderer/lib/shortcuts', () => ({ handleShortcuts: () => {} }))
 mock.module('@react-native-vector-icons/material-icons', () => ({ default: () => null }))
 mock.module('@/lib/download-notifications', () => ({ ensureDownloadNotificationPermission: async () => true }))
 mock.module('@/components/service/Services', () => ({

@@ -33,7 +33,6 @@ import { composeDocumentStartScript, youTubeGuardScript$ } from '@/lib/youtube-g
 import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 import { useTabAnimation } from './tab-animation'
-import { handleShortcuts } from '@/desktop/src/renderer/lib/shortcuts'
 import { t } from 'i18next'
 import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
@@ -42,7 +41,6 @@ import {
   executeWebviewJavaScript,
   executeWebviewJavaScriptQuietly,
   registerTabWebview,
-  reloadWebview,
 } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { getEnabledUserScripts } from '@/lib/user-styles'
@@ -495,16 +493,6 @@ export const NoraTab: React.FC<{
         const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
         if (currentIndex !== -1) {
           tabs$.tabs[currentIndex].assign({ title: webview.getTitle(), icon: e.favicons.at(-1) })
-        }
-      })
-      on('before-input-event', (rawEvent) => {
-        const e = rawEvent as unknown as { input: Electron.Input }
-        if (e.input.type === 'keyDown') {
-          if ((e.input.meta || e.input.control) && e.input.key.toLowerCase() === 'r') {
-            reloadWebview(webview)
-          } else {
-            handleShortcuts(e.input)
-          }
         }
       })
       // Guest input and content-script link drops reach the host over `sendToHost`.

@@ -14,6 +14,7 @@ import { isHttpUrl, normalizeExternalTargetUrl, shouldOpenInSystemBrowser } from
 import { attachWebRtcProtection } from './lib/webrtc'
 import { readImage } from './lib/image-preview'
 import { randomUUID } from 'node:crypto'
+import { attachGuestShortcuts } from './lib/shortcuts'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
 
@@ -193,6 +194,7 @@ function createWindow(): void {
     // MaxListenersExceededWarning. Raise the cap so the warning doesn't fire (the listeners
     // clear themselves once the page stops loading).
     wc.setMaxListeners(50)
+    attachGuestShortcuts(wc, (input) => uiClient.handleGuestShortcut(input, wc.id))
     attachWebRtcProtection(wc)
     attachDownloadHandler(wc.session)
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
