@@ -1,0 +1,115 @@
+import { describe, expect, mock, test } from 'bun:test'
+import { EventEmitter } from 'node:events'
+import { runInNewContext } from 'node:vm'
+import type { BrowserWindow, WebContents } from 'electron'
+import { attachGuestNotifications } from '../desktop/src/main/lib/notifications'
+import { observeNotificationClicks, installNotificationClickHandler, setupNotificationClicks } from '../desktop/src/preload/notifications'
+
+describe('desktop notification clicks', () => {
+  test('returns the native object without copying data or replacing events', () => {
+    class NativeNotification extends EventTarget {
+      static permission = 'granted'
+      static instances: NativeNotification[] = []
+      close = mock(() => {})
+      constructor(private label: string, public options: unknown) {
+        super()
+        NativeNotification.instances.push(this)
+      }
+      get title() { return this.label }
+      get data() { throw new Error('must not read data') }
+    }
+    const window = Object.assign(new EventTarget(), {
+      Notification: NativeNotification as unknown as typeof Notification,
+    })
+    runInNewContext(`(${installNotificationClickHandler.toString()})()`, { window, CustomEvent })
+    const data = { callback: () => {} }
+    const options = { body: 'Hello', data }
+    const notification = new window.Notification('Message', options)
+    const native = NativeNotification.instances[0]
+    expect(notification).toBeInstanceOf(NativeNotification)
+    expect(notification.title).toBe('Message')
+    expect(notification).toBe(native)
+    expect(native.options).toBe(options)
+    expect(window.Notification.permission).toBe('granted')
+    const siteClick = mock(() => {})
+    notification.addEventListener('click', siteClick)
+    const click = new Event('click')
+    native.dispatchEvent(click)
+    expect(siteClick).toHaveBeenCalledWith(click)
+    notification.close()
+    expect(native.close).toHaveBeenCalledTimes(1)
+  })
+
+  test('isolated observation rejects fake objects and untrusted clicks and deduplicates registration', () => {
+    const brand = new WeakSet<object>()
+    class NativeNotification extends EventTarget {
+      constructor() { super(); brand.add(this) }
+      get title() {
+        if (!brand.has(this)) throw new TypeError('Illegal invocation')
+        return 'Message'
+      }
+    }
+    const listeners: EventListener[] = []
+    const window = new EventTarget()
+    const activate = mock(() => {})
+    // Capture the native listener to model a browser-generated trusted click.
+    const isolatedEventTarget = { prototype: {
+      addEventListener(this: EventTarget, type: string, listener: EventListener) {
+        listeners.push(listener)
+        EventTarget.prototype.addEventListener.call(this, type, listener)
+      },
+    } }
+    runInNewContext(`(${observeNotificationClicks.toString()})(activate)`, {
+      window, Notification: NativeNotification, CustomEvent, EventTarget: isolatedEventTarget, activate,
+    })
+    const register = (detail: unknown) => window.dispatchEvent(new CustomEvent('nora-notification-created', { detail }))
+    register({ title: 'fake', addEventListener: () => activate() })
+    window.dispatchEvent(new Event('nora-notification-click'))
+    expect(listeners).toHaveLength(0)
+    const notification = new NativeNotification()
+    register(notification)
+    register(notification)
+    expect(listeners).toHaveLength(1)
+    notification.dispatchEvent(new Event('click'))
+    expect(activate).not.toHaveBeenCalled()
+    listeners[0]({ isTrusted: true } as Event)
+    expect(activate).toHaveBeenCalledTimes(1)
+  })
+
+  test('setup contains synchronous and asynchronous errors', async () => {
+    const report = mock(() => {})
+    const inject = mock(async () => {})
+    setupNotificationClicks(() => { throw new Error('observe failed') }, inject, report)
+    expect(inject).not.toHaveBeenCalled()
+    setupNotificationClicks(() => {}, () => { throw new Error('inject failed') }, report)
+    setupNotificationClicks(() => {}, () => Promise.reject(new Error('async failure')), report)
+    await Promise.resolve()
+    expect(report).toHaveBeenCalledTimes(3)
+  })
+
+  test('restores and focuses the window and activates the sending guest', () => {
+    for (const minimized of [true, false]) {
+      const mainFrame = {}
+      const guest = Object.assign(new EventEmitter(), { id: 42, mainFrame, isDestroyed: () => false })
+      const owner = {
+        isDestroyed: () => false,
+        isMinimized: () => minimized,
+        restore: mock(() => {}),
+        show: mock(() => {}),
+        focus: mock(() => {}),
+      }
+      const activateTab = mock((_id: number) => {})
+      attachGuestNotifications(guest as unknown as WebContents, owner as unknown as BrowserWindow, activateTab)
+      guest.emit('ipc-message', {}, 'unrelated')
+      expect(owner.show).not.toHaveBeenCalled()
+      guest.emit('ipc-message', {}, 'notification-click')
+      guest.emit('ipc-message', { senderFrame: {} }, 'notification-click')
+      expect(owner.show).not.toHaveBeenCalled()
+      guest.emit('ipc-message', { senderFrame: mainFrame }, 'notification-click', 999)
+      expect(owner.restore).toHaveBeenCalledTimes(minimized ? 1 : 0)
+      expect(owner.show).toHaveBeenCalledTimes(1)
+      expect(owner.focus).toHaveBeenCalledTimes(1)
+      expect(activateTab).toHaveBeenCalledWith(42)
+    }
+  })
+})

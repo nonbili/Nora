@@ -15,6 +15,7 @@ import { attachWebRtcProtection } from './lib/webrtc'
 import { readImage } from './lib/image-preview'
 import { randomUUID } from 'node:crypto'
 import { attachGuestShortcuts } from './lib/shortcuts'
+import { attachGuestNotifications } from './lib/notifications'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
 
@@ -195,6 +196,7 @@ function createWindow(): void {
     // clear themselves once the page stops loading).
     wc.setMaxListeners(50)
     attachGuestShortcuts(wc, (input) => uiClient.handleGuestShortcut(input, wc.id))
+    attachGuestNotifications(wc, mainWindow, (id) => uiClient.activateNotificationTab(id))
     attachWebRtcProtection(wc)
     attachDownloadHandler(wc.session)
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {

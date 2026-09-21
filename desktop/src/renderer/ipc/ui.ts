@@ -7,6 +7,7 @@ import { getTabIdByWebContentsId } from '@/lib/webview'
 import { showImagePreview, updateImagePreview } from '../lib/image-preview'
 import { UI_CHANNEL } from 'main/ipc/constants.js'
 import { handleShortcuts } from '../lib/shortcuts'
+import { activateNotificationTabById } from '../lib/notifications'
 
 function openLinkInProfile(url: string) {
   ui$.profileLinkUrl.set(url)
@@ -22,6 +23,11 @@ function openTab(url: string, sourceWebContentsId?: number) {
 }
 
 const interfaces = {
+  activateNotificationTab(sourceWebContentsId: number) {
+    const tabId = getTabIdByWebContentsId(sourceWebContentsId)
+    if (!tabId) return
+    activateNotificationTabById(tabId)
+  },
   handleGuestShortcut(input: Electron.Input, sourceWebContentsId: number) {
     const sourceTabId = getTabIdByWebContentsId(sourceWebContentsId)
     if (sourceTabId) handleShortcuts({ ...input, sourceTabId })

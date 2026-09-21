@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { installYouTubeAdGuard } from './youtube'
 
 const PLAYER_BODY = JSON.stringify({
@@ -22,6 +22,22 @@ class FakeXhr {
 }
 
 const globals = globalThis as any
+const pageGlobals = [
+  'window', 'location', 'document', 'Request', 'Response', 'fetch', 'XMLHttpRequest',
+  '__noraYouTubeAdGuard', 'ytInitialPlayerResponse', 'ytInitialData',
+]
+let originalGlobals: Map<string, PropertyDescriptor | undefined>
+
+beforeEach(() => {
+  originalGlobals = new Map(pageGlobals.map((key) => [key, Object.getOwnPropertyDescriptor(globals, key)]))
+})
+
+afterEach(() => {
+  for (const [key, descriptor] of originalGlobals) {
+    if (descriptor) Object.defineProperty(globals, key, descriptor)
+    else delete globals[key]
+  }
+})
 
 function setupPage(host: string) {
   const created: any[] = []
@@ -58,7 +74,7 @@ function setupPage(host: string) {
 }
 
 describe('installYouTubeAdGuard on a non-YouTube host', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     setupPage('www.reddit.com')
     installYouTubeAdGuard()
   })
@@ -70,7 +86,7 @@ describe('installYouTubeAdGuard on a non-YouTube host', () => {
 })
 
 describe('installYouTubeAdGuard on an embedded player', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     setupPage('www.youtube-nocookie.com')
     installYouTubeAdGuard()
   })

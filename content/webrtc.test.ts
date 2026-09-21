@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { installWebRtcGuard, isRelayCandidate, scrubSdp } from './webrtc'
 
 describe('isRelayCandidate', () => {
@@ -99,10 +99,24 @@ describe('installWebRtcGuard', () => {
   }
 
   const globals = globalThis as unknown as { window?: unknown; RTCPeerConnection?: unknown }
-  globals.window = globals
-  globals.RTCPeerConnection = FakePeerConnection
-  installWebRtcGuard()
-  const Guarded = globals.RTCPeerConnection as unknown as typeof FakePeerConnection
+  const pageGlobals = ['window', 'RTCPeerConnection', 'webkitRTCPeerConnection', '__noraWebRtcGuard']
+  let originalGlobals: Map<string, PropertyDescriptor | undefined>
+  let Guarded: typeof FakePeerConnection
+
+  beforeAll(() => {
+    originalGlobals = new Map(pageGlobals.map((key) => [key, Object.getOwnPropertyDescriptor(globals, key)]))
+    globals.window = globals
+    globals.RTCPeerConnection = FakePeerConnection
+    installWebRtcGuard()
+    Guarded = globals.RTCPeerConnection as unknown as typeof FakePeerConnection
+  })
+
+  afterAll(() => {
+    for (const [key, descriptor] of originalGlobals) {
+      if (descriptor) Object.defineProperty(globals, key, descriptor)
+      else Reflect.deleteProperty(globals, key)
+    }
+  })
 
   it('does not expose the untouched constructor', () => {
     expect(Guarded).not.toBe(FakePeerConnection)
