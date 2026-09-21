@@ -1,0 +1,7 @@
+- Add zoomable image preview overlay
+- Add manual update check in About settings
+- Activate Nora on notification clicks
+- Move site ad blocking toggle to tab context menus
+- Move new tab button to the end of the tabs sidebar
+- Show profile names in tab tooltips
+- Tab shortcut fixes and UI improvements
