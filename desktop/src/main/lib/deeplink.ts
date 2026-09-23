@@ -24,7 +24,7 @@ export function bindDeeplink() {
       mainWindow.focus()
     }
 
-    const url = commandLine.pop()
+    const url = commandLine.find((arg) => arg.startsWith('nora:'))
     if (url) {
       uiClient.handleDeeplink(url)
     }

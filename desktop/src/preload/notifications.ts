@@ -1,37 +1,26 @@
-// Run in the isolated world. The DOM signal only registers a native object for
-// observation; it never authorizes activation. Brand-check it using a native
-// getter, and attach our listener using the isolated world's EventTarget method.
+// Runs in the isolated world. A CustomEvent's detail doesn't cross worlds, so the page
+// world can only send a bare signal, which page scripts can also fake. Only act on it
+// while the frame has transient user activation, which a notification click grants and
+// page scripts can't forge.
 export function observeNotificationClicks(activate: () => void) {
-  const getTitle = Object.getOwnPropertyDescriptor(Notification.prototype, 'title')!.get!
-  const getDetail = Object.getOwnPropertyDescriptor(CustomEvent.prototype, 'detail')!.get!
-  const addListener = EventTarget.prototype.addEventListener
-  const observed = new WeakSet<object>()
-  window.addEventListener('nora-notification-created', (signal) => {
-    try {
-      const notification = getDetail.call(signal) as Notification
-      getTitle.call(notification)
-      if (observed.has(notification)) return
-      observed.add(notification)
-      addListener.call(notification, 'click', (event) => {
-        if (event.isTrusted) activate()
-      })
-    } catch {
-      // Page scripts can send arbitrary signals, including non-notifications.
-    }
+  const userActivation = navigator.userActivation
+  window.addEventListener('nora-notification-click', () => {
+    if (userActivation.isActive) activate()
   })
 }
 
 // Runs in the page world. Return the original native object without reading its
-// properties or redispatching its events, preserving trusted clicks/user activation.
+// properties or redispatching its events; only listen for clicks to signal the isolated world.
 export function installNotificationClickHandler() {
   if (typeof window.Notification !== 'function') return
   const dispatch = window.dispatchEvent.bind(window)
-  const Signal = CustomEvent
+  const addListener = EventTarget.prototype.addEventListener
+  const Signal = Event
   window.Notification = new Proxy(window.Notification, {
     construct(target, args, newTarget) {
       const notification = Reflect.construct(target, args, newTarget)
       try {
-        dispatch(new Signal('nora-notification-created', { detail: notification }))
+        addListener.call(notification, 'click', () => dispatch(new Signal('nora-notification-click')))
       } catch {
         // Observation is best-effort and must never break native construction.
       }

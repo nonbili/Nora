@@ -25,6 +25,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@particle/dbus-next": "^0.11.4",
     "electron-context-menu": "^4.1.1",
     "electron-updater": "^6.6.2"
   },

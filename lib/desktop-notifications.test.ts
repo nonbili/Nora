@@ -21,7 +21,9 @@ describe('desktop notification clicks', () => {
     const window = Object.assign(new EventTarget(), {
       Notification: NativeNotification as unknown as typeof Notification,
     })
-    runInNewContext(`(${installNotificationClickHandler.toString()})()`, { window, CustomEvent })
+    runInNewContext(`(${installNotificationClickHandler.toString()})()`, { window, Event, EventTarget })
+    const signal = mock(() => {})
+    window.addEventListener('nora-notification-click', signal)
     const data = { callback: () => {} }
     const options = { body: 'Hello', data }
     const notification = new window.Notification('Message', options)
@@ -31,48 +33,26 @@ describe('desktop notification clicks', () => {
     expect(notification).toBe(native)
     expect(native.options).toBe(options)
     expect(window.Notification.permission).toBe('granted')
+    expect(signal).not.toHaveBeenCalled()
     const siteClick = mock(() => {})
     notification.addEventListener('click', siteClick)
     const click = new Event('click')
     native.dispatchEvent(click)
     expect(siteClick).toHaveBeenCalledWith(click)
+    expect(signal).toHaveBeenCalledTimes(1)
     notification.close()
     expect(native.close).toHaveBeenCalledTimes(1)
   })
 
-  test('isolated observation rejects fake objects and untrusted clicks and deduplicates registration', () => {
-    const brand = new WeakSet<object>()
-    class NativeNotification extends EventTarget {
-      constructor() { super(); brand.add(this) }
-      get title() {
-        if (!brand.has(this)) throw new TypeError('Illegal invocation')
-        return 'Message'
-      }
-    }
-    const listeners: EventListener[] = []
+  test('isolated observation only activates with user activation', () => {
     const window = new EventTarget()
+    const navigator = { userActivation: { isActive: false } }
     const activate = mock(() => {})
-    // Capture the native listener to model a browser-generated trusted click.
-    const isolatedEventTarget = { prototype: {
-      addEventListener(this: EventTarget, type: string, listener: EventListener) {
-        listeners.push(listener)
-        EventTarget.prototype.addEventListener.call(this, type, listener)
-      },
-    } }
-    runInNewContext(`(${observeNotificationClicks.toString()})(activate)`, {
-      window, Notification: NativeNotification, CustomEvent, EventTarget: isolatedEventTarget, activate,
-    })
-    const register = (detail: unknown) => window.dispatchEvent(new CustomEvent('nora-notification-created', { detail }))
-    register({ title: 'fake', addEventListener: () => activate() })
+    runInNewContext(`(${observeNotificationClicks.toString()})(activate)`, { window, navigator, activate })
     window.dispatchEvent(new Event('nora-notification-click'))
-    expect(listeners).toHaveLength(0)
-    const notification = new NativeNotification()
-    register(notification)
-    register(notification)
-    expect(listeners).toHaveLength(1)
-    notification.dispatchEvent(new Event('click'))
     expect(activate).not.toHaveBeenCalled()
-    listeners[0]({ isTrusted: true } as Event)
+    navigator.userActivation.isActive = true
+    window.dispatchEvent(new Event('nora-notification-click'))
     expect(activate).toHaveBeenCalledTimes(1)
   })
 

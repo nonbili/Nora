@@ -16,6 +16,7 @@ import { readImage } from './lib/image-preview'
 import { randomUUID } from 'node:crypto'
 import { attachGuestShortcuts } from './lib/shortcuts'
 import { attachGuestNotifications } from './lib/notifications'
+import { exportApplication } from './lib/xdg-activation'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
 
@@ -259,6 +260,10 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+
+  if (app.hasSingleInstanceLock()) {
+    exportApplication()
+  }
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

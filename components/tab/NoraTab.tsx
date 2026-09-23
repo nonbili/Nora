@@ -640,13 +640,15 @@ export const NoraTab: React.FC<{
   useObserveEffect(blocklist$, () => applyContentState())
   useObserveEffect(blocklistMatcherRevision$, () => applyContentState())
 
+  // Keep background tabs registered; only unregister when this tab goes away.
+  useEffect(() => () => registerTabWebview(tab.id, null), [tab.id])
+
   useEffect(() => {
     return () => {
       if (loadingWatchdogRef.current) {
         clearTimeout(loadingWatchdogRef.current)
         loadingWatchdogRef.current = null
       }
-      registerTabWebview(tab.id, null)
       const native = nativeRef.current
       clearActiveNativeWebview(native)
       if (isActive && ui$.webview.get() === native) {
