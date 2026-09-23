@@ -100,6 +100,14 @@ function attachContextMenu(webContents: Electron.WebContents, ownerWindow: Brows
           webContents.downloadURL(params.srcURL)
         },
       },
+      { type: 'separator' },
+      {
+        label: 'Open in default browser',
+        visible: isHttpUrl(params.linkURL),
+        click: () => {
+          shell.openExternal(params.linkURL)
+        },
+      },
     ]
 
     const visibleItems = menuTemplate
@@ -112,7 +120,7 @@ function attachContextMenu(webContents: Electron.WebContents, ownerWindow: Brows
           index > 0 &&
           index < items.length - 1 &&
           items[index - 1].type !== 'separator' &&
-          items[index + 1].type !== 'separator'
+          items.slice(index + 1).some((item) => item.type !== 'separator')
         )
       })
 
@@ -199,13 +207,16 @@ function createWindow(): void {
     attachGuestNotifications(wc, mainWindow, (id) => uiClient.activateNotificationTab(id))
     attachWebRtcProtection(wc)
     attachDownloadHandler(wc.session)
+    // clipboard-sanitized-write backs navigator.clipboard.writeText(), used by
+    // in-page "Copy" buttons. Clipboard reads stay denied.
+    const allowedPermissions = new Set(['notifications', 'clipboard-sanitized-write'])
     wc.session.setPermissionRequestHandler((_wc, permission, callback) => {
-      callback(permission === 'notifications')
+      callback(allowedPermissions.has(permission))
     })
     // Keep the synchronous check path in sync with the request handler above,
     // so a site querying navigator.permissions doesn't see a permission it
     // would then be denied.
-    wc.session.setPermissionCheckHandler((_wc, permission) => permission === 'notifications')
+    wc.session.setPermissionCheckHandler((_wc, permission) => allowedPermissions.has(permission))
     attachContextMenu(wc, mainWindow)
     wc.setWindowOpenHandler((details) => {
       const url = normalizeExternalTargetUrl(details.url)
