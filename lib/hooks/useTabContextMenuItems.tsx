@@ -17,7 +17,7 @@ import { canPinTabToHomeScreen, pinTabToHomeScreen } from '@/lib/home-shortcut'
 import { useValue } from '@legendapp/state/react'
 import { blocklist$ } from '@/states/blocklist'
 import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
-import { NouText } from '@/components/NouText'
+import { MenuToggleBadge } from '@/components/menu/MenuToggleBadge'
 
 export interface TabContextMenuOptions {
   runWebviewAction: (action: (webview: any) => void) => void
@@ -101,8 +101,8 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
       handler: togglePause,
     },
     {
-      label: t('menus.editUrl'),
-      icon: <MaterialIcons name="edit" size={16} color={menuIconColor} />,
+      label: t('buttons.openUrl'),
+      icon: <MaterialIcons name="language" size={16} color={menuIconColor} />,
       handler: () => {
         ui$.assign({ urlModalOpen: true, urlModalMode: 'editTab', urlModalTargetTabId: tab.id })
       },
@@ -121,7 +121,7 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
           metaLabel: blockingOnThisSite ? t('common.on') : t('common.off'),
           systemImage: 'shield',
           icon: <MaterialIcons name="shield" size={16} color={menuIconColor} />,
-          meta: <NouText className="text-xs text-indigo-600 dark:text-indigo-300">{blockingOnThisSite ? t('common.on') : t('common.off')}</NouText>,
+          meta: <MenuToggleBadge on={blockingOnThisSite} />,
           handler: toggleSiteBlocking,
         }]
       : []),

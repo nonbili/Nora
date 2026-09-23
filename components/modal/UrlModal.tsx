@@ -3,13 +3,14 @@ import { ui$ } from '@/states/ui'
 import { BaseCenterModal } from './BaseCenterModal'
 import { NouText } from '../NouText'
 import { TextInput, View } from 'react-native'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gray } from '@radix-ui/colors'
 import { NouButton } from '../button/NouButton'
 import { openSharedUrl } from '@/lib/page'
 import { t } from 'i18next'
 import { tabs$ } from '@/states/tabs'
 import { resolveUrlInput } from '@/lib/search'
+import { isWeb } from '@/lib/utils'
 
 export const UrlModal = () => {
   const urlModalOpen = useValue(ui$.urlModalOpen)
@@ -17,6 +18,7 @@ export const UrlModal = () => {
   const urlModalTargetTabId = useValue(ui$.urlModalTargetTabId)
   const tabs = useValue(tabs$.tabs)
   const [url, setUrl] = useState('')
+  const inputRef = useRef<TextInput>(null)
   const targetTabIndex = urlModalTargetTabId == null ? -1 : tabs.findIndex((tab) => tab?.id === urlModalTargetTabId)
   const targetTab = targetTabIndex === -1 ? null : tabs[targetTabIndex]
   const isEditingTab = urlModalMode === 'editTab' && targetTab != null
@@ -36,6 +38,34 @@ export const UrlModal = () => {
 
     setUrl(isEditingTab ? targetTab.url || '' : '')
   }, [isEditingTab, targetTab?.url, urlModalOpen])
+
+  useEffect(() => {
+    if (!urlModalOpen) {
+      return
+    }
+
+    // Menus restore focus to their trigger on close, which steals autoFocus.
+    const timer = setTimeout(() => inputRef.current?.focus(), 50)
+    return () => clearTimeout(timer)
+  }, [urlModalOpen])
+
+  useEffect(() => {
+    if (!urlModalOpen || !isWeb || typeof window === 'undefined' || !window.addEventListener) {
+      return
+    }
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') {
+        return
+      }
+      onClose()
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    window.addEventListener('keyup', onKeyUp, true)
+    return () => window.removeEventListener('keyup', onKeyUp, true)
+  }, [urlModalOpen])
 
   const onSubmit = () => {
     const nextUrl = resolveUrlInput(url)
@@ -60,9 +90,10 @@ export const UrlModal = () => {
   return (
     <BaseCenterModal onClose={onClose}>
       <View className="p-5">
-        <NouText className="text-lg font-semibold mb-4">{t(isEditingTab ? 'menus.editUrl' : 'buttons.openUrl')}</NouText>
+        <NouText className="text-lg font-semibold mb-4">{t('buttons.openUrl')}</NouText>
         <NouText className="mb-1 font-semibold text-zinc-700 dark:text-zinc-300">URL</NouText>
         <TextInput
+          ref={inputRef}
           className="border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded mb-3 text-zinc-900 dark:text-zinc-100 p-2 text-sm"
           value={url}
           onChangeText={setUrl}
@@ -70,12 +101,13 @@ export const UrlModal = () => {
           placeholder="https://example.com"
           placeholderTextColor={gray.gray11}
           autoFocus
+          selectTextOnFocus
         />
         <View className="flex-row items-center justify-between mt-6">
           <NouButton variant="outline" size="1" onPress={onClose}>
             {t('buttons.cancel')}
           </NouButton>
-          <NouButton onPress={onSubmit}>{t(isEditingTab ? 'buttons.save' : 'buttons.open')}</NouButton>
+          <NouButton onPress={onSubmit}>{t('buttons.open')}</NouButton>
         </View>
       </View>
     </BaseCenterModal>

@@ -9,6 +9,7 @@ import { settings$, resolveZoom } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
+import { MenuToggleBadge } from '../menu/MenuToggleBadge'
 import { isWeb, isIos, isAndroid, nIf, clsx } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { MaterialButton, MaterialCommunityButton } from '../button/IconButtons'
@@ -239,25 +240,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           icon: <MaterialCommunityIcons name="shield-outline" size={18} color={headerControlColor} />,
           systemImage: 'shield',
           metaLabel: blockingOnThisSite ? t('common.on') : t('common.off'),
-          meta: (
-            <View
-              className={clsx(
-                'rounded-full px-2 py-1',
-                blockingOnThisSite
-                  ? 'bg-indigo-100 border border-indigo-300 dark:bg-indigo-500/20 dark:border-indigo-400/40'
-                  : 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700',
-              )}
-            >
-              <Text
-                className={clsx(
-                  'text-[11px] font-medium',
-                  blockingOnThisSite ? 'text-indigo-700 dark:text-indigo-200' : 'text-zinc-600 dark:text-zinc-400',
-                )}
-              >
-                {blockingOnThisSite ? t('common.on') : t('common.off')}
-              </Text>
-            </View>
-          ),
+          meta: <MenuToggleBadge on={blockingOnThisSite} />,
           handler: toggleSiteBlocking,
         },
       ]
@@ -450,9 +433,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       handler: scrollToTop,
                     },
                     {
-                      label: t('menus.editUrl'),
-                      icon: <MaterialIcons name="edit" size={18} color={headerControlColor} />,
-                      systemImage: 'pencil',
+                      label: t('buttons.openUrl'),
+                      icon: <MaterialIcons name="language" size={18} color={headerControlColor} />,
+                      systemImage: 'globe',
                       handler: editTabUrl,
                     },
                     ...(hideDesktopSiteToggle
