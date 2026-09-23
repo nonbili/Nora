@@ -1,0 +1,4 @@
+- Add Open in default browser to link context menu
+- Allow in-page clipboard writes
+- Raise window and switch to source tab on notification click in Flatpak
+- Rename Edit tab URL to Open URL and close URL dialog on Esc
