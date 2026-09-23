@@ -76,8 +76,14 @@ const styles: Record<string, (settings: any) => string> = {
 
   reddit: (settings) => css`
     .sitetable .rank,
-    #xpromo-small-header {
+    #xpromo-small-header,
+    .configured-xpromo {
       display: none !important;
+    }
+
+    /* Blocking "Get the Reddit App" sheet locks page scroll */
+    body.rpl-scroll-lock:has(.configured-xpromo) {
+      overflow: auto !important;
     }
 
     ${adCss(
