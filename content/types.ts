@@ -6,6 +6,8 @@ interface NoraI {
   notifyProgress: (playing: boolean, pos: number) => void
   /** Android only, and only on builds that ship the pull to refresh gesture. */
   setScrolledRegions?: (rects: string) => void
+  /** Android only. */
+  setPullToRefreshSuspended?: (suspended: boolean) => void
 }
 
 declare global {

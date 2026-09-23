@@ -664,6 +664,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   // Pull down from the top of the page to reload, like Chrome and Firefox do. Off unless
   // the setting turns it on, so pages with their own overscroll gestures are untouched.
   private var pullToRefreshEnabled = false
+  // Set by the page while a gesture of its own (holding a video to speed it up) owns the
+  // touch; the refresh layout would otherwise steal it on a slight downward drift.
+  private var pullToRefreshSuspended = false
   private val swipeRefresh = SwipeRefreshLayout(context)
 
   // The refresh layout only sees the WebView's own scroll position, which stays at 0 on
@@ -706,10 +709,21 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   internal fun setPullToRefresh(enabled: Boolean) {
     pullToRefreshEnabled = enabled
-    swipeRefresh.isEnabled = enabled && customView == null
+    updateSwipeRefreshEnabled()
     if (!enabled) {
       swipeRefresh.isRefreshing = false
     }
+  }
+
+  internal fun setPullToRefreshSuspended(suspended: Boolean) {
+    post {
+      pullToRefreshSuspended = suspended
+      updateSwipeRefreshEnabled()
+    }
+  }
+
+  private fun updateSwipeRefreshEnabled() {
+    swipeRefresh.isEnabled = pullToRefreshEnabled && customView == null && !pullToRefreshSuspended
   }
 
   internal val webView =
@@ -884,7 +898,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           val window = activity.window
           (window.decorView as FrameLayout).removeView(customView)
           customView = null
-          swipeRefresh.isEnabled = pullToRefreshEnabled
+          updateSwipeRefreshEnabled()
           val controller = WindowCompat.getInsetsController(window, window.decorView)
           controller.show(WindowInsetsCompat.Type.systemBars())
         }

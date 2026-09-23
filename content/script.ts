@@ -15,6 +15,9 @@ function runVideoLongPressScript() {
   const EDGE_RATIO = 0.28
   const EDGE_MIN_WIDTH_PX = 56
   const INDICATOR_ID = '_nora_video_speed_indicator'
+  const SPEEDS = [1.5, 2, 3]
+  const DEFAULT_SPEED_INDEX = 1
+  const SPEED_STEP_PX = 48
   let enabled = Boolean(window.Nora?.getSettings?.().videoEdgeLongPressTo2x)
   let pendingWasPlaying = false
   let pointerId: number | null = null
@@ -25,6 +28,9 @@ function runVideoLongPressScript() {
   let suppressedClickUntil = 0
   let startX = 0
   let startY = 0
+  let speedAnchorX = 0
+  let speedIndex = DEFAULT_SPEED_INDEX
+  let lastX = 0
 
   const ensureIndicator = () => {
     let indicator = document.getElementById(INDICATOR_ID) as HTMLDivElement | null
@@ -34,16 +40,13 @@ function runVideoLongPressScript() {
 
     indicator = document.createElement('div')
     indicator.id = INDICATOR_ID
-    indicator.textContent = 'Speed: 2x'
     indicator.style.cssText = [
       'position:fixed',
       'left:50%',
       'top:24px',
       'transform:translateX(-50%)',
-      'padding:8px 12px',
-      'border-radius:999px',
-      'background:rgba(0,0,0,0.78)',
-      'color:#fff',
+      'gap:4px',
+      'align-items:center',
       'font:600 14px/1.2 -apple-system,BlinkMacSystemFont,sans-serif',
       'letter-spacing:0.01em',
       'pointer-events:none',
@@ -51,8 +54,53 @@ function runVideoLongPressScript() {
       'display:none',
       'white-space:nowrap',
     ].join(';')
+    for (const speed of SPEEDS) {
+      const option = document.createElement('span')
+      option.textContent = `${speed}x`
+      option.style.cssText = [
+        'padding:8px 12px',
+        'border-radius:999px',
+        'text-shadow:0 1px 2px rgba(0,0,0,0.6)',
+        'transition:background-color 0.12s,color 0.12s',
+      ].join(';')
+      indicator.appendChild(option)
+    }
     document.body?.appendChild(indicator)
     return indicator
+  }
+
+  const renderIndicator = () => {
+    const indicator = ensureIndicator()
+    Array.from(indicator.children).forEach((option, index) => {
+      const style = (option as HTMLElement).style
+      const selected = index === speedIndex
+      style.background = selected ? 'rgba(0,0,0,0.78)' : 'transparent'
+      style.color = selected ? '#fff' : 'rgba(255,255,255,0.6)'
+    })
+  }
+
+  const updateSpeedFromX = (clientX: number) => {
+    if (!activeVideo) {
+      return
+    }
+    lastX = clientX
+    // Past the slowest or fastest speed the anchor follows the finger, so sliding back
+    // half a step changes speed again. Otherwise a press near the screen edge could never
+    // reach the speeds on that side; this way you slide inward, then back.
+    const minPos = 0
+    const maxPos = SPEEDS.length - 1
+    const pos = DEFAULT_SPEED_INDEX + (clientX - speedAnchorX) / SPEED_STEP_PX
+    if (pos < minPos || pos > maxPos) {
+      const clampedPos = pos < minPos ? minPos : maxPos
+      speedAnchorX = clientX - (clampedPos - DEFAULT_SPEED_INDEX) * SPEED_STEP_PX
+    }
+    const nextIndex = Math.min(Math.max(Math.round(pos), 0), SPEEDS.length - 1)
+    if (nextIndex === speedIndex) {
+      return
+    }
+    speedIndex = nextIndex
+    activeVideo.playbackRate = SPEEDS[speedIndex]
+    renderIndicator()
   }
 
   const clearTimer = () => {
@@ -87,12 +135,14 @@ function runVideoLongPressScript() {
     clearTimer()
     if (activeVideo) {
       activeVideo.playbackRate = 1
+      window.NoraI?.setPullToRefreshSuspended?.(false)
     }
     hideIndicator()
     pointerId = null
     pendingVideo = null
     pendingWasPlaying = false
     activeVideo = null
+    speedIndex = DEFAULT_SPEED_INDEX
   }
 
   const isInstagramReelPage = () => {
@@ -184,10 +234,14 @@ function runVideoLongPressScript() {
 
     clearTimer()
     activeVideo = video
-    video.playbackRate = 2
+    window.NoraI?.setPullToRefreshSuspended?.(true)
+    speedIndex = DEFAULT_SPEED_INDEX
+    speedAnchorX = lastX
+    video.playbackRate = SPEEDS[speedIndex]
     const indicator = ensureIndicator()
+    renderIndicator()
     positionIndicator(video)
-    indicator.style.display = 'block'
+    indicator.style.display = 'flex'
   }
 
   const onPointerDown = (event: PointerEvent) => {
@@ -206,6 +260,7 @@ function runVideoLongPressScript() {
     pendingWasPlaying = !video.paused && !video.ended
     startX = event.clientX
     startY = event.clientY
+    lastX = event.clientX
     timer = window.setTimeout(() => {
       void activatePlayback(video)
     }, LONG_PRESS_DELAY_MS)
@@ -220,10 +275,12 @@ function runVideoLongPressScript() {
     }
 
     if (activeVideo) {
+      updateSpeedFromX(event.clientX)
       positionIndicator(activeVideo)
       return
     }
 
+    lastX = event.clientX
     const movedTooFar = Math.hypot(event.clientX - startX, event.clientY - startY) > MOVE_TOLERANCE_PX
     if (movedTooFar || (pendingVideo && !isEdgePress(pendingVideo, event.clientX, event.clientY))) {
       cancelPending()
@@ -240,8 +297,22 @@ function runVideoLongPressScript() {
   }
 
   const onPointerCancel = (event: PointerEvent) => {
-    if (pointerId === event.pointerId) {
-      resetPlayback()
+    if (pointerId !== event.pointerId) {
+      return
+    }
+    if (activeVideo && event.pointerType === 'touch') {
+      // The browser cancels the pointer once a drag turns into a pan gesture. Touch events keep
+      // flowing, so keep tracking the speed via touchmove and wait for touchend to reset.
+      pointerId = null
+      return
+    }
+    resetPlayback()
+  }
+
+  const onTouchMove = (event: TouchEvent) => {
+    const touch = event.touches[0]
+    if (activeVideo && touch) {
+      updateSpeedFromX(touch.clientX)
     }
   }
 
@@ -276,7 +347,7 @@ function runVideoLongPressScript() {
       return
     }
     if (video === activeVideo) {
-      resumeVideoPlayback(video, 2)
+      resumeVideoPlayback(video, SPEEDS[speedIndex])
       return
     }
     if (video === pendingVideo && shouldGuardInstagramReelPlayback(video)) {
@@ -301,6 +372,7 @@ function runVideoLongPressScript() {
   document.addEventListener('pointermove', onPointerMove, passiveCapture)
   document.addEventListener('pointerup', onPointerEnd, passiveCapture)
   document.addEventListener('pointercancel', onPointerCancel, passiveCapture)
+  document.addEventListener('touchmove', onTouchMove, passiveCapture)
   document.addEventListener('touchend', onTouchEnd, passiveCapture)
   document.addEventListener('touchcancel', onTouchCancel, passiveCapture)
   document.addEventListener('click', onClick, true)

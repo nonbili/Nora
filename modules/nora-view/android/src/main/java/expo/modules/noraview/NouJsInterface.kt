@@ -16,4 +16,11 @@ class NouJsInterface(private val context: Context, private val noraView: NoraVie
   fun setScrolledRegions(rects: String) {
     noraView.setScrolledRegions(rects)
   }
+
+  // Called from the page while it holds a video to speed it up, so sliding to pick
+  // a speed can't turn into a pull to refresh.
+  @JavascriptInterface
+  fun setPullToRefreshSuspended(suspended: Boolean) {
+    noraView.setPullToRefreshSuspended(suspended)
+  }
 }
