@@ -51,7 +51,8 @@
       "moveToGroup": "Áthelyezés ide: {{name}}",
       "moveToUngrouped": "Áthelyezés csoporton kívülre",
       "closeGroup": "Csoport és lapok bezárása",
-      "ungroup": "Csoportbontás"
+      "ungroup": "Csoportbontás",
+      "allTabs": "Lapok"
     }
   },
   "blocklist": {
@@ -142,7 +143,8 @@
     "clearDataConfirm": "Törli a(z) „{{name}}” profil összes böngészési adatát? Ezzel kijelentkezik, és bezáródnak az ezt a profilt használó lapok.",
     "exportCookies": "Profil sütijeinek exportálása",
     "exportCookiesConfirm": "Exportálja a(z) „{{name}}” profil összes sütijét? A fájl a profilban található összes webhelyhez tartozó bejelentkezési munkameneteket is tartalmazhat. Tartsa bizalmasan.",
-    "deleteConfirm": "Törli a(z) „{{name}}” profilt? Ezzel törlődnek a tárolt böngészési adatai, és bezáródnak az ezt a profilt használó lapok."
+    "deleteConfirm": "Törli a(z) „{{name}}” profilt? Ezzel törlődnek a tárolt böngészési adatai, és bezáródnak az ezt a profilt használó lapok.",
+    "currentProfile": "Profil: {{name}}"
   },
   "settings": {
     "label": "Beállítások",
@@ -498,5 +500,13 @@
       "unlock": "Feloldás mára",
       "noPinHint": "A korábbi feloldáshoz állítson be PIN-kódot a Beállítások → Használati korlátok menüpontban."
     }
+  },
+  "upgrade": {
+    "check": "Frissítések ellenőrzése",
+    "checking": "Frissítések ellenőrzése…",
+    "available": "A Nora {{version}} verzió már elérhető. Megnyitja a kiadási oldalt a frissítés letöltéséhez?",
+    "download": "Letöltési oldal megnyitása",
+    "upToDate": "A Nora {{version}} verziója naprakész.",
+    "failed": "A frissítések ellenőrzése sikertelen. Próbálja meg újra."
   }
 }

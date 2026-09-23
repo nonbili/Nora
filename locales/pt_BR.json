@@ -167,5 +167,11 @@
       "descriptionWeb": "Bloqueio de rede e controles de navegação avançados.",
       "features": "Características"
     }
+  },
+  "upgrade": {
+    "check": "Verificar atualizações",
+    "checking": "Verificando atualizações…",
+    "available": "Nora {{version}} está disponível. Você deseja acessar a página do github para baixar a atualização?",
+    "download": "Abrir página de download"
   }
 }
