@@ -387,7 +387,8 @@
     "clearDataConfirm": "Effacer toutes les données de navigation pour \"{{name}}\" ? Cela vous déconnecte et ferme les onglets qui utilisent ce profil.",
     "deleteConfirm": "Supprimer \"{{name}}\" ? Cela effacera ses données de navigation enregistrées et fermera les onglets qui utilisent ce profil.",
     "exportCookies": "Exporter les cookies du profil",
-    "exportCookiesConfirm": "Exporter tous les cookies de \"{{name}}\" ? Le fichier peut contenir des sessions de connexion pour tous les sites de ce profil. Gardez-le confidentiel."
+    "exportCookiesConfirm": "Exporter tous les cookies de \"{{name}}\" ? Le fichier peut contenir des sessions de connexion pour tous les sites de ce profil. Gardez-le confidentiel.",
+    "currentProfile": "Profil : {{name}}"
   },
   "sync": {
     "label": "Synchro",
@@ -504,5 +505,13 @@
       "unlock": "Débloquer pour aujourd'hui",
       "noPinHint": "Définissez un code PIN dans Paramètres → Limites d'utilisation pour débloquer plus tôt."
     }
+  },
+  "upgrade": {
+    "check": "Vérifier les mises à jour",
+    "checking": "Vérification des mises à jour…",
+    "available": "Nora {{version}} est disponible. Ouvrir la page de publication pour télécharger la mise à jour ?",
+    "download": "Ouvrir la page de téléchargement",
+    "upToDate": "Nora {{version}} est à jour.",
+    "failed": "Impossible de vérifier les mises à jour. Veuillez réessayer."
   }
 }

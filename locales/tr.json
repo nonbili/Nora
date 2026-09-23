@@ -92,7 +92,8 @@
     "clearDataConfirm": "\"{{name}}\" için tüm tarama verilerini silmek istiyor musunuz? Bu işlem, oturumunuzu kapatır ve bu profili kullanan sekmeleri kapatır.",
     "deleteConfirm": "\"{{name}}\" silinsin mi? Bu işlem depolanan tarama verilerini temizler ve bu profili kullanan sekmeleri kapatır.",
     "exportCookies": "Profil çerezlerini dışa aktar",
-    "exportCookiesConfirm": "{{name}} adlı profildeki tüm sitelere ait çerezler dışa aktarılsın mı? Bu dosya her site için oturum bilgileri içerebilir. Gizli tutun."
+    "exportCookiesConfirm": "{{name}} adlı profildeki tüm sitelere ait çerezler dışa aktarılsın mı? Bu dosya her site için oturum bilgileri içerebilir. Gizli tutun.",
+    "currentProfile": "Profil: {{name}}"
   },
   "settings": {
     "label": "Ayarlar",
@@ -508,5 +509,13 @@
       "unlock": "Bugün için kilidi aç",
       "noPinHint": "Ayarlar'dan bir PIN kodu belirleyin → Kullanım sınırlarını erken açmak için."
     }
+  },
+  "upgrade": {
+    "check": "Güncellemeleri denetle",
+    "checking": "Güncellemeler denetleniyor…",
+    "available": "Nora {{version}} sürümü kullanılabilir. Güncellemeyi indirmek için sürüm sayfasını açmak ister misiniz?",
+    "download": "İndirme sayfasını aç",
+    "upToDate": "Nora {{version}} güncel.",
+    "failed": "Güncellemeler denetlenemedi. Lütfen tekrar deneyin."
   }
 }
