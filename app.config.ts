@@ -79,10 +79,13 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
           },
           ios: {
             deploymentTarget: '17.0',
+            // Required by the iOS 27 SDK, which won't launch apps without the scene life cycle.
+            enableSceneSupport: true,
           },
         },
       ],
       './plugins/withAndroidPlugin.ts',
+      './plugins/withIosPlugin.ts',
       'expo-router',
       [
         'expo-splash-screen',
