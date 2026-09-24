@@ -197,10 +197,13 @@ android {
         includeInApk = false
         includeInBundle = false
     }
+    // AGP can't bundle with ABI splits when shrinkResources is on
+    // (issuetracker 402800800); Play splits AABs by ABI anyway.
+    def isBundleBuild = gradle.startParameter.taskNames.any { it.toLowerCase().contains('bundle') }
     splits {
         abi {
             reset()
-            enable true
+            enable !isBundleBuild
             universalApk false
             include project.ext.abiCodes.keySet() as String[]
         }
@@ -208,6 +211,10 @@ android {
     android.applicationVariants.configureEach { variant ->
         variant.outputs.each { output ->
             def baseAbiVersionCode = project.ext.abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
+            if (baseAbiVersionCode == null && isBundleBuild) {
+                // Keep the AAB above every published split APK version code.
+                baseAbiVersionCode = project.ext.abiCodes.values().max()
+            }
             if (baseAbiVersionCode != null) {
                 output.versionCodeOverride = (100 * project.android.defaultConfig.versionCode) + baseAbiVersionCode
             }

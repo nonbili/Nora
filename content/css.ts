@@ -106,6 +106,7 @@ const styles: Record<string, (settings: any) => string> = {
   threads: (settings) => css`
     /* Open in app */
     .x6s0dn4.x78zum5.xdt5ytf.x1mk1bxn.xaw7rza.xvc5jky,
+    div:has(> div > div > div > div > a[href^='intent://']),
     /* Suggested for you */
     .x16xn7b0.xwib8y2 {
       display: none !important;

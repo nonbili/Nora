@@ -1,0 +1,5 @@
+- Slide to change video speed after long press on edge
+- Hide Reddit app banner and restore scrolling
+- Hide Threads open app banner
+- Save downloads with correct file extensions
+- Don't send social notifications when disabled in settings
