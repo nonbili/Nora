@@ -37,8 +37,22 @@
       "layout": {
         "split": "분할 뷰",
         "grid": "그리드 뷰",
-        "gridFour": "4분할 그리드"
-      }
+        "gridFour": "4분할 그리드",
+        "deck": "데크 보기"
+      },
+      "deck": "데크",
+      "groupNamePlaceholder": "그룹 이름",
+      "newDeckView": "새 데크 보기",
+      "newGroupFromTab": "탭에서 새 그룹 만들기",
+      "closeGroup": "그룹 및 탭 닫기",
+      "renameGroup": "그룹 이름 바꾸기",
+      "ungroup": "그룹 해제",
+      "tabCount": "탭 {{count}}개",
+      "tabCount_plural": "탭 {{count}}개",
+      "ungrouped": "그룹 없음",
+      "newGroup": "새 그룹",
+      "moveToGroup": "{{name}}(으)로 이동",
+      "moveToUngrouped": "그룹에서 빼기"
     }
   },
   "blocklist": {
@@ -56,7 +70,10 @@
     "continue": "계속",
     "openUrl": "URL 열기",
     "open": "열기",
-    "save": "저장"
+    "save": "저장",
+    "reopenLastClosedTab": "마지막으로 닫은 탭 다시 열기",
+    "restoreTabs": "최근에 닫은 탭",
+    "toggleSidebar": "사이드바 표시/숨기기"
   },
   "menus": {
     "close": "닫기",
@@ -68,10 +85,28 @@
     "scroll": "맨 위로 스크롤",
     "share": "공유",
     "signOut": "로그아웃",
-    "tools": "도구"
+    "tools": "도구",
+    "blockAds": "이 사이트에서 광고 차단",
+    "clearSiteData": "사이트 데이터 지우기",
+    "clearSiteDataConfirm": "\"{{host}}\"의 모든 쿠키와 사이트 데이터를 지울까요? 이 사이트에서 로그아웃됩니다.",
+    "duplicate": "탭 복제",
+    "addToHomeScreen": "홈 화면에 추가",
+    "more": "더 보기",
+    "openInProfile": "프로필에서 열기",
+    "pause": "탭 일시정지",
+    "resume": "탭 재개",
+    "zoom": "확대/축소",
+    "viewInSplitView": "분할 보기로 열기"
   },
   "modals": {
-    "downloadVideo": "동영상 다운로드"
+    "downloadVideo": "동영상 다운로드",
+    "downloadOnCobalt": "cobalt.tools에서 동영상 다운로드",
+    "downloadTab": "다운로드",
+    "cookiesTab": "사이트 데이터",
+    "exportCookies": "현재 사이트 쿠키 내보내기",
+    "exportCookiesHint": "현재 사이트의 쿠키를 cookies.txt 파일로 저장합니다.",
+    "exportCookiesButton": "cookies.txt 내보내기",
+    "clearSiteDataHint": "현재 사이트와 프로필의 쿠키 및 탐색 데이터를 지웁니다."
   },
   "native": {
     "menu_saveImage": "이미지 저장",
@@ -83,14 +118,33 @@
     "toast_downloadSucceeded": "다운로드 폴더에 저장되었습니다",
     "toast_downloadFailed": "다운로드 실패",
     "httpBlocked_title": "HTTP 웹사이트 차단됨",
-    "httpBlocked_body": "이 웹사이트는 안전하지 않은 HTTP 연결을 사용합니다. HTTP 웹사이트 로드를 허용하려면 설정에서 \"HTTP 웹사이트 허용\"을 활성화하세요."
+    "httpBlocked_body": "이 웹사이트는 안전하지 않은 HTTP 연결을 사용합니다. HTTP 웹사이트 로드를 허용하려면 설정에서 \"HTTP 웹사이트 허용\"을 활성화하세요.",
+    "menu_openInProfile": "프로필에서 열기"
   },
   "profiles": {
     "label": "프로필",
     "add": "추가",
     "edit": "편집",
     "save": "저장",
-    "namePlaceholder": "프로필 이름"
+    "namePlaceholder": "프로필 이름",
+    "currentProfile": "프로필: {{name}}",
+    "auto": "자동",
+    "autoProfiles": "자동 프로필",
+    "autoProfilesEmpty": "아직 자동 프로필이 없습니다.",
+    "openLinkInProfile": "프로필에서 링크 열기",
+    "autoProfileLastUsed": "마지막 사용: {{value}}",
+    "autoProfileLastUsedLabel": "마지막 사용",
+    "manageAutoProfiles": "자동 프로필 관리 ({{count}})",
+    "deleteAutoProfileConfirm": "{{site}}의 자동 프로필을 삭제할까요? 저장된 탐색 데이터가 지워지고 이 프로필을 사용하는 탭이 닫힙니다.",
+    "deleteAllAutoProfiles": "모두 삭제",
+    "deleteAllAutoProfilesConfirm": "자동 프로필 {{count}}개를 모두 삭제할까요? 저장된 탐색 데이터가 지워지고 이 프로필을 사용하는 탭이 닫힙니다.",
+    "deleteStaleAutoProfiles": "14일 동안 사용하지 않은 항목 삭제",
+    "deleteStaleAutoProfilesConfirm": "지난 14일 동안 사용하지 않은 자동 프로필 {{count}}개를 삭제할까요? 저장된 탐색 데이터가 지워지고 이 프로필을 사용하는 탭이 닫힙니다.",
+    "clearData": "데이터 지우기",
+    "clearDataConfirm": "\"{{name}}\"의 모든 탐색 데이터를 지울까요? 로그아웃되고 이 프로필을 사용하는 탭이 닫힙니다.",
+    "exportCookies": "프로필 쿠키 내보내기",
+    "exportCookiesConfirm": "\"{{name}}\"의 모든 쿠키를 내보낼까요? 파일에는 이 프로필의 모든 사이트 로그인 세션이 포함될 수 있습니다. 비공개로 유지하세요.",
+    "deleteConfirm": "\"{{name}}\"을(를) 삭제할까요? 저장된 탐색 데이터가 지워지고 이 프로필을 사용하는 탭이 닫힙니다."
   },
   "settings": {
     "label": "설정",
@@ -112,7 +166,8 @@
       "accounts": "계정 및 데이터",
       "bookmarksSearch": "북마크 및 검색",
       "advanced": "고급",
-      "about": "정보"
+      "about": "정보",
+      "notifications": "알림"
     },
     "pages": {
       "browsing": "환경설정",
@@ -120,7 +175,8 @@
       "services": "서비스",
       "profiles": "프로필 및 세션",
       "bookmarks": "북마크",
-      "search": "검색"
+      "search": "검색",
+      "backup": "백업"
     },
     "browsing": {
       "descriptionNative": "기능 토글 설정.",
@@ -132,12 +188,18 @@
       "theme": "테마",
       "toolbar": "툴바",
       "deckTabWidth": "데크 탭 너비",
-      "deckTabWidthHint": "현재: {{value}}px"
+      "deckTabWidthHint": "현재: {{value}}px",
+      "desktopLayout": "데스크톱 레이아웃",
+      "desktopLayoutHint": "큰 화면에서 탭 그룹과 데크/분할/그리드 보기를 데스크톱 모드처럼 표시합니다.",
+      "desktopLayoutAuto": "자동",
+      "desktopLayoutOn": "항상",
+      "desktopLayoutOff": "사용 안 함"
     },
     "profiles": {
       "description": "쿠키와 브라우징 상태가 분리된 여러 계정을 사용합니다.",
       "injectCookie": "쿠키 주입",
-      "injectCookieHint": "세션을 수동으로 복구하려면 다른 브라우저의 Cookie 헤더를 붙여넣으세요."
+      "injectCookieHint": "세션을 수동으로 복구하려면 다른 브라우저의 Cookie 헤더를 붙여넣으세요.",
+      "sessionMode": "세션 모드"
     },
     "bookmarks": {
       "description": "고정된 웹사이트를 관리합니다.",
@@ -208,11 +270,37 @@
         },
         "hideXHomeTabs": {
           "label": "X 홈 타임라인 탭 숨기기"
+        },
+        "hideFacebookFeed": {
+          "label": "Facebook 피드 숨기기"
         }
       },
       "custom": {
         "label": "사용자 지정 스타일",
         "empty": "사용자 지정 스타일이 없습니다. 매칭되는 호스트에 적용할 CSS를 추가해 보세요."
+      },
+      "preview": "미리보기",
+      "previewApplied": "미리보기 적용됨",
+      "noActiveTab": "활성 탭 없음",
+      "scripts": {
+        "label": "사용자 스크립트",
+        "add": "스크립트 추가",
+        "addTitle": "사용자 스크립트 추가",
+        "editTitle": "사용자 스크립트 편집",
+        "deleteConfirm": "이 사용자 스크립트를 삭제하시겠습니까?",
+        "empty": "아직 사용자 스크립트가 없습니다. 일치하는 호스트에서 자신의 JavaScript를 실행하려면 추가하세요.",
+        "namePlaceholder": "스크립트 이름",
+        "import": "가져오기",
+        "importFailed": "스크립트를 가져오지 못했습니다",
+        "pinToHeader": "도구 모음에 고정",
+        "pinToHeaderHint": "일치하는 사이트에서 이 스크립트를 도구 모음 작업으로 표시합니다.",
+        "pinnedScripts": "고정된 스크립트",
+        "run": "실행",
+        "runComplete": "스크립트 실행됨",
+        "runFailed": "스크립트 실행 실패",
+        "validation": {
+          "js": "저장 전에 JavaScript를 추가하세요"
+        }
       }
     },
     "headerPosition": {
@@ -239,7 +327,63 @@
       "system": "시스템 설정",
       "hint": "언어를 직접 선택하거나 시스템 언어를 따릅니다."
     },
-    "injectCookie": "쿠키 주입"
+    "injectCookie": "쿠키 주입",
+    "zoom": {
+      "label": "페이지 확대/축소",
+      "defaultLabel": "기본 확대/축소",
+      "defaultHint": "모든 웹 페이지의 기본 확대/축소 수준을 설정합니다.",
+      "siteZoomLabel": "사이트별 확대/축소",
+      "usingDefault": "기본 확대/축소 사용 중"
+    },
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "WebRTC IP 유출 방지",
+      "protectIpHint": "프록시와 VPN을 우회하는 WebRTC를 통해 페이지가 실제 IP 주소를 알아내지 못하도록 차단합니다. 릴레이 서버를 사용하는 통화는 계속 작동하며, 영상 또는 음성 통화 연결이 실패하면 이 기능을 꺼 주세요. 다음 페이지 로드 시 적용됩니다."
+    },
+    "proxy": {
+      "label": "프록시",
+      "enabled": "프록시 사용",
+      "type": "프록시 유형",
+      "host": "프록시 호스트",
+      "port": "프록시 포트",
+      "hostPlaceholder": "예: 127.0.0.1 또는 proxy.example.com",
+      "portPlaceholder": "예: 1080"
+    },
+    "pullToRefresh": "아래로 당겨 페이지 새로고침",
+    "translation": {
+      "enable": "텍스트를 두 번 탭하여 번역",
+      "hint": "게시물, 댓글 또는 문단을 두 번 탭하면 기기에서 번역합니다.",
+      "targetLanguage": "번역할 언어",
+      "appLanguage": "앱",
+      "systemLanguage": "시스템",
+      "notSelected": "언어 선택",
+      "chooseLanguage": "먼저 번역 언어를 선택하세요",
+      "loading": "번역 중…",
+      "copy": "번역 복사",
+      "copySource": "원문 복사",
+      "pin": "번역 고정",
+      "unpin": "번역 고정 해제",
+      "failed": "이 텍스트를 번역할 수 없습니다",
+      "unsupported": "이 언어 조합은 이 기기에서 사용할 수 없습니다"
+    },
+    "enterInsertsNewline": "Enter는 새 줄 삽입 (Shift+Enter)",
+    "oneProfilePerSite": "사이트당 프로필 하나",
+    "oneProfilePerSiteHint": "각 사이트에 별도의 자동 세션을 사용합니다. 사이트에서 연 링크는 해당 사이트의 프로필을 유지합니다.",
+    "doubleTapToToggleHeader": "페이지를 두 번 탭하여 도구 모음 표시/숨기기",
+    "mentionNotifications": "소셜 알림",
+    "mentionNotificationsHint": "OS의 백그라운드 제한으로 인해 전달이 지연되거나 보장되지 않을 수 있습니다.",
+    "backup": {
+      "description": "설정, 북마크 및 사용자 스타일을 내보내거나 복원합니다.",
+      "export": "설정 내보내기",
+      "exportDescription": "설정, 북마크, 사용자 스타일 및 사용자 스크립트를 JSON 파일로 저장합니다",
+      "exportFailed": "내보내기 실패: {{message}}",
+      "import": "설정 가져오기",
+      "importDescription": "Nora 설정 파일에서 설정을 복원합니다",
+      "importConfirm": "현재 설정, 북마크, 사용자 스타일 및 사용자 스크립트가 대체됩니다. 계속할까요?",
+      "importWithScriptsConfirm": "이 파일에는 웹사이트 내에서 코드를 실행할 수 있는 사용자 스크립트 {{count}}개가 활성화되어 있습니다. 파일을 신뢰하는 경우에만 계속하세요. 현재 설정, 북마크, 사용자 스타일 및 사용자 스크립트가 대체됩니다.",
+      "importDone": "가져오기 완료: {{sections}}",
+      "importFailed": "가져오기 실패: {{message}}"
+    }
   },
   "sync": {
     "label": "동기화",
@@ -263,22 +407,106 @@
     "expiresAt": "갱신 또는 만료일: {{value}}",
     "legalNotice": "구독은 취소하지 않는 한 자동으로 갱신됩니다. 구독 시 이용 약관(EULA) 및 개인정보 처리방침에 동의하는 것으로 간주됩니다.",
     "termsOfUse": "이용 약관 (EULA)",
-    "privacyPolicy": "개인정보 처리방침"
+    "privacyPolicy": "개인정보 처리방침",
+    "deleteAccount": "계정 삭제",
+    "signInRequired": "계속하려면 로그인하세요."
   },
   "tabs": {
     "new": "새 탭",
     "recentlyClosed": "최근에 닫은 탭",
-    "noRecentlyClosed": "최근에 닫은 탭이 없습니다"
+    "noRecentlyClosed": "최근에 닫은 탭이 없습니다",
+    "removeFromHistory": "기록에서 제거",
+    "clearRecentlyClosed": "기록 지우기",
+    "paused": "탭이 일시정지됨",
+    "pausedHint": "리소스를 절약하기 위해 콘텐츠가 언로드되었습니다.",
+    "resume": "재개"
   },
   "newTab": {
     "search": {
       "urlPlaceholder": "URL 입력",
       "searchPlaceholder": "웹 검색"
+    },
+    "presets": {
+      "open": "프리셋 북마크 추가",
+      "title": "프리셋 북마크"
     }
   },
   "toast": {
     "pinned": "새 탭 페이지에 고정됨",
     "blocklistUpdated": "차단 목록 업데이트됨",
-    "pressBackAgainToExit": "한 번 더 누르면 종료됩니다"
+    "pressBackAgainToExit": "한 번 더 누르면 종료됩니다",
+    "profileDataCleared": "프로필 데이터가 지워졌습니다",
+    "profileDataClearFailed": "프로필 데이터를 지우지 못했습니다",
+    "cookieExported": "cookies.txt 내보냄",
+    "cookieExportEmpty": "이 사이트에서 쿠키를 찾을 수 없습니다",
+    "cookieExportFailed": "cookies.txt를 내보내지 못했습니다",
+    "cookieExportOpenPage": "쿠키를 내보내기 전에 페이지를 여세요",
+    "profileCookieExported": "프로필 cookies.txt 내보냄",
+    "profileCookieExportEmpty": "이 프로필에서 쿠키를 찾을 수 없습니다",
+    "profileCookieExportFailed": "프로필 cookies.txt를 내보내지 못했습니다",
+    "siteDataCleared": "사이트 데이터가 지워졌습니다",
+    "siteDataClearFailed": "사이트 데이터를 지우지 못했습니다",
+    "addToHomeScreenFailed": "이 런처는 홈 화면 바로가기를 지원하지 않습니다"
+  },
+  "upgrade": {
+    "check": "업데이트 확인",
+    "checking": "업데이트 확인 중…",
+    "available": "Nora {{version}}이(가) 사용 가능합니다. 릴리스 페이지를 열어 업데이트를 다운로드할까요?",
+    "download": "다운로드 페이지 열기",
+    "upToDate": "Nora {{version}}은(는) 최신 버전입니다.",
+    "failed": "업데이트를 확인할 수 없습니다. 다시 시도해 주세요."
+  },
+  "usageLimits": {
+    "label": "사용 제한",
+    "description": "선택한 서비스 또는 전체 앱에 일일 시간 제한을 설정합니다.",
+    "limits": "제한",
+    "empty": "아직 사용 제한이 없습니다.",
+    "emptyHint": "일일 탐색 시간 추적을 시작하려면 제한을 추가하세요.",
+    "usageLine": "오늘: {{limit}} 중 {{used}}",
+    "deleteConfirm": "이 사용 제한을 삭제할까요?",
+    "scope": {
+      "all": "전체 앱",
+      "none": "선택된 서비스 없음"
+    },
+    "editor": {
+      "addTitle": "사용 제한 추가",
+      "editTitle": "사용 제한 편집",
+      "name": "이름",
+      "namePlaceholder": "예: 소셜 미디어",
+      "defaultName": "제한",
+      "dailyLimit": "일일 제한",
+      "hours": "시간",
+      "minutes": "분",
+      "scope": "적용 대상",
+      "add": "추가",
+      "errorMinutes": "일일 제한을 최소 1분으로 설정하세요",
+      "errorScope": "서비스를 하나 이상 선택하거나 전체 앱에 적용하세요"
+    },
+    "pin": {
+      "label": "PIN",
+      "hint": "제한을 관리하고 제한에 도달했을 때 잠금을 해제하려면 PIN이 필요합니다. 로컬 자정에 초기화됩니다.",
+      "set": "PIN 설정됨",
+      "notSet": "PIN이 설정되지 않음",
+      "setAction": "PIN 설정",
+      "change": "변경",
+      "remove": "제거",
+      "currentPlaceholder": "현재 PIN",
+      "newPlaceholder": "새 PIN",
+      "confirmPlaceholder": "새 PIN 확인",
+      "errorEmpty": "PIN은 비워 둘 수 없습니다",
+      "errorMismatch": "PIN이 일치하지 않습니다",
+      "errorIncorrect": "PIN이 올바르지 않습니다",
+      "requiredFirst": "먼저 PIN을 설정하세요",
+      "confirmEdit": "편집하려면 PIN을 입력하세요",
+      "confirmDelete": "삭제하려면 PIN을 입력하세요"
+    },
+    "lockout": {
+      "title": "오늘 사용 시간이 끝났습니다",
+      "body": "{{name}}의 일일 제한 {{limit}} 중 {{used}}을(를) 사용했습니다.",
+      "pinPlaceholder": "잠금 해제하려면 PIN을 입력하세요",
+      "pinIncorrect": "PIN이 올바르지 않습니다",
+      "unlock": "오늘 잠금 해제",
+      "noPinHint": "설정 → 사용 제한에서 PIN을 설정하면 일찍 잠금을 해제할 수 있습니다."
+    }
   }
 }
