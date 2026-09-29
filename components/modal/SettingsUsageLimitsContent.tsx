@@ -321,7 +321,7 @@ const LimitEditor: React.FC<{
                 ? serviceEntries.map(([id, [name, icon]], index) => (
                     <View
                       key={id}
-                      className={[rowCls, rowBorderCls, index === 0 ? 'border-t border-zinc-300 dark:border-zinc-800' : ''].join(' ')}
+                      className={[rowCls, rowBorderCls, index === 0 ? 'border-t-2 border-zinc-100 dark:border-zinc-950' : ''].join(' ')}
                     >
                       <NouSwitch
                         label={
@@ -579,7 +579,7 @@ export const SettingsUsageLimitsContent: React.FC = () => {
                           ? 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30'
                           : isNear
                           ? 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30'
-                          : 'border-zinc-300 bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-950',
+                          : 'border-transparent bg-zinc-100 dark:bg-zinc-950',
                       ].join(' ')}
                     >
                       <MaterialIcons

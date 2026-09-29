@@ -11,10 +11,10 @@ import { UserStyleEditModal } from './UserStyleEditModal'
 import { UserScriptEditModal } from './UserScriptEditModal'
 import { useTwColor } from '@/lib/theme'
 
-const surfaceCls = 'overflow-hidden rounded-[24px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/70'
+const surfaceCls = 'overflow-hidden rounded-[24px] bg-white dark:bg-zinc-900'
 const subheaderCls = 'mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500'
 const rowCls = 'px-4 py-4'
-const rowBorderCls = 'border-b border-zinc-300 dark:border-zinc-800'
+const rowBorderCls = 'border-b-2 border-zinc-100 dark:border-zinc-950'
 
 const formatHostGlobs = (hostGlobs: string[]) => hostGlobs.join(', ')
 
@@ -75,7 +75,7 @@ export const SettingsUserStylesContent = () => {
         <View className={surfaceCls}>
           {!hasStyles ? (
             <View className="items-center justify-center px-6 py-10">
-              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-zinc-200 dark:bg-zinc-950">
+              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-950">
                 <MaterialIcons name="brush" color={tw('#3f3f46')} size={24} />
               </View>
               <NouText className="mt-4 text-center text-sm leading-6 text-zinc-600 dark:text-zinc-500">
@@ -133,7 +133,7 @@ export const SettingsUserStylesContent = () => {
         <View className={surfaceCls}>
           {!hasScripts ? (
             <View className="items-center justify-center px-6 py-10">
-              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-zinc-200 dark:bg-zinc-950">
+              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-950">
                 <MaterialIcons name="code" color={tw('#3f3f46')} size={24} />
               </View>
               <NouText className="mt-4 text-center text-sm leading-6 text-zinc-600 dark:text-zinc-500">

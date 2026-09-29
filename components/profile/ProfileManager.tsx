@@ -99,15 +99,15 @@ const AutoProfilesModal = () => {
         </View>
         {autoProfiles.length ? (
           <ScrollView
-            className="max-h-[60vh] overflow-hidden rounded-[20px] border border-zinc-300 dark:border-zinc-800"
+            className="max-h-[60vh] overflow-hidden rounded-[20px]"
             showsVerticalScrollIndicator={false}
           >
             {autoProfiles.map((profile, index) => (
               <View
                 key={profile.id}
                 className={clsx(
-                  'flex-row items-center justify-between gap-3 bg-zinc-100/80 dark:bg-zinc-900/70 px-4 py-3',
-                  index !== autoProfiles.length - 1 && 'border-b border-zinc-300 dark:border-zinc-800',
+                  'flex-row items-center justify-between gap-3 bg-white dark:bg-zinc-900 px-4 py-3',
+                  index !== autoProfiles.length - 1 && 'border-b-2 border-zinc-100 dark:border-zinc-950',
                 )}
               >
                 <View
@@ -134,7 +134,7 @@ const AutoProfilesModal = () => {
             ))}
           </ScrollView>
         ) : (
-          <View className="rounded-[20px] border border-zinc-300 dark:border-zinc-800 px-4 py-8">
+          <View className="rounded-[20px] bg-white dark:bg-zinc-900 px-4 py-8">
             <NouText className="text-center text-zinc-500 dark:text-zinc-400">
               {t('profiles.autoProfilesEmpty')}
             </NouText>
@@ -212,10 +212,10 @@ export const ProfileManager = () => {
         <View
           key={profile.id}
           className={clsx(
-            'border-x border-zinc-300 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/70 px-4 py-2',
-            index === 0 && 'rounded-t-[20px] border-t',
-            index !== 0 && 'border-t',
-            index === profiles.length - 1 && 'rounded-b-[20px] border-b',
+            'bg-white dark:bg-zinc-900 px-4 py-2',
+            index === 0 && 'rounded-t-[20px]',
+            index !== 0 && 'border-t-2 border-zinc-100 dark:border-zinc-950',
+            index === profiles.length - 1 && 'rounded-b-[20px]',
           )}
         >
           <View className="flex-row items-center justify-between">

@@ -59,7 +59,7 @@ const SettingsNavRow: React.FC<{
       onPress={onPress}
       className={clsx(
         'flex-row items-center gap-3 px-4 py-4 active:bg-zinc-200/80 dark:active:bg-zinc-800/80',
-        !isLast && 'border-b border-zinc-300 dark:border-zinc-800',
+        !isLast && 'border-b-2 border-zinc-100 dark:border-zinc-950',
       )}
     >
       <View className={settingsUi.iconWrapCls}>
@@ -94,7 +94,7 @@ const SettingsExternalRow: React.FC<{
       }}
       className={clsx(
         'flex-row items-center gap-3 px-4 py-4 active:bg-zinc-200/80 dark:active:bg-zinc-800/80',
-        !isLast && 'border-b border-zinc-300 dark:border-zinc-800',
+        !isLast && 'border-b-2 border-zinc-100 dark:border-zinc-950',
       )}
     >
       <View className={settingsUi.iconWrapCls}>
@@ -418,7 +418,7 @@ export const SettingsModal = () => {
 
     return (
       <View className="gap-6">
-        <View className="rounded-[28px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100/90 dark:bg-zinc-900/80 px-5 py-5">
+        <View className="rounded-[28px] bg-white dark:bg-zinc-900 px-5 py-5">
           <NouText className="text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-500">Nora</NouText>
           <NouText className="mt-2 text-xl font-semibold tracking-tight">v{appVersion}</NouText>
           {isWeb && supportsUpdateChecks ? (
@@ -453,7 +453,7 @@ export const SettingsModal = () => {
 
   const content = (
     <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
-      <View className="border-b border-zinc-300 dark:border-zinc-800 px-3 py-3">
+      <View className="px-3 py-3">
         <View className="flex-row items-center gap-2">
           <Pressable onPress={handleBack} className="h-11 w-11 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-900">
             <MaterialIcons name={canGoBack ? 'arrow-back' : 'close'} color={isDark ? tw('#f8fafc') : tw('#334155')} size={22} />
@@ -467,7 +467,6 @@ export const SettingsModal = () => {
       <ScrollView
         ref={scrollRef}
         className="flex-1"
-        showsVerticalScrollIndicator={false}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={scrollKeyboardInset > 0 ? { paddingBottom: scrollKeyboardInset } : undefined}

@@ -669,7 +669,7 @@ export const SettingsAppearanceContent = () => {
         </View>
         {nIf(
           isDynamicColorAvailable,
-          <View className={clsx('border-t border-zinc-300 dark:border-zinc-800', rowCls)}>
+          <View className={clsx('border-t-2 border-zinc-100 dark:border-zinc-950', rowCls)}>
             <NouSwitch
               label={
                 <View>
@@ -1044,7 +1044,7 @@ export const SettingsSearchContent = () => {
             return (
               <View
                 key={provider.id}
-                className={clsx('px-4 py-4', index !== customSearchProviders.length - 1 && 'border-b border-zinc-300 dark:border-zinc-800')}
+                className={clsx('px-4 py-4', index !== customSearchProviders.length - 1 && 'border-b-2 border-zinc-100 dark:border-zinc-950')}
               >
                 <View className="flex-row items-center gap-3">
                   {resolved ? <SearchProviderIcon provider={resolved} /> : null}
