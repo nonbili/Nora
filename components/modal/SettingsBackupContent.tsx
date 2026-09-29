@@ -17,6 +17,7 @@ import {
   parseSettingsBackup,
   settingsBackupFilename,
 } from '@/lib/settings-transfer'
+import { useTwColor } from '@/lib/theme'
 
 const SettingsActionRow: React.FC<{
   label: string
@@ -27,6 +28,7 @@ const SettingsActionRow: React.FC<{
   loading?: boolean
   disabled?: boolean
 }> = ({ label, description, icon, onPress, isLast = false, loading = false, disabled = false }) => {
+  const tw = useTwColor()
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   const isDisabled = disabled || loading
@@ -41,7 +43,7 @@ const SettingsActionRow: React.FC<{
       )}
     >
       <View className={settingsUi.iconWrapCls}>
-        <MaterialIcons name={icon} color={isDark ? colors.icon : colors.iconLightStrong} size={18} />
+        <MaterialIcons name={icon} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} size={18} />
       </View>
       <View className="flex-1">
         <NouText>{label}</NouText>
@@ -50,9 +52,9 @@ const SettingsActionRow: React.FC<{
         ) : null}
       </View>
       {loading ? (
-        <ActivityIndicator color={isDark ? colors.icon : colors.iconLightStrong} />
+        <ActivityIndicator color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} />
       ) : (
-        <MaterialIcons name="chevron-right" color={isDark ? '#71717a' : '#52525b'} size={20} />
+        <MaterialIcons name="chevron-right" color={isDark ? tw('#71717a') : tw('#52525b')} size={20} />
       )}
     </Pressable>
   )

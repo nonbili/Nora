@@ -14,8 +14,10 @@ import {
   isLimitBypassedToday,
 } from '@/states/usage-limits'
 import { resolveServiceFromUrl, formatMinutes } from '@/lib/usage-limits'
+import { useTwColor } from '@/lib/theme'
 
 export const UsageLockout: React.FC = () => {
+  const tw = useTwColor()
   const tabs = useValue(tabs$.tabs)
   const activeIndex = useValue(tabs$.activeTabIndex)
   const limits = useValue(usageLimits$.limits)
@@ -65,7 +67,7 @@ export const UsageLockout: React.FC = () => {
       <View className="w-full max-w-sm gap-4">
         <View className="items-center">
           <View className="h-20 w-20 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-500/15">
-            <MaterialIcons name="hourglass-bottom" size={44} color="#6366f1" />
+            <MaterialIcons name="hourglass-bottom" size={44} color={tw('#6366f1')} />
           </View>
         </View>
         <NouText className="text-2xl font-semibold text-center">
@@ -83,7 +85,7 @@ export const UsageLockout: React.FC = () => {
             <TextInput
               className={settingsUi.textInputCls}
               placeholder={t('usageLimits.lockout.pinPlaceholder')}
-              placeholderTextColor="#71717a"
+              placeholderTextColor={tw('#71717a')}
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="done"

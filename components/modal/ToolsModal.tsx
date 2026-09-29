@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { clearHostData } from '@/lib/profile-data'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { executeWebviewJavaScriptQuietly, reloadWebview } from '@/lib/webview'
+import { useTwColor } from '@/lib/theme'
 
 type ToolsTab = 'download' | 'cookies'
 
@@ -47,6 +48,7 @@ const canDownload = (url: string) => {
 }
 
 export const ToolsModal = () => {
+  const tw = useTwColor()
   const toolsModalOpen = use$(ui$.toolsModalOpen)
   const insets = useSafeAreaInsets()
   const colorScheme = useColorScheme()
@@ -164,7 +166,7 @@ export const ToolsModal = () => {
               value={url}
               onChangeText={setUrl}
               placeholder="https://www.instagram.com/:user/reel/:id"
-              placeholderTextColor={isDark ? gray.gray11 : '#52525b'}
+              placeholderTextColor={isDark ? gray.gray11 : tw('#52525b')}
               autoFocus
             />
             <View className="flex-row items-center justify-end mt-6">
@@ -180,7 +182,7 @@ export const ToolsModal = () => {
                 value={cobaltUrl}
                 onChangeText={setCobaltUrl}
                 placeholder="post or reel url"
-                placeholderTextColor={isDark ? gray.gray11 : '#52525b'}
+                placeholderTextColor={isDark ? gray.gray11 : tw('#52525b')}
               />
               <View className="flex-row items-center justify-end mt-6">
                 <NouButton variant="outline" onPress={onOpenCobalt}>

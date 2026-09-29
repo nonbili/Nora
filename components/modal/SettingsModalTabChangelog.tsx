@@ -8,6 +8,7 @@ import { NouButton } from '../button/NouButton'
 import { clsx, isWeb } from '@/lib/utils'
 import { t } from 'i18next'
 import { getReleaseFeedQuery } from '@/lib/query/changelog'
+import { useTwColor } from '@/lib/theme'
 
 const surfaceCls = 'overflow-hidden rounded-[24px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/70'
 
@@ -23,10 +24,11 @@ function formatReleaseDate(value: string) {
 }
 
 export const SettingsChangelogContent = () => {
+  const tw = useTwColor()
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
-  const cardIconColor = isDark ? '#c4b5fd' : '#4338ca'
-  const externalIconColor = isDark ? '#a1a1aa' : '#3f3f46'
+  const cardIconColor = isDark ? '#c4b5fd' : tw('#4338ca')
+  const externalIconColor = isDark ? tw('#a1a1aa') : tw('#3f3f46')
   const currentVersion = `v${isWeb ? desktopVersion : version}`
   const { data, isLoading, isError, refetch, isFetching } = useQuery(getReleaseFeedQuery())
 

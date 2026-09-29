@@ -21,6 +21,7 @@ import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout }
 import { openDesktopTab, sortTabsByOrder, tabs$, type Tab } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
 import { getLayoutLabel, getTabLabel } from '@/components/tab/desktop/desktopWorkspaceShared'
+import { useTwColor } from '@/lib/theme'
 
 const layoutIconName = (layout: TabGroupLayout) => {
   if (layout === 'split-view') return 'view-week' as const
@@ -65,6 +66,7 @@ const TabRow: React.FC<{
   openMenu: (items: Item[], x: number, y: number) => void
   tab: Tab
 }> = ({ collapsed, groupId, groups, isActive, clipRef, openMenu, tab }) => {
+  const tw = useTwColor()
   const profileColor = getProfileColor(tab.profile)
   const rowRef = useRef<View>(null)
   const itemsRef = useRef<Item[]>([])
@@ -100,7 +102,7 @@ const TabRow: React.FC<{
       ? [
           {
             label: t('views.desktop.moveToUngrouped'),
-            icon: <MaterialIcons name="north-east" size={18} color={colors.iconSubtle} />,
+            icon: <MaterialIcons name="north-east" size={18} color={tw(colors.iconSubtle)} />,
             handler: () => tabGroups$.moveTabToGroup(tab.id, null),
           },
         ]
@@ -109,7 +111,7 @@ const TabRow: React.FC<{
       .filter((group) => group.id !== groupId)
       .map((group) => ({
         label: t('views.desktop.moveToGroup', { name: group.name }),
-        icon: <MaterialIcons name={layoutIconName(group.layout)} size={18} color={colors.iconSubtle} />,
+        icon: <MaterialIcons name={layoutIconName(group.layout)} size={18} color={tw(colors.iconSubtle)} />,
         handler: () => {
           tabGroups$.moveTabToGroup(tab.id, group.id)
           tabs$.setActiveTabById(tab.id, 'user')
@@ -174,7 +176,7 @@ const TabRow: React.FC<{
       </View>
       {tab.isPaused ? (
         <View className="absolute -bottom-1 -right-1 rounded-full bg-zinc-100 dark:bg-zinc-700">
-          <MaterialIcons name="pause-circle-filled" size={10} color="#a1a1aa" />
+          <MaterialIcons name="pause-circle-filled" size={10} color={tw('#a1a1aa')} />
         </View>
       ) : null}
     </View>
@@ -238,7 +240,7 @@ const TabRow: React.FC<{
         className="h-6 w-6 shrink-0 items-center justify-center rounded-md"
         onPress={() => tabs$.closeTab(tabs$.tabs.get().findIndex((currentTab) => currentTab.id === tab.id))}
       >
-        <MaterialIcons name="close" size={14} color="#a1a1aa" />
+        <MaterialIcons name="close" size={14} color={tw('#a1a1aa')} />
       </Pressable>
     </View>
   )
@@ -254,9 +256,10 @@ const GroupSection: React.FC<{
   clipRef: React.RefObject<Measurable | null>
   openMenu: (items: Item[], x: number, y: number) => void
 }> = ({ activeGroupId, activeTabId, collapsed, group, groups, groupTabs, clipRef, openMenu }) => {
+  const tw = useTwColor()
   const isActiveGroup = group.id === activeGroupId
   const colorScheme = useColorScheme()
-  const iconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
+  const iconColor = colorScheme === 'light' ? tw(colors.iconLightStrong) : tw(colors.icon)
 
   const focusGroup = () => {
     batch(() => {
@@ -369,6 +372,7 @@ const GroupSection: React.FC<{
 }
 
 export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }) => {
+  const tw = useTwColor()
   const tabs = useValue(tabs$.tabs)
   const orders = useValue(tabs$.orders)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
@@ -380,7 +384,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
     sidebarViewportRef.current = scrollView?.getNativeScrollRef() ?? null
   }
   const colorScheme = useColorScheme()
-  const iconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
+  const iconColor = colorScheme === 'light' ? tw(colors.iconLightStrong) : tw(colors.icon)
 
   const tabIdsKey = tabs.map((tab) => tab.id).join('|')
   const orderedTabs = useMemo(() => sortTabsByOrder(tabs, orders), [tabIdsKey, orders])
@@ -484,7 +488,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
               {t('views.desktop.ungrouped')}
             </NouText>
             <Pressable className="h-7 w-7 items-center justify-center rounded-md" onPress={newTab}>
-              <MaterialIcons name="add" size={18} color="#71717a" />
+              <MaterialIcons name="add" size={18} color={tw('#71717a')} />
             </Pressable>
           </View>
           <View className="gap-1">
@@ -508,7 +512,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
         <NouMenu
           trigger={
             <View className="flex-row items-center gap-2 rounded-md border border-dashed border-zinc-300 px-2 py-2 dark:border-zinc-700">
-              <MaterialIcons name="create-new-folder" size={16} color="#71717a" />
+              <MaterialIcons name="create-new-folder" size={16} color={tw('#71717a')} />
               <NouText className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
                 {t('views.desktop.newGroup')}
               </NouText>

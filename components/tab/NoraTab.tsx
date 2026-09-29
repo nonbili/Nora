@@ -54,6 +54,7 @@ import {
   loadCosmeticFilters,
 } from '@/lib/blocklist'
 import { blocklist$ } from '@/states/blocklist'
+import { twColor, useTwColor } from '@/lib/theme'
 
 const LOAD_URL_MAX_RETRIES = 5
 const LOAD_URL_RETRY_DELAY = 100
@@ -87,7 +88,7 @@ const buildImageViewerUrl = (imageUrl: string, theme: null | 'dark' | 'light') =
       : Appearance.getColorScheme()) ||
     'dark'
   const colorScheme = resolvedTheme === 'light' ? 'light' : 'dark'
-  const backgroundColor = resolvedTheme === 'light' ? '#f4f4f5' : '#09090b'
+  const backgroundColor = resolvedTheme === 'light' ? twColor('#f4f4f5') : twColor('#09090b')
   const html = `<!doctype html>
 <html>
   <head>
@@ -231,6 +232,7 @@ export const NoraTab: React.FC<{
   desktopVariant = 'deck',
   slotSwitcher,
 }) => {
+  const tw = useTwColor()
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const doubleTapToToggleHeader = useValue(settings$.doubleTapToToggleHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
@@ -855,9 +857,9 @@ export const NoraTab: React.FC<{
                       style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}
                     >
                       {tab.isPaused ? (
-                        <MaterialIcons name="pause-circle-filled" size={16} color="#a1a1aa" />
+                        <MaterialIcons name="pause-circle-filled" size={16} color={tw('#a1a1aa')} />
                       ) : tab.isLoading ? (
-                        <ActivityIndicator size="small" color="#a1a1aa" />
+                        <ActivityIndicator size="small" color={tw('#a1a1aa')} />
                       ) : (
                         <ServiceIcon url={tab.url} icon={tab.icon} />
                       )}
@@ -882,7 +884,7 @@ export const NoraTab: React.FC<{
         </NouContextMenu>
         {tab.isPaused ? (
           <View className="flex-1 min-h-0 items-center justify-center gap-3 px-6">
-            <MaterialIcons name="pause-circle-outline" size={40} color="#a1a1aa" />
+            <MaterialIcons name="pause-circle-outline" size={40} color={tw('#a1a1aa')} />
             <NouText className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">{t('tabs.paused')}</NouText>
             <NouText className="text-center text-xs text-zinc-500 dark:text-zinc-400">{t('tabs.pausedHint')}</NouText>
             <Pressable
@@ -897,7 +899,7 @@ export const NoraTab: React.FC<{
           </View>
         ) : isDormant ? (
           <View className="flex-1 min-h-0 items-center justify-center">
-            <ActivityIndicator size="small" color="#a1a1aa" />
+            <ActivityIndicator size="small" color={tw('#a1a1aa')} />
           </View>
         ) : (
           <NoraView
@@ -979,9 +981,9 @@ export const NoraTab: React.FC<{
                     style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}
                   >
                     {tab.isPaused ? (
-                      <MaterialIcons name="pause-circle-filled" size={16} color="#a1a1aa" />
+                      <MaterialIcons name="pause-circle-filled" size={16} color={tw('#a1a1aa')} />
                     ) : tab.isLoading ? (
-                      <ActivityIndicator size="small" color="#a1a1aa" />
+                      <ActivityIndicator size="small" color={tw('#a1a1aa')} />
                     ) : (
                       <ServiceIcon url={tab.url} icon={tab.icon} />
                     )}
@@ -1009,7 +1011,7 @@ export const NoraTab: React.FC<{
       {nIf(
         desktopChrome && isDormant,
         <View className="flex-1 min-h-0 items-center justify-center">
-          <ActivityIndicator size="small" color="#a1a1aa" />
+          <ActivityIndicator size="small" color={tw('#a1a1aa')} />
         </View>,
       )}
       {nIf(

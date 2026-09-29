@@ -4,6 +4,7 @@ import { View, useColorScheme } from 'react-native'
 import { services } from './Services'
 import { getFaviconUrl, ResolvedSearchProvider } from '@/lib/search'
 import { colors } from '@/lib/colors'
+import { useTwColor } from '@/lib/theme'
 
 const SearchIcon = ({ name, size, color }: { name: MaterialIconsIconName; size: number; color: string }) => (
   <MaterialIcons name={name} size={size} color={color} />
@@ -13,11 +14,12 @@ export const SearchProviderIcon: React.FC<{
   provider: Pick<ResolvedSearchProvider, 'id' | 'kind' | 'serviceId' | 'iconUrl'>
   size?: number
 }> = ({ provider, size = 20 }) => {
+  const tw = useTwColor()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
 
   if (provider.kind === 'url') {
-    return <SearchIcon name="language" size={size} color={isDark ? colors.iconMutedDark : colors.iconLight} />
+    return <SearchIcon name="language" size={size} color={isDark ? tw(colors.iconMutedDark) : tw(colors.iconLight)} />
   }
 
   const faviconUrl =
@@ -46,5 +48,5 @@ export const SearchProviderIcon: React.FC<{
     return <View style={{ transform: [{ scale: size / 24 }] }}>{serviceIcon}</View>
   }
 
-  return <SearchIcon name="search" size={size} color="#a1a1aa" />
+  return <SearchIcon name="search" size={size} color={tw('#a1a1aa')} />
 }

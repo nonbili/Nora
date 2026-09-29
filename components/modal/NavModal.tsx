@@ -30,6 +30,7 @@ import { colors } from '@/lib/colors'
 import { AUTO_PROFILE_ID, getSiteProfileId, isSiteProfileId } from '@/lib/site-profile'
 import { BaseCenterModal } from './BaseCenterModal'
 import { presetBookmarkGroups, presetBookmarks } from '@/lib/preset-bookmarks'
+import { useTwColor } from '@/lib/theme'
 
 const cls =
   'flex-row items-center gap-2 rounded-full w-40 py-2 px-3 overflow-hidden border border-zinc-200 bg-white/90 dark:border-zinc-800 dark:bg-zinc-900/90'
@@ -49,6 +50,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   onSelectProfile,
   profileId,
 }) => {
+  const tw = useTwColor()
   const disabledServices = useValue(settings$.disabledServicesArr)
   const profiles = useValue(settings$.profiles)
   const bookmarks = useValue(bookmarks$.bookmarks)
@@ -232,7 +234,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
                   ? t('newTab.search.urlPlaceholder')
                   : t('newTab.search.searchPlaceholder')
               }
-              placeholderTextColor={isDark ? '#71717a' : '#52525b'}
+              placeholderTextColor={isDark ? tw('#71717a') : tw('#52525b')}
             />
             <Pressable
               onPress={submitInput}
@@ -240,7 +242,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
             >
               <MaterialIcons
                 name={selectedSearchProvider?.kind === 'url' ? 'arrow-forward' : 'search'}
-                color={isDark ? colors.icon : colors.iconLightStrong}
+                color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
                 size={18}
               />
             </Pressable>
@@ -253,7 +255,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
               <TouchableHighlight
                 key={value}
                 onPress={() => onPress(getHomeUrl(value))}
-                underlayColor={isDark ? '#1f2937' : '#e0f2fe'}
+                underlayColor={isDark ? tw('#1f2937') : tw('#e0f2fe')}
               >
                 <View className={cls}>
                   {icon()}
@@ -268,7 +270,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
             <TouchableHighlight
               key={index}
               onPress={() => onPress(bookmark.url)}
-              underlayColor={isDark ? '#1f2937' : '#e0f2fe'}
+              underlayColor={isDark ? tw('#1f2937') : tw('#e0f2fe')}
             >
               <View className={cls}>
                 <ServiceIcon url={bookmark.url} icon={bookmark.icon} />
@@ -286,7 +288,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
             accessibilityLabel={t('newTab.presets.open')}
             className="h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/90 active:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/90 dark:active:bg-zinc-800"
           >
-            <MaterialIcons name="edit" size={18} color={isDark ? colors.icon : colors.iconLightStrong} />
+            <MaterialIcons name="edit" size={18} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} />
           </Pressable>
         </View>
       </ScrollView>
@@ -303,7 +305,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
                 accessibilityLabel={t('buttons.cancel')}
                 className="h-9 w-9 items-center justify-center rounded-full bg-zinc-200 active:bg-zinc-300 dark:bg-zinc-800 dark:active:bg-zinc-700"
               >
-                <MaterialIcons name="close" size={18} color={isDark ? colors.icon : colors.iconLightStrong} />
+                <MaterialIcons name="close" size={18} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} />
               </Pressable>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
@@ -356,7 +358,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
                         <MaterialIcons
                           name={added ? 'check' : 'add'}
                           size={16}
-                          color={added ? '#22c55e' : isDark ? colors.icon : colors.iconLightStrong}
+                          color={added ? '#22c55e' : isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
                         />
                       </Pressable>
                     )
@@ -403,7 +405,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
                     <SearchProviderIcon provider={provider} size={20} />
                     <Text className="flex-1 text-sm text-zinc-900 dark:text-white">{provider.name}</Text>
                     {selectedSearchProvider?.id === provider.id ? (
-                      <MaterialIcons name="check" size={18} color="#f1f5f9" />
+                      <MaterialIcons name="check" size={18} color={tw('#f1f5f9')} />
                     ) : null}
                   </Pressable>
                 ))}

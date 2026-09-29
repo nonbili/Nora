@@ -33,6 +33,7 @@ import { settingsUi, SettingsSection, SettingsSurface } from './SettingsPrimitiv
 import { colors } from '@/lib/colors'
 import { useCheckForUpgrade } from '@/lib/hooks/useCheckForUpgrade'
 import { NouButton } from '../button/NouButton'
+import { useTwColor } from '@/lib/theme'
 
 const repo = 'https://github.com/nonbili/Nora'
 const donateLinks = [
@@ -50,6 +51,7 @@ const SettingsNavRow: React.FC<{
   onPress: () => void
   isLast?: boolean
 }> = ({ title, description, icon, meta, onPress, isLast = false }) => {
+  const tw = useTwColor()
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
@@ -61,7 +63,7 @@ const SettingsNavRow: React.FC<{
       )}
     >
       <View className={settingsUi.iconWrapCls}>
-        <MaterialIcons name={icon} color={isDark ? colors.icon : colors.iconLightStrong} size={18} />
+        <MaterialIcons name={icon} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} size={18} />
       </View>
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
@@ -70,7 +72,7 @@ const SettingsNavRow: React.FC<{
         </View>
         <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{description}</NouText>
       </View>
-      <MaterialIcons name="chevron-right" color={isDark ? '#71717a' : '#52525b'} size={20} />
+      <MaterialIcons name="chevron-right" color={isDark ? tw('#71717a') : tw('#52525b')} size={20} />
     </Pressable>
   )
 }
@@ -82,6 +84,7 @@ const SettingsExternalRow: React.FC<{
   icon?: MaterialIconsIconName
   isLast?: boolean
 }> = ({ title, detail, href, icon = 'open-in-new', isLast = false }) => {
+  const tw = useTwColor()
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
@@ -95,13 +98,13 @@ const SettingsExternalRow: React.FC<{
       )}
     >
       <View className={settingsUi.iconWrapCls}>
-        <MaterialIcons name={icon} color={isDark ? colors.icon : colors.iconLightStrong} size={18} />
+        <MaterialIcons name={icon} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} size={18} />
       </View>
       <View className="flex-1">
         <NouText>{title}</NouText>
         <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{detail}</NouText>
       </View>
-      <MaterialIcons name="chevron-right" color={isDark ? '#71717a' : '#52525b'} size={20} />
+      <MaterialIcons name="chevron-right" color={isDark ? tw('#71717a') : tw('#52525b')} size={20} />
     </Pressable>
   )
 }
@@ -111,6 +114,7 @@ function formatPlanLabel(plan?: string) {
 }
 
 export const SettingsModal = () => {
+  const tw = useTwColor()
   const { checking, checkForUpgrade, supported: supportsUpdateChecks } = useCheckForUpgrade()
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
   const urlModalOpen = useValue(ui$.urlModalOpen)
@@ -452,7 +456,7 @@ export const SettingsModal = () => {
       <View className="border-b border-zinc-300 dark:border-zinc-800 px-3 py-3">
         <View className="flex-row items-center gap-2">
           <Pressable onPress={handleBack} className="h-11 w-11 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-900">
-            <MaterialIcons name={canGoBack ? 'arrow-back' : 'close'} color={isDark ? '#f8fafc' : '#334155'} size={22} />
+            <MaterialIcons name={canGoBack ? 'arrow-back' : 'close'} color={isDark ? tw('#f8fafc') : tw('#334155')} size={22} />
           </Pressable>
           <View className="flex-1">
             <NouText className="text-lg font-semibold">{pageMeta[currentPage]}</NouText>

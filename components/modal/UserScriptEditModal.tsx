@@ -20,6 +20,7 @@ import { userStyles$ } from '@/states/user-styles'
 import { showToast } from '@/lib/toast'
 import { ui$ } from '@/states/ui'
 import { executeWebviewJavaScript } from '@/lib/webview'
+import { useTwColor } from '@/lib/theme'
 
 const textInputCls =
   'rounded-2xl border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-4 text-zinc-900 dark:text-white'
@@ -77,6 +78,7 @@ async function readPickedScript(result: DocumentPicker.DocumentPickerResult) {
 }
 
 export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) => {
+  const tw = useTwColor()
   const open = useValue(ui$.userScriptModalOpen)
   const editingId = useValue(ui$.editingUserScriptId)
   const webview = useValue(ui$.webview)
@@ -252,7 +254,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
     <View className={inline ? 'pb-4' : 'p-6'} style={inline && keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 16 } : undefined}>
       <View className="flex-row items-center gap-3">
         <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/10">
-          <MaterialIcons name="code" color="#818cf8" size={20} />
+          <MaterialIcons name="code" color={tw('#818cf8')} size={20} />
         </View>
         <NouText className="text-xl font-bold tracking-tight">
           {draft.id ? t('settings.userStyles.scripts.editTitle') : t('settings.userStyles.scripts.addTitle')}
@@ -269,7 +271,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
           autoCorrect={false}
           onChangeText={(name) => setDraft((value) => (value ? { ...value, name } : value))}
           placeholder={t('settings.userStyles.scripts.namePlaceholder')}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={tw('#71717a')}
           value={draft.name}
         />
       </View>
@@ -284,7 +286,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
           autoCorrect={false}
           onChangeText={(hostGlobsText) => setDraft((value) => (value ? { ...value, hostGlobsText } : value))}
           placeholder={t('settings.userStyles.hostGlobs.placeholder')}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={tw('#71717a')}
           value={draft.hostGlobsText}
         />
       </View>
@@ -299,7 +301,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
         <Switch
           value={draft.pinToHeader}
           onValueChange={(pinToHeader) => setDraft((value) => (value ? { ...value, pinToHeader } : value))}
-          trackColor={{ false: '#d4d4d8', true: '#4f46e5' }}
+          trackColor={{ false: tw('#d4d4d8'), true: tw('#4f46e5') }}
           thumbColor="#ffffff"
           {...Platform.select({
             web: { activeThumbColor: '#ffffff' },
@@ -330,7 +332,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
             multiline
             onChangeText={(js) => setDraft((value) => (value ? { ...value, js } : value))}
             placeholder={`document.body.dataset.nora = '1'`}
-            placeholderTextColor="#71717a"
+            placeholderTextColor={tw('#71717a')}
             style={{
               height: editorHeight,
               textAlignVertical: 'top',
@@ -353,7 +355,7 @@ export const UserScriptEditModal = ({ inline = false }: { inline?: boolean }) =>
         </View>
         <View className="flex-row items-center justify-end gap-2">
           <Pressable onPress={onImportScript} className={secondaryActionCls}>
-            <MaterialIcons name="file-upload" color="#71717a" size={18} />
+            <MaterialIcons name="file-upload" color={tw('#71717a')} size={18} />
             <NouText className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
               {t('settings.userStyles.scripts.import')}
             </NouText>

@@ -15,6 +15,7 @@ import { NouText } from '../NouText'
 import { BaseCenterModal } from './BaseCenterModal'
 import { executeWebviewJavaScript, reloadWebview } from '@/lib/webview'
 import { ProfileSelectorChips } from '../profile/ProfileSelectorChips'
+import { useTwColor } from '@/lib/theme'
 
 type InjectionRequest = {
   id: number
@@ -113,6 +114,7 @@ const getInjectionContext = (tabs: TabLike[], activeTabIndex: number, profileId:
 }
 
 export const CookieModal = () => {
+  const tw = useTwColor()
   const cookieModalOpen = useValue(ui$.cookieModalOpen)
   const profiles = useValue(settings$.profiles)
   const tabs = useValue(tabs$.tabs)
@@ -363,7 +365,7 @@ export const CookieModal = () => {
             multiline
             onChangeText={setText}
             placeholder={'cookie_name=value; other_cookie=value\nor\ncookies.txt export'}
-            placeholderTextColor="#71717a"
+            placeholderTextColor={tw('#71717a')}
             style={{ textAlignVertical: 'top' }}
             value={text}
           />

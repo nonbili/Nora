@@ -22,6 +22,7 @@ import { settings$ } from '@/states/settings'
 import { useValue } from '@legendapp/state/react'
 import { hostHomes } from '@/content/css'
 import { t } from 'i18next'
+import { useTwColor } from '@/lib/theme'
 
 export const services: Record<string, [string, () => ReactNode]> = {
   bluesky: ['Bluesky', () => <IconBluesky />],
@@ -63,8 +64,9 @@ export const ServiceManager: React.FC<{ hideTitle?: boolean }> = ({ hideTitle = 
 }
 
 export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, icon }) => {
+  const tw = useTwColor()
   const size = isWeb ? 20 : 24
-  const fallbackColor = url ? '#52525b' : '#a1a1aa'
+  const fallbackColor = url ? tw('#52525b') : tw('#a1a1aa')
   const [errored, setErrored] = useState(false)
 
   useEffect(() => {

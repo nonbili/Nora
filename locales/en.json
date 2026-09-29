@@ -384,6 +384,10 @@
       "light": "Light",
       "hint": "App and webview theme. If a page does not update immediately, reload the tab."
     },
+    "dynamicColor": {
+      "label": "Dynamic color",
+      "hint": "Use your system color palette."
+    },
     "language": {
       "label": "Language",
       "system": "System",

@@ -17,6 +17,7 @@ import { prepareIosPurchase } from '@/lib/query'
 import { deliverIosTransaction, IOS_SYNC_PRODUCT_ID } from '@/lib/ios-billing'
 import { useMe } from '@/lib/hooks/useMe'
 import { settingsUi } from './SettingsPrimitives'
+import { useTwColor } from '@/lib/theme'
 
 const surfaceCls = settingsUi.surfaceCls
 const sectionLabelCls = settingsUi.sectionLabelCls
@@ -32,6 +33,7 @@ const SettingsBadge: React.FC<{ label: string }> = ({ label }) => {
 }
 
 export const SettingsModalTabSync = () => {
+  const tw = useTwColor()
   const { user, userEmail, plan, userId, accessToken } = use$(auth$)
   const { me } = useMe()
   const syncHint = userId && (!plan || plan === 'free') ? t('sync.upgradeHint') : t('sync.hint')
@@ -211,7 +213,7 @@ export const SettingsModalTabSync = () => {
         <View className={surfaceCls}>
           <View className="flex-row items-center gap-3 px-4 py-4">
             <Image
-              style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: '#18181b' }}
+              style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: tw('#18181b') }}
               source={user?.picture}
               contentFit="cover"
             />

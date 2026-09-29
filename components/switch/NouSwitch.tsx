@@ -2,6 +2,7 @@ import { Platform, Pressable, Switch, View } from 'react-native'
 import { NouText } from '../NouText'
 import { clsx } from '@/lib/utils'
 import { ReactNode } from 'react'
+import { useTwColor } from '@/lib/theme'
 
 export const NouSwitch: React.FC<{
   className?: string
@@ -10,6 +11,7 @@ export const NouSwitch: React.FC<{
   disabled?: boolean
   onPress: () => void
 }> = ({ className, label, value, disabled = false, onPress }) => {
+  const tw = useTwColor()
   return (
     <View className={clsx('items-center flex-row justify-between', disabled && 'opacity-50', className)}>
       <Pressable className="flex-1" onPress={() => (disabled ? {} : onPress())}>
@@ -19,7 +21,7 @@ export const NouSwitch: React.FC<{
         value={value}
         disabled={disabled}
         onValueChange={() => onPress()}
-        trackColor={{ false: '#a1a1aa', true: '#6366f1' }}
+        trackColor={{ false: tw('#a1a1aa'), true: tw('#6366f1') }}
         {...Platform.select({
           web: {
             activeThumbColor: '#ffffff',

@@ -7,8 +7,10 @@ import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import { tabGroups$ } from '@/states/tab-groups'
 import { ui$ } from '@/states/ui'
+import { useTwColor } from '@/lib/theme'
 
 export const RenameGroupModal = () => {
+  const tw = useTwColor()
   const targetGroupId = useValue(ui$.renameGroupModalTargetGroupId)
   const groups = useValue(tabGroups$.groups)
   const [draftName, setDraftName] = useState('')
@@ -39,7 +41,7 @@ export const RenameGroupModal = () => {
           value={draftName}
           onChangeText={setDraftName}
           placeholder={t('views.desktop.groupNamePlaceholder')}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={tw('#9ca3af')}
           autoFocus
         />
         <View className="flex-row justify-end gap-3 mt-6">

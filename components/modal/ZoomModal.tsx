@@ -9,6 +9,7 @@ import { MaterialButton } from '../button/IconButtons'
 import { colors } from '@/lib/colors'
 import { getHostFromUrl } from '@/lib/utils'
 import { t } from 'i18next'
+import { useTwColor } from '@/lib/theme'
 
 const getNextZoom = (current: number) => {
   const next = ZOOM_PRESETS.find((preset) => preset > current)
@@ -22,6 +23,7 @@ const getPrevZoom = (current: number) => {
 }
 
 export const ZoomModal = () => {
+  const tw = useTwColor()
   const zoomModalOpen = useValue(ui$.zoomModalOpen)
   const currentTab = useValue(tabs$.currentTab)
   const defaultZoom = useValue(settings$.defaultZoom)
@@ -74,7 +76,7 @@ export const ZoomModal = () => {
             name="remove"
             disabled={!host || currentZoom <= ZOOM_PRESETS[0]}
             onPress={handleZoomOut}
-            color={isDark ? colors.icon : colors.iconLightStrong}
+            color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
           />
           <NouText className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
             {currentZoom}%
@@ -83,7 +85,7 @@ export const ZoomModal = () => {
             name="add"
             disabled={!host || currentZoom >= ZOOM_PRESETS[ZOOM_PRESETS.length - 1]}
             onPress={handleZoomIn}
-            color={isDark ? colors.icon : colors.iconLightStrong}
+            color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
           />
         </View>
 

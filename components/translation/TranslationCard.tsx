@@ -8,8 +8,10 @@ import { ui$ } from '@/states/ui'
 import { NouText } from '@/components/NouText'
 import { t } from 'i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTwColor } from '@/lib/theme'
 
 export const TranslationCard = () => {
+  const tw = useTwColor()
   const request = useValue(ui$.translation)
   const insets = useSafeAreaInsets()
   const [result, setResult] = useState<{ text: string; sourceLanguage?: string } | null>(null)
@@ -79,10 +81,10 @@ export const TranslationCard = () => {
             hitSlop={8}
             onPress={() => setPinnedRequestId(pinned ? null : request.id)}
           >
-            <MaterialIcons name="push-pin" size={20} color={pinned ? '#2563eb' : '#71717a'} />
+            <MaterialIcons name="push-pin" size={20} color={pinned ? tw('#2563eb') : tw('#71717a')} />
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel={t('buttons.cancel')} hitSlop={8} onPress={close}>
-            <MaterialIcons name="close" size={20} color="#71717a" />
+            <MaterialIcons name="close" size={20} color={tw('#71717a')} />
           </Pressable>
         </View>
       </View>

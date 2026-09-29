@@ -5,6 +5,7 @@ import { NouText } from '../NouText'
 import { t } from 'i18next'
 import { AUTO_PROFILE_ID } from '@/lib/site-profile'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
+import { useTwColor } from '@/lib/theme'
 
 type ProfileSelectorChipsProps = {
   profiles: Profile[]
@@ -25,6 +26,7 @@ export const ProfileSelectorChips: React.FC<ProfileSelectorChipsProps> = ({
   containerClassName,
   onAddProfile,
 }) => {
+  const tw = useTwColor()
   const entries = showAuto ? [{ id: AUTO_PROFILE_ID, name: t('profiles.auto'), color: '#0f766e' }, ...profiles] : profiles
 
   return (
@@ -48,7 +50,7 @@ export const ProfileSelectorChips: React.FC<ProfileSelectorChipsProps> = ({
               )}
             >
               {isAuto ? (
-                <MaterialIcons name="auto-awesome" size={14} color={selected ? '#4338ca' : '#71717a'} />
+                <MaterialIcons name="auto-awesome" size={14} color={selected ? tw('#4338ca') : tw('#71717a')} />
               ) : (
                 <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: profile.color }} />
               )}
@@ -69,7 +71,7 @@ export const ProfileSelectorChips: React.FC<ProfileSelectorChipsProps> = ({
       {onAddProfile ? (
         <Pressable onPress={onAddProfile} disabled={disabled} className={clsx(disabled && 'opacity-60')}>
           <View className="flex-row items-center gap-2 rounded-full px-4 py-2 border border-dashed border-zinc-300 dark:border-zinc-700/60 bg-white/80 dark:bg-white/5">
-            <MaterialIcons name="add" size={14} color="#71717a" />
+            <MaterialIcons name="add" size={14} color={tw('#71717a')} />
             <NouText className="text-sm text-zinc-500 dark:text-gray-400">{t('profiles.add')}</NouText>
           </View>
         </Pressable>

@@ -20,6 +20,7 @@ import { userStyles$ } from '@/states/user-styles'
 import { showToast } from '@/lib/toast'
 import { ui$ } from '@/states/ui'
 import { executeWebviewJavaScriptQuietly } from '@/lib/webview'
+import { useTwColor } from '@/lib/theme'
 
 const textInputCls =
   'rounded-2xl border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-4 text-zinc-900 dark:text-white'
@@ -90,6 +91,7 @@ async function readPickedCss(result: DocumentPicker.DocumentPickerResult) {
 }
 
 export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => {
+  const tw = useTwColor()
   const open = useValue(ui$.userStyleModalOpen)
   const editingId = useValue(ui$.editingUserStyleId)
   const previewBuiltinId = useValue(ui$.previewBuiltinId)
@@ -265,7 +267,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
         <View className="p-6">
           <View className="flex-row items-center gap-3">
             <View className="h-10 w-10 items-center justify-center rounded-xl bg-zinc-950">
-              <MaterialIcons name="code" color="#818cf8" size={20} />
+              <MaterialIcons name="code" color={tw('#818cf8')} size={20} />
             </View>
             <View className="flex-1">
               <NouText className="text-lg font-bold">{t(previewDefinition.labelKey)}</NouText>
@@ -317,7 +319,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
     <View className={inline ? 'pb-4' : 'p-6'} style={inline && keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 16 } : undefined}>
       <View className="flex-row items-center gap-3">
         <View className="h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/10">
-          <MaterialIcons name="auto-fix-high" color="#818cf8" size={20} />
+          <MaterialIcons name="auto-fix-high" color={tw('#818cf8')} size={20} />
         </View>
         <NouText className="text-xl font-bold tracking-tight">
           {draft.id ? t('settings.userStyles.editTitle') : t('settings.userStyles.addTitle')}
@@ -334,7 +336,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
           autoCorrect={false}
           onChangeText={(name) => setDraft((value) => (value ? { ...value, name } : value))}
           placeholder={t('settings.userStyles.namePlaceholder')}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={tw('#71717a')}
           value={draft.name}
         />
       </View>
@@ -349,7 +351,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
           autoCorrect={false}
           onChangeText={(hostGlobsText) => setDraft((value) => (value ? { ...value, hostGlobsText } : value))}
           placeholder={t('settings.userStyles.hostGlobs.placeholder')}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={tw('#71717a')}
           value={draft.hostGlobsText}
         />
       </View>
@@ -376,7 +378,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
             multiline
             onChangeText={(css) => setDraft((value) => (value ? { ...value, css } : value))}
             placeholder={`body {\n  font-size: 18px;\n}`}
-            placeholderTextColor="#71717a"
+            placeholderTextColor={tw('#71717a')}
             style={{
               height: editorHeight,
               textAlignVertical: 'top',
@@ -399,7 +401,7 @@ export const UserStyleEditModal = ({ inline = false }: { inline?: boolean }) => 
         </View>
         <View className="flex-row items-center justify-end gap-2">
           <Pressable onPress={onImportCss} className={secondaryActionCls}>
-            <MaterialIcons name="file-upload" color="#71717a" size={18} />
+            <MaterialIcons name="file-upload" color={tw('#71717a')} size={18} />
             <NouText className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
               {t('settings.userStyles.importCss')}
             </NouText>

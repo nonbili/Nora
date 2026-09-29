@@ -16,6 +16,7 @@ import {
   getWorkspaceContentWidth,
   getWorkspaceSlotRects,
 } from './desktop/nativeWorkspaceLayout'
+import { useTwColor } from '@/lib/theme'
 
 // The phone layout does not place tabs by measured rects: the active tab simply fills the
 // host, so it is laid out before the first onLayout lands and never flickers at 0x0.
@@ -29,6 +30,7 @@ const FILL = { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } as c
  * native webview and reload the page, restarting video and losing the scroll position.
  */
 export const NativeTabHost: React.FC<{ desktopLayout: boolean }> = ({ desktopLayout }) => {
+  const tw = useTwColor()
   const tabs = useValue(tabs$.tabs)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const orders = useValue(tabs$.orders)
@@ -247,7 +249,7 @@ export const NativeTabHost: React.FC<{ desktopLayout: boolean }> = ({ desktopLay
             }}
             onPress={createDeckTab}
           >
-            <MaterialIcons name="add" size={22} color="#a1a1aa" />
+            <MaterialIcons name="add" size={22} color={tw('#a1a1aa')} />
           </Pressable>
         ) : null}
       </Animated.View>

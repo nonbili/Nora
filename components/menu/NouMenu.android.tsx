@@ -5,6 +5,7 @@ import { Modal, Pressable, ScrollView, useColorScheme, useWindowDimensions, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NouText } from '../NouText'
 import { MaterialButton } from '../button/IconButtons'
+import { useTwColor } from '@/lib/theme'
 
 type Anchor = {
   x: number
@@ -18,6 +19,7 @@ export const NouMenu = forwardRef<
   NouMenuHandle,
   { trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }
 >(function NouMenu({ items, trigger, triggerColor, triggerSize, hideTrigger }, ref) {
+  const tw = useTwColor()
   const [open, setOpen] = useState(false)
   const [anchor, setAnchor] = useState<Anchor | null>(null)
   const [imperativeItems, setImperativeItems] = useState<Item[] | null>(null)
@@ -157,7 +159,7 @@ export const NouMenu = forwardRef<
               left,
               width: menuWidth,
               maxHeight: maxMenuHeight,
-              backgroundColor: isDark ? colors.bg : '#f8fafc',
+              backgroundColor: isDark ? tw(colors.bg) : tw('#f8fafc'),
               shadowColor: '#000',
               shadowOpacity: isDark ? 0.42 : 0.18,
               shadowRadius: isDark ? 18 : 14,
@@ -186,7 +188,7 @@ export const NouMenu = forwardRef<
                     key={index}
                     className="px-4 flex-row items-center gap-3"
                     style={{ minHeight: getRowHeight(item) }}
-                    android_ripple={{ color: isDark ? colors.underlay : '#e5e7eb' }}
+                    android_ripple={{ color: isDark ? tw(colors.underlay) : tw('#e5e7eb') }}
                     disabled={item.disabled}
                     onPress={() => {
                       closeMenu()

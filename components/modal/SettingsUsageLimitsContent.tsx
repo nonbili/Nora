@@ -20,6 +20,7 @@ import {
 import { formatMinutes } from '@/lib/usage-limits'
 import { services } from '../service/Services'
 import { showToast } from '@/lib/toast'
+import { useTwColor } from '@/lib/theme'
 
 const subheaderCls = settingsUi.subheaderCls
 const surfaceCls = settingsUi.surfaceCls
@@ -70,6 +71,7 @@ const getLimitState = (used: number, dailyMinutes: number) => {
 }
 
 const PinSection: React.FC = () => {
+  const tw = useTwColor()
   const pin = useValue(usageLimits$.pin)
   const [open, setOpen] = useState<null | 'set' | 'change' | 'remove'>(null)
   const [current, setCurrent] = useState('')
@@ -184,7 +186,7 @@ const PinSection: React.FC = () => {
                 <TextInput
                   className={textInputCls}
                   placeholder={t('usageLimits.pin.currentPlaceholder')}
-                  placeholderTextColor="#71717a"
+                  placeholderTextColor={tw('#71717a')}
                   autoCapitalize="none"
                   autoCorrect={false}
                   secureTextEntry
@@ -200,7 +202,7 @@ const PinSection: React.FC = () => {
                   <TextInput
                     className={textInputCls}
                     placeholder={t('usageLimits.pin.newPlaceholder')}
-                    placeholderTextColor="#71717a"
+                    placeholderTextColor={tw('#71717a')}
                     autoCapitalize="none"
                     autoCorrect={false}
                     secureTextEntry
@@ -213,7 +215,7 @@ const PinSection: React.FC = () => {
                   <TextInput
                     className={textInputCls}
                     placeholder={t('usageLimits.pin.confirmPlaceholder')}
-                    placeholderTextColor="#71717a"
+                    placeholderTextColor={tw('#71717a')}
                     autoCapitalize="none"
                     autoCorrect={false}
                     secureTextEntry
@@ -250,6 +252,7 @@ const LimitEditor: React.FC<{
   onClose: () => void
   onSubmit: () => void
 }> = ({ draft, onChange, onClose, onSubmit }) => {
+  const tw = useTwColor()
   const serviceEntries = useMemo(() => Object.entries(services), [])
   return (
     <BaseCenterModal onClose={onClose} containerClassName="max-h-[80vh] overflow-hidden">
@@ -268,7 +271,7 @@ const LimitEditor: React.FC<{
               value={draft.name}
               onChangeText={(name) => onChange({ ...draft, name })}
               placeholder={t('usageLimits.editor.namePlaceholder')}
-              placeholderTextColor="#71717a"
+              placeholderTextColor={tw('#71717a')}
             />
           </View>
 
@@ -284,7 +287,7 @@ const LimitEditor: React.FC<{
                   keyboardType="number-pad"
                   onChangeText={(hours) => onChange({ ...draft, hours: hours.replace(/[^0-9]/g, '') })}
                   placeholder={t('usageLimits.editor.hours')}
-                  placeholderTextColor="#71717a"
+                  placeholderTextColor={tw('#71717a')}
                 />
                 <NouText className="mt-1 text-xs text-zinc-500">{t('usageLimits.editor.hours')}</NouText>
               </View>
@@ -295,7 +298,7 @@ const LimitEditor: React.FC<{
                   keyboardType="number-pad"
                   onChangeText={(minutes) => onChange({ ...draft, minutes: minutes.replace(/[^0-9]/g, '') })}
                   placeholder={t('usageLimits.editor.minutes')}
-                  placeholderTextColor="#71717a"
+                  placeholderTextColor={tw('#71717a')}
                 />
                 <NouText className="mt-1 text-xs text-zinc-500">{t('usageLimits.editor.minutes')}</NouText>
               </View>
@@ -370,6 +373,7 @@ const PinPrompt: React.FC<{ onClose: () => void; onConfirm: () => void; title: s
   onConfirm,
   title,
 }) => {
+  const tw = useTwColor()
   const pin = useValue(usageLimits$.pin)
   const [entered, setEntered] = useState('')
   const [error, setError] = useState(false)
@@ -380,7 +384,7 @@ const PinPrompt: React.FC<{ onClose: () => void; onConfirm: () => void; title: s
         <TextInput
           className={textInputCls}
           placeholder={t('usageLimits.pin.currentPlaceholder')}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={tw('#71717a')}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry
@@ -450,6 +454,7 @@ const ScopeBadges: React.FC<{ scope: UsageLimitScope }> = ({ scope }) => {
 }
 
 export const SettingsUsageLimitsContent: React.FC = () => {
+  const tw = useTwColor()
   const limits = useValue(usageLimits$.limits)
   const pin = useValue(usageLimits$.pin)
   const usageMap = useValue(usageLimits$.usage)
@@ -535,14 +540,14 @@ export const SettingsUsageLimitsContent: React.FC = () => {
             onPress={openAdd}
             className="h-8 w-8 items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 active:bg-zinc-200 dark:active:bg-zinc-800"
           >
-            <MaterialIcons name="add" size={18} color="#6366f1" />
+            <MaterialIcons name="add" size={18} color={tw('#6366f1')} />
           </Pressable>
         </View>
         <SettingsSurface>
           {!limits.length ? (
             <View className="items-center px-5 py-8">
               <View className="mb-3 h-12 w-12 items-center justify-center rounded-2xl bg-zinc-200 dark:bg-zinc-800">
-                <MaterialIcons name="timer" size={24} color="#71717a" />
+                <MaterialIcons name="timer" size={24} color={tw('#71717a')} />
               </View>
               <NouText className="font-semibold">{t('usageLimits.empty')}</NouText>
               <NouText className="mt-1 text-center text-sm leading-5 text-zinc-600 dark:text-zinc-400">
@@ -580,7 +585,7 @@ export const SettingsUsageLimitsContent: React.FC = () => {
                       <MaterialIcons
                         name={isOver ? 'lock' : isNear ? 'timelapse' : 'timer'}
                         size={19}
-                        color={isOver ? '#dc2626' : isNear ? '#d97706' : '#6366f1'}
+                        color={isOver ? '#dc2626' : isNear ? '#d97706' : tw('#6366f1')}
                       />
                     </View>
                     <View className="flex-1">

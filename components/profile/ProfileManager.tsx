@@ -17,6 +17,7 @@ import { clearProfileData } from '@/lib/profile-data'
 import { getDeterministicProfileColor } from '@/lib/profile-color'
 import { showToast } from '@/lib/toast'
 import { exportProfileCookiesTxt } from '@/lib/cookie-export'
+import { useTwColor } from '@/lib/theme'
 
 const formatDate = (value: number) => {
   if (!value) {
@@ -35,6 +36,7 @@ const formatDate = (value: number) => {
 const AUTO_PROFILE_STALE_MS = 14 * 24 * 60 * 60 * 1000
 
 const AutoProfilesModal = () => {
+  const tw = useTwColor()
   const open = useValue(ui$.autoProfilesModalOpen)
   const autoProfiles = useValue(autoProfiles$.profiles)
   const staleProfiles = autoProfiles.filter((profile) => Date.now() - profile.lastUsedAt >= AUTO_PROFILE_STALE_MS)
@@ -63,7 +65,7 @@ const AutoProfilesModal = () => {
                 trigger={
                   isWeb ? (
                     <View className="h-10 w-10 items-center justify-center rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800">
-                      <MaterialIcons name="more-vert" size={22} color="#71717a" />
+                      <MaterialIcons name="more-vert" size={22} color={tw('#71717a')} />
                     </View>
                   ) : isIos ? (
                     'ellipsis'
@@ -144,6 +146,7 @@ const AutoProfilesModal = () => {
 }
 
 export const ProfileManager = () => {
+  const tw = useTwColor()
   const profiles = useValue(settings$.profiles)
   const autoProfiles = useValue(autoProfiles$.profiles)
 
@@ -201,7 +204,7 @@ export const ProfileManager = () => {
             })
           }
         >
-          <MaterialIcons name="add-circle-outline" size={22} color="#6366f1" />
+          <MaterialIcons name="add-circle-outline" size={22} color={tw('#6366f1')} />
         </Pressable>
       </View>
 
@@ -219,7 +222,7 @@ export const ProfileManager = () => {
             <View className="flex-row items-center gap-3">
               <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: profile.color }} />
               <NouText>{profile.name}</NouText>
-              {profile.isDefault && <MaterialIcons name="lock-outline" size={14} color="#9ca3af" />}
+              {profile.isDefault && <MaterialIcons name="lock-outline" size={14} color={tw('#9ca3af')} />}
             </View>
             <NouMenu
               trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}

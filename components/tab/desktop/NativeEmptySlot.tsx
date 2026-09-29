@@ -15,6 +15,7 @@ import { ServiceIcon } from '@/components/service/Services'
 import { getLayoutLabel, getTabLabel } from './desktopWorkspaceShared'
 import { focusDesktopGroupSlot } from './desktopWorkspaceState'
 import type { SlotRect } from './nativeWorkspaceLayout'
+import { useTwColor } from '@/lib/theme'
 
 export const NativeEmptySlot: React.FC<{
   group: TabGroup
@@ -24,6 +25,7 @@ export const NativeEmptySlot: React.FC<{
   slotIndex: number
   tabIdSet: Set<string>
 }> = React.memo(({ group, isActive, orderedTabs, rect, slotIndex, tabIdSet }) => {
+  const tw = useTwColor()
   const lastSelectedProfileId = useValue(ui$.lastSelectedProfileId)
   const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
   const selectedProfileId = oneProfilePerSite ? AUTO_PROFILE_ID : lastSelectedProfileId
@@ -90,7 +92,7 @@ export const NativeEmptySlot: React.FC<{
             className="h-7 w-7 shrink-0 items-center justify-center rounded-md"
             onPress={() => tabGroups$.removeSplitGroupSlot(group.id, slotIndex)}
           >
-            <MaterialIcons name="close" size={16} color="#a1a1aa" />
+            <MaterialIcons name="close" size={16} color={tw('#a1a1aa')} />
           </Pressable>
         ) : (
           <View className="w-7 shrink-0" />

@@ -44,6 +44,7 @@ export interface Settings {
   hideToolbarWhenScrolled: boolean
   headerPosition: 'top' | 'bottom'
   theme: null | 'dark' | 'light'
+  dynamicColor: boolean
   openExternalLinkInSystemBrowser: boolean
   redirectToOldReddit: boolean
   xDefaultHomeTimeline: XHomeTimeline
@@ -142,6 +143,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     hideToolbarWhenScrolled: bool(value?.hideToolbarWhenScrolled),
     headerPosition: value?.headerPosition === 'bottom' ? 'bottom' : 'top',
     theme: value?.theme === 'dark' || value?.theme === 'light' ? value.theme : null,
+    dynamicColor: bool(value?.dynamicColor, true),
     openExternalLinkInSystemBrowser: bool(value?.openExternalLinkInSystemBrowser),
     redirectToOldReddit: bool(value?.redirectToOldReddit),
     xDefaultHomeTimeline: normalizeXHomeTimeline(value?.xDefaultHomeTimeline),
@@ -282,6 +284,7 @@ export const settings$: Observable<Store> = observable<Store>({
   hideToolbarWhenScrolled: false,
   headerPosition: 'top',
   theme: null,
+  dynamicColor: true,
   openExternalLinkInSystemBrowser: false,
   redirectToOldReddit: false,
   xDefaultHomeTimeline: 'for-you',

@@ -35,6 +35,7 @@ import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlock
 import { buildUserScriptExecutionSource, matchesAnyHostGlob, type CustomUserScript } from '@/lib/user-styles'
 import { useHeaderAnimation } from './header-animation'
 import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
+import { useTwColor } from '@/lib/theme'
 
 // The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
 // any time. On native the same decision is made in JS, so the classes are duplicated
@@ -74,6 +75,7 @@ function nextTab() {
 }
 
 export const NouHeader: React.FC<{}> = ({}) => {
+  const tw = useTwColor()
   const headerShown = useValue(ui$.headerShown)
   const headerHeight = useValue(ui$.headerHeight)
   const urlModalOpen = useValue(ui$.urlModalOpen)
@@ -98,7 +100,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  const headerControlColor = isDark ? colors.icon : colors.iconLightStrong
+  const headerControlColor = isDark ? tw(colors.icon) : tw(colors.iconLightStrong)
 
   const tabsCount = useValue(() => tabs$.tabs.length)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
@@ -391,7 +393,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                         tabs$.removeClosedTab(tab.id)
                       }}
                     >
-                      <MaterialIcons name="close" size={16} color={colors.iconSubtle} />
+                      <MaterialIcons name="close" size={16} color={tw(colors.iconSubtle)} />
                     </TouchableOpacity>
                   ),
                   handler: () => tabs$.reopenClosedTab(tab.id),
@@ -399,7 +401,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                 { label: '', handler: () => {}, kind: 'separator' as const },
                 {
                   label: t('tabs.clearRecentlyClosed'),
-                  icon: <MaterialIcons name="delete-outline" size={18} color={colors.iconSubtle} />,
+                  icon: <MaterialIcons name="delete-outline" size={18} color={tw(colors.iconSubtle)} />,
                   handler: () => tabs$.clearRecentlyClosedTabs(),
                 },
               ]}

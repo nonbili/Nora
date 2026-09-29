@@ -14,11 +14,13 @@ import { colors } from '@/lib/colors'
 import { getProfileColor } from '@/lib/profile'
 import { useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTwColor } from '@/lib/theme'
 
 const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 type Anchor = { x: number; y: number; width: number; height: number }
 
 export const TabModal = () => {
+  const tw = useTwColor()
   const tabModalOpen = useValue(ui$.tabModalOpen)
   const oneHandMode = !isWeb && useValue(settings$.oneHandMode)
   const tabs = useValue(tabs$.tabs)
@@ -26,7 +28,7 @@ export const TabModal = () => {
   const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  const iconColor = isDark ? colors.icon : colors.iconLight
+  const iconColor = isDark ? tw(colors.icon) : tw(colors.iconLight)
   const [iosMenuOpen, setIosMenuOpen] = useState(false)
   const [iosMenuAnchor, setIosMenuAnchor] = useState<Anchor | null>(null)
   const iosMenuTriggerRef = useRef<View>(null)
@@ -53,7 +55,7 @@ export const TabModal = () => {
     ...(!isWeb
       ? [{
           label: t('settings.oneHandMode'),
-          icon: <MaterialIcons name={oneHandMode ? 'pan-tool' : 'pan-tool-alt'} size={18} color={oneHandMode ? '#818cf8' : colors.iconSubtle} />,
+          icon: <MaterialIcons name={oneHandMode ? 'pan-tool' : 'pan-tool-alt'} size={18} color={oneHandMode ? tw('#818cf8') : tw(colors.iconSubtle)} />,
           metaLabel: oneHandMode ? t('common.on') : t('common.off'),
           meta: isIos
             ? undefined
@@ -99,7 +101,7 @@ export const TabModal = () => {
                   tabs$.removeClosedTab(tab.id)
                 }}
               >
-                <MaterialIcons name="close" size={16} color={colors.iconSubtle} />
+                <MaterialIcons name="close" size={16} color={tw(colors.iconSubtle)} />
               </TouchableOpacity>
             ),
             handler: () => {
@@ -109,7 +111,7 @@ export const TabModal = () => {
           })),
           {
             label: t('tabs.clearRecentlyClosed'),
-            icon: <MaterialIcons name="delete-outline" size={18} color={colors.iconSubtle} />,
+            icon: <MaterialIcons name="delete-outline" size={18} color={tw(colors.iconSubtle)} />,
             handler: () => tabs$.clearRecentlyClosedTabs(),
           },
         ]
@@ -136,7 +138,7 @@ export const TabModal = () => {
               closeModal()
             }}
           >
-            <MaterialIcons name="add" size={20} color="#eef2ff" />
+            <MaterialIcons name="add" size={20} color={tw('#eef2ff')} />
           </NouButton>
           <View className="flex-row items-center gap-2">
             {nIf(
@@ -237,7 +239,7 @@ export const TabModal = () => {
                     <MaterialIcons
                       name={oneHandMode ? 'pan-tool' : 'pan-tool-alt'}
                       size={18}
-                      color={oneHandMode ? '#818cf8' : '#a1a1aa'}
+                      color={oneHandMode ? tw('#818cf8') : tw('#a1a1aa')}
                     />
                     <Text className="flex-1 text-sm text-zinc-900 dark:text-white">{t('settings.oneHandMode')}</Text>
                     <Text className="text-xs text-zinc-600 dark:text-zinc-400">{oneHandMode ? t('common.on') : t('common.off')}</Text>
@@ -285,7 +287,7 @@ export const TabModal = () => {
                         accessibilityLabel={t('tabs.removeFromHistory')}
                         onPress={() => tabs$.removeClosedTab(tab.id)}
                       >
-                        <MaterialIcons name="close" size={16} color={colors.iconSubtle} />
+                        <MaterialIcons name="close" size={16} color={tw(colors.iconSubtle)} />
                       </TouchableOpacity>
                     </View>
                   ))

@@ -18,6 +18,7 @@ import { useValue } from '@legendapp/state/react'
 import { blocklist$ } from '@/states/blocklist'
 import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
 import { MenuToggleBadge } from '@/components/menu/MenuToggleBadge'
+import { useTwColor } from '@/lib/theme'
 
 export interface TabContextMenuOptions {
   runWebviewAction: (action: (webview: any) => void) => void
@@ -25,8 +26,9 @@ export interface TabContextMenuOptions {
 }
 
 export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions) => {
+  const tw = useTwColor()
   const colorScheme = useColorScheme()
-  const menuIconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
+  const menuIconColor = colorScheme === 'light' ? tw(colors.iconLightStrong) : tw(colors.icon)
   const blocklistEnabled = useValue(blocklist$.enabled)
   const excludedHosts = useValue(blocklist$.excludedHosts)
 

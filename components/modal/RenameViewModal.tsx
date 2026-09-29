@@ -7,8 +7,10 @@ import { NouText } from '../NouText'
 import { t } from 'i18next'
 import { savedViews$ } from '@/states/saved-views'
 import { ui$ } from '@/states/ui'
+import { useTwColor } from '@/lib/theme'
 
 export const RenameViewModal = () => {
+  const tw = useTwColor()
   const targetViewId = useValue(ui$.renameViewModalTargetViewId)
   const savedViews = useValue(savedViews$.savedViews)
   const [draftName, setDraftName] = useState('')
@@ -39,7 +41,7 @@ export const RenameViewModal = () => {
           value={draftName}
           onChangeText={setDraftName}
           placeholder={t('views.namePlaceholder')}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={tw('#9ca3af')}
           autoFocus
         />
         <View className="flex-row justify-end gap-3 mt-6">

@@ -39,7 +39,9 @@ import { settingsUi, SettingsSurface, SettingsRow } from './SettingsPrimitives'
 import { useLocales } from 'expo-localization'
 import { resolveI18nLanguageFromExpoLocale, supportedI18nLanguages, toBcp47Locale } from '@/lib/i18n'
 import { colors } from '@/lib/colors'
+import { isDynamicColorAvailable } from '@/lib/dynamic-palette'
 import NoraViewModule from '@/modules/nora-view'
+import { useTwColor } from '@/lib/theme'
 
 const headerPositions = ['top', 'bottom'] as const
 const desktopLayoutModes = ['auto', 'on', 'off'] as const
@@ -130,6 +132,7 @@ const findSupportedTranslationLanguage = (language: string | undefined, availabl
 }
 
 export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = ({ onFocusInput }) => {
+  const tw = useTwColor()
   const settings = useValue(settings$)
   const builtinScripts = useValue(userStyles$.builtinScripts)
 
@@ -317,7 +320,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     value={settings.proxyHost}
                     onChangeText={(text) => settings$.proxyHost.set(text)}
                     placeholder={t('settings.proxy.hostPlaceholder')}
-                    placeholderTextColor="#71717a"
+                    placeholderTextColor={tw('#71717a')}
                     autoCapitalize="none"
                     autoCorrect={false}
                     onFocus={onFocusInput}
@@ -330,7 +333,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     value={settings.proxyPort}
                     onChangeText={(text) => settings$.proxyPort.set(text)}
                     placeholder={t('settings.proxy.portPlaceholder')}
-                    placeholderTextColor="#71717a"
+                    placeholderTextColor={tw('#71717a')}
                     keyboardType="numeric"
                     returnKeyType="done"
                     onFocus={onFocusInput}
@@ -346,6 +349,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
 }
 
 export const SettingsAppearanceContent = () => {
+  const tw = useTwColor()
   const settings = useValue(settings$)
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
@@ -663,6 +667,23 @@ export const SettingsAppearanceContent = () => {
             onChange={(index) => settings$.theme.set(themes[index])}
           />
         </View>
+        {nIf(
+          isDynamicColorAvailable,
+          <View className={clsx('border-t border-zinc-300 dark:border-zinc-800', rowCls)}>
+            <NouSwitch
+              label={
+                <View>
+                  <NouText>{t('settings.dynamicColor.label')}</NouText>
+                  <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    {t('settings.dynamicColor.hint')}
+                  </NouText>
+                </View>
+              }
+              value={settings.dynamicColor}
+              onPress={() => settings$.dynamicColor.toggle()}
+            />
+          </View>,
+        )}
       </View>
 
       <NouText className="mt-8 mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500">
@@ -710,7 +731,7 @@ export const SettingsAppearanceContent = () => {
                 </View>
                 <MaterialButton
                   name="close"
-                  color={isDark ? colors.icon : colors.iconLightStrong}
+                  color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
                   onPress={() => settings$.setSiteZoom(site, null)}
                 />
               </View>
@@ -911,6 +932,7 @@ const emptySearchProviderDraft: SearchProviderDraft = {
 }
 
 export const SettingsSearchContent = () => {
+  const tw = useTwColor()
   const enabledSearchProviderIds = useValue(settings$.enabledSearchProviderIds)
   const customSearchProviders = useValue(settings$.customSearchProviders)
   const [editorOpen, setEditorOpen] = useState(false)
@@ -1008,7 +1030,7 @@ export const SettingsSearchContent = () => {
             }}
             className="h-8 w-8 items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 active:bg-zinc-200 dark:active:bg-zinc-800"
           >
-            <MaterialIcons name="add" size={18} color="#6366f1" />
+            <MaterialIcons name="add" size={18} color={tw('#6366f1')} />
           </Pressable>
         </View>
         <View className={surfaceCls}>
@@ -1098,7 +1120,7 @@ export const SettingsSearchContent = () => {
                   value={draft.name}
                   onChangeText={(name) => setDraft((value) => ({ ...value, name }))}
                   placeholder={t('settings.search.fields.namePlaceholder')}
-                  placeholderTextColor="#71717a"
+                  placeholderTextColor={tw('#71717a')}
                 />
               </View>
               <View className="mt-4">
@@ -1112,7 +1134,7 @@ export const SettingsSearchContent = () => {
                   value={draft.templateUrl}
                   onChangeText={(templateUrl) => setDraft((value) => ({ ...value, templateUrl }))}
                   placeholder={t('settings.search.fields.templatePlaceholder')}
-                  placeholderTextColor="#71717a"
+                  placeholderTextColor={tw('#71717a')}
                 />
                 <NouText className="mt-3 text-sm leading-6 text-zinc-400">{t('settings.search.templateHint')}</NouText>
               </View>

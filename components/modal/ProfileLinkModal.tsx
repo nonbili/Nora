@@ -10,15 +10,17 @@ import { AUTO_PROFILE_ID } from '@/lib/site-profile'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
+import { useTwColor } from '@/lib/theme'
 
 export const ProfileLinkModal: React.FC = () => {
+  const tw = useTwColor()
   const profileLinkUrl = useValue(ui$.profileLinkUrl)
   const profiles = useValue(settings$.profiles)
   const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
   const allowHttpWebsite = useValue(settings$.allowHttpWebsite)
   const lastSelectedProfileId = useValue(ui$.lastSelectedProfileId)
   const colorScheme = useColorScheme()
-  const iconColor = colorScheme === 'light' ? colors.iconLightStrong : colors.icon
+  const iconColor = colorScheme === 'light' ? tw(colors.iconLightStrong) : tw(colors.icon)
 
   if (!profileLinkUrl) {
     return null

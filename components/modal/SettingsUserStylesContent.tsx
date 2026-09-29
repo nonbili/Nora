@@ -9,19 +9,21 @@ import { userStyles$ } from '@/states/user-styles'
 import { ui$ } from '@/states/ui'
 import { UserStyleEditModal } from './UserStyleEditModal'
 import { UserScriptEditModal } from './UserScriptEditModal'
+import { useTwColor } from '@/lib/theme'
 
 const surfaceCls = 'overflow-hidden rounded-[24px] border border-zinc-300 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/70'
 const subheaderCls = 'mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500'
 const rowCls = 'px-4 py-4'
 const rowBorderCls = 'border-b border-zinc-300 dark:border-zinc-800'
-const switchColors = {
-  trackColor: { false: '#d4d4d8', true: '#4f46e5' },
-  thumbColor: '#ffffff',
-}
 
 const formatHostGlobs = (hostGlobs: string[]) => hostGlobs.join(', ')
 
 export const SettingsUserStylesContent = () => {
+  const tw = useTwColor()
+  const switchColors = {
+    trackColor: { false: tw('#d4d4d8'), true: tw('#4f46e5') },
+    thumbColor: '#ffffff',
+  }
   const customStyles = useValue(userStyles$.customStyles)
   const customScripts = useValue(userStyles$.customScripts).filter((script): script is CustomUserScript => Boolean(script))
   const userStyleModalOpen = useValue(ui$.userStyleModalOpen)
@@ -66,7 +68,7 @@ export const SettingsUserStylesContent = () => {
             onPress={startAddCustomStyle}
             className="flex-row items-center gap-1 rounded-full bg-indigo-600/10 px-3 py-1.5 active:bg-indigo-600/20"
           >
-            <MaterialIcons name="add" color="#818cf8" size={18} />
+            <MaterialIcons name="add" color={tw('#818cf8')} size={18} />
             <NouText className="text-xs font-semibold text-indigo-400">{t('settings.userStyles.add')}</NouText>
           </Pressable>
         </View>
@@ -74,7 +76,7 @@ export const SettingsUserStylesContent = () => {
           {!hasStyles ? (
             <View className="items-center justify-center px-6 py-10">
               <View className="h-12 w-12 items-center justify-center rounded-2xl bg-zinc-200 dark:bg-zinc-950">
-                <MaterialIcons name="brush" color="#3f3f46" size={24} />
+                <MaterialIcons name="brush" color={tw('#3f3f46')} size={24} />
               </View>
               <NouText className="mt-4 text-center text-sm leading-6 text-zinc-600 dark:text-zinc-500">
                 {t('settings.userStyles.custom.empty')}
@@ -96,7 +98,7 @@ export const SettingsUserStylesContent = () => {
                   {style.name}
                 </NouText>
                 <View className="mt-1.5 flex-row items-center gap-1.5">
-                  <MaterialIcons name="language" color="#71717a" size={12} />
+                  <MaterialIcons name="language" color={tw('#71717a')} size={12} />
                   <NouText className="flex-1 text-xs text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
                     {formatHostGlobs(style.hostGlobs)}
                   </NouText>
@@ -124,7 +126,7 @@ export const SettingsUserStylesContent = () => {
             onPress={startAddCustomScript}
             className="flex-row items-center gap-1 rounded-full bg-indigo-600/10 px-3 py-1.5 active:bg-indigo-600/20"
           >
-            <MaterialIcons name="add" color="#818cf8" size={18} />
+            <MaterialIcons name="add" color={tw('#818cf8')} size={18} />
             <NouText className="text-xs font-semibold text-indigo-400">{t('settings.userStyles.scripts.add')}</NouText>
           </Pressable>
         </View>
@@ -132,7 +134,7 @@ export const SettingsUserStylesContent = () => {
           {!hasScripts ? (
             <View className="items-center justify-center px-6 py-10">
               <View className="h-12 w-12 items-center justify-center rounded-2xl bg-zinc-200 dark:bg-zinc-950">
-                <MaterialIcons name="code" color="#3f3f46" size={24} />
+                <MaterialIcons name="code" color={tw('#3f3f46')} size={24} />
               </View>
               <NouText className="mt-4 text-center text-sm leading-6 text-zinc-600 dark:text-zinc-500">
                 {t('settings.userStyles.scripts.empty')}
@@ -154,7 +156,7 @@ export const SettingsUserStylesContent = () => {
                   {script.name}
                 </NouText>
                 <View className="mt-1.5 flex-row items-center gap-1.5">
-                  <MaterialIcons name="language" color="#71717a" size={12} />
+                  <MaterialIcons name="language" color={tw('#71717a')} size={12} />
                   <NouText className="flex-1 text-xs text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
                     {formatHostGlobs(script.hostGlobs)}
                   </NouText>

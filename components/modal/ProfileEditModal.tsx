@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BaseCenterModal } from './BaseCenterModal'
 import { ui$ } from '@/states/ui'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
+import { useTwColor } from '@/lib/theme'
 
 const profileColors = [
   '#6366f1', // indigo
@@ -23,6 +24,7 @@ const profileColors = [
 ]
 
 export const ProfileEditModal = () => {
+  const tw = useTwColor()
   const profileModalOpen = useValue(ui$.profileModalOpen)
   const editingProfileId = useValue(ui$.editingProfileId)
   const profiles = useValue(settings$.profiles)
@@ -84,7 +86,7 @@ export const ProfileEditModal = () => {
               borderRadius: 15,
               backgroundColor: color,
               borderWidth: selected === color ? 3 : 1,
-              borderColor: selected === color ? '#111827' : '#a1a1aa',
+              borderColor: selected === color ? tw('#111827') : tw('#a1a1aa'),
             }}
           />
           {selected === color ? (
@@ -110,7 +112,7 @@ export const ProfileEditModal = () => {
           value={name}
           onChangeText={setName}
           placeholder={t('profiles.namePlaceholder')}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={tw('#9ca3af')}
           autoFocus
         />
         <ColorPicker selected={color} onSelect={setColor} />
