@@ -259,6 +259,31 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     webView.addObserver(self, forKeyPath: "url", options: .new, context: nil)
 
     applyPullToRefresh()
+    applyActive()
+  }
+
+  /// Background tabs stay mounted behind the active one, so they are hidden rather than
+  /// left compositing out of sight. A tab can also be inactive while on screen (paused by
+  /// the user), which only suspends its media and keeps the page showing.
+  private var active = true
+  private var visible = true
+
+  func setActive(_ value: Bool) {
+    active = value
+    applyActive()
+  }
+
+  func setVisible(_ value: Bool) {
+    visible = value
+    applyActive()
+  }
+
+  private func applyActive() {
+    guard let webView = webView else { return }
+    webView.isHidden = !visible
+    if #available(iOS 15.0, *) {
+      webView.setAllMediaPlaybackSuspended(!active || !visible, completionHandler: nil)
+    }
   }
 
   @objc private func handlePullToRefresh() {

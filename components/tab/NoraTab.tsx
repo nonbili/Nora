@@ -1041,6 +1041,8 @@ export const NoraTab: React.FC<{
           textZoom={resolvedZoom}
           scrollEvents={autoHideHeader || hideToolbarWhenScrolled}
           pullToRefresh={pullToRefresh}
+          visible={desktopChrome ? desktopVisible : isActive}
+          active={(desktopChrome ? desktopVisible : isActive) && !tab.isPaused}
         />,
       )}
       {nIf(

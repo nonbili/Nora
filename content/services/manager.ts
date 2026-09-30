@@ -8,7 +8,5 @@ const services = {
 
 export function getService(url: string) {
   const { host } = new URL(url)
-  const service = services[host as keyof typeof services]
-  console.log('[nora][service] lookup', { host, found: !!service })
-  return service
+  return services[host as keyof typeof services]
 }

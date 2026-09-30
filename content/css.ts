@@ -167,10 +167,22 @@ export function injectCSS() {
   style.id = injectedStyleId
   style.type = 'text/css'
   update()
-  new MutationObserver(() => append()).observe(document.documentElement, {
-    childList: true,
-    subtree: true,
+  // The style only ever sits in <head> or <html>, so those are the only children lists
+  // that can drop it. Watching the whole subtree would run this on every feed update.
+  let observedHead: HTMLHeadElement | null = null
+  const observeHead = () => {
+    const { head } = document
+    if (head && head !== observedHead) {
+      observedHead = head
+      observer.observe(head, { childList: true })
+    }
+  }
+  const observer = new MutationObserver(() => {
+    append()
+    observeHead()
   })
+  observer.observe(document.documentElement, { childList: true })
+  observeHead()
   window.addEventListener(noraSettingsEvent, () => update())
   window.addEventListener(noraUserStylesEvent, () => update())
 }

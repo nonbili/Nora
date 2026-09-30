@@ -16,25 +16,21 @@ interface InstagramTimeline {
 
 export class InstagramService extends BaseService {
   shouldIntercept(url: string) {
-    const should = url.startsWith('https://www.instagram.com/graphql/query')
-    console.log('[nora][instagram] shouldIntercept', { url, should })
-    return should
+    return url.startsWith('https://www.instagram.com/graphql/query')
   }
 
   transformResponse(res: string) {
+    // Every GraphQL query shares one endpoint, and only the feed carries ads. A substring
+    // scan is far cheaper than parsing and re-serializing every other query's payload.
+    if (!res.includes('xdt_api__v1__feed__timeline__connection')) {
+      return res
+    }
     const data = JSON.parse(res) as InstagramTimeline
     const before = data.data.xdt_api__v1__feed__timeline__connection?.edges
     if (!before) {
-      console.log('[nora][instagram] no timeline edges in response')
       return res
     }
-    const after = before.filter((x) => !x.node.ad)
-    console.log('[nora][instagram] filtered timeline edges', {
-      before: before.length,
-      after: after.length,
-      removed: before.length - after.length,
-    })
-    data.data.xdt_api__v1__feed__timeline__connection.edges = after
+    data.data.xdt_api__v1__feed__timeline__connection.edges = before.filter((x) => !x.node.ad)
     return JSON.stringify(data)
   }
 }

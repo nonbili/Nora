@@ -89,16 +89,8 @@ export function blockAds() {
     }
     try {
       const service = getService(document.location.href)
-      console.log('[nora][xhr] intercept candidate', {
-        pageHost: host,
-        requestUrl: url,
-        hasService: !!service,
-      })
       if (service?.shouldIntercept(url)) {
-        console.log('[nora][xhr] transforming response', { requestUrl: url })
         response = service.transformResponse(response)
-      } else {
-        console.log('[nora][xhr] skipped response', { requestUrl: url })
       }
     } catch (e) {
       console.error(e)
@@ -106,19 +98,42 @@ export function blockAds() {
     return response
   }
 
+  // Sites read `response` and `responseText` more than once per request, and each
+  // transform parses and re-serializes the whole payload, so the result is kept per
+  // request. `open()` drops it, since a reused request can hit another URL and get the
+  // same body back. Non-text bodies (json, blob, arraybuffer) are passed through untouched.
+  const transformed = new WeakMap<XMLHttpRequest, { source: string; result: string }>()
+  const transformOnce = (xhr: XMLHttpRequest, source: unknown) => {
+    if (typeof source !== 'string') {
+      return source
+    }
+    const cached = transformed.get(xhr)
+    if (cached?.source === source) {
+      return cached.result
+    }
+    const result = interceptResponse(xhr.responseURL, source)
+    transformed.set(xhr, { source, result })
+    return result
+  }
+
   // https://stackoverflow.com/a/77243932
   const XHR = window.XMLHttpRequest
   class XMLHttpRequest extends XHR {
+    open(...args: unknown[]) {
+      transformed.delete(this)
+      return (super.open as (...args: unknown[]) => void)(...args)
+    }
+
     get responseText() {
       if (this.readyState == 4) {
-        return interceptResponse(this.responseURL, super.responseText)
+        return transformOnce(this, super.responseText) as string
       }
       return super.responseText
     }
 
     get response() {
       if (this.readyState == 4) {
-        return interceptResponse(this.responseURL, super.response)
+        return transformOnce(this, super.response)
       }
       return super.response
     }
@@ -199,8 +214,12 @@ const sweepAds = () => {
   }
 }
 
+// Only these hosts have anything for the observer to hide; everywhere else the
+// mutation records are not even walked.
+const adHosts = ['m.facebook.com', 'www.facebook.com', 'www.linkedin.com']
+
 export function hideAds(mutations: MutationRecord[]) {
-  if (!adBlockingEnabled()) {
+  if (!adHosts.includes(host) || !adBlockingEnabled()) {
     return
   }
 

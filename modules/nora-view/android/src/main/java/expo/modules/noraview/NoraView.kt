@@ -715,6 +715,24 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
   }
 
+  // Background tabs stay mounted behind the active one at full size, and a transparent
+  // view still counts as visible to Chromium, so each one would keep running animation
+  // frames, timers and video at full speed. Pausing marks the page hidden instead, which
+  // keeps its DOM and scroll position but lets Chromium throttle it.
+  private var active = true
+
+  internal fun setActive(value: Boolean) {
+    if (active == value) {
+      return
+    }
+    active = value
+    if (value) {
+      webView.onResume()
+    } else {
+      webView.onPause()
+    }
+  }
+
   internal fun setPullToRefreshSuspended(suspended: Boolean) {
     post {
       pullToRefreshSuspended = suspended

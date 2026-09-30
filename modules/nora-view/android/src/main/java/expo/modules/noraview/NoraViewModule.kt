@@ -325,6 +325,10 @@ class NoraViewModule : Module() {
         view.setPullToRefresh(enabled)
       }
 
+      Prop("active") { view: NoraView, active: Boolean ->
+        view.setActive(active)
+      }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { view: NoraView, url: String, fileName: String? ->
