@@ -15,7 +15,6 @@ import { tabs$ } from '@/states/tabs'
 import { MaterialButton, MaterialCommunityButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
-import type { SharedValue } from 'react-native-reanimated'
 import NoraViewModule from '@/modules/nora-view'
 import { share } from '@/lib/share'
 import { canPinTabToHomeScreen, pinTabToHomeScreen } from '@/lib/home-shortcut'
@@ -23,7 +22,7 @@ import { isDirectlyDownloadable } from '@/content/download'
 import { t } from 'i18next'
 import { bookmarks$ } from '@/states/bookmarks'
 import { showToast } from '@/lib/toast'
-import { Directions, Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
 import { executeWebviewJavaScriptQuietly, getTabWebview, reloadWebview, scrollWebviewToTop } from '@/lib/webview'
 import { openTabForActiveDesktopView } from '@/lib/desktop-view-actions'
 import { DesktopTabsSidebar } from '../view/DesktopTabsSidebar'
@@ -47,20 +46,6 @@ const rc = (web: string, native: string) => (isWeb ? web : native)
 // so the bar itself does not get any taller; the extra room is taken horizontally.
 const headerButtonStyle = { width: 52, height: 44 } as const
 const headerIconSize = 26
-
-const webAnimatedHelpers = {
-  useSharedValueSafe: (initial: number) => ({ value: initial }) as SharedValue<number>,
-}
-
-const nativeAnimatedHelpers = !isWeb
-  ? (() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const Reanimated = require('react-native-reanimated')
-      return {
-        useSharedValueSafe: Reanimated.useSharedValue as (initial: number) => SharedValue<number>,
-      }
-    })()
-  : null
 
 function prevTab() {
   const activeIndex = tabs$.activeTabIndex.get()
@@ -108,9 +93,6 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const currentTab = useValue(tabs$.currentTab)
   const customScripts = useValue(userStyles$.customScripts).filter((script): script is CustomUserScript => Boolean(script))
   const webview = useValue(ui$.webview)
-  const { useSharedValueSafe } = isWeb ? webAnimatedHelpers : nativeAnimatedHelpers!
-  const flingStart = useSharedValueSafe(0)
-  const panStart = useSharedValueSafe(0)
   let hostname = '',
     host = '',
     pathname = '',
@@ -274,7 +256,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
       {nIf(
         !desktopLayout,
         <View className="flex-row items-center gap-3">
-          {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={headerIconSize} color={headerControlColor} onPress={() => tabs$.openTab('')} style={headerButtonStyle} />)}
+          {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={headerIconSize} color={headerControlColor} accessibilityRole="button" accessibilityLabel={t('tabs.new')} onPress={() => tabs$.openTab('')} style={isWeb ? headerButtonStyle : { ...headerButtonStyle, height: 52 }} />)}
           {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} style={headerButtonStyle} />)}
           {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} style={headerButtonStyle} />)}
           {nIf(showReloadButtonInHeader, <MaterialButton name="refresh" size={22} color={headerControlColor} onPress={reloadPage} style={headerButtonStyle} />)}
@@ -550,43 +532,21 @@ export const NouHeader: React.FC<{}> = ({}) => {
     return ret
   }
 
-  const flingGesture = Gesture.Fling()
-    .runOnJS(true)
-    .direction(Directions.RIGHT | Directions.LEFT)
-    .onBegin((e) => {
-      flingStart.value = e.absoluteX
-    })
-    .onEnd((e) => {
-      if (e.absoluteX > flingStart.value) {
-        prevTab()
-      } else {
-        nextTab()
-      }
-    })
-  // This pan covers the whole header, buttons included. Without activation thresholds it
-  // claims the touch after a few pixels of movement, which cancels the pressable
-  // underneath before onPress fires — so a tap with the slightest finger drift did
-  // nothing at all, since onEnd below also ignores movement under 50px. Require a
-  // clearly horizontal drag before taking over, and fail outright on vertical movement.
+  // Buttons share the toolbar with tab swipes. Activate only once the movement is
+  // enough to switch tabs; an earlier activation cancels thumb presses without doing
+  // anything. One pan also handles fast swipes without a competing fling recognizer.
   const panGesture = Gesture.Pan()
     .runOnJS(true)
-    .activeOffsetX([-20, 20])
+    .activeOffsetX([-50, 50])
     .failOffsetY([-20, 20])
-    .onBegin((e) => {
-      panStart.value = e.absoluteX
-    })
     .onEnd((e) => {
-      if (Math.abs(e.absoluteX - panStart.value) < 50) {
-        return
-      }
-      if (e.absoluteX > panStart.value) {
+      if (e.translationX > 0) {
         prevTab()
       } else {
         nextTab()
       }
     })
 
-  const composed = Gesture.Race(flingGesture, panGesture)
   return (
     <Root
       pointerEvents="box-none"
@@ -600,7 +560,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
       }
     >
       <GestureHandlerRootView pointerEvents="box-none" style={{ minHeight: 0 }}>
-        <GestureDetector gesture={composed}>{ret}</GestureDetector>
+        <GestureDetector gesture={panGesture}>{ret}</GestureDetector>
       </GestureHandlerRootView>
     </Root>
   )

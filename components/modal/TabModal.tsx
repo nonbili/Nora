@@ -7,6 +7,7 @@ import { clsx, isIos, isWeb, nIf } from '@/lib/utils'
 import { settings$ } from '@/states/settings'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouMenu } from '../menu/NouMenu'
+import { MenuToggleBadge } from '../menu/MenuToggleBadge'
 import { NouButton } from '../button/NouButton'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { t } from 'i18next'
@@ -57,22 +58,7 @@ export const TabModal = () => {
           label: t('settings.oneHandMode'),
           icon: <MaterialIcons name={oneHandMode ? 'pan-tool' : 'pan-tool-alt'} size={18} color={oneHandMode ? tw('#818cf8') : tw(colors.iconSubtle)} />,
           metaLabel: oneHandMode ? t('common.on') : t('common.off'),
-          meta: isIos
-            ? undefined
-            : (
-                <View
-                  className={clsx(
-                    'rounded-full px-2 py-1',
-                    oneHandMode
-                      ? 'bg-indigo-500/20 border border-indigo-400/40'
-                      : 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700',
-                  )}
-                >
-                  <Text className={clsx('text-[11px] font-medium', oneHandMode ? 'text-indigo-200' : 'text-zinc-400')}>
-                    {oneHandMode ? t('common.on') : t('common.off')}
-                  </Text>
-                </View>
-              ),
+          meta: isIos ? undefined : <MenuToggleBadge on={oneHandMode} />,
           handler: () => settings$.oneHandMode.toggle(),
         }, {
           label: '',
