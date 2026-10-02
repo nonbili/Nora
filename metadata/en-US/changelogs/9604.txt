@@ -1,0 +1,4 @@
+- Support Material You dynamic color
+- Pause background tabs and optimize ad transforms to reduce lag
+- Improve toolbar tap responsiveness and tab switching gestures
+- Refreshed settings layout with filled tile rows

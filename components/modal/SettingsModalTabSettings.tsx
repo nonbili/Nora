@@ -539,61 +539,6 @@ export const SettingsAppearanceContent = () => {
         </>,
       )}
 
-      {nIf(
-        !isWeb,
-        <>
-          <NouText className={subheaderCls}>{t('settings.appearance.desktopLayout')}</NouText>
-          <View className={surfaceCls}>
-            <View className={clsx('items-center flex-row justify-between', rowCls, rowBorderCls)}>
-              <View className="flex-1 pr-3">
-                <NouText>{t('settings.appearance.desktopLayout')}</NouText>
-                <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
-                  {t('settings.appearance.desktopLayoutHint')}
-                </NouText>
-              </View>
-              <Segemented
-                options={[
-                  t('settings.appearance.desktopLayoutAuto'),
-                  t('settings.appearance.desktopLayoutOn'),
-                  t('settings.appearance.desktopLayoutOff'),
-                ]}
-                selectedIndex={desktopLayoutModes.indexOf(settings.desktopLayout)}
-                size={1}
-                onChange={(index) => settings$.desktopLayout.set(desktopLayoutModes[index])}
-              />
-            </View>
-            <View className={clsx('items-center flex-row justify-between', rowCls)}>
-              <View className="flex-1 pr-3">
-                <NouText>{t('settings.appearance.deckTabWidth')}</NouText>
-                <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
-                  {t('settings.appearance.deckTabWidthHint', { value: settings.deckTabWidth })}
-                </NouText>
-              </View>
-              <View className="flex-row items-center gap-2">
-                <TextInput
-                  className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white w-24 text-center"
-                  value={deckTabWidthInput}
-                  onChangeText={setDeckTabWidthInput}
-                  onEndEditing={submitDeckTabWidth}
-                  onSubmitEditing={submitDeckTabWidth}
-                  keyboardType="numeric"
-                  returnKeyType="done"
-                />
-                <NouMenu
-                  trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
-                  items={[
-                    {
-                      label: t('common.reset'),
-                      handler: () => settings$.deckTabWidth.set(400),
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-          </View>
-        </>,
-      )}
-
       <NouText className="mt-8 mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500">
         {t('settings.language.label')}
       </NouText>
@@ -739,6 +684,61 @@ export const SettingsAppearanceContent = () => {
           </View>
         </>
       ) : null}
+
+      {nIf(
+        !isWeb,
+        <View className="mt-8">
+          <NouText className={subheaderCls}>{t('settings.appearance.desktopLayout')}</NouText>
+          <View className={surfaceCls}>
+            <View className={clsx('items-center flex-row justify-between', rowCls, rowBorderCls)}>
+              <View className="flex-1 pr-3">
+                <NouText>{t('settings.appearance.desktopLayout')}</NouText>
+                <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
+                  {t('settings.appearance.desktopLayoutHint')}
+                </NouText>
+              </View>
+              <Segemented
+                options={[
+                  t('settings.appearance.desktopLayoutAuto'),
+                  t('settings.appearance.desktopLayoutOn'),
+                  t('settings.appearance.desktopLayoutOff'),
+                ]}
+                selectedIndex={desktopLayoutModes.indexOf(settings.desktopLayout)}
+                size={1}
+                onChange={(index) => settings$.desktopLayout.set(desktopLayoutModes[index])}
+              />
+            </View>
+            <View className={clsx('items-center flex-row justify-between', rowCls)}>
+              <View className="flex-1 pr-3">
+                <NouText>{t('settings.appearance.deckTabWidth')}</NouText>
+                <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
+                  {t('settings.appearance.deckTabWidthHint', { value: settings.deckTabWidth })}
+                </NouText>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <TextInput
+                  className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white w-24 text-center"
+                  value={deckTabWidthInput}
+                  onChangeText={setDeckTabWidthInput}
+                  onEndEditing={submitDeckTabWidth}
+                  onSubmitEditing={submitDeckTabWidth}
+                  keyboardType="numeric"
+                  returnKeyType="done"
+                />
+                <NouMenu
+                  trigger={isIos ? 'ellipsis' : 'filled.MoreVert'}
+                  items={[
+                    {
+                      label: t('common.reset'),
+                      handler: () => settings$.deckTabWidth.set(400),
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+          </View>
+        </View>,
+      )}
     </View>
   )
 }
