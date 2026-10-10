@@ -12,6 +12,9 @@ import {
   getFaviconUrl,
   isValidSearchTemplate,
 } from '@/lib/search'
+import { toBlocklistSiteKey, updateBlocklistExclusions } from '@/lib/blocklist/policy'
+import { ANONYMOUS_PROFILE_COLOR, ANONYMOUS_PROFILE_ID, ANONYMOUS_PROFILE_NAME } from '@/lib/anonymous'
+import { DEFAULT_PUBLIC_SEARCH_SERVICE_ID, normalizePublicSearchServiceId } from '@/lib/public-search'
 
 export interface Profile {
   id: string
@@ -22,6 +25,16 @@ export interface Profile {
 
 const DEFAULT_PROFILE_ID = 'default'
 const DEFAULT_PROFILE: Profile = { id: DEFAULT_PROFILE_ID, name: 'Default', color: '#6366f1', isDefault: true }
+
+/**
+ * With the mode on, the profile it applies to has to be there: it is the only place it does
+ * anything, and a profile that was deleted, or a backup or a synced file that has the mode on and
+ * not the profile, would leave a switch that is on and has no effect.
+ */
+const withAnonymousProfile = (profiles: Profile[], anonymousMode: boolean) =>
+  anonymousMode && !profiles.some((profile) => profile.id === ANONYMOUS_PROFILE_ID)
+    ? [...profiles, { id: ANONYMOUS_PROFILE_ID, name: ANONYMOUS_PROFILE_NAME, color: ANONYMOUS_PROFILE_COLOR }]
+    : profiles
 
 const ensureProfiles = (profiles?: (Profile | null | undefined)[]) => {
   const sanitized = (profiles || []).filter((p): p is Profile => p != null)
@@ -72,6 +85,9 @@ export interface Settings {
   oneHandMode: boolean
   oneTabPerSite: boolean
   oneProfilePerSite: boolean
+  anonymousMode: boolean
+  anonymousMorePosts: boolean
+  anonymousDisabledHosts: string[]
 
   deckTabWidth: number
   sidebarCollapsed: boolean
@@ -83,6 +99,7 @@ export interface Settings {
   disabledServicesArr: string[]
   enabledSearchProviderIds: string[]
   selectedSearchProviderId: string
+  selectedPublicSearchServiceId: string
   customSearchProviders: CustomSearchProvider[]
   profiles: Profile[]
 }
@@ -92,10 +109,14 @@ interface Store extends Settings {
   toggleService: (service: string) => void
   toggleSearchProvider: (providerId: string) => void
   setSelectedSearchProvider: (providerId: string) => void
+  setSelectedPublicSearchService: (serviceId: string) => void
   addCustomSearchProvider: (name: string, templateUrl: string) => string | null
   updateCustomSearchProvider: (id: string, name: string, templateUrl: string) => void
   deleteCustomSearchProvider: (id: string) => void
   addProfile: (name: string, color: string) => string | undefined
+  ensureAnonymousProfile: () => string
+  setAnonymousMode: (enabled: boolean) => void
+  setAnonymousHostDisabled: (host: string, disabled: boolean) => void
   updateProfile: (id: string, name: string, color: string) => void
   deleteProfile: (id: string) => void
   setDefaultZoom: (zoom: number) => void
@@ -112,6 +133,13 @@ const sanitizeProfiles = (profiles?: (Partial<Profile> | null | undefined)[]) =>
         color: typeof profile!.color === 'string' ? profile!.color! : DEFAULT_PROFILE.color,
         ...(profile!.isDefault ? { isDefault: true } : {}),
       })),
+  )
+
+const sanitizeSiteKeys = (hosts?: unknown) =>
+  Array.from(
+    new Set(
+      (Array.isArray(hosts) ? hosts : []).map((host) => toBlocklistSiteKey(typeof host === 'string' ? host : '')).filter(Boolean),
+    ),
   )
 
 const sanitizeSiteZoom = (siteZoom?: Record<string, unknown>) => {
@@ -174,6 +202,9 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     oneHandMode: bool(value?.oneHandMode),
     oneTabPerSite: bool(value?.oneTabPerSite),
     oneProfilePerSite: bool(value?.oneProfilePerSite),
+    anonymousMode: bool(value?.anonymousMode),
+    anonymousMorePosts: bool(value?.anonymousMorePosts),
+    anonymousDisabledHosts: sanitizeSiteKeys(value?.anonymousDisabledHosts),
 
     deckTabWidth: typeof value?.deckTabWidth === 'number' ? value.deckTabWidth : 400,
     sidebarCollapsed: bool(value?.sidebarCollapsed),
@@ -185,8 +216,9 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     disabledServicesArr: (value?.disabledServicesArr || []).filter((service): service is string => typeof service === 'string'),
     enabledSearchProviderIds,
     selectedSearchProviderId: normalizeSelectedSearchProviderId(value?.selectedSearchProviderId, enabledSearchProviderIds),
+    selectedPublicSearchServiceId: normalizePublicSearchServiceId(value?.selectedPublicSearchServiceId),
     customSearchProviders,
-    profiles: sanitizeProfiles(value?.profiles),
+    profiles: withAnonymousProfile(sanitizeProfiles(value?.profiles), bool(value?.anonymousMode)),
   }
 }
 
@@ -196,7 +228,7 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   }
 
   if ('profiles' in data) {
-    data.profiles = ensureProfiles(data.profiles)
+    data.profiles = withAnonymousProfile(ensureProfiles(data.profiles), data.anonymousMode === true)
   }
   data.customSearchProviders = normalizeCustomSearchProviders(data.customSearchProviders)
   data.enabledSearchProviderIds = normalizeEnabledSearchProviderIds(
@@ -207,6 +239,7 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
     data.selectedSearchProviderId,
     data.enabledSearchProviderIds,
   )
+  data.selectedPublicSearchServiceId = normalizePublicSearchServiceId(data.selectedPublicSearchServiceId)
   if (typeof data.videoEdgeLongPressTo2x !== 'boolean') {
     data.videoEdgeLongPressTo2x = true
   }
@@ -253,6 +286,13 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.oneProfilePerSite !== 'boolean') {
     data.oneProfilePerSite = false
   }
+  if (typeof data.anonymousMode !== 'boolean') {
+    data.anonymousMode = false
+  }
+  if (typeof data.anonymousMorePosts !== 'boolean') {
+    data.anonymousMorePosts = false
+  }
+  data.anonymousDisabledHosts = sanitizeSiteKeys(data.anonymousDisabledHosts)
   if (typeof data.protectWebRtcIp !== 'boolean') {
     data.protectWebRtcIp = true
   }
@@ -312,6 +352,9 @@ export const settings$: Observable<Store> = observable<Store>({
   oneHandMode: false,
   oneTabPerSite: false,
   oneProfilePerSite: false,
+  anonymousMode: false,
+  anonymousMorePosts: false,
+  anonymousDisabledHosts: [],
 
   deckTabWidth: 400,
   sidebarCollapsed: false,
@@ -323,6 +366,7 @@ export const settings$: Observable<Store> = observable<Store>({
   disabledServicesArr: [],
   enabledSearchProviderIds: ['url', 'duckduckgo', 'google'],
   selectedSearchProviderId: 'url',
+  selectedPublicSearchServiceId: DEFAULT_PUBLIC_SEARCH_SERVICE_ID,
   customSearchProviders: [],
   profiles: [DEFAULT_PROFILE],
   setLanguage: (language) => {
@@ -366,6 +410,9 @@ export const settings$: Observable<Store> = observable<Store>({
   setSelectedSearchProvider: (providerId) => {
     const enabledIds = settings$.enabledSearchProviderIds.get()
     settings$.selectedSearchProviderId.set(enabledIds.includes(providerId) ? providerId : 'url')
+  },
+  setSelectedPublicSearchService: (serviceId) => {
+    settings$.selectedPublicSearchServiceId.set(normalizePublicSearchServiceId(serviceId))
   },
   addCustomSearchProvider: (name, templateUrl): string | null => {
     const trimmedName = name.trim()
@@ -427,6 +474,23 @@ export const settings$: Observable<Store> = observable<Store>({
     settings$.profiles.push({ id, name: trimmedName, color })
     return id
   },
+  ensureAnonymousProfile: () => {
+    if (!settings$.profiles.get().some((profile) => profile?.id === ANONYMOUS_PROFILE_ID)) {
+      settings$.profiles.push({ id: ANONYMOUS_PROFILE_ID, name: ANONYMOUS_PROFILE_NAME, color: ANONYMOUS_PROFILE_COLOR })
+    }
+    return ANONYMOUS_PROFILE_ID
+  },
+  setAnonymousMode: (enabled) => {
+    if (enabled) {
+      settings$.ensureAnonymousProfile()
+    }
+    settings$.anonymousMode.set(enabled)
+  },
+  setAnonymousHostDisabled: (host, disabled) => {
+    settings$.anonymousDisabledHosts.set(
+      updateBlocklistExclusions(settings$.anonymousDisabledHosts.get() || [], host, disabled),
+    )
+  },
   updateProfile: (id, name, color) => {
     const profiles = settings$.profiles.get()
     const index = profiles.findIndex((p) => p?.id === id)
@@ -442,6 +506,10 @@ export const settings$: Observable<Store> = observable<Store>({
     const profiles = settings$.profiles.get()
     const index = profiles.findIndex((p) => p?.id === id)
     if (index !== -1 && profiles[index] && !profiles[index].isDefault) {
+      if (id === ANONYMOUS_PROFILE_ID) {
+        // The mode only acts in this profile, and would bring it back on the next start.
+        settings$.anonymousMode.set(false)
+      }
       settings$.profiles.splice(index, 1)
       void import('@/lib/profile-data')
         .then(({ deleteProfileData }) => deleteProfileData(id))

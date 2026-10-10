@@ -16,6 +16,9 @@ import { showToast } from '@/lib/toast'
 import { canPinTabToHomeScreen, pinTabToHomeScreen } from '@/lib/home-shortcut'
 import { useValue } from '@legendapp/state/react'
 import { blocklist$ } from '@/states/blocklist'
+import { isAnonymousProfile } from '@/lib/anonymous'
+import { getAnonymousRules } from '@/content/anonymous-rules'
+import { settings$ } from '@/states/settings'
 import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
 import { MenuToggleBadge } from '@/components/menu/MenuToggleBadge'
 import { useTwColor } from '@/lib/theme'
@@ -31,6 +34,8 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
   const menuIconColor = colorScheme === 'light' ? tw(colors.iconLightStrong) : tw(colors.icon)
   const blocklistEnabled = useValue(blocklist$.enabled)
   const excludedHosts = useValue(blocklist$.excludedHosts)
+  const anonymousMode = useValue(settings$.anonymousMode)
+  const anonymousDisabledHosts = useValue(settings$.anonymousDisabledHosts)
 
   let host = ''
   if (tab.url) {
@@ -41,6 +46,9 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
 
   const blockingSite = toBlocklistSiteKey(host)
   const blockingOnThisSite = !isBlocklistExcludedHost(host, excludedHosts || [])
+  const showAnonymousToggle =
+    anonymousMode && isAnonymousProfile(tab.profile) && !!blockingSite && getAnonymousRules(host).length > 0
+  const anonymousOnThisSite = !isBlocklistExcludedHost(host, anonymousDisabledHosts || [])
   const toggleSiteBlocking = () => {
     blocklist$.setHostExcluded(blockingSite, blockingOnThisSite)
     // Capture this tab's view before the async filter update, even if focus changes.
@@ -125,6 +133,16 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
           icon: <MaterialIcons name="shield" size={16} color={menuIconColor} />,
           meta: <MenuToggleBadge on={blockingOnThisSite} />,
           handler: toggleSiteBlocking,
+        }]
+      : []),
+    ...(showAnonymousToggle
+      ? [{
+          label: t('menus.hideSignInPrompts'),
+          metaLabel: anonymousOnThisSite ? t('common.on') : t('common.off'),
+          systemImage: 'eye.slash',
+          icon: <MaterialIcons name="visibility-off" size={16} color={menuIconColor} />,
+          meta: <MenuToggleBadge on={anonymousOnThisSite} />,
+          handler: () => settings$.setAnonymousHostDisabled(blockingSite, anonymousOnThisSite),
         }]
       : []),
     { kind: 'separator' },

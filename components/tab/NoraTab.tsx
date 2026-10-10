@@ -54,9 +54,15 @@ import {
   loadCosmeticFilters,
 } from '@/lib/blocklist'
 import { blocklist$ } from '@/states/blocklist'
+import { buildAnonymousModeScript, isAnonymousModeActive, isAnonymousProfile } from '@/lib/anonymous'
+import { getMorePostsPage, needsMorePosts } from '@/lib/more-posts'
+import { isSearchHost, parseLoadMoreRequest } from '@/lib/profile-search'
+import { isInstagramHost } from '@/lib/instagram'
+import { profileSearch, sendMorePosts } from '@/lib/profile-search-runtime'
 import { twColor, useTwColor } from '@/lib/theme'
 
 const LOAD_URL_MAX_RETRIES = 5
+const postsMessageChannels = new Set(['search-profile-posts', 'search-results', 'search-challenge', 'load-more-posts'])
 const LOAD_URL_RETRY_DELAY = 100
 
 const getRedirectTo = (str: string) => {
@@ -238,6 +244,9 @@ export const NoraTab: React.FC<{
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
   const inspectable = useValue(settings$.inspectable)
   const protectWebRtcIp = useValue(settings$.protectWebRtcIp)
+  const anonymousMode = useValue(settings$.anonymousMode)
+  const anonymousMorePosts = useValue(settings$.anonymousMorePosts)
+  const anonymousDisabledHosts = useValue(settings$.anonymousDisabledHosts)
   const webRtcGuardScript = useValue(webRtcGuardScript$)
   const youTubeGuardScript = useValue(youTubeGuardScript$)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
@@ -349,6 +358,17 @@ export const NoraTab: React.FC<{
     [tab.id],
   )
 
+  const anonymousActive = useCallback(
+    (host: string) =>
+      isAnonymousModeActive({
+        enabled: anonymousMode,
+        profileId: tab.profile,
+        host,
+        disabledHosts: anonymousDisabledHosts || [],
+      }),
+    [anonymousMode, anonymousDisabledHosts, tab.profile],
+  )
+
   const applyContentState = useCallback(
     async (target?: WebviewTag | any | null, url?: string) => {
       const webview = target || webviewRef.current || nativeRef.current
@@ -364,6 +384,9 @@ export const NoraTab: React.FC<{
         // Also switches off the built-in ad blocking in the content script, so the
         // per-site switch covers every kind of blocking and not just the lists.
         adBlockingEnabled: !isAdBlockingDisabledForHost(currentHost),
+        // Only ever on for a tab in the Anonymous profile; see `isAnonymousModeActive`.
+        anonymousMode: anonymousActive(currentHost),
+        anonymousMorePosts: anonymousMorePosts && anonymousActive(currentHost),
       })})`
       const userStylesScript = `window.Nora?.setUserStyles?.(${JSON.stringify(getUserStylesSnapshot())})`
       void executeWebviewJavaScriptQuietly(webview, settingsScript)
@@ -374,6 +397,8 @@ export const NoraTab: React.FC<{
       }
     },
     [
+      anonymousActive,
+      anonymousMorePosts,
       doubleTapToToggleHeader,
       tab.url,
       videoEdgeLongPressTo2x,
@@ -383,6 +408,54 @@ export const NoraTab: React.FC<{
     ],
   )
   const applyContentStateRef = useRef(applyContentState)
+  // What the page is told at document start. Built from the render's values, and read
+  // through a ref by the desktop `dom-ready` handler, which outlives the render.
+  const anonymousModeScript = buildAnonymousModeScript({
+    enabled: anonymousMode,
+    profileId: tab.profile,
+    disabledHosts: anonymousDisabledHosts || [],
+  })
+  const anonymousModeScriptRef = useRef(anonymousModeScript)
+
+  // What a page says about the list of more posts below an Instagram profile and the search behind it.
+  // Reaches here from the native view's messages and, on desktop, from the guest's `sendToHost`.
+  const handlePostsMessage = (type: string, data: unknown) => {
+    const pageHost = getHostFromUrl(pageUrlRef.current || tab.url)
+    const onInstagram = anonymousMorePosts && anonymousActive(pageHost) && isInstagramHost(pageHost)
+    const onSearchPage = isSearchHost(pageHost) && anonymousActive(pageHost)
+    switch (type) {
+      case 'search-profile-posts':
+        // Only what the person turned on, for Instagram, in the Anonymous profile; the rest of what a
+        // page may ask for is decided in `profileSearch`.
+        profileSearch.start(tab.id, data, onInstagram)
+        break
+      case 'search-results':
+        profileSearch.complete(tab.id, data, onSearchPage)
+        break
+      case 'search-challenge':
+        profileSearch.challenge(tab.id, onSearchPage)
+        break
+      case 'load-more-posts': {
+        const request = parseLoadMoreRequest(data)
+        if (request && onInstagram) {
+          // A page that what was found cannot fill is asked of the search again; it is shown when that answers.
+          if (!needsMorePosts(request.username, request.page) || !profileSearch.more(tab.id, request.username, request.page)) {
+            sendMorePosts(tab.id, getMorePostsPage(request.username, request.page))
+          }
+        }
+        break
+      }
+    }
+  }
+  const postsMessageRef = useRef(handlePostsMessage)
+
+  useEffect(() => {
+    postsMessageRef.current = handlePostsMessage
+  })
+
+  useEffect(() => {
+    anonymousModeScriptRef.current = anonymousModeScript
+  }, [anonymousModeScript])
 
   useEffect(() => {
     applyContentStateRef.current = applyContentState
@@ -452,7 +525,7 @@ export const NoraTab: React.FC<{
         }
         // Desktop has no document-start hook for the content script, so the
         // exceptions ride in front of it -- still before it installs anything.
-        void executeWebviewJavaScript(webview, composeDocumentStartScript(buildAdBlockingExclusionsScript(), contentJsRef.current))
+        void executeWebviewJavaScript(webview, composeDocumentStartScript(buildAdBlockingExclusionsScript(), anonymousModeScriptRef.current, contentJsRef.current))
           .catch(() => {})
           .finally(() => applyContentStateRef.current(webview))
         void refreshCanGoBack(webview)
@@ -501,6 +574,10 @@ export const NoraTab: React.FC<{
       on<Electron.IpcMessageEvent>('ipc-message', (e) => {
         if (e.channel === 'activate-tab') {
           if (desktopVisibleRef.current) tabs$.setActiveTabById(tab.id, 'user')
+          return
+        }
+        if (postsMessageChannels.has(e.channel)) {
+          postsMessageRef.current(e.channel, e.args?.[0])
           return
         }
         if (e.channel !== 'drop-url') {
@@ -728,7 +805,13 @@ export const NoraTab: React.FC<{
       case 'new-tab':
         if (!isExternalAppUrl(data.url)) {
           const nextUrl = data.kind === 'image' ? buildImageViewerUrl(data.url, theme) : forceHttps(data.url)
-          tabs$.openTab(nextUrl, { parentTabId: tab.id, source: 'child' })
+          // A tab opened from the Anonymous profile stays in it, and does not go to whichever
+          // profile was chosen last.
+          tabs$.openTab(nextUrl, {
+            parentTabId: tab.id,
+            source: 'child',
+            ...(isAnonymousProfile(tab.profile) ? { profile: tab.profile, profileMode: 'manual' as const } : {}),
+          })
         }
         break
       case 'drop-url':
@@ -744,6 +827,12 @@ export const NoraTab: React.FC<{
       case 'save-file':
         await ensureDownloadNotificationPermission()
         getCurrentWebview()?.saveFile(data.content, data.fileName, data.mimeType)
+        break
+      case 'search-profile-posts':
+      case 'search-results':
+      case 'search-challenge':
+      case 'load-more-posts':
+        handlePostsMessage(type, data)
         break
       case 'scroll':
         onScroll({ dy: data.dy, y: data.y, autoHideHeader, hideToolbarWhenScrolled })
@@ -1033,10 +1122,15 @@ export const NoraTab: React.FC<{
           }
           profile={tab.profile || 'default'}
           scriptOnStart={contentJs}
-          scriptOnDocumentStart={composeDocumentStartScript(protectWebRtcIp && webRtcGuardScript, youTubeGuardScript)}
+          scriptOnDocumentStart={composeDocumentStartScript(
+            protectWebRtcIp && webRtcGuardScript,
+            youTubeGuardScript,
+            anonymousModeScript,
+          )}
           useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
           onLoad={onLoad}
           onMessage={onMessage}
+          openAppLinksInTab={anonymousActive(host)}
           inspectable={inspectable}
           textZoom={resolvedZoom}
           scrollEvents={autoHideHeader || hideToolbarWhenScrolled}

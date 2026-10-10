@@ -107,3 +107,68 @@ it('opens a child in its supplied profile even with one tab per site enabled', a
     ui$.lastSelectedProfileId.set(previousProfile)
   }
 })
+
+it('does not reuse a tab of the Anonymous profile for a link from a tab of another profile', async () => {
+  const { settings$ } = await import('./settings')
+  const previousTabs = tabs$.tabs.get()
+  const previousIndex = tabs$.activeTabIndex.get()
+  const previousOneTab = settings$.oneTabPerSite.get()
+  try {
+    settings$.oneTabPerSite.set(true)
+    tabs$.tabs.set([
+      { id: 'source', url: 'https://source.test', profile: 'default' },
+      { id: 'anon', url: 'https://target.test', profile: 'anonymous' },
+    ])
+    tabs$.activeTabIndex.set(0)
+    const id = tabs$.openTab('https://target.test/post', { parentTabId: 'source', source: 'child' })
+    expect(id).not.toBe('anon')
+    expect(tabs$.tabs.get().find((tab) => tab.id === 'anon')?.url).toBe('https://target.test')
+
+    // A link that asks for the Anonymous profile does reuse it.
+    const again = tabs$.openTab('https://target.test/other', { profile: 'anonymous', source: 'child' })
+    expect(again).toBe('anon')
+  } finally {
+    tabs$.tabs.set(previousTabs)
+    tabs$.activeTabIndex.set(previousIndex)
+    settings$.oneTabPerSite.set(previousOneTab)
+  }
+})
+
+it('opens a tab in the background without switching to it', () => {
+  const previousTabs = tabs$.tabs.get()
+  const previousIndex = tabs$.activeTabIndex.get()
+  try {
+    tabs$.tabs.set([{ id: 'front', url: 'https://front.test' }])
+    tabs$.activeTabIndex.set(0)
+    const id = tabs$.openTab('https://background.test', { background: true })
+    expect(id).toBeTruthy()
+    expect(tabs$.tabs.get()).toHaveLength(2)
+    expect(tabs$.tabs.get()[tabs$.activeTabIndex.get()].id).toBe('front')
+  } finally {
+    tabs$.tabs.set(previousTabs)
+    tabs$.activeTabIndex.set(previousIndex)
+  }
+})
+
+it('closes a tab the app opened for its own work without offering it for reopening', () => {
+  const previousTabs = tabs$.tabs.get()
+  const previousIndex = tabs$.activeTabIndex.get()
+  const previousClosed = tabs$.recentlyClosedTabs.get()
+  try {
+    tabs$.tabs.set([
+      { id: 'front', url: 'https://front.test' },
+      { id: 'work', url: 'https://work.test' },
+      { id: 'other', url: 'https://other.test' },
+    ])
+    tabs$.activeTabIndex.set(0)
+    tabs$.recentlyClosedTabs.set([])
+    tabs$.closeTab(1, { forget: true })
+    expect(tabs$.recentlyClosedTabs.get()).toEqual([])
+    tabs$.closeTab(1)
+    expect(tabs$.recentlyClosedTabs.get().map((tab) => tab.id)).toEqual(['other'])
+  } finally {
+    tabs$.tabs.set(previousTabs)
+    tabs$.activeTabIndex.set(previousIndex)
+    tabs$.recentlyClosedTabs.set(previousClosed)
+  }
+})

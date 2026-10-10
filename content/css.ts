@@ -1,4 +1,5 @@
 import { getEnabledUserStyleCss } from '../lib/user-styles'
+import { getAnonymousCss } from './anonymous'
 import { noraSettingsEvent, noraUserStylesEvent } from './nora'
 
 export const hostHomes: Record<string, string> = {
@@ -136,7 +137,7 @@ const styles: Record<string, (settings: any) => string> = {
 
 export const getCoreCss = (host: string, settings: any) => {
   const key = hostHomes[host]
-  return styles.base(settings) + (styles[key]?.(settings) || '')
+  return styles.base(settings) + (styles[key]?.(settings) || '') + getAnonymousCss(host, settings.anonymousMode === true)
 }
 
 export const getInjectedCss = (host: string, settings: any, userStyles: any) => {

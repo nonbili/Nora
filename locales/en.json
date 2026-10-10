@@ -84,6 +84,7 @@
   },
   "menus": {
     "blockAds": "Block ads on this site",
+    "hideSignInPrompts": "Hide sign-in prompts on this site",
     "clearSiteData": "Clear site data",
     "clearSiteDataConfirm": "Clear all cookies and site data for \"{{host}}\"? This signs you out of this site.",
     "close": "Close",
@@ -109,6 +110,10 @@
     "downloadOnCobalt": "Download video on cobalt.tools",
     "downloadTab": "Download",
     "cookiesTab": "Site Data",
+    "searchTab": "Search",
+    "publicSearch": "Search public posts",
+    "publicSearchHint": "Searches one social network through DuckDuckGo. Results open in the Anonymous profile.",
+    "publicSearchPlaceholder": "Search public {{service}} posts",
     "exportCookies": "Export current site cookies",
     "exportCookiesHint": "Save cookies for the current site as a cookies.txt file.",
     "exportCookiesButton": "Export cookies.txt",
@@ -244,6 +249,13 @@
       "desktopLayoutAuto": "Auto",
       "desktopLayoutOn": "Always",
       "desktopLayoutOff": "Never"
+    },
+    "anonymous": {
+      "title": "Anonymous mode",
+      "enable": "Hide sign-in prompts",
+      "hint": "Hides log in, sign up and open-in-app prompts in the Anonymous profile. Works on {{sites}}.",
+      "morePosts": "Find more Instagram posts",
+      "morePostsHint": "Adds a Continue with search button below Instagram profiles. It finds more public posts through DuckDuckGo, which sees the profile name."
     },
     "profiles": {
       "description": "Multiple accounts with separate cookies and browsing state.",
@@ -430,6 +442,19 @@
     "paused": "Tab is paused",
     "pausedHint": "Its content was unloaded to save resources.",
     "resume": "Resume"
+  },
+  "morePosts": {
+    "title": "More posts",
+    "more": "Show more",
+    "openPost": "Open post",
+    "note": "Found through DuckDuckGo. Some posts may be missing.",
+    "error": "Could not load more posts.",
+    "empty": "No more posts found.",
+    "continue": "Continue with search",
+    "continueHint": "Finds more posts through DuckDuckGo, which sees the profile name.",
+    "searching": "Searching\u2026 You may be asked to pass a DuckDuckGo check.",
+    "unavailable": "This post is unavailable.",
+    "retry": "Try again"
   },
   "newTab": {
     "presets": {

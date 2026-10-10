@@ -30,6 +30,8 @@ import { ServiceIcon } from '../service/Services'
 import { Tooltip } from '../tooltip/Tooltip'
 import { userStyles$ } from '@/states/user-styles'
 import { blocklist$ } from '@/states/blocklist'
+import { isAnonymousProfile } from '@/lib/anonymous'
+import { getAnonymousRules } from '@/content/anonymous-rules'
 import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
 import { buildUserScriptExecutionSource, matchesAnyHostGlob, type CustomUserScript } from '@/lib/user-styles'
 import { useHeaderAnimation } from './header-animation'
@@ -102,6 +104,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const siteZoom = useValue(settings$.siteZoom)
   const blocklistEnabled = useValue(blocklist$.enabled)
   const blocklistExcludedHosts = useValue(blocklist$.excludedHosts)
+  const anonymousMode = useValue(settings$.anonymousMode)
+  const anonymousDisabledHosts = useValue(settings$.anonymousDisabledHosts)
 
   if (currentTab?.url) {
     try {
@@ -116,6 +120,12 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const blockingSite = toBlocklistSiteKey(hostname)
   const showBlocklistToggle = supportsRuntimeBlocklist() && blocklistEnabled && !!blockingSite
   const blockingOnThisSite = !isBlocklistExcludedHost(hostname, blocklistExcludedHosts || [])
+
+  // Only offered where it can do something: the mode is on, this tab is in the
+  // Anonymous profile, and the site has rules to switch off.
+  const showAnonymousToggle =
+    anonymousMode && isAnonymousProfile(currentTab?.profile) && !!blockingSite && getAnonymousRules(hostname).length > 0
+  const anonymousOnThisSite = !isBlocklistExcludedHost(hostname, anonymousDisabledHosts || [])
 
   const isFacebookMessenger = hostname.endsWith('.facebook.com') && (pathname === '/messages' || pathname.startsWith('/messages/'))
   const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com')
@@ -226,6 +236,20 @@ export const NouHeader: React.FC<{}> = ({}) => {
           metaLabel: blockingOnThisSite ? t('common.on') : t('common.off'),
           meta: <MenuToggleBadge on={blockingOnThisSite} />,
           handler: toggleSiteBlocking,
+        },
+      ]
+    : []
+
+  const anonymousMenuItems = showAnonymousToggle
+    ? [
+        {
+          label: t('menus.hideSignInPrompts'),
+          icon: <MaterialIcons name="visibility-off" size={18} color={headerControlColor} />,
+          systemImage: 'eye.slash',
+          metaLabel: anonymousOnThisSite ? t('common.on') : t('common.off'),
+          meta: <MenuToggleBadge on={anonymousOnThisSite} />,
+          // Applied to the open page as it is, with no reload.
+          handler: () => settings$.setAnonymousHostDisabled(blockingSite, anonymousOnThisSite),
         },
       ]
     : []
@@ -473,6 +497,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                           },
                         ]),
                     ...(!desktopLayout ? blocklistMenuItems : []),
+                    ...(!desktopLayout ? anonymousMenuItems : []),
                     {
                       label: t('menus.zoom') || 'Zoom',
                       icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,

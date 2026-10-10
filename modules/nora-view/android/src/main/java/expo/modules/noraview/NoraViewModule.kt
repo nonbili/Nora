@@ -329,6 +329,10 @@ class NoraViewModule : Module() {
         view.setActive(active)
       }
 
+      Prop("openAppLinksInTab") { view: NoraView, enabled: Boolean ->
+        view.openAppLinksInTab = enabled
+      }
+
       Events("onLoad", "onMessage")
 
       AsyncFunction("download") { view: NoraView, url: String, fileName: String? ->

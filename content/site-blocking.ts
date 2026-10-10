@@ -31,3 +31,19 @@ function pageHost() {
   }
   return hostname
 }
+
+/**
+ * Whether the anonymous mode is on for the site this page is on, from what the
+ * app handed over at document start. It is only injected for a tab in the
+ * Anonymous profile with the mode on, so its absence means off. Like the ad
+ * blocking switch, the app's own push of the flag does not land until the page
+ * has loaded.
+ */
+export function isAnonymousModeBootstrapped() {
+  try {
+    const disabledHosts = window.__noraAnonymousDisabledHosts
+    return Array.isArray(disabledHosts) && !isBlocklistExcludedHost(pageHost(), disabledHosts)
+  } catch (e) {
+    return false
+  }
+}

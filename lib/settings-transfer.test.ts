@@ -54,6 +54,32 @@ describe('settings transfer', () => {
     expect(parsed.settings?.profiles.some((profile) => profile.id === 'default')).toBe(true)
   })
 
+  it('keeps the anonymous mode off and the public search service default for a file without them', () => {
+    const parsed = parseSettingsBackup(backupOf({ settings: { headerPosition: 'bottom' } }))
+
+    expect(parsed.settings?.anonymousMode).toBe(false)
+    expect(parsed.settings?.anonymousMorePosts).toBe(false)
+    expect(parsed.settings?.anonymousDisabledHosts).toEqual([])
+    expect(parsed.settings?.selectedPublicSearchServiceId).toBe('reddit')
+    expect(parsed.settings?.profiles.some((profile) => profile.id === 'anonymous')).toBe(false)
+  })
+
+  it('cleans up the anonymous settings of a hand edited file', () => {
+    const parsed = parseSettingsBackup(
+      backupOf({
+        settings: {
+          anonymousMode: 'yes',
+          anonymousDisabledHosts: ['WWW.Reddit.com', 'x.com', 'x.com', 42, ''],
+          selectedPublicSearchServiceId: 'constructor',
+        },
+      }),
+    )
+
+    expect(parsed.settings?.anonymousMode).toBe(false)
+    expect(parsed.settings?.anonymousDisabledHosts).toEqual(['reddit.com', 'x.com'])
+    expect(parsed.settings?.selectedPublicSearchServiceId).toBe('reddit')
+  })
+
   it('drops malformed bookmarks and keeps the rest', () => {
     const parsed = parseSettingsBackup(
       backupOf({ bookmarks: [{ title: 'no url' }, null, { url: 'https://example.org', title: 'Example' }] }),

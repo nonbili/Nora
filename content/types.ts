@@ -17,6 +17,8 @@ declare global {
     Nora: any
     /** Sites ad blocking is off for, injected at document start. */
     __noraBlocklistExcludedHosts?: string[]
+    /** Sites the anonymous mode is off for; present only when the mode is on for this tab. */
+    __noraAnonymousDisabledHosts?: string[]
     electron: ElectronAPI
   }
 }

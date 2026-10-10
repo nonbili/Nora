@@ -18,6 +18,7 @@ import { MaterialButton } from '../button/IconButtons'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 
 import { ProfileManager } from '../profile/ProfileManager'
+import { anonymousRules } from '@/content/anonymous-rules'
 import { BlocklistSection } from '../blocklist/BlocklistSection'
 import { xHomeTimelineValues } from '@/lib/settings/twitter'
 import {
@@ -743,11 +744,16 @@ export const SettingsAppearanceContent = () => {
   )
 }
 
+const anonymousSites = anonymousRules.flatMap((rule) => rule.hosts).join(', ')
+
 export const SettingsProfilesContent = () => {
   const settings = useValue(settings$)
 
   return (
     <View className="pb-4">
+      <View className="mb-6">
+        <ProfileManager />
+      </View>
       <NouText className={subheaderCls}>{t('settings.profiles.sessionMode')}</NouText>
       <SettingsSurface className="mb-10">
         <SettingsRow isLast>
@@ -765,8 +771,40 @@ export const SettingsProfilesContent = () => {
           />
         </SettingsRow>
       </SettingsSurface>
-      <ProfileManager />
-      <View className="mt-10">
+      <NouText className={subheaderCls}>{t('settings.anonymous.title')}</NouText>
+      <SettingsSurface className="mb-10">
+        <SettingsRow>
+          <NouSwitch
+            label={
+              <View>
+                <NouText>{t('settings.anonymous.enable')}</NouText>
+                <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  {t('settings.anonymous.hint', { sites: anonymousSites })}
+                </NouText>
+              </View>
+            }
+            value={settings.anonymousMode}
+            onPress={() => settings$.setAnonymousMode(!settings.anonymousMode)}
+          />
+        </SettingsRow>
+        <SettingsRow isLast>
+          <NouSwitch
+            label={
+              <View>
+                <NouText>{t('settings.anonymous.morePosts')}</NouText>
+                <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  {t('settings.anonymous.morePostsHint')}
+                </NouText>
+              </View>
+            }
+            value={settings.anonymousMorePosts}
+            // Only ever acts in the Anonymous profile, with the mode on.
+            disabled={!settings.anonymousMode}
+            onPress={() => settings$.anonymousMorePosts.toggle()}
+          />
+        </SettingsRow>
+      </SettingsSurface>
+      <View>
         <NouText className={subheaderCls}>{t('settings.profiles.injectCookie')}</NouText>
         <View className={surfaceCls}>
           <View className="px-4 py-4">

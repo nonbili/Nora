@@ -22,6 +22,7 @@ import {
 } from '@/lib/tab-behavior'
 import { removeTrackingParams } from '@/lib/url'
 import { autoProfiles$ } from './auto-profiles'
+import { isAnonymousProfile } from '@/lib/anonymous'
 import {
   AUTO_PROFILE_ID,
   getSiteFromProfileId,
@@ -72,7 +73,7 @@ interface Store {
 
   openTab: (url: string, options?: OpenTabOptions) => string | undefined
   duplicateTab: (tabId: string) => string | undefined
-  closeTab: (index: number) => void
+  closeTab: (index: number, options?: { forget?: boolean }) => void
   closeTabsByIds: (tabIds: string[]) => void
   closeAll: () => void
   deleteProfileData: (profileId: string) => void
@@ -212,6 +213,8 @@ export type OpenTabOptions = {
   profile?: string
   profileMode?: ProfileMode
   source?: 'manual' | 'child' | 'shared' | 'reuse'
+  /** Load the tab without switching to it, for a page that does its work out of sight. */
+  background?: boolean
 }
 
 export type TabActivationReason = 'user' | 'open' | 'close' | 'back' | 'system'
@@ -376,7 +379,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       lastOpenedUrl = ''
     }, 1000)
 
-    if (settings$.oneTabPerSite.get()) {
+    if (settings$.oneTabPerSite.get() && !options?.background) {
       try {
         const newUrl = new URL(url)
         if (newUrl.hostname) {
@@ -385,7 +388,10 @@ export const tabs$: Observable<Store> = observable<Store>({
             try {
               const tabUrl = new URL(t.url)
               return tabUrl.hostname === newUrl.hostname &&
-                (!options?.profile || options.profile === AUTO_PROFILE_ID || (t.profile || 'default') === options.profile)
+                (!options?.profile || options.profile === AUTO_PROFILE_ID || (t.profile || 'default') === options.profile) &&
+                // A link from a tab of another profile is not taken into the Anonymous one, which has no account
+                // and hides things: it is only reused by a link that asked for that profile.
+                (!isAnonymousProfile(t.profile) || options?.profile === t.profile)
             } catch {
               return false
             }
@@ -427,11 +433,13 @@ export const tabs$: Observable<Store> = observable<Store>({
     if (options?.source === 'child' && options.parentTabId && options.parentTabId !== tab.id) {
       childBackParentByTabId[tab.id] = options.parentTabId
     }
-    tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
+    if (!options?.background) {
+      tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
+    }
     return tab.id
   },
 
-  closeTab: (index) => {
+  closeTab: (index, options) => {
     const tabs = tabs$.tabs.get()
     const closedTab = tabs[index]
     const tabId = closedTab?.id
@@ -453,7 +461,10 @@ export const tabs$: Observable<Store> = observable<Store>({
       adjacentTabId,
     })
 
-    pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
+    // A tab the app opened for its own work is not one to offer for reopening.
+    if (!options?.forget) {
+      pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
+    }
     tabs$.tabs.splice(index, 1)
     if (tabId in tabs$.orders.get()) {
       tabs$.orders[tabId].delete()

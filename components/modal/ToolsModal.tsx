@@ -3,14 +3,19 @@ import { ui$ } from '@/states/ui'
 import { useEffect, useState } from 'react'
 import { BaseModal } from './BaseModal'
 import { NouText } from '../NouText'
-import { TextInput, View, useColorScheme } from 'react-native'
+import { Keyboard, Pressable, TextInput, View, useColorScheme } from 'react-native'
 import { gray } from '@radix-ui/colors'
 import { NouButton } from '../button/NouButton'
 import { t } from 'i18next'
 import { isDownloadable, normalizeDownloadUrl } from '@/content/download'
 import { mainClient } from '@/desktop/src/renderer/ipc/main'
-import { isIos, isWeb } from '@/lib/utils'
+import { clsx, isIos, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
+import { settings$ } from '@/states/settings'
+import { publicSearchServiceIds, resolvePublicSearchUrl } from '@/lib/public-search'
+import { services } from '../service/Services'
+import { NouMenu } from '../menu/NouMenu'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { exportCookiesTxt } from '@/lib/cookie-export'
 import { showToast } from '@/lib/toast'
 import { Segemented } from '../picker/Segmented'
@@ -20,7 +25,15 @@ import { confirmDestructiveAction } from '@/lib/confirm'
 import { executeWebviewJavaScriptQuietly, reloadWebview } from '@/lib/webview'
 import { useTwColor } from '@/lib/theme'
 
-type ToolsTab = 'download' | 'cookies'
+type ToolsTab = 'download' | 'search' | 'cookies'
+
+// Downloading is not offered on iOS.
+const toolsTabs: ToolsTab[] = isIos ? ['search', 'cookies'] : ['download', 'search', 'cookies']
+const toolsTabLabelKeys: Record<ToolsTab, string> = {
+  download: 'modals.downloadTab',
+  search: 'modals.searchTab',
+  cookies: 'modals.cookiesTab',
+}
 
 const canDownload = (url: string) => {
   let hostname, pathname
@@ -55,16 +68,28 @@ export const ToolsModal = () => {
   const isDark = colorScheme !== 'light'
   const [url, setUrl] = useState('')
   const [cobaltUrl, setCobaltUrl] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [exportingCookies, setExportingCookies] = useState(false)
+  const disabledServices = use$(settings$.disabledServicesArr)
+  const selectedSearchServiceId = use$(settings$.selectedPublicSearchServiceId)
   const [selectedTab, setSelectedTab] = useState<ToolsTab>(isIos ? 'cookies' : 'download')
   const tabs = use$(tabs$.tabs)
   const activeTabIndex = use$(tabs$.activeTabIndex)
   const currentTab = tabs[activeTabIndex]
-  const onClose = () => ui$.toolsModalOpen.set(false)
+  const onClose = () => {
+    // While the field is still there: the keyboard of a focused field outlives it otherwise.
+    Keyboard.dismiss()
+    ui$.toolsModalOpen.set(false)
+  }
 
   useEffect(() => {
+    if (!toolsModalOpen) {
+      // Also for a close that does not go through `onClose`.
+      Keyboard.dismiss()
+    }
     setUrl('')
     setCobaltUrl('')
+    setSearchQuery('')
     setExportingCookies(false)
     setSelectedTab(isIos ? 'cookies' : 'download')
   }, [toolsModalOpen])
@@ -87,6 +112,21 @@ export const ToolsModal = () => {
       ? `https://cobalt.tools/?u=${encodeURIComponent(trimmed)}`
       : 'https://cobalt.tools/'
     tabs$.openTab(target)
+    onClose()
+  }
+
+  // Services that are turned off are not offered here either.
+  const enabledSearchServiceIds = publicSearchServiceIds.filter((serviceId) => !disabledServices.includes(serviceId))
+  const searchServiceIds = enabledSearchServiceIds.length ? enabledSearchServiceIds : publicSearchServiceIds
+  const searchServiceId = searchServiceIds.includes(selectedSearchServiceId) ? selectedSearchServiceId : searchServiceIds[0]
+  const searchUrl = resolvePublicSearchUrl(searchServiceId, searchQuery)
+
+  const onSearch = () => {
+    if (!searchUrl) {
+      return
+    }
+    // Read without an account, so in the Anonymous profile whichever one the current tab is in.
+    tabs$.openTab(searchUrl, { profile: settings$.ensureAnonymousProfile(), profileMode: 'manual' })
     onClose()
   }
 
@@ -146,17 +186,63 @@ export const ToolsModal = () => {
   return (
     <BaseModal onClose={onClose} useNativeModal={false}>
       <View className="px-5 pb-5 pt-2" style={!isWeb ? { marginTop: -insets.top } : undefined}>
-        {!isIos ? (
-          <View className="mb-6 items-start">
-            <Segemented
-              options={[t('modals.downloadTab'), t('modals.cookiesTab')]}
-              selectedIndex={selectedTab === 'download' ? 0 : 1}
-              onChange={(index) => setSelectedTab(index === 0 ? 'download' : 'cookies')}
-            />
-          </View>
-        ) : null}
+        <View className="mb-6 items-start">
+          <Segemented
+            options={toolsTabs.map((tab) => t(toolsTabLabelKeys[tab]))}
+            selectedIndex={toolsTabs.indexOf(selectedTab)}
+            onChange={(index) => setSelectedTab(toolsTabs[index])}
+          />
+        </View>
 
-        {selectedTab === 'download' && !isIos ? (
+        {selectedTab === 'search' ? (
+          <View>
+            <NouText className="text-lg font-semibold mb-2">{t('modals.publicSearch')}</NouText>
+            <NouText className="mb-4 text-sm text-zinc-600 dark:text-gray-400">{t('modals.publicSearchHint')}</NouText>
+            <View className="flex-row items-center overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900">
+              <NouMenu
+                // The iOS menu takes a symbol for its trigger; the placeholder names the chosen service there.
+                trigger={
+                  isIos ? (
+                    'chevron.down'
+                  ) : (
+                    <View className="h-11 flex-row items-center gap-0.5 border-r border-zinc-300 dark:border-zinc-700 pl-3 pr-1.5">
+                      {services[searchServiceId]?.[1]()}
+                      <MaterialIcons name="arrow-drop-down" size={18} color={isDark ? gray.gray11 : tw('#52525b')} />
+                    </View>
+                  )
+                }
+                items={searchServiceIds.map((serviceId) => ({
+                  label: services[serviceId]?.[0] ?? serviceId,
+                  icon: services[serviceId]?.[1](),
+                  handler: () => settings$.setSelectedPublicSearchService(serviceId),
+                }))}
+              />
+              <TextInput
+                className="h-11 flex-1 px-3 py-0 text-sm text-zinc-900 dark:text-white"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={onSearch}
+                returnKeyType="search"
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder={t('modals.publicSearchPlaceholder', { service: services[searchServiceId]?.[0] })}
+                placeholderTextColor={isDark ? gray.gray11 : tw('#52525b')}
+              />
+              <Pressable
+                onPress={onSearch}
+                disabled={!searchUrl}
+                accessibilityRole="button"
+                accessibilityLabel={t('modals.searchTab')}
+                className={clsx(
+                  'h-11 w-11 items-center justify-center border-l border-zinc-300 dark:border-zinc-700 active:bg-zinc-200 dark:active:bg-zinc-800',
+                  !searchUrl && 'opacity-40',
+                )}
+              >
+                <MaterialIcons name="search" size={18} color={isDark ? gray.gray11 : tw('#52525b')} />
+              </Pressable>
+            </View>
+          </View>
+        ) : selectedTab === 'download' ? (
           <View>
             <NouText className="text-lg font-semibold mb-4">{t('modals.downloadVideo')}</NouText>
             <NouText className="mb-4 text-sm text-zinc-600 dark:text-gray-200">Support Facebook, Instagram, TikTok and X</NouText>

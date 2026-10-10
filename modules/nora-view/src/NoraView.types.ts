@@ -33,6 +33,8 @@ export type NoraViewProps = {
   visible?: boolean
   /** Emit `scroll` messages per touch sample. Android only; off unless a setting reads them. */
   scrollEvents?: boolean
+  /** Load a tapped app link to a site Nora shows in the tab instead of handing it to another app. Android only. */
+  openAppLinksInTab?: boolean
   onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
   onMessage?: (event: { nativeEvent: OnMessageEventPayload }) => void
 }
