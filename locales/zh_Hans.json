@@ -307,7 +307,11 @@
       "protectIp": "防止 WebRTC IP 泄漏",
       "protectIpHint": "阻止网页通过 WebRTC 发现您的真实 IP 地址，WebRTC 会绕过代理和 VPN。使用中继服务器的通话仍可正常工作；如果视频或语音通话无法连接，请关闭此功能。此设置将在下次页面加载时生效。"
     },
-    "pullToRefresh": "下拉以重新加载页面"
+    "pullToRefresh": "下拉以重新加载页面",
+    "dynamicColor": {
+      "label": "动态配色",
+      "hint": "使用您的系统调色板。"
+    }
   },
   "tabs": {
     "new": "新标签页",
@@ -358,7 +362,8 @@
     "clearDataConfirm": "清除“{{name}}”的所有浏览数据？这将使您退出登录并关闭使用此配置文件的标签页。",
     "deleteConfirm": "删除“{{name}}”？这将清除其存储的浏览数据，并关闭使用此配置文件的标签页。",
     "exportCookies": "导出配置文件 Cookie",
-    "exportCookiesConfirm": "导出“{{name}}”的所有 Cookie？该文件可能包含此配置文件中所有网站的登录会话。请妥善保管。"
+    "exportCookiesConfirm": "导出“{{name}}”的所有 Cookie？该文件可能包含此配置文件中所有网站的登录会话。请妥善保管。",
+    "currentProfile": "配置文件：{{name}}"
   },
   "sync": {
     "label": "同步",
@@ -506,5 +511,13 @@
       "noPinHint": "在“设置”→“使用限制”中设置 PIN 码以提前解锁。"
     },
     "emptyHint": "添加限制以开始跟踪每日浏览时间。"
+  },
+  "upgrade": {
+    "check": "检查更新",
+    "checking": "正在检查更新…",
+    "available": "Nora {{version}} 可用。要打开发布页面下载更新吗？",
+    "download": "打开下载页面",
+    "upToDate": "Nora {{version}} 已是最新版本。",
+    "failed": "无法检查更新。请重试。"
   }
 }
