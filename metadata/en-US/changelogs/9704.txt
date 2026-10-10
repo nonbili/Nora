@@ -1,0 +1,4 @@
+- Anonymous mode to hide sign-in and open-in-app prompts
+- Search public posts without signing in
+- Add default video speed setting
+- Translation updates
