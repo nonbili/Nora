@@ -2,7 +2,8 @@
   "about": {
     "label": "關於",
     "code": "原始碼",
-    "donate": "捐助"
+    "donate": "捐助",
+    "hint": "版本資訊，原始碼，及支援連結。"
   },
   "bookmarks": {
     "label": "書籤"
@@ -12,7 +13,9 @@
     "closeAll": "關閉全部",
     "download": "下載",
     "openUrl": "開啟網址",
-    "open": "開啟"
+    "open": "開啟",
+    "confirm": "確認",
+    "save": "儲存"
   },
   "menus": {
     "close": "關閉",
@@ -26,7 +29,12 @@
     "scroll": "回到頂部",
     "share": "分享",
     "signOut": "登出",
-    "tools": "工具"
+    "tools": "工具",
+    "blockAds": "阻擋此網站廣告",
+    "clearSiteData": "清除網站資料",
+    "duplicate": "複製分頁",
+    "more": "更多",
+    "addToHomeScreen": "新增至主畫面"
   },
   "modals": {
     "downloadVideo": "下載影片"
@@ -59,18 +67,91 @@
       "light": "淺色",
       "hint": "如果變更未在網頁檢視中反映出來，請手動重新啟動。"
     },
-    "injectCookie": "注入 Cookie"
+    "injectCookie": "注入 Cookie",
+    "userStyles": {
+      "scripts": {
+        "import": "匯入",
+        "importFailed": "匯入失敗",
+        "pinToHeader": "釘選至工具列"
+      },
+      "label": "使用者樣式與腳本",
+      "importCss": "匯入CSS",
+      "importFailed": "匯入CSS失敗",
+      "preview": "預覽",
+      "previewApplied": "已套用預覽",
+      "copyFailed": "複製CSS失敗"
+    },
+    "backup": {
+      "importConfirm": "將取代目前的設定、書籤、使用者樣式及自訂腳本。確定繼續嗎？"
+    }
   },
   "sync": {
     "label": "同步",
     "hint": "高級使用者可以在手機和電腦之間同步書籤和設定。",
     "currentPlan": "目前計劃",
-    "managePlan": "管理計劃"
+    "managePlan": "管理方案",
+    "freePlan": "免費方案",
+    "privacyPolicy": "隱私權政策",
+    "signInRequired": "登入以繼續。",
+    "deleteAccount": "刪除帳號"
   },
   "tabs": {
     "new": "新分頁"
   },
   "toast": {
     "pinned": "已釘選至新分頁"
+  },
+  "upgrade": {
+    "check": "檢查更新",
+    "checking": "正在檢查更新…",
+    "available": "Nora {{version}} 可更新。要打開發布頁面下載更新嗎？",
+    "download": "打開下載頁面",
+    "upToDate": "Nora {{version}} 已更新至最新版。",
+    "failed": "無法檢查更新。請再試一次。"
+  },
+  "changelog": {
+    "label": "更新日誌",
+    "loading": "載入更新日誌中...",
+    "error": "載入更新日誌失敗。",
+    "retry": "重試",
+    "empty": "無更新日誌。"
+  },
+  "common": {
+    "about": "關於",
+    "edit": "編輯",
+    "theme": "主題"
+  },
+  "views": {
+    "desktop": {
+      "blankTab": "空白分頁"
+    }
+  },
+  "usageLimits": {
+    "editor": {
+      "dailyLimit": "每日用量限額",
+      "hours": "小時",
+      "minutes": "分鐘",
+      "scope": "套用至",
+      "add": "新增",
+      "errorMinutes": "請設定至少1分鐘的每日用量限額",
+      "errorScope": "請選擇至少一個服務或套用至整個App",
+      "addTitle": "新增用量限額",
+      "editTitle": "編輯用量限額",
+      "name": "名稱",
+      "namePlaceholder": "例如：社交媒體",
+      "defaultName": "限額"
+    },
+    "pin": {
+      "label": "PIN碼",
+      "hint": "需要設置PIN碼來管理用量限額，當達到限額時則用以解鎖。用量限額會在當地時間午夜重置。"
+    },
+    "deleteConfirm": "刪除此用量限額？",
+    "scope": {
+      "all": "整個App",
+      "none": "未選擇服務"
+    },
+    "empty": "尚未設置用量限額。",
+    "emptyHint": "設定限額以追蹤每日瀏覽時間。",
+    "usageLine": "今日用量: {{limit}} 之中的 {{used}}"
   }
 }

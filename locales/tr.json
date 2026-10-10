@@ -334,7 +334,11 @@
       "protectIp": "WebRTC IP sızıntılarını önle",
       "protectIpHint": "Vekil sunucu ve VPN'i atlayan WebRTC aracılığıyla sayfaların gerçek IP adresinizi tespit etmesini engeller. Aktarım sunucusu kullanan aramalar çalışmaya devam eder; bir video veya sesli arama bağlantısı kurulamıyorsa bu özelliği devre dışı bırakın. Bir sonraki sayfa yüklemesinde etkili olur."
     },
-    "pullToRefresh": "Sayfayı yeniden yüklemek için aşağı kaydır"
+    "pullToRefresh": "Sayfayı yeniden yüklemek için aşağı kaydır",
+    "dynamicColor": {
+      "label": "Değişken renk",
+      "hint": "Sistem renk paletini kullan."
+    }
   },
   "sync": {
     "label": "Senkronize et",

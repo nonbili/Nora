@@ -283,7 +283,11 @@
       "protectIp": "Empêcher les fuites d'IP WebRTC",
       "protectIpHint": "Empêche les pages de découvrir votre adresse IP réelle via WebRTC, qui contourne le proxy et le VPN. Les appels utilisant un serveur de relais continuent de fonctionner ; désactivez ceci si un appel vidéo ou vocal échoue à se connecter. Prend effet au prochain chargement de page."
     },
-    "pullToRefresh": "Tirez vers le bas pour recharger la page"
+    "pullToRefresh": "Tirez vers le bas pour recharger la page",
+    "dynamicColor": {
+      "label": "Couleur dynamique",
+      "hint": "Utilise votre palette de couleurs système."
+    }
   },
   "changelog": {
     "label": "Journal des modifs",

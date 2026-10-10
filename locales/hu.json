@@ -383,7 +383,11 @@
       "hint": "Egy nyelv kiválasztása vagy kövesse a rendszer nyelvét."
     },
     "injectCookie": "Süti hozzáadása",
-    "pullToRefresh": "Húzza le az oldal újratöltéséhez"
+    "pullToRefresh": "Húzza le az oldal újratöltéséhez",
+    "dynamicColor": {
+      "label": "Dinamikus szín",
+      "hint": "Rendszer színpalettájának használata."
+    }
   },
   "sync": {
     "label": "Szinkronizálás",

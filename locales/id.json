@@ -236,7 +236,11 @@
       "system": "Sistem",
       "hint": "Pilih bahasa atau ikuti bahasa sistem."
     },
-    "injectCookie": "Suntik cookie"
+    "injectCookie": "Suntik cookie",
+    "dynamicColor": {
+      "label": "Warna dinamis",
+      "hint": "Gunakan palet warna sistem Anda."
+    }
   },
   "about": {
     "code": "Kode sumber",
@@ -381,7 +385,8 @@
     "clearDataConfirm": "Hapus semua data perambanan untuk \"{{name}}\"? Ini akan mengeluarkan Anda dan menutup tab yang menggunakan profil ini.",
     "exportCookies": "Ekspor cookie profil",
     "exportCookiesConfirm": "Ekspor semua cookie dari \"{{name}}\"? File ini mungkin berisi sesi login untuk setiap situs di profil ini. Simpan secara pribadi.",
-    "deleteConfirm": "Hapus \"{{name}}\"? Ini akan menghapus data perambanan yang tersimpan dan menutup tab yang menggunakan profil ini."
+    "deleteConfirm": "Hapus \"{{name}}\"? Ini akan menghapus data perambanan yang tersimpan dan menutup tab yang menggunakan profil ini.",
+    "currentProfile": "Profil: {{name}}"
   },
   "sync": {
     "label": "Sinkronisasi",
@@ -498,5 +503,13 @@
       "unlock": "Buka kunci untuk hari ini",
       "noPinHint": "Atur PIN di Pengaturan → Batas penggunaan untuk membuka kunci lebih awal."
     }
+  },
+  "upgrade": {
+    "check": "Periksa pembaruan",
+    "checking": "Memeriksa pembaruan…",
+    "available": "Nora {{version}} tersedia. Buka halaman rilis untuk mengunduh pembaruan?",
+    "download": "Buka halaman unduhan",
+    "upToDate": "Nora {{version}} sudah terbaru.",
+    "failed": "Tidak dapat memeriksa pembaruan. Silakan coba lagi."
   }
 }

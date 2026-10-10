@@ -47,7 +47,12 @@
       "renameGroup": "Renomear grupo",
       "tabCount": "{{count}} aba",
       "tabCount_plural": "{{count}} abas",
-      "ungrouped": "Não agrupado"
+      "ungrouped": "Não agrupado",
+      "closeGroup": "Fechar grupo e guias",
+      "ungroup": "Desagrupar",
+      "newGroup": "Novo grupo",
+      "moveToGroup": "Mover para {{name}}",
+      "moveToUngrouped": "Retirar do grupo"
     }
   },
   "blocklist": {
@@ -89,7 +94,9 @@
     "pause": "Pausar aba",
     "resume": "Retomar aba",
     "zoom": "Zoom",
-    "viewInSplitView": "Ver na visualização dividida"
+    "viewInSplitView": "Ver na visualização dividida",
+    "blockAds": "Bloquear propagandas neste site",
+    "addToHomeScreen": "Adicionar à página inicial"
   },
   "modals": {
     "downloadVideo": "Baixar vídeo",
@@ -130,7 +137,14 @@
     "deleteAutoProfileConfirm": "Excluir o perfil automático de {{site}}? Isso limpará os dados de navegação armazenados e fechará as abas que o utilizam.",
     "deleteAllAutoProfiles": "Apagar todos",
     "deleteAllAutoProfilesConfirm": "Excluir todos os {{count}} perfis automáticos? Isso limpará os dados de navegação armazenados e fechará as abas que os utilizam.",
-    "deleteStaleAutoProfiles": "Excluir os não utilizados há 14 dias"
+    "deleteStaleAutoProfiles": "Excluir os não utilizados há 14 dias",
+    "currentProfile": "Perfil: {{name}}",
+    "deleteStaleAutoProfilesConfirm": "Excluir {{count}} perfis automáticos não utilizados nos últimos 14 dias? Isso exclui seus dados de navegação armazenados e fecha as guias que os utilizam.",
+    "clearData": "Excluir dados",
+    "clearDataConfirm": "Excluir todos os dados de navegação do perfil \"{{{name}}\"? Isso encerra sua sessão e fecha as abas associadas a este perfil.",
+    "exportCookies": "Exportar os cookies do perfil",
+    "exportCookiesConfirm": "Deseja exportar todos os cookies de \"{{name}}\"? O arquivo pode conter sessões de login para cada site neste perfil. Mantenha-o privado.",
+    "deleteConfirm": "Deseja excluir \"{{name}}\"? Isso excluirá todos os seus dados de navegação armazenados e irá fechar as guias usando este perfil."
   },
   "settings": {
     "label": "Configurações",
@@ -166,12 +180,51 @@
       "descriptionNative": "Alternância de funcionalidades.",
       "descriptionWeb": "Bloqueio de rede e controles de navegação avançados.",
       "features": "Características"
+    },
+    "zoom": {
+      "label": "Zoom de página",
+      "defaultLabel": "Zoom padrão",
+      "defaultHint": "Defina o nível de zoom padrão para todas as páginas da web.",
+      "siteZoomLabel": "Zoom por site",
+      "usingDefault": "Usando o zoom padrão"
+    },
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "Evita vazamentos de IP do WebRTC",
+      "protectIpHint": "Impede que os sites descubram seu endereço IP real por meio do WebRTC que contorna o proxy e a VPN. As chamadas que utilizam um servidor de retransmissão continuam funcionando; desative essa opção caso uma chamada de vídeo ou voz tenha problemas de conexão. Essa alteração surtirá efeito ao recarregar a página."
+    },
+    "proxy": {
+      "label": "Proxy",
+      "enabled": "Ativar proxy",
+      "type": "Tipo de proxy",
+      "host": "Servidor proxy",
+      "port": "Porta do Proxy",
+      "hostPlaceholder": "por exemplo, 127.0.0.1 ou proxy.example.com",
+      "portPlaceholder": "por exemplo, 1080"
+    },
+    "pullToRefresh": "Puxe para baixo para recarregar a página",
+    "translation": {
+      "enable": "Toque duas vezes no texto para traduzir",
+      "hint": "Toque duas vezes num post, comentário ou parágrafo para traduzi-lo em seu dispositivo.",
+      "targetLanguage": "Traduzir para",
+      "appLanguage": "Aplicativo",
+      "systemLanguage": "Sistema",
+      "notSelected": "Escolha um idioma",
+      "chooseLanguage": "Escolha um idioma de tradução primeiro",
+      "loading": "Traduzindo…",
+      "copy": "Copiar tradução",
+      "copySource": "Copiar código-fonte",
+      "pin": "Fixar tradução",
+      "unpin": "Desafixar tradução",
+      "failed": "Não foi possível traduzir este texto"
     }
   },
   "upgrade": {
     "check": "Verificar atualizações",
     "checking": "Verificando atualizações…",
     "available": "Nora {{version}} está disponível. Você deseja acessar a página do github para baixar a atualização?",
-    "download": "Abrir página de download"
+    "download": "Abrir página de download",
+    "upToDate": "Nora {{version}} está atualizado.",
+    "failed": "Não foi possível conferir se há atualizações. Por favor, tente novamente."
   }
 }
