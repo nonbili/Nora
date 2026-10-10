@@ -15,6 +15,7 @@ import {
 import { toBlocklistSiteKey, updateBlocklistExclusions } from '@/lib/blocklist/policy'
 import { ANONYMOUS_PROFILE_COLOR, ANONYMOUS_PROFILE_ID, ANONYMOUS_PROFILE_NAME } from '@/lib/anonymous'
 import { DEFAULT_PUBLIC_SEARCH_SERVICE_ID, normalizePublicSearchServiceId } from '@/lib/public-search'
+import { normalizeVideoSpeed } from '@/lib/video-speed'
 
 export interface Profile {
   id: string
@@ -65,6 +66,7 @@ export interface Settings {
   allowHttpWebsite: boolean
   inspectable: boolean
   videoEdgeLongPressTo2x: boolean
+  videoDefaultSpeed: number
   pullToRefresh: boolean
   translateOnDoubleTap: boolean
   translationTargetLanguage: string | null
@@ -179,6 +181,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     allowHttpWebsite: bool(value?.allowHttpWebsite, true),
     inspectable: bool(value?.inspectable),
     videoEdgeLongPressTo2x: bool(value?.videoEdgeLongPressTo2x, true),
+    videoDefaultSpeed: normalizeVideoSpeed(value?.videoDefaultSpeed),
     pullToRefresh: bool(value?.pullToRefresh),
     translateOnDoubleTap: bool(value?.translateOnDoubleTap),
     translationTargetLanguage:
@@ -243,6 +246,7 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.videoEdgeLongPressTo2x !== 'boolean') {
     data.videoEdgeLongPressTo2x = true
   }
+  data.videoDefaultSpeed = normalizeVideoSpeed(data.videoDefaultSpeed)
   if (typeof data.pullToRefresh !== 'boolean') {
     data.pullToRefresh = false
   }
@@ -332,6 +336,7 @@ export const settings$: Observable<Store> = observable<Store>({
   allowHttpWebsite: true,
   inspectable: false,
   videoEdgeLongPressTo2x: true,
+  videoDefaultSpeed: 1,
   pullToRefresh: false,
   translateOnDoubleTap: false,
   translationTargetLanguage: null,

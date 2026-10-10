@@ -250,6 +250,7 @@ export const NoraTab: React.FC<{
   const webRtcGuardScript = useValue(webRtcGuardScript$)
   const youTubeGuardScript = useValue(youTubeGuardScript$)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
+  const videoDefaultSpeed = useValue(settings$.videoDefaultSpeed)
   const pullToRefresh = useValue(settings$.pullToRefresh)
   const translateOnDoubleTap = useValue(settings$.translateOnDoubleTap)
   const translationTargetLanguage = useValue(settings$.translationTargetLanguage)
@@ -378,6 +379,7 @@ export const NoraTab: React.FC<{
       const settingsScript = `window.Nora?.setSettings?.(${JSON.stringify({
         doubleTapToToggleHeader: isAndroid && doubleTapToToggleHeader,
         videoEdgeLongPressTo2x,
+        videoDefaultSpeed,
         translateOnDoubleTap: !isWeb && translateOnDoubleTap && Boolean(translationTargetLanguage),
         xDefaultHomeTimeline,
         cosmeticCss: getCosmeticCssForHost(currentHost),
@@ -402,6 +404,7 @@ export const NoraTab: React.FC<{
       doubleTapToToggleHeader,
       tab.url,
       videoEdgeLongPressTo2x,
+      videoDefaultSpeed,
       translateOnDoubleTap,
       translationTargetLanguage,
       xDefaultHomeTimeline,

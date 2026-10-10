@@ -185,6 +185,7 @@
       "portPlaceholder": "e.g. 1080"
     },
     "videoEdgeLongPressTo2x": "Long press on edge to 2x playback",
+    "videoDefaultSpeed": "Default video speed",
     "pullToRefresh": "Pull down to reload page",
     "translation": {
       "enable": "Double-tap text to translate",

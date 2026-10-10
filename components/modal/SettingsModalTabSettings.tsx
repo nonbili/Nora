@@ -43,6 +43,7 @@ import { colors } from '@/lib/colors'
 import { isDynamicColorAvailable } from '@/lib/dynamic-palette'
 import NoraViewModule from '@/modules/nora-view'
 import { useTwColor } from '@/lib/theme'
+import { videoSpeeds } from '@/lib/video-speed'
 
 const headerPositions = ['top', 'bottom'] as const
 const desktopLayoutModes = ['auto', 'on', 'off'] as const
@@ -180,6 +181,24 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                 />
               </SettingsRow>,
             )}
+            <SettingsRow className="items-center flex-row justify-between">
+              <View className="flex-1 pr-3">
+                <NouText>{t('settings.videoDefaultSpeed')}</NouText>
+              </View>
+              <View className="flex-row items-center gap-1">
+                <View className="rounded-lg bg-zinc-100 dark:bg-zinc-950 px-2.5 py-1">
+                  <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{settings.videoDefaultSpeed}x</NouText>
+                </View>
+                <NouMenu
+                  trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
+                  items={videoSpeeds.map((speed) => ({
+                    label: `${speed}x`,
+                    handler: () => settings$.videoDefaultSpeed.set(speed),
+                    metaLabel: settings.videoDefaultSpeed === speed ? '✓' : undefined,
+                  }))}
+                />
+              </View>
+            </SettingsRow>
             {nIf(
               isAndroid || isIos,
               <SettingsRow>
@@ -641,7 +660,9 @@ export const SettingsAppearanceContent = () => {
             <NouText>{t('settings.zoom.defaultLabel') || 'Default zoom'}</NouText>
           </View>
           <View className="flex-row items-center gap-1">
-            <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{settings.defaultZoom}%</NouText>
+            <View className="rounded-lg bg-zinc-100 dark:bg-zinc-950 px-2.5 py-1">
+              <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{settings.defaultZoom}%</NouText>
+            </View>
             <NouMenu
               trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
               items={ZOOM_PRESETS.map((zoom) => ({

@@ -1,5 +1,6 @@
 import { hostHomes } from './css'
 import { noraSettingsEvent } from './nora'
+import { normalizeVideoSpeed, videoLongPressSpeeds } from '../lib/video-speed'
 import { runFacebookFeedController } from './services/facebook'
 import { runXHomeTabsController } from './services/twitter/home-tabs'
 
@@ -15,10 +16,15 @@ function runVideoLongPressScript() {
   const EDGE_RATIO = 0.28
   const EDGE_MIN_WIDTH_PX = 56
   const INDICATOR_ID = '_nora_video_speed_indicator'
-  const SPEEDS = [1.5, 2, 3]
-  const DEFAULT_SPEED_INDEX = 1
   const SPEED_STEP_PX = 48
   let enabled = Boolean(window.Nora?.getSettings?.().videoEdgeLongPressTo2x)
+  // What a video is given as it starts.
+  let defaultSpeed = normalizeVideoSpeed(window.Nora?.getSettings?.().videoDefaultSpeed)
+  // What the pressed video was playing at, and goes back to on release. Usually the default,
+  // but it may be a speed picked in the site's own player.
+  let restingSpeed = 1
+  // What the current long press offers: never the speed already playing.
+  let speeds = videoLongPressSpeeds
   let pendingWasPlaying = false
   let pointerId: number | null = null
   let pendingVideo: HTMLVideoElement | null = null
@@ -29,8 +35,10 @@ function runVideoLongPressScript() {
   let startX = 0
   let startY = 0
   let speedAnchorX = 0
-  let speedIndex = DEFAULT_SPEED_INDEX
+  let anchorIndex = 0
+  let speedIndex = 0
   let lastX = 0
+  const defaultSpeedApplied = new WeakSet<HTMLVideoElement>()
 
   const ensureIndicator = () => {
     let indicator = document.getElementById(INDICATOR_ID) as HTMLDivElement | null
@@ -54,7 +62,7 @@ function runVideoLongPressScript() {
       'display:none',
       'white-space:nowrap',
     ].join(';')
-    for (const speed of SPEEDS) {
+    for (const speed of speeds) {
       const option = document.createElement('span')
       option.textContent = `${speed}x`
       option.style.cssText = [
@@ -88,18 +96,18 @@ function runVideoLongPressScript() {
     // half a step changes speed again. Otherwise a press near the screen edge could never
     // reach the speeds on that side; this way you slide inward, then back.
     const minPos = 0
-    const maxPos = SPEEDS.length - 1
-    const pos = DEFAULT_SPEED_INDEX + (clientX - speedAnchorX) / SPEED_STEP_PX
+    const maxPos = speeds.length - 1
+    const pos = anchorIndex + (clientX - speedAnchorX) / SPEED_STEP_PX
     if (pos < minPos || pos > maxPos) {
       const clampedPos = pos < minPos ? minPos : maxPos
-      speedAnchorX = clientX - (clampedPos - DEFAULT_SPEED_INDEX) * SPEED_STEP_PX
+      speedAnchorX = clientX - (clampedPos - anchorIndex) * SPEED_STEP_PX
     }
-    const nextIndex = Math.min(Math.max(Math.round(pos), 0), SPEEDS.length - 1)
+    const nextIndex = Math.min(Math.max(Math.round(pos), 0), speeds.length - 1)
     if (nextIndex === speedIndex) {
       return
     }
     speedIndex = nextIndex
-    activeVideo.playbackRate = SPEEDS[speedIndex]
+    activeVideo.playbackRate = speeds[speedIndex]
     renderIndicator()
   }
 
@@ -134,7 +142,7 @@ function runVideoLongPressScript() {
   const resetPlayback = () => {
     clearTimer()
     if (activeVideo) {
-      activeVideo.playbackRate = 1
+      activeVideo.playbackRate = restingSpeed
       window.NoraI?.setPullToRefreshSuspended?.(false)
     }
     hideIndicator()
@@ -142,7 +150,6 @@ function runVideoLongPressScript() {
     pendingVideo = null
     pendingWasPlaying = false
     activeVideo = null
-    speedIndex = DEFAULT_SPEED_INDEX
   }
 
   const isInstagramReelPage = () => {
@@ -154,7 +161,7 @@ function runVideoLongPressScript() {
     return Boolean(video && isInstagramReelPage() && pendingWasPlaying)
   }
 
-  const resumeVideoPlayback = (video: HTMLVideoElement | null, playbackRate = 1) => {
+  const resumeVideoPlayback = (video: HTMLVideoElement | null, playbackRate: number) => {
     if (!video || video.ended) {
       return
     }
@@ -235,9 +242,15 @@ function runVideoLongPressScript() {
     clearTimer()
     activeVideo = video
     window.NoraI?.setPullToRefreshSuspended?.(true)
-    speedIndex = DEFAULT_SPEED_INDEX
+    restingSpeed = video.playbackRate
+    speeds = videoLongPressSpeeds.filter((speed) => speed !== restingSpeed)
+    // Starts at 2x, or at 3x when 2x is what already plays.
+    anchorIndex = speeds.indexOf(restingSpeed === 2 ? 3 : 2)
+    speedIndex = anchorIndex
     speedAnchorX = lastX
-    video.playbackRate = SPEEDS[speedIndex]
+    video.playbackRate = speeds[speedIndex]
+    // Built again for each press, as its options follow the speed pressed from.
+    document.getElementById(INDICATOR_ID)?.remove()
     const indicator = ensureIndicator()
     renderIndicator()
     positionIndicator(video)
@@ -347,19 +360,47 @@ function runVideoLongPressScript() {
       return
     }
     if (video === activeVideo) {
-      resumeVideoPlayback(video, SPEEDS[speedIndex])
+      resumeVideoPlayback(video, speeds[speedIndex])
       return
     }
     if (video === pendingVideo && shouldGuardInstagramReelPlayback(video)) {
-      resumeVideoPlayback(video, 1)
+      resumeVideoPlayback(video, video.playbackRate)
+    }
+  }
+
+  // A video starts over at 1x whenever it loads a source, and the next one in a feed is
+  // usually a different element altogether, so the default speed is put back as each begins.
+  // `play` only covers a video whose load was missed: past its first, it is a resume, and
+  // the speed by then may be one picked in the site's own player.
+  const applyDefaultSpeed = (event: Event) => {
+    const video = event.target
+    if (defaultSpeed === 1 || !(video instanceof HTMLVideoElement) || video === activeVideo) {
+      return
+    }
+    if (event.type === 'play' && defaultSpeedApplied.has(video)) {
+      return
+    }
+    defaultSpeedApplied.add(video)
+    if (video.playbackRate !== defaultSpeed) {
+      video.playbackRate = defaultSpeed
     }
   }
 
   window.addEventListener(noraSettingsEvent, (event) => {
-    const detail = (event as CustomEvent<{ videoEdgeLongPressTo2x?: boolean }>).detail
+    const detail = (event as CustomEvent<{ videoEdgeLongPressTo2x?: boolean; videoDefaultSpeed?: number }>).detail
     enabled = Boolean(detail?.videoEdgeLongPressTo2x)
     if (!enabled) {
       resetPlayback()
+    }
+    const nextDefaultSpeed = normalizeVideoSpeed(detail?.videoDefaultSpeed)
+    if (nextDefaultSpeed !== defaultSpeed) {
+      resetPlayback()
+      defaultSpeed = nextDefaultSpeed
+      // The settings land after the page has loaded, so videos may already be playing.
+      document.querySelectorAll('video').forEach((video) => {
+        defaultSpeedApplied.add(video)
+        video.playbackRate = defaultSpeed
+      })
     }
   })
 
@@ -377,6 +418,8 @@ function runVideoLongPressScript() {
   document.addEventListener('touchcancel', onTouchCancel, passiveCapture)
   document.addEventListener('click', onClick, true)
   document.addEventListener('pause', onPause, true)
+  document.addEventListener('play', applyDefaultSpeed, true)
+  document.addEventListener('loadedmetadata', applyDefaultSpeed, true)
   document.addEventListener(
     'contextmenu',
     (event) => {

@@ -17,6 +17,7 @@ export const noraMorePostsEvent = 'nora:more-posts'
 const defaultSettings = {
   doubleTapToToggleHeader: false,
   videoEdgeLongPressTo2x: false,
+  videoDefaultSpeed: 1,
   translateOnDoubleTap: false,
   xDefaultHomeTimeline: 'for-you',
   hideXHomeTimelineTabs: false,
