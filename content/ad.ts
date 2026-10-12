@@ -65,6 +65,156 @@ const hideElement = (element: HTMLElement) => {
   }
 }
 
+// Facebook's mobile reel pager cannot have a slide collapsed at all. Every few reels it
+// re-creates the slides around the viewport and then puts scrollTop back to the value it
+// saved beforehand, on the assumption that nothing above changed height. A collapsed ad
+// comes back at full height in that pass, and hiding it again leaves the pager one reel
+// short of where it was: playback rewinds to the previous clip a few seconds after the
+// swipe. So the slide keeps its box, is blanked, and is stepped over instead.
+const skippedReelAdAttr = 'data-nora-skipped-ad'
+type ReelPagerWatch = { settleSoon: () => void; childrenChanged: () => void }
+const reelPagerWatches = new WeakMap<HTMLElement, ReelPagerWatch>()
+const hasScrollEnd = typeof window !== 'undefined' && 'onscrollend' in window
+
+const isReelSlide = (element: Element | null, scroller: HTMLElement): element is HTMLElement => {
+  return element instanceof HTMLElement && element.offsetHeight > scroller.clientHeight / 2
+}
+
+// `settleSoon` checks, once the pager is at rest, whether it is resting on an ad.
+const watchReelPager = (scroller: HTMLElement) => {
+  const existing = reelPagerWatches.get(scroller)
+  if (existing) {
+    return existing
+  }
+
+  // Where the pager last rested on something other than an ad.
+  let lastRestTop = scroller.scrollTop
+  let settleTimer = 0
+  // Between a scroll event and its scrollend.
+  let scrolling = false
+  let touching = false
+  // Whether the user has started a gesture since the pager last came to rest.
+  let userMoved = false
+  // The way the skip in progress is heading. It holds until the pager rests on a reel or
+  // the user starts another gesture, so a run of ads is crossed in one direction.
+  let skipForward: boolean | null = null
+  // The skip found no reel loaded past the ad yet.
+  let waitingForTarget = false
+
+  const settle = () => {
+    // A finger held still mid-drag is not rest; releasing it settles again.
+    if (touching) {
+      return
+    }
+    const top = scroller.getBoundingClientRect().top
+    const offsetOf = (element: HTMLElement) => element.getBoundingClientRect().top - top
+    const ads = scroller.querySelectorAll<HTMLElement>(`:scope > [${skippedReelAdAttr}]`)
+    const ad = [...ads].find((element) => Math.abs(offsetOf(element)) < element.offsetHeight / 2)
+    if (!ad) {
+      lastRestTop = scroller.scrollTop
+      userMoved = false
+      skipForward = null
+      waitingForTarget = false
+      return
+    }
+    // Keep going the way the user came from, judged by resting positions: the last scroll
+    // delta is no guide, since an abandoned drag snaps back against the swipe. Only a
+    // gesture can mean backward; an ad that appears in place, or that the browser snaps
+    // back onto by itself, is stepped over forward.
+    const forward = skipForward ?? (!userMoved || scroller.scrollTop >= lastRestTop - 1)
+    skipForward = forward
+    userMoved = false
+    let target = forward ? ad.nextElementSibling : ad.previousElementSibling
+    while (target && (!isReelSlide(target, scroller) || target.hasAttribute(skippedReelAdAttr))) {
+      target = forward ? target.nextElementSibling : target.previousElementSibling
+    }
+    // With nothing to land on yet, the blank slide is left in place rather than bouncing
+    // back, and the skip resumes once the pager gains slides.
+    waitingForTarget = !isReelSlide(target, scroller)
+    if (isReelSlide(target, scroller)) {
+      scroller.scrollTo({ top: scroller.scrollTop + offsetOf(target), behavior: 'smooth' })
+    }
+  }
+
+  const settleSoon = () => {
+    clearTimeout(settleTimer)
+    if (!scrolling) {
+      settleTimer = window.setTimeout(settle, 150)
+    }
+  }
+
+  const passive = { passive: true } as const
+  scroller.addEventListener(
+    'scroll',
+    () => {
+      // A scroll in progress settles itself when it ends, so a pending check is dropped.
+      clearTimeout(settleTimer)
+      if (hasScrollEnd) {
+        scrolling = true
+      } else {
+        settleTimer = window.setTimeout(settle, 150)
+      }
+    },
+    passive,
+  )
+  scroller.addEventListener(
+    'scrollend',
+    () => {
+      scrolling = false
+      settle()
+    },
+    passive,
+  )
+
+  const onUserGesture = () => {
+    userMoved = true
+    skipForward = null
+  }
+  const onTouch = (event: TouchEvent) => {
+    touching = event.touches.length > 0
+    if (event.type === 'touchstart') {
+      onUserGesture()
+      // Facebook can replace the slide under the finger, and a detached target ends its
+      // touch without the event ever reaching the pager, so the target is watched too.
+      event.target?.addEventListener('touchend', onTouch as EventListener, passive)
+      event.target?.addEventListener('touchcancel', onTouch as EventListener, passive)
+    } else if (!touching) {
+      settleSoon()
+    }
+  }
+  scroller.addEventListener('touchstart', onTouch, passive)
+  scroller.addEventListener('touchend', onTouch, passive)
+  scroller.addEventListener('touchcancel', onTouch, passive)
+  scroller.addEventListener('wheel', onUserGesture, passive)
+  scroller.addEventListener('keydown', onUserGesture, passive)
+
+  const watch: ReelPagerWatch = {
+    settleSoon,
+    // Reels appended below the viewport raise no scroll event, so a skip that had nowhere
+    // to go is retried when the pager gains slides.
+    childrenChanged: () => {
+      if (waitingForTarget) {
+        settleSoon()
+      }
+    },
+  }
+  reelPagerWatches.set(scroller, watch)
+  return watch
+}
+
+const hideFacebookMobileAd = (element: HTMLElement) => {
+  const scroller = findSnapScroller(element)
+  if (!scroller || element.parentElement !== scroller) {
+    hideElement(element)
+    return
+  }
+  element.setAttribute(skippedReelAdAttr, '1')
+  element.style.visibility = 'hidden'
+  // The slide may be the one already on screen, in which case no scroll is coming to
+  // step over it.
+  watchReelPager(scroller).settleSoon()
+}
+
 const scanFacebookDesktopContainer = (container: HTMLElement) => {
   if (!shouldScanFacebookDesktopContainer(container)) {
     return
@@ -226,6 +376,9 @@ export function hideAds(mutations: MutationRecord[]) {
   for (const mutation of mutations) {
     switch (host) {
       case 'm.facebook.com': {
+        if (mutation.addedNodes.length) {
+          reelPagerWatches.get(mutation.target as HTMLElement)?.childrenChanged()
+        }
         for (const node of mutation.addedNodes.values()) {
           const el = node as HTMLElement
           if (el.dataset?.trackingDurationId) {
@@ -233,7 +386,7 @@ export function hideAds(mutations: MutationRecord[]) {
             // O(subtree) allocation, and there are ~30 labels to test against it.
             const text = el.textContent
             if (text && fbL10nSponsored.some((sponsored) => text.includes(sponsored))) {
-              hideElement(el)
+              hideFacebookMobileAd(el)
             }
           }
         }
