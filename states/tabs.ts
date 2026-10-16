@@ -73,7 +73,7 @@ interface Store {
 
   openTab: (url: string, options?: OpenTabOptions) => string | undefined
   duplicateTab: (tabId: string) => string | undefined
-  closeTab: (index: number, options?: { forget?: boolean }) => void
+  closeTab: (index: number) => void
   closeTabsByIds: (tabIds: string[]) => void
   closeAll: () => void
   deleteProfileData: (profileId: string) => void
@@ -213,8 +213,6 @@ export type OpenTabOptions = {
   profile?: string
   profileMode?: ProfileMode
   source?: 'manual' | 'child' | 'shared' | 'reuse'
-  /** Load the tab without switching to it, for a page that does its work out of sight. */
-  background?: boolean
 }
 
 export type TabActivationReason = 'user' | 'open' | 'close' | 'back' | 'system'
@@ -379,7 +377,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       lastOpenedUrl = ''
     }, 1000)
 
-    if (settings$.oneTabPerSite.get() && !options?.background) {
+    if (settings$.oneTabPerSite.get()) {
       try {
         const newUrl = new URL(url)
         if (newUrl.hostname) {
@@ -433,13 +431,11 @@ export const tabs$: Observable<Store> = observable<Store>({
     if (options?.source === 'child' && options.parentTabId && options.parentTabId !== tab.id) {
       childBackParentByTabId[tab.id] = options.parentTabId
     }
-    if (!options?.background) {
-      tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
-    }
+    tabs$.setActiveTabIndex(tabs$.tabs.length - 1, 'open')
     return tab.id
   },
 
-  closeTab: (index, options) => {
+  closeTab: (index) => {
     const tabs = tabs$.tabs.get()
     const closedTab = tabs[index]
     const tabId = closedTab?.id
@@ -461,10 +457,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       adjacentTabId,
     })
 
-    // A tab the app opened for its own work is not one to offer for reopening.
-    if (!options?.forget) {
-      pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
-    }
+    pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
     tabs$.tabs.splice(index, 1)
     if (tabId in tabs$.orders.get()) {
       tabs$.orders[tabId].delete()
