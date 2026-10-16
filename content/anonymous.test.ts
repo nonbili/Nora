@@ -253,7 +253,15 @@ describe('anonymousRules', () => {
     )
     expect(walls(instagramWall)).toHaveLength(1)
     expect(walls(instagramWall).hasClass('layer')).toBe(true)
-    for (const inside of ['<a href="/p/abc/">post</a>', '<video></video>', '<iframe src="https://example.com/check"></iframe>', '<form><input></form>']) {
+    for (const inside of [
+      '<a href="/p/abc/">post</a>',
+      '<video></video>',
+      '<iframe src="https://example.com/check"></iframe>',
+      '<form><input></form>',
+      '<canvas></canvas>',
+      '<div role="alertdialog">Try again later</div>',
+      '<p aria-live="polite">Something went wrong</p>',
+    ]) {
       const other = cheerio.load(`<body><div class="layer"><div role="dialog">${inside}</div></div></body>`)
       expect(other(instagramWall)).toHaveLength(0)
     }

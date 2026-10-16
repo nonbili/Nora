@@ -53,8 +53,8 @@ export const anonymousRules: AnonymousRule[] = [
       // Desktop site, seen 2026-10-16: "See photos, videos and more from <profile>" and the "Continue watching" wall,
       // which comes back on every scroll once some posts are shown, each in a layer of its own under the body. Hidden
       // with CSS, so that a new one never shows; the page goes on loading posts under it. Not a layer with links,
-      // fields, frames or videos, which a post, a check or a cookie choice would have.
-      'body > div:has(div[role="dialog"]):not(:has(a, input, textarea, select, video, iframe, form))',
+      // fields, frames, videos, a canvas or an alert, which a post, a check, a cookie choice or an error would have.
+      'body > div:has(div[role="dialog"]):not(:has(a, input, textarea, select, video, iframe, form, canvas, [role="alertdialog"], [aria-live]))',
       // Desktop site, seen 2026-10-16: the Log in and Sign up buttons of the top bar. The bar stays, with the logo:
       // the page keeps its room under it.
       '._acum a[href^="/accounts/"]',
