@@ -54,7 +54,7 @@ import {
   loadCosmeticFilters,
 } from '@/lib/blocklist'
 import { blocklist$ } from '@/states/blocklist'
-import { buildAnonymousModeScript, isAnonymousModeActive, isAnonymousProfile } from '@/lib/anonymous'
+import { buildAnonymousModeScript, isAnonymousModeActive, isAnonymousProfile, wantsAnonymousDesktopSite } from '@/lib/anonymous'
 import { getMorePostsPage, needsMorePosts } from '@/lib/more-posts'
 import { isSearchHost, parseLoadMoreRequest } from '@/lib/profile-search'
 import { isInstagramHost } from '@/lib/instagram'
@@ -1130,7 +1130,12 @@ export const NoraTab: React.FC<{
             youTubeGuardScript,
             anonymousModeScript,
           )}
-          useragent={getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)}
+          useragent={
+            // A browser on a computer, and not a phone's without "Mobile": Instagram still takes that for a phone.
+            anonymousActive(host) && wantsAnonymousDesktopSite(host)
+              ? getUserAgent('win32', true)
+              : getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)
+          }
           onLoad={onLoad}
           onMessage={onMessage}
           openAppLinksInTab={anonymousActive(host)}

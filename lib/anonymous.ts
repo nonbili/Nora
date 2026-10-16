@@ -35,6 +35,16 @@ export function isAnonymousModeActive({
 }
 
 /**
+ * Sites the mode asks for as a browser on a computer. Instagram's desktop site keeps loading
+ * a profile's posts for a visitor without an account as the grid is scrolled; its mobile site
+ * stops at the first twelve.
+ */
+export const anonymousDesktopSites = ['instagram.com']
+
+/** Whether a tab in which the mode applies should ask this host for its desktop site. */
+export const wantsAnonymousDesktopSite = (host?: string | null) => isBlocklistExcludedHost(host, anonymousDesktopSites)
+
+/**
  * Hands the page what it needs to apply the mode from document start, before the
  * app has pushed its settings: whether this tab is in the Anonymous profile with
  * the mode on, and the sites it is off for. Like the ad blocking exceptions it

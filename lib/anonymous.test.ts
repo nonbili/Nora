@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test'
-import { ANONYMOUS_PROFILE_ID, buildAnonymousModeScript, isAnonymousModeActive, isAnonymousProfile } from './anonymous'
+import {
+  ANONYMOUS_PROFILE_ID,
+  buildAnonymousModeScript,
+  isAnonymousModeActive,
+  isAnonymousProfile,
+  wantsAnonymousDesktopSite,
+} from './anonymous'
 
 describe('isAnonymousProfile', () => {
   it('matches only the reserved profile id', () => {
@@ -33,6 +39,21 @@ describe('isAnonymousModeActive', () => {
     expect(isAnonymousModeActive({ ...base, disabledHosts: ['reddit.com'] })).toBe(false)
     expect(isAnonymousModeActive({ ...base, host: 'old.reddit.com', disabledHosts: ['reddit.com'] })).toBe(false)
     expect(isAnonymousModeActive({ ...base, disabledHosts: ['x.com'] })).toBe(true)
+  })
+})
+
+describe('wantsAnonymousDesktopSite', () => {
+  it('asks Instagram and its subdomains for the desktop site', () => {
+    expect(wantsAnonymousDesktopSite('instagram.com')).toBe(true)
+    expect(wantsAnonymousDesktopSite('www.instagram.com')).toBe(true)
+  })
+
+  it('leaves other sites, and look-alikes, on their mobile site', () => {
+    expect(wantsAnonymousDesktopSite('www.reddit.com')).toBe(false)
+    expect(wantsAnonymousDesktopSite('notinstagram.com')).toBe(false)
+    expect(wantsAnonymousDesktopSite('instagram.com.evil.example')).toBe(false)
+    expect(wantsAnonymousDesktopSite('')).toBe(false)
+    expect(wantsAnonymousDesktopSite(undefined)).toBe(false)
   })
 })
 
