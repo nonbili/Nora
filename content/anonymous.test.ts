@@ -244,9 +244,9 @@ describe('anonymousRules', () => {
     const facebook = cheerio.load('<div role="dialog"><a href="https://m.facebook.com/login/?next=x">Log in</a></div>')
     expect(facebook('div[role="dialog"]:has(a[href*="/login"])')).toHaveLength(1)
 
-    const instagramWall = anonymousRules
-      .find((rule) => rule.hosts[0] === 'instagram.com')!
-      .hide!.find((selector) => selector.startsWith('body > div'))!
+    const instagramHide = (start: string) =>
+      anonymousRules.find((rule) => rule.hosts[0] === 'instagram.com')!.hide!.find((selector) => selector.startsWith(start))!
+    const instagramWall = instagramHide('body > div')
     const walls = cheerio.load(
       '<body><div id="mount_0_0"><main><a href="/p/abc/">post</a></main></div>' +
         '<div class="layer"><div role="dialog"><img src="pic.jpg"><span>Continue watching</span><div role="button">Sign up</div><div role="button">Log in</div></div></div></body>',
@@ -271,11 +271,11 @@ describe('anonymousRules', () => {
       '<section><div class="_acum"><a href="/">logo</a><a href="/accounts/login/?next=%2Fnasa%2F&source=desktop_nav">Log in</a>' +
         '<a href="/accounts/emailsignup/">Sign up</a></div><main><a href="/accounts/login/">elsewhere</a></main></section>',
     )
-    expect(topBar('._acum a[href^="/accounts/"]').map((_, link) => topBar(link).text()).get()).toEqual(['Log in', 'Sign up'])
+    expect(topBar(instagramHide('._acum')).map((_, link) => topBar(link).text()).get()).toEqual(['Log in', 'Sign up'])
 
     const tabs = (count: number) =>
       cheerio.load(`<main><div role="tablist">${['Posts', 'Reels', 'Tagged'].slice(0, count).map((tab) => `<div><a href="#">${tab}</a></div>`).join('')}</div></main>`)
-    const taggedSelector = 'main [role="tablist"] > :nth-child(3):last-child'
+    const taggedSelector = instagramHide('main [role="tablist"]')
     expect(tabs(3)(taggedSelector).text()).toBe('Tagged')
     expect(tabs(2)(taggedSelector)).toHaveLength(0)
 
