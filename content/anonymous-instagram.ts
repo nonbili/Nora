@@ -4,10 +4,9 @@ import { isModeOn } from './anonymous'
 const POST_PAGE = new RegExp(`^/(?:${INSTAGRAM_USERNAME_PATTERN}/)?(${INSTAGRAM_POST_KINDS.join('|')})/([A-Za-z0-9_-]{5,})/?$`)
 
 /**
- * Where a post's own page should be shown instead: its embed page. The page Instagram
- * gives a visitor without an account asks for the app in place of the post, or has no
- * player; the embed page has the player and needs nothing. Null for any other page, and
- * for the embed page itself.
+ * Where a post's own page should be shown instead: its embed page. A visitor without an
+ * account gets the post behind a sign-up dialog; the embed page has the player and needs
+ * nothing. Null for any other page, and for the embed page itself.
  */
 export function getEmbedUrlForPage(hostname: string, pathname: string) {
   if (!isInstagramHost(hostname)) {
@@ -20,9 +19,12 @@ export function getEmbedUrlForPage(hostname: string, pathname: string) {
 
 /** The embed page of the post a link on Instagram leads to, or null for a link to anything else. */
 export function getLinkedPostEmbedUrl(href: string | null | undefined, base: string) {
+  if (!href) {
+    return null
+  }
   try {
-    const url = new URL(href || '', base)
-    return href ? getEmbedUrlForPage(url.hostname, url.pathname) : null
+    const url = new URL(href, base)
+    return getEmbedUrlForPage(url.hostname, url.pathname)
   } catch {
     return null
   }
@@ -78,7 +80,7 @@ const MORE_POSTS_MAX_PRESSES = 5
  * What the anonymous mode changes on Instagram's desktop site: a post opens on its embed page,
  * which has the player, and the parts of a profile that a visitor gets as sign-up prompts work.
  */
-export function initInstagramPostOpener() {
+export function initAnonymousInstagram() {
   if (!isInstagramHost(document.location.hostname)) {
     return () => {}
   }
@@ -87,7 +89,7 @@ export function initInstagramPostOpener() {
   // without loading a page, which is why this is checked again as the page changes.
   let redirectingTo = ''
   const redirectPostPage = () => {
-    if (window.top !== window || !window.Nora?.getSettings?.().anonymousMode) {
+    if (window.top !== window || !isModeOn()) {
       return
     }
     const embedUrl = getEmbedUrlForPage(document.location.hostname, document.location.pathname)
@@ -112,7 +114,7 @@ export function initInstagramPostOpener() {
   document.addEventListener(
     'click',
     (event) => {
-      if (!window.Nora?.getSettings?.().anonymousMode || !/\/embed\/?$/.test(document.location.pathname)) {
+      if (!isModeOn() || !/\/embed\/?$/.test(document.location.pathname)) {
         return
       }
       const link = (event.target as Element | null)?.closest?.('a')

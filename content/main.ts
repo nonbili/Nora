@@ -1,5 +1,5 @@
 import { initAnonymousMode } from './anonymous'
-import { initInstagramPostOpener } from './instagram-posts'
+import { initAnonymousInstagram } from './anonymous-instagram'
 import { blockAds, hideAds } from './ad'
 import { injectCSS } from './css'
 import { injectScript } from './script'
@@ -33,12 +33,12 @@ try {
 
 async function initObserver() {
   const scheduleAnonymousScan = initAnonymousMode()
-  const checkInstagramPostPage = initInstagramPostOpener()
+  const onInstagramPageChange = initAnonymousInstagram()
   const observer = new MutationObserver((mutations) => {
     hideAds(mutations)
     handleDialogs()
     scheduleAnonymousScan()
-    checkInstagramPostPage()
+    onInstagramPageChange()
   })
   observer.observe(document.documentElement, {
     childList: true,

@@ -6,7 +6,7 @@ import {
   getProfileTabPath,
   isMorePostsButtonText,
   isWatchAgainLink,
-} from './instagram-posts'
+} from './anonymous-instagram'
 
 describe('getGridUsername', () => {
   it('is the profile of a profile and its tabs', () => {
