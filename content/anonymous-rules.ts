@@ -58,6 +58,8 @@ export const anonymousRules: AnonymousRule[] = [
       // Desktop site, seen 2026-10-16: the Log in and Sign up buttons of the top bar. The bar stays, with the logo:
       // the page keeps its room under it.
       '._acum a[href^="/accounts/"]',
+      // Desktop site, seen 2026-10-16: the Tagged tab, the last of Posts, Reels and Tagged, which needs an account.
+      'main [role="tablist"] > :nth-child(3):last-child',
     ],
     overlays: [
       'div[role="dialog"]:has(a[href^="intent://"])',

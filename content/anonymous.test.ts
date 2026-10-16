@@ -275,6 +275,12 @@ describe('anonymousRules', () => {
     )
     expect(topBar('._acum a[href^="/accounts/"]').map((_, link) => topBar(link).text()).get()).toEqual(['Log in', 'Sign up'])
 
+    const tabs = (count: number) =>
+      cheerio.load(`<main><div role="tablist">${['Posts', 'Reels', 'Tagged'].slice(0, count).map((tab) => `<div><a href="#">${tab}</a></div>`).join('')}</div></main>`)
+    const taggedSelector = 'main [role="tablist"] > :nth-child(3):last-child'
+    expect(tabs(3)(taggedSelector).text()).toBe('Tagged')
+    expect(tabs(2)(taggedSelector)).toHaveLength(0)
+
     const threads = cheerio.load('<div role="dialog" aria-modal="true"><span>Thread on Threads</span><div role="button">Download</div></div>')
     const threadsSelector = anonymousRules.find((rule) => rule.hosts[0] === 'threads.com')!.portals![0]
     expect(threads(threadsSelector)).toHaveLength(1)
