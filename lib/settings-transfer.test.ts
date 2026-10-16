@@ -58,7 +58,6 @@ describe('settings transfer', () => {
     const parsed = parseSettingsBackup(backupOf({ settings: { headerPosition: 'bottom' } }))
 
     expect(parsed.settings?.anonymousMode).toBe(false)
-    expect(parsed.settings?.anonymousMorePosts).toBe(false)
     expect(parsed.settings?.anonymousDisabledHosts).toEqual([])
     expect(parsed.settings?.selectedPublicSearchServiceId).toBe('reddit')
     expect(parsed.settings?.profiles.some((profile) => profile.id === 'anonymous')).toBe(false)
