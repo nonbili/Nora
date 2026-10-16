@@ -88,6 +88,16 @@ export function getEmbedUrlForPage(hostname: string, pathname: string) {
   return match ? `https://www.instagram.com/${match[1]}/${match[2]}/embed/` : null
 }
 
+/** The embed page of the post a link on Instagram leads to, or null for a link to anything else. */
+export function getLinkedPostEmbedUrl(href: string | null | undefined, base: string) {
+  try {
+    const url = new URL(href || '', base)
+    return href ? getEmbedUrlForPage(url.hostname, url.pathname) : null
+  } catch {
+    return null
+  }
+}
+
 /** The link an embed page puts over a video that has ended, to watch it again on Instagram. */
 export const isWatchAgainLink = (href: string | null | undefined) =>
   Boolean(href && /[?&]utm_campaign=embed_video_watch_again(&|$)/.test(href))
@@ -181,7 +191,11 @@ export function initInstagramPostOpener() {
         return
       }
       const pictures = target instanceof HTMLImageElement ? [target] : [...target.querySelectorAll('img')]
-      const url = pictures.length === 1 ? getPostEmbedUrl(pictures[0].currentSrc || pictures[0].src) : null
+      // The desktop site's tiles are links to their posts, which it opens behind a sign-up dialog.
+      const link = pictures.length === 1 ? target.closest('a[href]') : null
+      const url =
+        getLinkedPostEmbedUrl(link?.getAttribute('href'), document.location.href) ??
+        (pictures.length === 1 ? getPostEmbedUrl(pictures[0].currentSrc || pictures[0].src) : null)
       if (url) {
         event.preventDefault()
         event.stopImmediatePropagation()

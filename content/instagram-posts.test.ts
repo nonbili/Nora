@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   getEmbedUrlForPage,
+  getLinkedPostEmbedUrl,
   getMediaId,
   getPostEmbedUrl,
   getPostUrl,
@@ -78,6 +79,24 @@ describe('isProfileGridPage', () => {
     expect(isProfileGridPage('www.instagram.com', '/explore/')).toBe(false)
     expect(isProfileGridPage('www.instagram.com', '/p/abc/')).toBe(false)
     expect(isProfileGridPage('www.facebook.com', '/nasa/')).toBe(false)
+  })
+})
+
+describe('getLinkedPostEmbedUrl', () => {
+  const base = 'https://www.instagram.com/natgeo/'
+
+  it('is the embed page of a post or reel a link leads to', () => {
+    expect(getLinkedPostEmbedUrl('/natgeo/reel/DXlz3SYANc0/', base)).toBe('https://www.instagram.com/reel/DXlz3SYANc0/embed/')
+    expect(getLinkedPostEmbedUrl('/p/DeKe4mpkipT/', base)).toBe('https://www.instagram.com/p/DeKe4mpkipT/embed/')
+    expect(getLinkedPostEmbedUrl('https://www.instagram.com/p/DeKe4mpkipT/', base)).toBe('https://www.instagram.com/p/DeKe4mpkipT/embed/')
+  })
+
+  it('is null for a link to anything else, or none', () => {
+    expect(getLinkedPostEmbedUrl('/natgeo/', base)).toBeNull()
+    expect(getLinkedPostEmbedUrl('/accounts/login/', base)).toBeNull()
+    expect(getLinkedPostEmbedUrl('https://example.com/p/DeKe4mpkipT/', base)).toBeNull()
+    expect(getLinkedPostEmbedUrl(null, base)).toBeNull()
+    expect(getLinkedPostEmbedUrl('', base)).toBeNull()
   })
 })
 
