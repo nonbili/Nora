@@ -1,77 +1,5 @@
 import { INSTAGRAM_POST_KINDS, INSTAGRAM_USERNAME_PATTERN, getProfileUsername, isInstagramHost } from '../lib/instagram'
 
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
-// A media id is a number of up to 19 digits, which starts with the time it was made: the milliseconds
-// since this moment, shifted by 23 bits. Some image addresses carry the id of the account after it,
-// with nothing in between, so where the id ends is told by the time it would stand for.
-const INSTAGRAM_EPOCH_MS = 1314220021721n
-const MIN_MEDIA_ID_LENGTH = 15
-const MAX_MEDIA_ID_LENGTH = 19
-const DAY_MS = 86_400_000n
-
-/**
- * The id at the start of a run of digits: the longest start of it that stands for a time that has
- * been, which is the whole of it unless more digits were glued on. Null when none does.
- */
-export function pickMediaId(digits: string, now = Date.now()) {
-  for (let length = Math.min(digits.length, MAX_MEDIA_ID_LENGTH); length >= MIN_MEDIA_ID_LENGTH; length--) {
-    const id = digits.slice(0, length)
-    if ((BigInt(id) >> 23n) + INSTAGRAM_EPOCH_MS <= BigInt(now) + DAY_MS) {
-      return id
-    }
-  }
-  return null
-}
-
-/**
- * The id of the post a picture belongs to, read from its address: Instagram marks
- * every picture with the id of its post, base64 encoded, as `ig_cache_key`. Null for
- * a picture that is not a post's, such as a profile photo.
- */
-export function getMediaId(src: string, now = Date.now()) {
-  try {
-    const key = new URL(src).searchParams.get('ig_cache_key')
-    if (!key) {
-      return null
-    }
-    let encoded = key.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')
-    while (encoded.length % 4) {
-      encoded += '='
-    }
-    const digits = atob(encoded).match(/^\d+/)?.[0]
-    return digits ? pickMediaId(digits, now) : null
-  } catch {
-    return null
-  }
-}
-
-/** The short code in a post's address, which is its id written with 64 characters. */
-export function toShortcode(mediaId: string) {
-  if (!/^\d{1,19}$/.test(mediaId)) {
-    return null
-  }
-  let rest = BigInt(mediaId)
-  let code = ''
-  while (rest > 0n) {
-    code = ALPHABET[Number(rest % 64n)] + code
-    rest /= 64n
-  }
-  return code || null
-}
-
-/** The embed page of the post that a picture on a profile belongs to, or null. */
-export function getPostEmbedUrl(src: string, now = Date.now()) {
-  const url = getPostUrl(src, now)
-  return url ? getEmbedUrlForPage('www.instagram.com', new URL(url).pathname) : null
-}
-
-/** The address of the post that a picture on a profile belongs to, or null. */
-export function getPostUrl(src: string, now = Date.now()) {
-  const id = getMediaId(src, now)
-  const code = id && toShortcode(id)
-  return code ? `https://www.instagram.com/p/${code}/` : null
-}
-
 const POST_PAGE = new RegExp(`^/(?:${INSTAGRAM_USERNAME_PATTERN}/)?(${INSTAGRAM_POST_KINDS.join('|')})/([A-Za-z0-9_-]{5,})/?$`)
 
 /**
@@ -135,9 +63,8 @@ const MORE_POSTS_PRESS_AGAIN_MS = 1500
 const MORE_POSTS_MAX_PRESSES = 5
 
 /**
- * A visitor without an account gets a grid whose tiles are pictures with no link, and
- * a tap on one goes to a page asking for the app. The post is known all the same, from
- * the picture's address, so a tap opens it in this tab, as a tap on a link would.
+ * What the anonymous mode changes on Instagram's desktop site: a post opens on its embed page,
+ * which has the player, and the parts of a profile that a visitor gets as sign-up prompts work.
  */
 export function initInstagramPostOpener() {
   if (!isInstagramHost(document.location.hostname)) {
@@ -191,20 +118,15 @@ export function initInstagramPostOpener() {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
         return
       }
-      // Only what was tapped is looked at, not what lies under it. A tile may sit inside a link of the
-      // page's own, which would take the tap to the app, so a link around the picture is no reason to
-      // leave it alone; but a button over the grid, or the sign-up link under which the grid goes on,
-      // keeps doing what the page made it do.
+      // A tile is a link to its post, which the site opens behind a sign-up dialog. Only what was
+      // tapped counts: one picture, in a link to a post.
       const target = event.target
       if (!(target instanceof Element)) {
         return
       }
       const pictures = target instanceof HTMLImageElement ? [target] : [...target.querySelectorAll('img')]
-      // The desktop site's tiles are links to their posts, which it opens behind a sign-up dialog.
       const link = pictures.length === 1 ? target.closest('a[href]') : null
-      const url =
-        getLinkedPostEmbedUrl(link?.getAttribute('href'), document.location.href) ??
-        (pictures.length === 1 ? getPostEmbedUrl(pictures[0].currentSrc || pictures[0].src) : null)
+      const url = getLinkedPostEmbedUrl(link?.getAttribute('href'), document.location.href)
       if (url) {
         event.preventDefault()
         event.stopImmediatePropagation()
