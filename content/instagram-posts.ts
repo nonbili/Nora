@@ -31,12 +31,9 @@ export function getLinkedPostEmbedUrl(href: string | null | undefined, base: str
 export const isWatchAgainLink = (href: string | null | undefined) =>
   Boolean(href && /[?&]utm_campaign=embed_video_watch_again(&|$)/.test(href))
 
-/** The profile a profile page or one of its tabs is of, or null for any other page. */
-const getGridUsername = (hostname: string, pathname: string) =>
+/** The profile a profile page or one of its tabs, the pages whose pictures are a grid of posts, is of; null for any other page. */
+export const getGridUsername = (hostname: string, pathname: string) =>
   getProfileUsername(hostname, pathname.replace(/\/(reels|tagged)\/?$/, '/'))
-
-/** A profile or one of its tabs, the pages whose pictures are a grid of posts. */
-export const isProfileGridPage = (hostname: string, pathname: string) => getGridUsername(hostname, pathname) !== null
 
 // Characters a profile name can have, so that the name is only found standing on its own.
 const NAME_CHARACTER = /[a-z0-9._]/
@@ -122,50 +119,37 @@ export function initInstagramPostOpener() {
     true,
   )
 
-  document.addEventListener(
-    'click',
-    (event) => {
-      if (!window.Nora?.getSettings?.().anonymousMode || !isProfileGridPage(document.location.hostname, document.location.pathname)) {
-        return
-      }
-      // The tap is the person's own, with nothing held: a held key or another button asks for something else.
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-        return
-      }
-      // A tile is a link to its post, which the site opens behind a sign-up dialog. Only what was
-      // tapped counts: one picture, in a link to a post.
-      const target = event.target
-      if (!(target instanceof Element)) {
-        return
-      }
-      const pictures = target instanceof HTMLImageElement ? [target] : [...target.querySelectorAll('img')]
-      const link = pictures.length === 1 ? target.closest('a[href]') : null
-      const url = getLinkedPostEmbedUrl(link?.getAttribute('href'), document.location.href)
-      if (url) {
-        event.preventDefault()
-        event.stopImmediatePropagation()
-        // In this tab, on the page that has the player, so that going back lands on the profile.
-        document.location.assign(url)
-      }
-    },
-    true,
-  )
-
-  // The Reels tab of a visitor opens a sign-up dialog instead of the reels, which are there at their address.
+  // A tap on a profile: a tile, a link to its post that the site opens behind a sign-up dialog, opens
+  // on the embed page in this tab, so that going back lands on the profile; the Reels tab, a
+  // placeholder that opens a sign-up dialog, opens the reels at their address.
   document.addEventListener(
     'click',
     (event) => {
       const username = getGridUsername(document.location.hostname, document.location.pathname)
-      const tab = event.target instanceof Element ? event.target.closest('main [role="tablist"] a[href="#"]') : null
-      if (!tab || !username || !window.Nora?.getSettings?.().anonymousMode) {
+      // The person's own tap, with nothing held: a held key or another button asks for something else.
+      if (
+        window.top !== window ||
+        !username ||
+        !isModeOn() ||
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        !(event.target instanceof Element)
+      ) {
         return
       }
-      const tabs = [...tab.closest('[role="tablist"]')!.querySelectorAll('a')]
-      const path = getProfileTabPath(username, tabs.indexOf(tab as HTMLAnchorElement), tabs.length)
-      if (path) {
+      const tab = event.target.closest('main [role="tablist"] a[href="#"]')
+      const tabs = tab ? [...tab.closest('[role="tablist"]')!.querySelectorAll('a')] : []
+      const url = tab
+        ? getProfileTabPath(username, tabs.indexOf(tab as HTMLAnchorElement), tabs.length)
+        : getLinkedPostEmbedUrl(event.target.closest('a[href]')?.getAttribute('href'), document.location.href)
+      if (url) {
         event.preventDefault()
         event.stopImmediatePropagation()
-        document.location.assign(path)
+        document.location.assign(url)
       }
     },
     true,

@@ -1,26 +1,26 @@
 import { describe, expect, it } from 'bun:test'
 import {
   getEmbedUrlForPage,
+  getGridUsername,
   getLinkedPostEmbedUrl,
   getProfileTabPath,
   isMorePostsButtonText,
-  isProfileGridPage,
   isWatchAgainLink,
 } from './instagram-posts'
 
-describe('isProfileGridPage', () => {
-  it('is a profile and its tabs', () => {
-    expect(isProfileGridPage('www.instagram.com', '/nasa/')).toBe(true)
-    expect(isProfileGridPage('www.instagram.com', '/nasa')).toBe(true)
-    expect(isProfileGridPage('www.instagram.com', '/nasa/reels/')).toBe(true)
-    expect(isProfileGridPage('www.instagram.com', '/nasa/tagged/')).toBe(true)
+describe('getGridUsername', () => {
+  it('is the profile of a profile and its tabs', () => {
+    expect(getGridUsername('www.instagram.com', '/nasa/')).toBe('nasa')
+    expect(getGridUsername('www.instagram.com', '/nasa')).toBe('nasa')
+    expect(getGridUsername('www.instagram.com', '/nasa/reels/')).toBe('nasa')
+    expect(getGridUsername('www.instagram.com', '/nasa/tagged/')).toBe('nasa')
   })
 
-  it('is nothing else', () => {
-    expect(isProfileGridPage('www.instagram.com', '/')).toBe(false)
-    expect(isProfileGridPage('www.instagram.com', '/explore/')).toBe(false)
-    expect(isProfileGridPage('www.instagram.com', '/p/abc/')).toBe(false)
-    expect(isProfileGridPage('www.facebook.com', '/nasa/')).toBe(false)
+  it('is null for anything else', () => {
+    expect(getGridUsername('www.instagram.com', '/')).toBeNull()
+    expect(getGridUsername('www.instagram.com', '/explore/')).toBeNull()
+    expect(getGridUsername('www.instagram.com', '/p/abc/')).toBeNull()
+    expect(getGridUsername('www.facebook.com', '/nasa/')).toBeNull()
   })
 })
 
