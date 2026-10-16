@@ -14,7 +14,8 @@ export function getEmbedUrlForPage(hostname: string, pathname: string) {
     return null
   }
   const match = pathname.match(POST_PAGE)
-  return match ? `https://www.instagram.com/${match[1]}/${match[2]}/embed/` : null
+  // A reel is also linked to under /reels/, which has no embed page of its own.
+  return match ? `https://www.instagram.com/${match[1] === 'reels' ? 'reel' : match[1]}/${match[2]}/embed/` : null
 }
 
 /** The embed page of the post a link on Instagram leads to, or null for a link to anything else. */
@@ -97,6 +98,13 @@ export function initInstagramPostOpener() {
       document.location.replace(embedUrl)
     }
   }
+  // A page brought back by going back keeps what it had asked for, though the move was not made in it.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      redirectingTo = ''
+      redirectPostPage()
+    }
+  })
 
   // When a video on an embed page has ended it goes back to the start and offers to watch it
   // again on Instagram, as a link to the post's own page, which asks for the app. Here it plays

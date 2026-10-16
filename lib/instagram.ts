@@ -6,7 +6,7 @@ export const isInstagramHost = (host: string) => host === 'instagram.com' || hos
 export const INSTAGRAM_USERNAME_PATTERN = '[A-Za-z0-9._]{1,30}'
 
 /** The path segments a post's own page can be under. */
-export const INSTAGRAM_POST_KINDS = ['p', 'reel', 'tv']
+export const INSTAGRAM_POST_KINDS = ['p', 'reel', 'reels', 'tv']
 
 // Paths on instagram.com that are a page of their own and not somebody's profile.
 const reservedPaths = new Set([

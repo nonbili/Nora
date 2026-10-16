@@ -87,6 +87,11 @@ describe('getEmbedUrlForPage', () => {
     expect(getEmbedUrlForPage('www.instagram.com', '/tv/DeKe4mpkipT/')).toBe('https://www.instagram.com/tv/DeKe4mpkipT/embed/')
   })
 
+  it('takes a reel linked to under /reels/ to the reel embed page', () => {
+    expect(getEmbedUrlForPage('www.instagram.com', '/reels/DeKe4mpkipT/')).toBe('https://www.instagram.com/reel/DeKe4mpkipT/embed/')
+    expect(getEmbedUrlForPage('www.instagram.com', '/natgeo/reels/')).toBeNull()
+  })
+
   it('also for the address a profile gives its post', () => {
     expect(getEmbedUrlForPage('www.instagram.com', '/artefr/reel/DeKe4mpkipT/')).toBe(
       'https://www.instagram.com/reel/DeKe4mpkipT/embed/',
