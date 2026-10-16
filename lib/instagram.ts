@@ -5,10 +5,6 @@ export const isInstagramHost = (host: string) => host === 'instagram.com' || hos
 /** The characters and length of a profile name, as a pattern to build others from. */
 export const INSTAGRAM_USERNAME_PATTERN = '[A-Za-z0-9._]{1,30}'
 
-const USERNAME = new RegExp(`^${INSTAGRAM_USERNAME_PATTERN}$`)
-
-export const isInstagramUsername = (value: unknown): value is string => typeof value === 'string' && USERNAME.test(value)
-
 /** The path segments a post's own page can be under. */
 export const INSTAGRAM_POST_KINDS = ['p', 'reel', 'tv']
 
