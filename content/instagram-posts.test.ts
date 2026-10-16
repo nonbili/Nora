@@ -4,6 +4,7 @@ import {
   getMediaId,
   getPostEmbedUrl,
   getPostUrl,
+  isMorePostsButtonText,
   isProfileGridPage,
   isWatchAgainLink,
   pickMediaId,
@@ -77,6 +78,23 @@ describe('isProfileGridPage', () => {
     expect(isProfileGridPage('www.instagram.com', '/explore/')).toBe(false)
     expect(isProfileGridPage('www.instagram.com', '/p/abc/')).toBe(false)
     expect(isProfileGridPage('www.facebook.com', '/nasa/')).toBe(false)
+  })
+})
+
+describe('isMorePostsButtonText', () => {
+  it('is the button that names the profile, in any language', () => {
+    expect(isMorePostsButtonText('More posts from natgeo', 'natgeo')).toBe(true)
+    expect(isMorePostsButtonText('Ещё публикации от natgeo', 'natgeo')).toBe(true)
+    expect(isMorePostsButtonText('natgeoの他の投稿', 'natgeo')).toBe(true)
+    expect(isMorePostsButtonText(' More posts from NatGeo ', 'natgeo')).toBe(true)
+  })
+
+  it('is not a button of the profile name alone, one that does not name it, or a long text', () => {
+    expect(isMorePostsButtonText('natgeo', 'natgeo')).toBe(false)
+    expect(isMorePostsButtonText('natgeo ✓', 'natgeo')).toBe(false)
+    expect(isMorePostsButtonText('Follow', 'natgeo')).toBe(false)
+    expect(isMorePostsButtonText('More posts from nasa', 'natgeo')).toBe(false)
+    expect(isMorePostsButtonText(`natgeo ${'a caption that goes on '.repeat(5)}`, 'natgeo')).toBe(false)
   })
 })
 

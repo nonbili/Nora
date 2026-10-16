@@ -92,9 +92,28 @@ export function getEmbedUrlForPage(hostname: string, pathname: string) {
 export const isWatchAgainLink = (href: string | null | undefined) =>
   Boolean(href && /[?&]utm_campaign=embed_video_watch_again(&|$)/.test(href))
 
+/** The profile a profile page or one of its tabs is of, or null for any other page. */
+const getGridUsername = (hostname: string, pathname: string) =>
+  getProfileUsername(hostname, pathname.replace(/\/(reels|tagged)\/?$/, '/'))
+
 /** A profile or one of its tabs, the pages whose pictures are a grid of posts. */
-export const isProfileGridPage = (hostname: string, pathname: string) =>
-  getProfileUsername(hostname, pathname.replace(/\/(reels|tagged)\/?$/, '/')) !== null
+export const isProfileGridPage = (hostname: string, pathname: string) => getGridUsername(hostname, pathname) !== null
+
+/**
+ * The words of the button the desktop site puts under the first posts of a profile, "More posts
+ * from <profile>", which has to be pressed before the grid goes on as it is scrolled. They follow
+ * the page's language, so the button is told by naming the profile among a few other words.
+ */
+export function isMorePostsButtonText(text: string, username: string) {
+  const words = text.trim().toLowerCase()
+  const extra = words.length - username.length
+  return extra >= 3 && extra <= 40 && words.includes(username.toLowerCase())
+}
+
+const MORE_POSTS_CHECK_MS = 500
+// The button is drawn before the page's code has taken it over, and a press then does nothing.
+const MORE_POSTS_PRESS_AGAIN_MS = 1500
+const MORE_POSTS_MAX_PRESSES = 5
 
 /**
  * A visitor without an account gets a grid whose tiles are pictures with no link, and
@@ -173,6 +192,37 @@ export function initInstagramPostOpener() {
     true,
   )
 
-  redirectPostPage()
-  return redirectPostPage
+  // The grid of a visitor stops after the first posts until "More posts" is pressed; here it goes on
+  // by itself, as it does with an account.
+  const presses = new WeakMap<Element, { count: number; at: number }>()
+  let moreTimer: ReturnType<typeof setTimeout> | undefined
+  const pressMorePosts = () => {
+    moreTimer = undefined
+    const username = getGridUsername(document.location.hostname, document.location.pathname)
+    if (window.top !== window || !username || !window.Nora?.getSettings?.().anonymousMode) {
+      return
+    }
+    for (const button of document.querySelectorAll('main [role="button"]')) {
+      if (button.closest('header, a') || !isMorePostsButtonText(button.textContent || '', username)) {
+        continue
+      }
+      // A press that worked takes the button away; one that is still there is pressed again in a while.
+      const last = presses.get(button) ?? { count: 0, at: 0 }
+      if (last.count < MORE_POSTS_MAX_PRESSES && Date.now() - last.at >= MORE_POSTS_PRESS_AGAIN_MS) {
+        presses.set(button, { count: last.count + 1, at: Date.now() })
+        ;(button as HTMLElement).click()
+      }
+      if (presses.get(button)!.count < MORE_POSTS_MAX_PRESSES) {
+        moreTimer ??= setTimeout(pressMorePosts, MORE_POSTS_PRESS_AGAIN_MS)
+      }
+    }
+  }
+
+  const onPageChange = () => {
+    redirectPostPage()
+    moreTimer ??= setTimeout(pressMorePosts, MORE_POSTS_CHECK_MS)
+  }
+
+  onPageChange()
+  return onPageChange
 }
