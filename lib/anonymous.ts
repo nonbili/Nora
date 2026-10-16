@@ -1,4 +1,5 @@
 import { isBlocklistExcludedHost } from './blocklist/policy'
+import { isInstagramHost } from './instagram'
 
 /**
  * The profile that holds browsing done without an account. It is an ordinary
@@ -35,14 +36,11 @@ export function isAnonymousModeActive({
 }
 
 /**
- * Sites the mode asks for as a browser on a computer. Instagram's desktop site keeps loading
- * a profile's posts for a visitor without an account as the grid is scrolled; its mobile site
- * stops at the first twelve.
+ * Whether a tab in which the mode applies should ask this host for its desktop site: Instagram,
+ * whose desktop site keeps loading a profile's posts for a visitor without an account as the grid
+ * is scrolled, where its mobile site stops at the first twelve.
  */
-export const anonymousDesktopSites = ['instagram.com']
-
-/** Whether a tab in which the mode applies should ask this host for its desktop site. */
-export const wantsAnonymousDesktopSite = (host?: string | null) => isBlocklistExcludedHost(host, anonymousDesktopSites)
+export const wantsAnonymousDesktopSite = (host?: string | null) => Boolean(host && isInstagramHost(host))
 
 /**
  * Hands the page what it needs to apply the mode from document start, before the
