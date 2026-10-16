@@ -254,7 +254,7 @@
     "anonymous": {
       "title": "Anonymous mode",
       "enable": "Hide sign-in prompts",
-      "hint": "Hides log in, sign up and open-in-app prompts in the Anonymous profile. Works on {{sites}}."
+      "hint": "Hides log in, sign up and open-in-app prompts in the Anonymous profile. Works on {{sites}}. Instagram opens as its desktop site there, so a profile keeps loading posts as you scroll and posts play without an account."
     },
     "profiles": {
       "description": "Multiple accounts with separate cookies and browsing state.",
