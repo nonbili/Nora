@@ -70,6 +70,14 @@ describe('isMorePostsButtonText', () => {
     expect(isMorePostsButtonText('More posts from nasa', 'natgeo')).toBe(false)
     expect(isMorePostsButtonText(`natgeo ${'a caption that goes on '.repeat(5)}`, 'natgeo')).toBe(false)
   })
+
+  it('needs the name as a word of its own, which a short name rarely is inside other words', () => {
+    expect(isMorePostsButtonText('More posts from g', 'g')).toBe(true)
+    expect(isMorePostsButtonText('Log in', 'g')).toBe(false)
+    expect(isMorePostsButtonText('nbastore deals', 'nba')).toBe(false)
+    expect(isMorePostsButtonText('More posts from nba.store', 'nba')).toBe(false)
+    expect(isMorePostsButtonText('Ещё публикации от nba', 'nba')).toBe(true)
+  })
 })
 
 describe('getEmbedUrlForPage', () => {

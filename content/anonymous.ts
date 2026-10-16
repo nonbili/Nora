@@ -98,7 +98,7 @@ const isFloating = (element: Element) => {
   return position === 'fixed' || position === 'sticky'
 }
 
-const isModeOn = () => Boolean(window.Nora?.getSettings?.().anonymousMode)
+export const isModeOn = () => Boolean(window.Nora?.getSettings?.().anonymousMode)
 
 /** What was hidden for a match, kept to give back when the match goes. */
 interface Handled {

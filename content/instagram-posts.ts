@@ -1,4 +1,5 @@
 import { INSTAGRAM_POST_KINDS, INSTAGRAM_USERNAME_PATTERN, getProfileUsername, isInstagramHost } from '../lib/instagram'
+import { isModeOn } from './anonymous'
 
 const POST_PAGE = new RegExp(`^/(?:${INSTAGRAM_USERNAME_PATTERN}/)?(${INSTAGRAM_POST_KINDS.join('|')})/([A-Za-z0-9_-]{5,})/?$`)
 
@@ -37,15 +38,28 @@ const getGridUsername = (hostname: string, pathname: string) =>
 /** A profile or one of its tabs, the pages whose pictures are a grid of posts. */
 export const isProfileGridPage = (hostname: string, pathname: string) => getGridUsername(hostname, pathname) !== null
 
+// Characters a profile name can have, so that the name is only found standing on its own.
+const NAME_CHARACTER = /[a-z0-9._]/
+
 /**
  * The words of the button the desktop site puts under the first posts of a profile, "More posts
  * from <profile>", which has to be pressed before the grid goes on as it is scrolled. They follow
- * the page's language, so the button is told by naming the profile among a few other words.
+ * the page's language, so the button is told by naming the profile, as a word of its own, among a
+ * few other words.
  */
 export function isMorePostsButtonText(text: string, username: string) {
   const words = text.trim().toLowerCase()
-  const extra = words.length - username.length
-  return extra >= 3 && extra <= 40 && words.includes(username.toLowerCase())
+  const name = username.toLowerCase()
+  const extra = words.length - name.length
+  if (extra < 3 || extra > 40) {
+    return false
+  }
+  for (let at = words.indexOf(name); at !== -1; at = words.indexOf(name, at + 1)) {
+    if (!NAME_CHARACTER.test(words[at - 1] ?? '') && !NAME_CHARACTER.test(words[at + name.length] ?? '')) {
+      return true
+    }
+  }
+  return false
 }
 
 /**
@@ -160,18 +174,31 @@ export function initInstagramPostOpener() {
   // The grid of a visitor stops after the first posts until "More posts" is pressed; here it goes on
   // by itself, as it does with an account.
   const presses = new WeakMap<Element, { count: number; at: number }>()
+  let pressed: Element | undefined
+  // The page the press worked on: the button is gone, and is not looked for again there.
+  let doneOn = ''
   let moreTimer: ReturnType<typeof setTimeout> | undefined
+  const morePostsUsername = () => {
+    const username = getGridUsername(document.location.hostname, document.location.pathname)
+    return window.top === window && username && document.location.pathname !== doneOn && isModeOn() ? username : null
+  }
   const pressMorePosts = () => {
     moreTimer = undefined
-    const username = getGridUsername(document.location.hostname, document.location.pathname)
-    if (window.top !== window || !username || !window.Nora?.getSettings?.().anonymousMode) {
+    if (pressed && !pressed.isConnected) {
+      doneOn = document.location.pathname
+      pressed = undefined
+    }
+    const username = morePostsUsername()
+    if (!username) {
       return
     }
     for (const button of document.querySelectorAll('main [role="button"]')) {
-      if (button.closest('header, a') || !isMorePostsButtonText(button.textContent || '', username)) {
+      // Not a picture, such as a highlight named after the profile.
+      if (button.closest('header, a') || button.querySelector('img, canvas, video') || !isMorePostsButtonText(button.textContent || '', username)) {
         continue
       }
       // A press that worked takes the button away; one that is still there is pressed again in a while.
+      pressed = button
       const last = presses.get(button) ?? { count: 0, at: 0 }
       if (last.count < MORE_POSTS_MAX_PRESSES && Date.now() - last.at >= MORE_POSTS_PRESS_AGAIN_MS) {
         presses.set(button, { count: last.count + 1, at: Date.now() })
@@ -185,7 +212,13 @@ export function initInstagramPostOpener() {
 
   const onPageChange = () => {
     redirectPostPage()
-    moreTimer ??= setTimeout(pressMorePosts, MORE_POSTS_CHECK_MS)
+    // Coming back to a profile draws its button again.
+    if (doneOn && document.location.pathname !== doneOn) {
+      doneOn = ''
+    }
+    if (morePostsUsername()) {
+      moreTimer ??= setTimeout(pressMorePosts, MORE_POSTS_CHECK_MS)
+    }
   }
 
   onPageChange()
