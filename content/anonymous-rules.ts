@@ -46,7 +46,16 @@ export const anonymousRules: AnonymousRule[] = [
     // Embed pages only (readable class names), seen 2026-10-09: the "View more on Instagram" row, which leads to a page
     // asking for the app, the footer with the comment field (commenting needs an account) and the logo link, and the
     // hover card's root, a white link to the profile that lies over the bottom of the picture on a phone.
-    hide: ['.PrimaryCTA', '.Footer', '.HoverCardRoot'],
+    hide: [
+      '.PrimaryCTA',
+      '.Footer',
+      '.HoverCardRoot',
+      // Desktop site, seen 2026-10-16: "See photos, videos and more from <profile>" and the "Continue watching" wall,
+      // which comes back on every scroll once some posts are shown, each in a layer of its own under the body. Hidden
+      // with CSS, so that a new one never shows; the page goes on loading posts under it. Not a layer with links,
+      // fields, frames or videos, which a post, a check or a cookie choice would have.
+      'body > div:has(div[role="dialog"]):not(:has(a, input, textarea, select, video, iframe, form))',
+    ],
     overlays: [
       'div[role="dialog"]:has(a[href^="intent://"])',
       // The top bar with "Log in" and "Open app".
