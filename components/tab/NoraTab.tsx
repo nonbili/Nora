@@ -41,6 +41,7 @@ import {
   executeWebviewJavaScript,
   executeWebviewJavaScriptQuietly,
   registerTabWebview,
+  reloadWebview,
 } from '@/lib/webview'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { getEnabledUserScripts } from '@/lib/user-styles'
@@ -363,6 +364,17 @@ export const NoraTab: React.FC<{
       }),
     [anonymousMode, anonymousDisabledHosts, tab.profile],
   )
+
+  // The user agent follows the tab's address, which changes only once a page has loaded: a page that
+  // came to or left Instagram's desktop site, or whose mode was switched, is loaded again with its own.
+  const anonymousDesktop = anonymousActive(host) && wantsAnonymousDesktopSite(host)
+  const anonymousDesktopRef = useRef(anonymousDesktop)
+  useEffect(() => {
+    if (anonymousDesktopRef.current !== anonymousDesktop) {
+      anonymousDesktopRef.current = anonymousDesktop
+      reloadWebview(nativeRef.current)
+    }
+  }, [anonymousDesktop])
 
   const applyContentState = useCallback(
     async (target?: WebviewTag | any | null, url?: string) => {
@@ -1078,7 +1090,7 @@ export const NoraTab: React.FC<{
           )}
           useragent={
             // A browser on a computer, and not a phone's without "Mobile": Instagram still takes that for a phone.
-            anonymousActive(host) && wantsAnonymousDesktopSite(host)
+            anonymousDesktop
               ? getUserAgent('win32', true)
               : getUserAgent(isIos ? 'ios' : 'android', tab.desktopMode)
           }
