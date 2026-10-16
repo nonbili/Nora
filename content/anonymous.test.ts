@@ -244,16 +244,6 @@ describe('anonymousRules', () => {
     const facebook = cheerio.load('<div role="dialog"><a href="https://m.facebook.com/login/?next=x">Log in</a></div>')
     expect(facebook('div[role="dialog"]:has(a[href*="/login"])')).toHaveLength(1)
 
-    const instagram = cheerio.load('<div role="dialog"><a href="intent://instagram.com/_u/nasa">Open</a></div>')
-    expect(instagram('div[role="dialog"]:has(a[href^="intent://"])')).toHaveLength(1)
-
-    const header = cheerio.load(
-      '<header><a href="/accounts/login/?next=%2F">Log in</a><a href="intent://instagram.com/_u/nasa#Intent;end">Open app</a></header><header><a href="/nasa/">avatar</a></header>',
-    )
-    const headerSelector = 'header:has(a[href^="/accounts/login"]):has(a[href^="intent://"])'
-    expect(header(headerSelector)).toHaveLength(1)
-    expect(header(headerSelector).find('a[href="/nasa/"]')).toHaveLength(0)
-
     const instagramWall = anonymousRules
       .find((rule) => rule.hosts[0] === 'instagram.com')!
       .hide!.find((selector) => selector.startsWith('body > div'))!

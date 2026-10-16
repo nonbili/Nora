@@ -40,8 +40,8 @@ export const anonymousRules: AnonymousRule[] = [
     locksScroll: true,
   },
   {
-    // Seen 2026-10-08 on a logged-out public profile, mobile layout: "See full
-    // profile in the app".
+    // The Anonymous profile always gets Instagram's desktop site (see `wantsAnonymousDesktopSite`), so these are
+    // for that site and its embed pages; the mobile site's prompts are never seen there.
     hosts: ['instagram.com'],
     // Embed pages only (readable class names), seen 2026-10-09: the "View more on Instagram" row, which leads to a page
     // asking for the app, the footer with the comment field (commenting needs an account) and the logo link, and the
@@ -60,11 +60,6 @@ export const anonymousRules: AnonymousRule[] = [
       '._acum a[href^="/accounts/"]',
       // Desktop site, seen 2026-10-16: the Tagged tab, the last of Posts, Reels and Tagged, which needs an account.
       'main [role="tablist"] > :nth-child(3):last-child',
-    ],
-    overlays: [
-      'div[role="dialog"]:has(a[href^="intent://"])',
-      // The top bar with "Log in" and "Open app".
-      'header:has(a[href^="/accounts/login"]):has(a[href^="intent://"])',
     ],
   },
   {
