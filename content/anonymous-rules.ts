@@ -55,6 +55,9 @@ export const anonymousRules: AnonymousRule[] = [
       // with CSS, so that a new one never shows; the page goes on loading posts under it. Not a layer with links,
       // fields, frames or videos, which a post, a check or a cookie choice would have.
       'body > div:has(div[role="dialog"]):not(:has(a, input, textarea, select, video, iframe, form))',
+      // Desktop site, seen 2026-10-16: the Log in and Sign up buttons of the top bar. The bar stays, with the logo:
+      // the page keeps its room under it.
+      '._acum a[href^="/accounts/"]',
     ],
     overlays: [
       'div[role="dialog"]:has(a[href^="intent://"])',

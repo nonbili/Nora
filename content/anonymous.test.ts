@@ -254,7 +254,9 @@ describe('anonymousRules', () => {
     expect(header(headerSelector)).toHaveLength(1)
     expect(header(headerSelector).find('a[href="/nasa/"]')).toHaveLength(0)
 
-    const instagramWall = anonymousRules.find((rule) => rule.hosts[0] === 'instagram.com')!.hide!.at(-1)!
+    const instagramWall = anonymousRules
+      .find((rule) => rule.hosts[0] === 'instagram.com')!
+      .hide!.find((selector) => selector.startsWith('body > div'))!
     const walls = cheerio.load(
       '<body><div id="mount_0_0"><main><a href="/p/abc/">post</a></main></div>' +
         '<div class="layer"><div role="dialog"><img src="pic.jpg"><span>Continue watching</span><div role="button">Sign up</div><div role="button">Log in</div></div></div></body>',
@@ -266,6 +268,12 @@ describe('anonymousRules', () => {
       expect(other(instagramWall)).toHaveLength(0)
     }
     expect(cheerio.load('<body><div class="layer"><div>no dialog</div></div></body>')(instagramWall)).toHaveLength(0)
+
+    const topBar = cheerio.load(
+      '<section><div class="_acum"><a href="/">logo</a><a href="/accounts/login/?next=%2Fnasa%2F&source=desktop_nav">Log in</a>' +
+        '<a href="/accounts/emailsignup/">Sign up</a></div><main><a href="/accounts/login/">elsewhere</a></main></section>',
+    )
+    expect(topBar('._acum a[href^="/accounts/"]').map((_, link) => topBar(link).text()).get()).toEqual(['Log in', 'Sign up'])
 
     const threads = cheerio.load('<div role="dialog" aria-modal="true"><span>Thread on Threads</span><div role="button">Download</div></div>')
     const threadsSelector = anonymousRules.find((rule) => rule.hosts[0] === 'threads.com')!.portals![0]
