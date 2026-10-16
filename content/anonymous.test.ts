@@ -244,15 +244,40 @@ describe('anonymousRules', () => {
     const facebook = cheerio.load('<div role="dialog"><a href="https://m.facebook.com/login/?next=x">Log in</a></div>')
     expect(facebook('div[role="dialog"]:has(a[href*="/login"])')).toHaveLength(1)
 
-    const instagram = cheerio.load('<div role="dialog"><a href="intent://instagram.com/_u/nasa">Open</a></div>')
-    expect(instagram('div[role="dialog"]:has(a[href^="intent://"])')).toHaveLength(1)
-
-    const header = cheerio.load(
-      '<header><a href="/accounts/login/?next=%2F">Log in</a><a href="intent://instagram.com/_u/nasa#Intent;end">Open app</a></header><header><a href="/nasa/">avatar</a></header>',
+    const instagramHide = (start: string) =>
+      anonymousRules.find((rule) => rule.hosts[0] === 'instagram.com')!.hide!.find((selector) => selector.startsWith(start))!
+    const instagramWall = instagramHide('body > div')
+    const walls = cheerio.load(
+      '<body><div id="mount_0_0"><main><a href="/p/abc/">post</a></main></div>' +
+        '<div class="layer"><div role="dialog"><img src="pic.jpg"><span>Continue watching</span><div role="button">Sign up</div><div role="button">Log in</div></div></div></body>',
     )
-    const headerSelector = 'header:has(a[href^="/accounts/login"]):has(a[href^="intent://"])'
-    expect(header(headerSelector)).toHaveLength(1)
-    expect(header(headerSelector).find('a[href="/nasa/"]')).toHaveLength(0)
+    expect(walls(instagramWall)).toHaveLength(1)
+    expect(walls(instagramWall).hasClass('layer')).toBe(true)
+    for (const inside of [
+      '<a href="/p/abc/">post</a>',
+      '<video></video>',
+      '<iframe src="https://example.com/check"></iframe>',
+      '<form><input></form>',
+      '<canvas></canvas>',
+      '<div role="alertdialog">Try again later</div>',
+      '<p aria-live="polite">Something went wrong</p>',
+    ]) {
+      const other = cheerio.load(`<body><div class="layer"><div role="dialog">${inside}</div></div></body>`)
+      expect(other(instagramWall)).toHaveLength(0)
+    }
+    expect(cheerio.load('<body><div class="layer"><div>no dialog</div></div></body>')(instagramWall)).toHaveLength(0)
+
+    const topBar = cheerio.load(
+      '<section><div class="_acum"><a href="/">logo</a><a href="/accounts/login/?next=%2Fnasa%2F&source=desktop_nav">Log in</a>' +
+        '<a href="/accounts/emailsignup/">Sign up</a></div><main><a href="/accounts/login/">elsewhere</a></main></section>',
+    )
+    expect(topBar(instagramHide('._acum')).map((_, link) => topBar(link).text()).get()).toEqual(['Log in', 'Sign up'])
+
+    const tabs = (count: number) =>
+      cheerio.load(`<main><div role="tablist">${['Posts', 'Reels', 'Tagged'].slice(0, count).map((tab) => `<div><a href="#">${tab}</a></div>`).join('')}</div></main>`)
+    const taggedSelector = instagramHide('main [role="tablist"]')
+    expect(tabs(3)(taggedSelector).text()).toBe('Tagged')
+    expect(tabs(2)(taggedSelector)).toHaveLength(0)
 
     const threads = cheerio.load('<div role="dialog" aria-modal="true"><span>Thread on Threads</span><div role="button">Download</div></div>')
     const threadsSelector = anonymousRules.find((rule) => rule.hosts[0] === 'threads.com')!.portals![0]

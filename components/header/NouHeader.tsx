@@ -30,7 +30,7 @@ import { ServiceIcon } from '../service/Services'
 import { Tooltip } from '../tooltip/Tooltip'
 import { userStyles$ } from '@/states/user-styles'
 import { blocklist$ } from '@/states/blocklist'
-import { isAnonymousProfile } from '@/lib/anonymous'
+import { isAnonymousProfile, wantsAnonymousDesktopSite } from '@/lib/anonymous'
 import { getAnonymousRules } from '@/content/anonymous-rules'
 import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
 import { buildUserScriptExecutionSource, matchesAnyHostGlob, type CustomUserScript } from '@/lib/user-styles'
@@ -128,7 +128,9 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const anonymousOnThisSite = !isBlocklistExcludedHost(hostname, anonymousDisabledHosts || [])
 
   const isFacebookMessenger = hostname.endsWith('.facebook.com') && (pathname === '/messages' || pathname.startsWith('/messages/'))
-  const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com')
+  // Instagram is always its desktop site in the Anonymous profile, whatever the switch says.
+  const anonymousDesktopSite = showAnonymousToggle && anonymousOnThisSite && wantsAnonymousDesktopSite(hostname)
+  const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com') || anonymousDesktopSite
 
   const onLayout = (event: LayoutChangeEvent) => {
     // In the desktop layout the header is a full height sidebar, and its height means
@@ -248,7 +250,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           systemImage: 'eye.slash',
           metaLabel: anonymousOnThisSite ? t('common.on') : t('common.off'),
           meta: <MenuToggleBadge on={anonymousOnThisSite} />,
-          // Applied to the open page as it is, with no reload.
+          // Applied to the open page as it is; Instagram is loaded again, as its site changes with it.
           handler: () => settings$.setAnonymousHostDisabled(blockingSite, anonymousOnThisSite),
         },
       ]

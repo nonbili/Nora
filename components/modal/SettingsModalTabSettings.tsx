@@ -794,7 +794,7 @@ export const SettingsProfilesContent = () => {
       </SettingsSurface>
       <NouText className={subheaderCls}>{t('settings.anonymous.title')}</NouText>
       <SettingsSurface className="mb-10">
-        <SettingsRow>
+        <SettingsRow isLast>
           <NouSwitch
             label={
               <View>
@@ -806,22 +806,6 @@ export const SettingsProfilesContent = () => {
             }
             value={settings.anonymousMode}
             onPress={() => settings$.setAnonymousMode(!settings.anonymousMode)}
-          />
-        </SettingsRow>
-        <SettingsRow isLast>
-          <NouSwitch
-            label={
-              <View>
-                <NouText>{t('settings.anonymous.morePosts')}</NouText>
-                <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  {t('settings.anonymous.morePostsHint')}
-                </NouText>
-              </View>
-            }
-            value={settings.anonymousMorePosts}
-            // Only ever acts in the Anonymous profile, with the mode on.
-            disabled={!settings.anonymousMode}
-            onPress={() => settings$.anonymousMorePosts.toggle()}
           />
         </SettingsRow>
       </SettingsSurface>
