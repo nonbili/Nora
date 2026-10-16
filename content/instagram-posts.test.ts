@@ -3,6 +3,7 @@ import {
   getEmbedUrlForPage,
   getLinkedPostEmbedUrl,
   getMediaId,
+  getProfileTabPath,
   getPostEmbedUrl,
   getPostUrl,
   isMorePostsButtonText,
@@ -97,6 +98,19 @@ describe('getLinkedPostEmbedUrl', () => {
     expect(getLinkedPostEmbedUrl('https://example.com/p/DeKe4mpkipT/', base)).toBeNull()
     expect(getLinkedPostEmbedUrl(null, base)).toBeNull()
     expect(getLinkedPostEmbedUrl('', base)).toBeNull()
+  })
+})
+
+describe('getProfileTabPath', () => {
+  it('opens Reels, the middle of Posts, Reels and Tagged, at its address', () => {
+    expect(getProfileTabPath('natgeo', 1, 3)).toBe('/natgeo/reels/')
+  })
+
+  it('leaves Posts, Tagged and a row it does not know', () => {
+    expect(getProfileTabPath('natgeo', 0, 3)).toBeNull()
+    expect(getProfileTabPath('natgeo', 2, 3)).toBeNull()
+    expect(getProfileTabPath('natgeo', 1, 2)).toBeNull()
+    expect(getProfileTabPath('natgeo', -1, 3)).toBeNull()
   })
 })
 

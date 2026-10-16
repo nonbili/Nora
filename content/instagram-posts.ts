@@ -120,6 +120,15 @@ export function isMorePostsButtonText(text: string, username: string) {
   return extra >= 3 && extra <= 40 && words.includes(username.toLowerCase())
 }
 
+/**
+ * Where a tab of a profile leads that the desktop site gives a visitor only as a placeholder: the
+ * tabs are Posts, Reels and Tagged, in that order. Reels opens for a visitor at its own address;
+ * Tagged needs an account. Null for any other tab.
+ */
+export function getProfileTabPath(username: string, index: number, count: number) {
+  return count === 3 && index === 1 ? `/${username}/reels/` : null
+}
+
 const MORE_POSTS_CHECK_MS = 500
 // The button is drawn before the page's code has taken it over, and a press then does nothing.
 const MORE_POSTS_PRESS_AGAIN_MS = 1500
@@ -201,6 +210,26 @@ export function initInstagramPostOpener() {
         event.stopImmediatePropagation()
         // In this tab, on the page that has the player, so that going back lands on the profile.
         document.location.assign(url)
+      }
+    },
+    true,
+  )
+
+  // The Reels tab of a visitor opens a sign-up dialog instead of the reels, which are there at their address.
+  document.addEventListener(
+    'click',
+    (event) => {
+      const username = getGridUsername(document.location.hostname, document.location.pathname)
+      const tab = event.target instanceof Element ? event.target.closest('main [role="tablist"] a[href="#"]') : null
+      if (!tab || !username || !window.Nora?.getSettings?.().anonymousMode) {
+        return
+      }
+      const tabs = [...tab.closest('[role="tablist"]')!.querySelectorAll('a')]
+      const path = getProfileTabPath(username, tabs.indexOf(tab as HTMLAnchorElement), tabs.length)
+      if (path) {
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        document.location.assign(path)
       }
     },
     true,
