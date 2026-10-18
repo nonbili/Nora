@@ -191,9 +191,12 @@ describe('findPaddedAncestor', () => {
 })
 
 describe('anonymousRules scroll locks', () => {
-  it('says so only for a rule that was seen locking the scroll', () => {
+  it('says so only for a rule that was seen locking the scroll, or that hides a wall with CSS alone', () => {
     const locking = anonymousRules.filter((rule) => rule.locksScroll)
-    expect(locking.map((rule) => rule.hosts[0])).toEqual(['facebook.com'])
+    expect(locking.map((rule) => rule.hosts[0])).toEqual(['facebook.com', 'instagram.com'])
+    // Only the wall gives back the scroll on Instagram, not the top bar's buttons that every page has.
+    expect(locking[1].hide).toHaveLength(1)
+    expect(locking[1].hide![0].startsWith('body > div')).toBe(true)
   })
 })
 
@@ -245,7 +248,10 @@ describe('anonymousRules', () => {
     expect(facebook('div[role="dialog"]:has(a[href*="/login"])')).toHaveLength(1)
 
     const instagramHide = (start: string) =>
-      anonymousRules.find((rule) => rule.hosts[0] === 'instagram.com')!.hide!.find((selector) => selector.startsWith(start))!
+      anonymousRules
+        .filter((rule) => rule.hosts[0] === 'instagram.com')
+        .flatMap((rule) => rule.hide || [])
+        .find((selector) => selector.startsWith(start))!
     const instagramWall = instagramHide('body > div')
     const walls = cheerio.load(
       '<body><div id="mount_0_0"><main><a href="/p/abc/">post</a></main></div>' +

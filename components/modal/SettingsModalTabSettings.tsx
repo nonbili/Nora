@@ -765,7 +765,7 @@ export const SettingsAppearanceContent = () => {
   )
 }
 
-const anonymousSites = anonymousRules.flatMap((rule) => rule.hosts).join(', ')
+const anonymousSites = [...new Set(anonymousRules.flatMap((rule) => rule.hosts))].join(', ')
 
 export const SettingsProfilesContent = () => {
   const settings = useValue(settings$)

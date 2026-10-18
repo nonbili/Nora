@@ -114,7 +114,11 @@ interface Handled {
 /** The script half of the mode, for prompts found only by their contents. Debounced; a failing selector is skipped. */
 export function initAnonymousMode() {
   const { hostname } = document.location
-  if (!getAnonymousRules(hostname).some((rule) => rule.overlays?.length || rule.portals?.length || rule.dismiss?.length)) {
+  if (
+    !getAnonymousRules(hostname).some(
+      (rule) => rule.overlays?.length || rule.portals?.length || rule.dismiss?.length || (rule.locksScroll && rule.hide?.length),
+    )
+  ) {
     return () => {}
   }
 
@@ -244,8 +248,20 @@ export function initAnonymousMode() {
         schedule()
       }, REJECTED_RETRY_MS)
     }
+    // A prompt hidden by the style half is not handled here, but may lock the scroll all the same.
+    const hiddenLocks = getAnonymousRules(hostname).some(
+      (rule) =>
+        rule.locksScroll &&
+        rule.hide?.some((selector) => {
+          try {
+            return document.querySelector(selector) !== null
+          } catch {
+            return false
+          }
+        }),
+    )
     const root = document.documentElement
-    if ([...handled.values()].some((entry) => entry.locksScroll)) {
+    if (hiddenLocks || [...handled.values()].some((entry) => entry.locksScroll)) {
       root.setAttribute(promptAttribute, '1')
     } else {
       root.removeAttribute(promptAttribute)

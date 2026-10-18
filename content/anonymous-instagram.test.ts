@@ -78,6 +78,12 @@ describe('isMorePostsButtonText', () => {
     expect(isMorePostsButtonText('More posts from nba.store', 'nba')).toBe(false)
     expect(isMorePostsButtonText('Ещё публикации от nba', 'nba')).toBe(true)
   })
+
+  it('takes a dot after the name for the end of a sentence, as a name never ends with one', () => {
+    expect(isMorePostsButtonText('Plus de publications de natgeo.', 'natgeo')).toBe(true)
+    expect(isMorePostsButtonText('More posts from nasa.gov', 'nasa')).toBe(false)
+    expect(isMorePostsButtonText('More posts from nasa._x', 'nasa')).toBe(false)
+  })
 })
 
 describe('getEmbedUrlForPage', () => {

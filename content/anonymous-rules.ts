@@ -17,7 +17,10 @@ export interface AnonymousRule {
   portals?: string[]
   /** The prompt's own close button, clicked once. For dialogs that keep cancelling scroll while "open". */
   dismiss?: string[]
-  /** The prompt locks the page's scrolling; set only for rules seen doing so. */
+  /**
+   * The prompt locks the page's scrolling; set only for rules seen doing so, or that would leave the page
+   * stuck if it did. Also for `hide`: the scroll is given back while one of its selectors matches.
+   */
   locksScroll?: boolean
 }
 
@@ -50,17 +53,25 @@ export const anonymousRules: AnonymousRule[] = [
       '.PrimaryCTA',
       '.Footer',
       '.HoverCardRoot',
-      // Desktop site, seen 2026-10-16: "See photos, videos and more from <profile>" and the "Continue watching" wall,
-      // which comes back on every scroll once some posts are shown, each in a layer of its own under the body. Hidden
-      // with CSS, so that a new one never shows; the page goes on loading posts under it. Not a layer with links,
-      // fields, frames, videos, a canvas or an alert, which a post, a check, a cookie choice or an error would have.
-      'body > div:has(div[role="dialog"]):not(:has(a, input, textarea, select, video, iframe, form, canvas, [role="alertdialog"], [aria-live]))',
       // Desktop site, seen 2026-10-16: the Log in and Sign up buttons of the top bar. The bar stays, with the logo:
       // the page keeps its room under it.
       '._acum a[href^="/accounts/"]',
       // Desktop site, seen 2026-10-16: the Tagged tab, the last of Posts, Reels and Tagged, which needs an account.
       'main [role="tablist"] > :nth-child(3):last-child',
     ],
+  },
+  {
+    // A rule of its own, so that only this gives back the scroll.
+    hosts: ['instagram.com'],
+    hide: [
+      // Desktop site, seen 2026-10-16: "See photos, videos and more from <profile>" and the "Continue watching" wall,
+      // which comes back on every scroll once some posts are shown, each in a layer of its own under the body. Hidden
+      // with CSS, so that a new one never shows; the page goes on loading posts under it. Not a layer with links,
+      // fields, frames, videos, a canvas or an alert, which a post, a check, a cookie choice or an error would have.
+      'body > div:has(div[role="dialog"]):not(:has(a, input, textarea, select, video, iframe, form, canvas, [role="alertdialog"], [aria-live]))',
+    ],
+    // Hidden with CSS alone: should the wall lock the page's scroll, the page would stay stuck under it.
+    locksScroll: true,
   },
   {
     // Seen 2026-10-08, logged-out profile, mobile. No stable hook: told apart as a modal of only text and buttons.

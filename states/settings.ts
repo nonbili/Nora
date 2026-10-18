@@ -292,6 +292,8 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
     data.anonymousMode = false
   }
   data.anonymousDisabledHosts = sanitizeSiteKeys(data.anonymousDisabledHosts)
+  // The setting of the list of more Instagram posts, which is gone.
+  delete (data as Record<string, unknown>).anonymousMorePosts
   if (typeof data.protectWebRtcIp !== 'boolean') {
     data.protectWebRtcIp = true
   }

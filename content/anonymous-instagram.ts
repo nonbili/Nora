@@ -40,6 +40,9 @@ export const getGridUsername = (hostname: string, pathname: string) =>
 
 // Characters a profile name can have, so that the name is only found standing on its own.
 const NAME_CHARACTER = /[a-z0-9._]/
+// A name never ends with a dot, so one after it goes on the name only when more of a name follows.
+const goesOnAfter = (words: string, at: number) =>
+  /[a-z0-9_]/.test(words[at] ?? '') || (words[at] === '.' && NAME_CHARACTER.test(words[at + 1] ?? ''))
 
 /**
  * The words of the button the desktop site puts under the first posts of a profile, "More posts
@@ -55,7 +58,7 @@ export function isMorePostsButtonText(text: string, username: string) {
     return false
   }
   for (let at = words.indexOf(name); at !== -1; at = words.indexOf(name, at + 1)) {
-    if (!NAME_CHARACTER.test(words[at - 1] ?? '') && !NAME_CHARACTER.test(words[at + name.length] ?? '')) {
+    if (!NAME_CHARACTER.test(words[at - 1] ?? '') && !goesOnAfter(words, at + name.length)) {
       return true
     }
   }
@@ -167,8 +170,8 @@ export function initAnonymousInstagram() {
 
   // The grid of a visitor stops after the first posts until "More posts" is pressed; here it goes on
   // by itself, as it does with an account.
-  const presses = new WeakMap<Element, { count: number; at: number }>()
-  let pressed: Element | undefined
+  // The presses on this page; the page may draw the button anew, so they are counted per page.
+  let presses = { path: '', count: 0, at: 0 }
   // The page the press worked on: the button is gone, and is not looked for again there.
   let doneOn = ''
   let moreTimer: ReturnType<typeof setTimeout> | undefined
@@ -176,40 +179,57 @@ export function initAnonymousInstagram() {
     const username = getGridUsername(document.location.hostname, document.location.pathname)
     return window.top === window && username && document.location.pathname !== doneOn && isModeOn() ? username : null
   }
+  const findMorePostsButton = (username: string) =>
+    [...document.querySelectorAll('main [role="button"]')].find(
+      (button) =>
+        // Not a picture, such as a highlight named after the profile.
+        !button.closest('header, a') && !button.querySelector('img, canvas, video') && isMorePostsButtonText(button.textContent || '', username),
+    ) as HTMLElement | undefined
+  const resetPressesOffPage = () => {
+    if (presses.path && presses.path !== document.location.pathname) {
+      presses = { path: '', count: 0, at: 0 }
+    }
+  }
   const pressMorePosts = () => {
     moreTimer = undefined
-    if (pressed && !pressed.isConnected) {
-      doneOn = document.location.pathname
-      pressed = undefined
-    }
+    resetPressesOffPage()
     const username = morePostsUsername()
     if (!username) {
       return
     }
-    for (const button of document.querySelectorAll('main [role="button"]')) {
-      // Not a picture, such as a highlight named after the profile.
-      if (button.closest('header, a') || button.querySelector('img, canvas, video') || !isMorePostsButtonText(button.textContent || '', username)) {
-        continue
+    const { pathname } = document.location
+    const button = findMorePostsButton(username)
+    if (!button) {
+      // Pressed, and no such button is left on the page, even one drawn anew: it worked.
+      if (presses.count > 0) {
+        doneOn = pathname
       }
-      // A press that worked takes the button away; one that is still there is pressed again in a while.
-      pressed = button
-      const last = presses.get(button) ?? { count: 0, at: 0 }
-      if (last.count < MORE_POSTS_MAX_PRESSES && Date.now() - last.at >= MORE_POSTS_PRESS_AGAIN_MS) {
-        presses.set(button, { count: last.count + 1, at: Date.now() })
-        ;(button as HTMLElement).click()
-      }
-      if (presses.get(button)!.count < MORE_POSTS_MAX_PRESSES) {
-        moreTimer ??= setTimeout(pressMorePosts, MORE_POSTS_PRESS_AGAIN_MS)
-      }
+      return
     }
+    // A press that worked takes the button away; one that is still there is pressed again in a while.
+    if (Date.now() - presses.at >= MORE_POSTS_PRESS_AGAIN_MS) {
+      if (presses.count >= MORE_POSTS_MAX_PRESSES) {
+        // Given up on this page.
+        doneOn = pathname
+        return
+      }
+      presses = { path: pathname, count: presses.count + 1, at: Date.now() }
+      button.click()
+    }
+    moreTimer ??= setTimeout(pressMorePosts, MORE_POSTS_PRESS_AGAIN_MS)
   }
 
   const onPageChange = () => {
+    // Nothing to do outside the mode, which leaves Instagram as it is.
+    if (!isModeOn()) {
+      return
+    }
     redirectPostPage()
     // Coming back to a profile draws its button again.
     if (doneOn && document.location.pathname !== doneOn) {
       doneOn = ''
     }
+    resetPressesOffPage()
     if (morePostsUsername()) {
       moreTimer ??= setTimeout(pressMorePosts, MORE_POSTS_CHECK_MS)
     }
