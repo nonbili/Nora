@@ -58,10 +58,16 @@ describe('settings transfer', () => {
     const parsed = parseSettingsBackup(backupOf({ settings: { headerPosition: 'bottom' } }))
 
     expect(parsed.settings?.anonymousMode).toBe(false)
-    expect(parsed.settings?.anonymousMorePosts).toBe(false)
     expect(parsed.settings?.anonymousDisabledHosts).toEqual([])
     expect(parsed.settings?.selectedPublicSearchServiceId).toBe('reddit')
     expect(parsed.settings?.profiles.some((profile) => profile.id === 'anonymous')).toBe(false)
+  })
+
+  it('drops the setting for the list of more Instagram posts, which is gone, from an older file', () => {
+    const parsed = parseSettingsBackup(backupOf({ settings: { anonymousMode: true, anonymousMorePosts: true } }))
+
+    expect(parsed.settings?.anonymousMode).toBe(true)
+    expect(parsed.settings).not.toHaveProperty('anonymousMorePosts')
   })
 
   it('cleans up the anonymous settings of a hand edited file', () => {

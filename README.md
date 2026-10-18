@@ -32,9 +32,8 @@ Install from App Store, Google Play, F-Droid, or download APK from GitHub.
 - Zoom
 - Remove tracking url query params
 - Customize with CSS
-- Anonymous mode: hide sign-in and open-in-app prompts on Facebook, Instagram, Threads, Tumblr and X
+- Anonymous mode: hide sign-in and open-in-app prompts on Facebook, Instagram, Threads, Tumblr and X; scroll an Instagram profile's posts and reels without an account
 - Search public posts without signing in (via DuckDuckGo)
-- Optional: show more public posts below an Instagram profile (via DuckDuckGo)
 
 ## Supported SNS
 
