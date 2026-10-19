@@ -269,14 +269,14 @@
       "empty": "No bookmarks yet."
     },
     "backup": {
-      "description": "Export or restore settings, bookmarks and user styles.",
+      "description": "Export or restore settings, bookmarks, user styles and feed sources.",
       "export": "Export settings",
-      "exportDescription": "Save settings, bookmarks, user styles and custom scripts as a JSON file",
+      "exportDescription": "Save settings, bookmarks, user styles, custom scripts and feed sources as a JSON file",
       "exportFailed": "Export failed: {{message}}",
       "import": "Import settings",
       "importDescription": "Restore settings from a Nora settings file",
-      "importConfirm": "This replaces your current settings, bookmarks, user styles and custom scripts. Continue?",
-      "importWithScriptsConfirm": "This file contains {{count}} enabled custom script(s), which can run code inside websites. Only continue if you trust the file. Your current settings, bookmarks, user styles and custom scripts will be replaced.",
+      "importConfirm": "This replaces your current settings, bookmarks, user styles and custom scripts, and adds the feed sources in the file. Continue?",
+      "importWithScriptsConfirm": "This file contains {{count}} enabled custom script(s), which can run code inside websites. Only continue if you trust the file. Your current settings, bookmarks, user styles and custom scripts will be replaced, and the feed sources in the file will be added.",
       "importDone": "Imported: {{sections}}",
       "importFailed": "Import failed: {{message}}"
     },
@@ -518,7 +518,11 @@
     "deleteTimelineConfirm": "Delete the timeline {{name}}? Its sources stay watched.",
     "timelineNamePlaceholder": "e.g. Friends",
     "timelineEmpty": "No sources in this timeline yet. Add some with Edit timeline.",
-    "openInNewTab": "Open in new tab"
+    "openInNewTab": "Open in new tab",
+    "importSources": "Import sources",
+    "importSourcesDone": "Added: {{added}}, already watched: {{existing}}, not recognized: {{unrecognized}}",
+    "importSourcesEmpty": "No sources found. Use an OPML file or a list of profile links.",
+    "importSourcesFailed": "Import failed: {{message}}"
   },
   "usageLimits": {
     "label": "Usage limits",

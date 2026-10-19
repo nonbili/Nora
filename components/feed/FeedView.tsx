@@ -40,6 +40,8 @@ import { share } from '@/lib/share'
 import { clearWatchMedia, ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
 import { feedTabActions, feedTabUrl } from '@/lib/feed-tab'
 import { openFeedTab } from '@/lib/page'
+import { applyWatchBackup, parseSourceList } from '@/lib/watch-transfer'
+import * as DocumentPicker from 'expo-document-picker'
 
 const intervalKeys = { minutes: 'feed.intervalMinutes', hours: 'feed.intervalHours', days: 'feed.intervalDays' } as const
 
@@ -380,12 +382,38 @@ export const FeedView: React.FC<{
         ]
       : []),
     {
+      label: t('feed.importSources'),
+      icon: <MaterialIcons name="file-download" size={18} color={iconColor} />,
+      systemImage: 'square.and.arrow.down',
+      handler: () => void importSources(),
+    },
+    {
       label: t('feed.openInNewTab'),
       icon: <MaterialIcons name="open-in-new" size={18} color={iconColor} />,
       systemImage: 'plus.square.on.square',
       handler: () => openFeedTab(timeline?.id, true),
     },
   ]
+
+  const importSources = async () => {
+    // OPML files have no type of their own on most systems.
+    const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true, multiple: false, type: '*/*' })
+    const asset = result.assets?.[0]
+    if (!asset) return
+    try {
+      const list = parseSourceList(await (await fetch(asset.uri)).text())
+      if (!list.profiles.length) {
+        showToast(t('feed.importSourcesEmpty'))
+        return
+      }
+      const { added, existing } = applyWatchBackup(list)
+      showToast(t('feed.importSourcesDone', { added, existing, unrecognized: list.unrecognized }))
+      if (added) void refresh('foreground')
+    } catch (e) {
+      console.error('[Feed] source import failed', e)
+      showToast(t('feed.importSourcesFailed', { message: (e as Error).message }))
+    }
+  }
 
   const toggleNotify = async (profile: WatchedProfile) => {
     if (profile.notify) {

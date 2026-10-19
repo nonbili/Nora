@@ -3,6 +3,7 @@ import { blocklist$ } from '@/states/blocklist'
 import { bookmarks$ } from '@/states/bookmarks'
 import { settings$ } from '@/states/settings'
 import { userStyles$ } from '@/states/user-styles'
+import { watch$ } from '@/states/watch'
 import {
   applySettingsBackup,
   countEnabledCustomScripts,
@@ -129,5 +130,26 @@ describe('settings transfer', () => {
     expect(blocklist$.enabled.get()).toBe(false)
     expect(blocklist$.excludedHosts.get()).toEqual(['example.com'])
     expect(bookmarks$.bookmarks.get()).toEqual([])
+  })
+
+  it('exports the feed sources and adds them back on import', () => {
+    watch$.profiles.set([])
+    watch$.timelines.set([])
+    watch$.watch({ site: 'reddit', handle: 'r/rust' })
+    watch$.createTimeline('News', ['reddit:r/rust'])
+
+    const json = exportSettingsJson()
+    expect(JSON.parse(json).watch.profiles).toEqual([{ site: 'reddit', handle: 'r/rust', notify: false }])
+
+    watch$.profiles.set([])
+    watch$.timelines.set([])
+    watch$.watch({ site: 'x', handle: 'jack' })
+
+    const restored = applySettingsBackup(parseSettingsBackup(json))
+    expect(restored).toContain('feed sources')
+    expect(watch$.profiles.get().map((profile) => profile.key)).toEqual(['x:jack', 'reddit:r/rust'])
+    expect(watch$.timelines.get().map(({ name, profileKeys }) => ({ name, profileKeys }))).toEqual([
+      { name: 'News', profileKeys: ['reddit:r/rust'] },
+    ])
   })
 })

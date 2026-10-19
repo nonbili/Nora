@@ -4,6 +4,7 @@ import { bookmarks$, type Bookmark } from '@/states/bookmarks'
 import { getSettingsSnapshot, settings$, type Settings } from '@/states/settings'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
 import { normalizeUserStyles, type UserStylesSnapshot } from '@/lib/user-styles'
+import { applyWatchBackup, createWatchBackup, normalizeWatchBackup, type WatchBackup } from '@/lib/watch-transfer'
 import { version } from '../package.json'
 
 export const SETTINGS_BACKUP_KIND = 'nora-settings'
@@ -18,6 +19,7 @@ export interface SettingsBackup {
   bookmarks: Bookmark[]
   userStyles: UserStylesSnapshot
   blocklist: BlocklistBackup
+  watch: WatchBackup
 }
 
 interface BlocklistBackup {
@@ -45,6 +47,8 @@ export const createSettingsBackup = (): SettingsBackup => ({
   // Only the toggle travels: the rest of the blocklist state is a device-local
   // download cache (etags, timestamps).
   blocklist: { enabled: blocklist$.enabled.get(), excludedHosts: blocklist$.excludedHosts.get() || [] },
+  // The watched sources and timelines, without their posts and media.
+  watch: createWatchBackup(),
 })
 
 export const exportSettingsJson = () => JSON.stringify(createSettingsBackup(), null, 2)
@@ -56,6 +60,7 @@ export interface ParsedSettingsBackup {
   bookmarks?: Bookmark[]
   userStyles?: UserStylesSnapshot
   blocklist?: BlocklistBackup
+  watch?: WatchBackup
 }
 
 /**
@@ -110,8 +115,12 @@ export const parseSettingsBackup = (text: string): ParsedSettingsBackup => {
       ),
     }
   }
+  const watch = normalizeWatchBackup(backup.watch)
+  if (watch) {
+    result.watch = watch
+  }
 
-  if (!result.settings && !result.bookmarks && !result.userStyles && !result.blocklist) {
+  if (!result.settings && !result.bookmarks && !result.userStyles && !result.blocklist && !result.watch) {
     throw new Error('Nothing to import in this file')
   }
 
@@ -142,6 +151,11 @@ export const applySettingsBackup = (backup: ParsedSettingsBackup) => {
     blocklist$.enabled.set(backup.blocklist.enabled)
     blocklist$.excludedHosts.set(backup.blocklist.excludedHosts || [])
     restored.push('blocklist')
+  }
+  if (backup.watch) {
+    // Added to what is watched, not put in its place: the posts of sources already watched stay.
+    applyWatchBackup(backup.watch)
+    restored.push('feed sources')
   }
 
   return restored
