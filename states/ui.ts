@@ -14,6 +14,7 @@ interface Store {
   bookmarkModalOpen: boolean
   cookieModalOpen: boolean
   downloadVideoModalUrl: string
+  feedModalOpen: boolean
   navModalOpen: boolean
   profileLinkUrl: string
   autoProfilesModalOpen: boolean
@@ -61,6 +62,7 @@ export const ui$ = observable<Store>({
   bookmarkModalOpen: false,
   cookieModalOpen: false,
   downloadVideoModalUrl: '',
+  feedModalOpen: false,
   navModalOpen: false,
   profileLinkUrl: '',
   autoProfilesModalOpen: false,

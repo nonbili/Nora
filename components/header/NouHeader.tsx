@@ -37,6 +37,9 @@ import { buildUserScriptExecutionSource, matchesAnyHostGlob, type CustomUserScri
 import { useHeaderAnimation } from './header-animation'
 import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
 import { useTwColor } from '@/lib/theme'
+import { watch$ } from '@/states/watch'
+import { getWatchTarget, watchKey } from '@/lib/watch'
+import { refreshWatched } from '@/lib/watch-feed'
 
 // The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
 // any time. On native the same decision is made in JS, so the classes are duplicated
@@ -106,6 +109,8 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const blocklistExcludedHosts = useValue(blocklist$.excludedHosts)
   const anonymousMode = useValue(settings$.anonymousMode)
   const anonymousDisabledHosts = useValue(settings$.anonymousDisabledHosts)
+  const watchedProfiles = useValue(watch$.profiles)
+  const feedUnreadCount = useValue(watch$.unreadCount)
 
   if (currentTab?.url) {
     try {
@@ -252,6 +257,30 @@ export const NouHeader: React.FC<{}> = ({}) => {
           meta: <MenuToggleBadge on={anonymousOnThisSite} />,
           // Applied to the open page as it is; Instagram is loaded again, as its site changes with it.
           handler: () => settings$.setAnonymousHostDisabled(blockingSite, anonymousOnThisSite),
+        },
+      ]
+    : []
+
+  const watchTarget = isWeb ? null : getWatchTarget(currentTab?.url)
+  const watchingThisProfile = !!watchTarget && watchedProfiles.some((profile) => profile.key === watchKey(watchTarget))
+  const watchMenuItems = watchTarget
+    ? [
+        {
+          label: t('menus.watchProfile'),
+          icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
+          systemImage: 'dot.radiowaves.left.and.right',
+          metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),
+          meta: <MenuToggleBadge on={watchingThisProfile} />,
+          handler: () => {
+            if (watchingThisProfile) {
+              watch$.unwatch(watchKey(watchTarget))
+              return
+            }
+            watch$.watch(watchTarget)
+            showToast(t('toast.profileWatched', { handle: watchTarget.handle }))
+            // Fills the feed with what the profile has posted so far.
+            void refreshWatched('foreground')
+          },
         },
       ]
     : []
@@ -500,6 +529,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                         ]),
                     ...(!desktopLayout ? blocklistMenuItems : []),
                     ...(!desktopLayout ? anonymousMenuItems : []),
+                    ...watchMenuItems,
                     {
                       label: t('menus.zoom') || 'Zoom',
                       icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,
@@ -534,6 +564,17 @@ export const NouHeader: React.FC<{}> = ({}) => {
               ...(isWeb
                 ? []
                 : [{ label: '', handler: () => {}, kind: 'separator' as const }]),
+              ...(isWeb
+                ? []
+                : [
+                    {
+                      label: t('feed.label'),
+                      icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
+                      systemImage: 'list.bullet.rectangle',
+                      metaLabel: feedUnreadCount ? String(feedUnreadCount) : undefined,
+                      handler: () => ui$.feedModalOpen.set(true),
+                    },
+                  ]),
               {
                 label: t('menus.tools'),
                 icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,

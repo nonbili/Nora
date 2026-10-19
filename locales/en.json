@@ -103,7 +103,8 @@
     "signOut": "Sign out",
     "tools": "Tools",
     "zoom": "Zoom",
-    "viewInSplitView": "View in split view"
+    "viewInSplitView": "View in split view",
+    "watchProfile": "Watch profile"
   },
   "modals": {
     "downloadVideo": "Download video",
@@ -467,7 +468,38 @@
     "siteDataCleared": "Site data cleared",
     "siteDataClearFailed": "Failed to clear site data",
   "addToHomeScreenFailed": "This launcher does not support home screen shortcuts",
-    "pressBackAgainToExit": "Press back again to exit"
+    "pressBackAgainToExit": "Press back again to exit",
+    "profileWatched": "Watching @{{handle}}. New posts show up in Feed."
+  },
+  "feed": {
+    "label": "Feed",
+    "all": "All",
+    "refresh": "Refresh",
+    "notify": "Notify me of new posts",
+    "unwatch": "Unwatch",
+    "unwatchConfirm": "Stop watching @{{handle}} and remove its posts from the feed?",
+    "empty": "Open a profile on X or Instagram and choose Watch profile from the menu. Its new posts will show up here, even without logging in.",
+    "noPosts": "No posts yet. Pull the latest with Refresh.",
+    "repostOf": "Reposted from @{{handle}}",
+    "loginHint": "Some profiles are checked without an account, which can be delayed or blocked. Log in to {{sites}} in any Nora profile for more reliable updates.",
+    "statusLoggedOut": "Checked without an account. Updates can be delayed; log in to {{site}} for more reliable ones.",
+    "statusNeedsLogin": "{{site}} asked for an account. Nora will try again later; log in to {{site}} in any Nora profile to keep this profile updated.",
+    "statusRateLimited": "{{site}} asked to slow down. Nora will try again in an hour.",
+    "statusFailed": "The last check failed: {{error}}",
+    "statusPending": "Not checked yet.",
+    "notificationChannel": "Watched profiles",
+    "notificationPermissionDenied": "Notifications are not allowed for Nora",
+    "newPost": "New post",
+    "newPosts": "{{count}} new posts",
+    "checkEvery": "Check every",
+    "intervalDefault": "Default ({{interval}})",
+    "intervalHint": "Applies to every profile without its own choice. Checking less often saves battery and is less likely to be limited by the site.",
+    "intervalMinutes_one": "{{count}} minute",
+    "intervalMinutes_other": "{{count}} minutes",
+    "intervalHours_one": "{{count}} hour",
+    "intervalHours_other": "{{count}} hours",
+    "intervalDays_one": "{{count}} day",
+    "intervalDays_other": "{{count}} days"
   },
   "usageLimits": {
     "label": "Usage limits",
