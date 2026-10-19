@@ -10,7 +10,20 @@ import {
   mediaFileName,
   mediaKey,
   mediaToEvict,
+  blueskyVideoDids,
+  didDocumentUrl,
+  expandBlueskyLinks,
+  parseDidDocumentPds,
+  parseThreadsPostPage,
   getWatchTarget,
+  htmlToText,
+  parseBlueskyFeed,
+  mastodonLookupUrl,
+  mastodonWebFingerUrl,
+  parseMastodonStatuses,
+  parseMastodonWebFinger,
+  parseRedditFeed,
+  parseThreadsProfilePage,
   instagramPostTime,
   parseInstagramEmbed,
   parseInstagramProfilePage,
@@ -25,6 +38,8 @@ import {
   unreadPostKeys,
   watchIntervalMinutes,
   watchKey,
+  watchProfileUrl,
+  watchSourceLabel,
   type WatchPost,
 } from './watch'
 
@@ -50,6 +65,39 @@ describe('getWatchTarget', () => {
     expect(getWatchTarget('https://www.instagram.com/p/abc123/')).toBeNull()
   })
 
+  it('reads the handle from a profile on Threads', () => {
+    expect(getWatchTarget('https://www.threads.com/@zuck')).toEqual({ site: 'threads', handle: 'zuck' })
+    expect(getWatchTarget('https://threads.net/@mosseri/replies')).toEqual({ site: 'threads', handle: 'mosseri' })
+    expect(getWatchTarget('https://www.threads.com/@zuck/post/DeZtp-TkQHh')).toBeNull()
+  })
+
+  it('reads the handle or id from a profile on Bluesky', () => {
+    expect(getWatchTarget('https://bsky.app/profile/bsky.app')).toEqual({ site: 'bluesky', handle: 'bsky.app' })
+    expect(getWatchTarget('https://bsky.app/profile/did:plc:z72i7hdynmk6r22z27h6tvur/')).toEqual({
+      site: 'bluesky',
+      handle: 'did:plc:z72i7hdynmk6r22z27h6tvur',
+    })
+    expect(getWatchTarget('https://bsky.app/profile/bsky.app/post/3my43eyfzs225')).toBeNull()
+    expect(getWatchTarget('https://bsky.app/@bsky.app')).toBeNull()
+    expect(getWatchTarget('https://bsky.app/profile/did:plc:%')).toBeNull()
+  })
+
+  it('reads a subreddit or a user on Reddit', () => {
+    expect(getWatchTarget('https://www.reddit.com/r/pics/')).toEqual({ site: 'reddit', handle: 'r/pics' })
+    expect(getWatchTarget('https://old.reddit.com/r/pics/new')).toEqual({ site: 'reddit', handle: 'r/pics' })
+    expect(getWatchTarget('https://www.reddit.com/user/spez/submitted/')).toEqual({ site: 'reddit', handle: 'u/spez' })
+    expect(getWatchTarget('https://www.reddit.com/u/spez')).toEqual({ site: 'reddit', handle: 'u/spez' })
+    expect(getWatchTarget('https://www.reddit.com/r/pics/comments/1x9os2h/a_walk/')).toBeNull()
+  })
+
+  it('reads a profile on a Mastodon server, local or of another server', () => {
+    expect(getWatchTarget('https://mastodon.social/@Gargron')).toEqual({ site: 'mastodon', handle: 'Gargron@mastodon.social' })
+    expect(getWatchTarget('https://mastodon.social/@anja@chaos.social')).toEqual({ site: 'mastodon', handle: 'anja@chaos.social' })
+    expect(getWatchTarget('https://mastodon.social/@Gargron/117452735190662392')).toBeNull()
+    expect(getWatchTarget('https://www.youtube.com/@NASA')).toBeNull()
+    expect(getWatchTarget('https://www.tiktok.com/@nasa')).toBeNull()
+  })
+
   it('is null on any other site and for what is not an address', () => {
     expect(getWatchTarget('https://x.com.evil.net/nasa')).toBeNull()
     expect(getWatchTarget('https://www.facebook.com/nasa')).toBeNull()
@@ -61,6 +109,410 @@ describe('getWatchTarget', () => {
 describe('watchKey', () => {
   it('does not depend on the case of the handle', () => {
     expect(watchKey({ site: 'x', handle: 'NASA' })).toBe(watchKey({ site: 'x', handle: 'nasa' }))
+  })
+})
+
+describe('watchProfileUrl', () => {
+  it('is the page of the profile on its site', () => {
+    expect(watchProfileUrl({ site: 'threads', handle: 'zuck' })).toBe('https://www.threads.com/@zuck')
+    expect(watchProfileUrl({ site: 'bluesky', handle: 'bsky.app' })).toBe('https://bsky.app/profile/bsky.app')
+    expect(watchProfileUrl({ site: 'mastodon', handle: 'anja@chaos.social' })).toBe('https://chaos.social/@anja')
+    expect(watchProfileUrl({ site: 'reddit', handle: 'r/pics' })).toBe('https://www.reddit.com/r/pics/')
+    expect(watchProfileUrl({ site: 'reddit', handle: 'u/spez' })).toBe('https://www.reddit.com/user/spez/')
+    // Or the page the site told of.
+    expect(watchProfileUrl({ site: 'mastodon', handle: 'alice@example.org', url: 'https://social.example.org/@alice' })).toBe(
+      'https://social.example.org/@alice',
+    )
+  })
+})
+
+describe('watchSourceLabel', () => {
+  it('is the handle with an @, but a subreddit or user of Reddit as Reddit names it', () => {
+    expect(watchSourceLabel({ site: 'x', handle: 'NASA' })).toBe('@NASA')
+    expect(watchSourceLabel({ site: 'mastodon', handle: 'anja@chaos.social' })).toBe('@anja@chaos.social')
+    expect(watchSourceLabel({ site: 'reddit', handle: 'r/pics' })).toBe('r/pics')
+  })
+})
+
+describe('htmlToText', () => {
+  it('keeps paragraphs and line breaks, mentions and hashtags as shown, and other links in full', () => {
+    const html =
+      '<p>Hi <span class="h-card"><a href="https://sunny.garden/@kurio" class="u-url mention">@<span>kurio</span></a></span> &amp; all<br>' +
+      '<a href="https://chaos.social/tags/cats" class="mention hashtag" rel="tag">#<span>cats</span></a></p>' +
+      '<p><a href="https://www.rawstory.com/no-kings/" rel="nofollow"><span class="invisible">https://www.</span><span class="ellipsis">rawstory.com/no-k</span></a></p>'
+    expect(htmlToText(html)).toBe('Hi @kurio & all\n#cats\n\nhttps://www.rawstory.com/no-kings/')
+  })
+
+  it('makes a link within the site whole', () => {
+    expect(htmlToText('<p>see <a href="/r/RDDT/comments/1">this</a></p>', 'https://www.reddit.com')).toBe(
+      'see https://www.reddit.com/r/RDDT/comments/1',
+    )
+  })
+})
+
+describe('parseThreadsProfilePage', () => {
+  const post = (code: string, extra: object = {}) => ({
+    pk: '1',
+    code,
+    taken_at: 1791824189,
+    user: { username: 'zuck' },
+    caption: { text: `post ${code}` },
+    image_versions2: { candidates: [{ url: `https://cdn/${code}.jpg`, width: 1080, height: 1350 }] },
+    original_width: 1080,
+    original_height: 1350,
+    ...extra,
+  })
+  const page = (edges: unknown[]) =>
+    '<meta property="og:title" content="Mark Zuckerberg (&#064;zuck) &#x2022; Threads, Say more" />' +
+    '<meta property="og:image" content="https://cdn/avatar.jpg" />' +
+    `<script type="application/json" data-sjs>${JSON.stringify({ require: [[{ result: { data: { mediaData: { edges } } } }]] })}</script>`
+
+  it('reads the first post of each thread, its photos and video, and the profile from its preview tags', () => {
+    const result = parseThreadsProfilePage(
+      page([
+        { node: { thread_items: [{ post: post('A') }, { post: post('A2') }] } },
+        { node: { thread_items: [{ post: post('B', { video_versions: [{ url: 'https://cdn/B.mp4' }] }) }] } },
+        {
+          node: {
+            thread_items: [
+              {
+                post: post('C', {
+                  carousel_media: [
+                    { image_versions2: { candidates: [{ url: 'https://cdn/C1.jpg' }] } },
+                    { image_versions2: { candidates: [{ url: 'https://cdn/C2.jpg' }] }, video_versions: [{ url: 'https://cdn/C2.mp4' }] },
+                  ],
+                }),
+              },
+            ],
+          },
+        },
+        { node: { thread_items: [{ post: post('D', { taken_at: 1791900000, image_versions2: null, text_post_app_info: { share_info: { reposted_post: post('E', { user: { username: 'mosseri' } }) } } }) }] } },
+      ]),
+      'zuck',
+    )
+    expect(result.info).toEqual({ name: 'Mark Zuckerberg', avatar: 'https://cdn/avatar.jpg' })
+    expect(result.posts.map((p) => p.id)).toEqual(['A', 'B', 'C', 'E'])
+    expect(result.posts[0]).toMatchObject({
+      url: 'https://www.threads.com/@zuck/post/A',
+      text: 'post A',
+      createdAtMs: 1791824189000,
+      media: [{ type: 'image', url: 'https://cdn/A.jpg', width: 1080, height: 1350 }],
+    })
+    expect(result.posts[1].media).toEqual([{ type: 'video', url: 'https://cdn/B.mp4', thumb: 'https://cdn/B.jpg', width: 1080, height: 1350 }])
+    expect(result.posts[2].media?.map((item) => item.url)).toEqual(['https://cdn/C1.jpg', 'https://cdn/C2.mp4'])
+    expect(result.posts[3]).toMatchObject({ url: 'https://www.threads.com/@mosseri/post/E', repostOf: 'mosseri', createdAtMs: 1791900000000 })
+  })
+
+  it('throws on a page without its posts', () => {
+    expect(() => parseThreadsProfilePage('<html></html>', 'zuck')).toThrow('no posts in the page')
+  })
+})
+
+describe('parseThreadsPostPage', () => {
+  const media = (code: string, extra: object) => ({ code, user: { username: 'zuck' }, ...extra })
+  const page = (data: object) =>
+    `<script type="application/json" data-sjs>${JSON.stringify({ require: [[{ __bbox: { result: { data } } }]] })}</script>`
+
+  it('reads the photos and videos of the post asked for, not of the posts shown with it', () => {
+    const html = page({
+      relatedPosts: { threads: [{ thread_items: [{ post: media('X', { image_versions2: { candidates: [{ url: 'https://cdn/x.jpg' }] } }) }] }] },
+      media: media('C', {
+        image_versions2: { candidates: [{ url: 'https://cdn/cover.jpg' }] },
+        carousel_media: [
+          { image_versions2: { candidates: [{ url: 'https://cdn/c1.jpg?oe=6AD79413' }] } },
+          { image_versions2: { candidates: [{ url: 'https://cdn/c2.jpg' }] }, video_versions: [{ url: 'https://cdn/c2.mp4' }] },
+        ],
+      }),
+    })
+    expect(parseThreadsPostPage(html, 'C').map((item) => item.url)).toEqual(['https://cdn/c1.jpg?oe=6AD79413', 'https://cdn/c2.mp4'])
+  })
+
+  it('throws on a page without the post', () => {
+    expect(() => parseThreadsPostPage(page({ media: null }), 'C')).toThrow('no media in the post page')
+  })
+})
+
+describe('expandBlueskyLinks', () => {
+  it('puts the full address in place of a shortened link, counting in bytes of UTF-8', () => {
+    const text = 'café → example.com/a... ok'
+    const start = new TextEncoder().encode('café → ').length
+    const end = start + 'example.com/a...'.length
+    const facets = [{ index: { byteStart: start, byteEnd: end }, features: [{ $type: 'app.bsky.richtext.facet#link', uri: 'https://example.com/abc' }] }]
+    expect(expandBlueskyLinks(text, facets)).toBe('café → https://example.com/abc ok')
+  })
+
+  it('leaves the text as it is without links', () => {
+    expect(expandBlueskyLinks('hi @bsky.app', [{ index: { byteStart: 3, byteEnd: 12 }, features: [{ $type: 'app.bsky.richtext.facet#mention' }] }])).toBe(
+      'hi @bsky.app',
+    )
+  })
+})
+
+describe('parseBlueskyFeed', () => {
+  const did = 'did:plc:z72i7hdynmk6r22z27h6tvur'
+  const author = { did, handle: 'bsky.app', displayName: 'Bluesky', avatar: 'https://cdn/avatar' }
+
+  it('reads posts, reposts at the time they were reposted, photos and videos, and the profile', () => {
+    const result = parseBlueskyFeed(
+      {
+        feed: [
+          {
+            post: {
+              uri: `at://${did}/app.bsky.feed.post/3mxyyerrxak2m`,
+              author,
+              record: { text: 'v1.135 is live!', createdAt: '2026-10-16T16:23:26.498Z' },
+              embed: {
+                $type: 'app.bsky.embed.video#view',
+                cid: 'bafkvideo',
+                thumbnail: 'https://video/thumbnail.jpg',
+                aspectRatio: { width: 1000, height: 1000 },
+              },
+            },
+          },
+          {
+            post: {
+              uri: 'at://did:plc:other/app.bsky.feed.post/3mxu23gu4yc2f',
+              author: { did: 'did:plc:other', handle: 'stephen.bsky.social' },
+              record: { text: 'buildings', createdAt: '2026-10-14T17:10:41.835Z' },
+              embed: {
+                $type: 'app.bsky.embed.recordWithMedia#view',
+                media: {
+                  $type: 'app.bsky.embed.images#view',
+                  images: [{ thumb: 'https://cdn/thumb', fullsize: 'https://cdn/full', aspectRatio: { width: 736, height: 414 } }],
+                },
+              },
+            },
+            reason: { $type: 'app.bsky.feed.defs#reasonRepost', by: author, indexedAt: '2026-10-16T17:23:53.466Z' },
+          },
+          {
+            post: {
+              uri: `at://${did}/app.bsky.feed.post/3mxxid5w4kc2p`,
+              author,
+              record: { text: 'read this', createdAt: '2026-10-16T02:03:32.500Z' },
+              embed: { $type: 'app.bsky.embed.external#view', external: { uri: 'https://example.com/story', thumb: 'https://cdn/card' } },
+            },
+          },
+        ],
+      },
+      'bsky.app',
+    )
+    expect(result.info).toEqual({ name: 'Bluesky', avatar: 'https://cdn/avatar' })
+    expect(result.posts[0]).toMatchObject({
+      id: `${did}/3mxyyerrxak2m`,
+      url: 'https://bsky.app/profile/bsky.app/post/3mxyyerrxak2m',
+      image: 'https://video/thumbnail.jpg',
+      media: [
+        {
+          type: 'video',
+          url: `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${encodeURIComponent(did)}&cid=bafkvideo`,
+          thumb: 'https://video/thumbnail.jpg',
+          width: 1000,
+          height: 1000,
+        },
+      ],
+      createdAtMs: Date.parse('2026-10-16T16:23:26.498Z'),
+    })
+    expect(result.posts[1]).toMatchObject({
+      id: 'did:plc:other/3mxu23gu4yc2f',
+      url: 'https://bsky.app/profile/stephen.bsky.social/post/3mxu23gu4yc2f',
+      media: [{ type: 'image', url: 'https://cdn/full', thumb: 'https://cdn/thumb', width: 736, height: 414 }],
+      createdAtMs: Date.parse('2026-10-16T17:23:53.466Z'),
+      repostOf: 'stephen.bsky.social',
+    })
+    expect(result.posts[2]).toMatchObject({ text: 'read this\nhttps://example.com/story', image: 'https://cdn/card', media: [] })
+  })
+
+  it('asks for a video at the server its account is on, and finds those accounts in the feed', () => {
+    const json = {
+      feed: [
+        {
+          post: {
+            uri: 'at://did:plc:self/app.bsky.feed.post/1',
+            author: { did: 'did:plc:self', handle: 'me.example' },
+            record: { text: '', createdAt: '2026-10-16T16:23:26.498Z' },
+            embed: { $type: 'app.bsky.embed.video#view', cid: 'bafkvideo' },
+          },
+        },
+        {
+          post: {
+            uri: 'at://did:plc:other/app.bsky.feed.post/2',
+            author: { did: 'did:plc:other', handle: 'other.example' },
+            record: { text: '', createdAt: '2026-10-15T16:23:26.498Z' },
+            embed: { $type: 'app.bsky.embed.images#view', images: [] },
+          },
+        },
+      ],
+    }
+    expect(blueskyVideoDids(json)).toEqual(['did:plc:self'])
+    const result = parseBlueskyFeed(json, 'me.example', (did) => (did === 'did:plc:self' ? 'https://pds.example' : undefined))
+    expect(result.posts[0].media?.[0].url).toBe('https://pds.example/xrpc/com.atproto.sync.getBlob?did=did%3Aplc%3Aself&cid=bafkvideo')
+  })
+
+  it('throws on an answer that is not a feed', () => {
+    expect(() => parseBlueskyFeed({ error: 'InvalidRequest', message: 'Profile not found' }, 'nobody')).toThrow('Profile not found')
+  })
+})
+
+describe('Bluesky servers', () => {
+  it('finds the document of an account\'s id', () => {
+    expect(didDocumentUrl('did:plc:z72i7hdynmk6r22z27h6tvur')).toBe('https://plc.directory/did:plc:z72i7hdynmk6r22z27h6tvur')
+    expect(didDocumentUrl('did:web:example.com')).toBe('https://example.com/.well-known/did.json')
+    expect(didDocumentUrl('did:web:example.com%3A8443:user:alice')).toBe('https://example.com:8443/user/alice/did.json')
+    expect(didDocumentUrl('did:key:z6Mk')).toBeUndefined()
+  })
+
+  it('reads the server an account is on from the document', () => {
+    const json = {
+      id: 'did:plc:z72i7hdynmk6r22z27h6tvur',
+      service: [{ id: '#atproto_pds', type: 'AtprotoPersonalDataServer', serviceEndpoint: 'https://puffball.us-east.host.bsky.network/' }],
+    }
+    expect(parseDidDocumentPds(json)).toBe('https://puffball.us-east.host.bsky.network')
+    expect(parseDidDocumentPds({ service: [{ id: '#atproto_pds', serviceEndpoint: 'http://insecure.example' }] })).toBeUndefined()
+    expect(parseDidDocumentPds({})).toBeUndefined()
+  })
+})
+
+describe('parseMastodonStatuses', () => {
+  it('reads posts and boosts, with their media, linked on the profile\'s own server', () => {
+    const result = parseMastodonStatuses(
+      { id: '1', display_name: 'Eugen Rochko', avatar: 'https://files/avatar.png', url: 'https://mastodon.social/@Gargron' },
+      [
+        {
+          id: '10',
+          uri: 'https://mastodon.social/users/Gargron/statuses/10',
+          created_at: '2026-10-17T18:22:55.836Z',
+          content: '<p>A picture</p>',
+          spoiler_text: '',
+          account: { acct: 'Gargron' },
+          media_attachments: [
+            { type: 'image', url: 'https://files/a.jpg', preview_url: 'https://files/small/a.jpg', meta: { original: { width: 2494, height: 3325 } } },
+            { type: 'audio', url: 'https://files/a.mp3' },
+          ],
+        },
+        {
+          id: '11',
+          created_at: '2026-10-18T15:09:06.289Z',
+          content: '',
+          reblog: {
+            id: '9',
+            uri: 'https://chaos.social/users/anja/statuses/123',
+            content: '<p>Lunch</p>',
+            spoiler_text: 'food',
+            account: { acct: 'anja@chaos.social' },
+            media_attachments: [{ type: 'gifv', url: 'https://files/b.mp4', preview_url: 'https://files/b.png', meta: {} }],
+          },
+        },
+      ],
+      'Gargron@mastodon.social',
+    )
+    expect(result.info).toEqual({ name: 'Eugen Rochko', avatar: 'https://files/avatar.png', url: 'https://mastodon.social/@Gargron' })
+    expect(result.posts[0]).toMatchObject({
+      id: 'https://mastodon.social/users/Gargron/statuses/10',
+      url: 'https://mastodon.social/@Gargron/10',
+      text: 'A picture',
+      image: 'https://files/small/a.jpg',
+      media: [{ type: 'image', url: 'https://files/a.jpg', thumb: 'https://files/small/a.jpg', width: 2494, height: 3325 }],
+    })
+    expect(result.posts[1]).toMatchObject({
+      // As any server has it, so the post boosted by profiles on two servers is one.
+      id: 'https://chaos.social/users/anja/statuses/123',
+      url: 'https://mastodon.social/@anja@chaos.social/9',
+      text: 'food\n\nLunch',
+      media: [{ type: 'video', url: 'https://files/b.mp4', thumb: 'https://files/b.png' }],
+      createdAtMs: Date.parse('2026-10-18T15:09:06.289Z'),
+      repostOf: 'anja@chaos.social',
+    })
+  })
+
+  it('links the posts on the server the account is on, when that is not its domain', () => {
+    const result = parseMastodonStatuses(
+      {},
+      [{ id: '5', uri: 'https://social.example.org/users/alice/statuses/5', created_at: '2026-10-17T18:22:55.836Z', content: '', account: { acct: 'alice' }, media_attachments: [] }],
+      'alice@example.org',
+      'social.example.org',
+    )
+    expect(result.posts[0].url).toBe('https://social.example.org/@alice/5')
+  })
+
+  it('throws on an answer that is not a list of posts', () => {
+    expect(() => parseMastodonStatuses({}, { error: 'This API requires an authenticated user' }, 'a@b.social')).toThrow(
+      'This API requires an authenticated user',
+    )
+  })
+})
+
+describe('Mastodon servers', () => {
+  it('looks up the whole handle, on its domain or on the server given', () => {
+    expect(mastodonLookupUrl('alice@example.org')).toBe('https://example.org/api/v1/accounts/lookup?acct=alice%40example.org')
+    expect(mastodonLookupUrl('alice@example.org', 'social.example.org')).toBe(
+      'https://social.example.org/api/v1/accounts/lookup?acct=alice%40example.org',
+    )
+    expect(mastodonWebFingerUrl('alice@example.org')).toBe('https://example.org/.well-known/webfinger?resource=acct%3Aalice%40example.org')
+  })
+
+  it('reads the server an account is on from its WebFinger answer', () => {
+    const json = {
+      subject: 'acct:alice@example.org',
+      links: [
+        { rel: 'http://webfinger.net/rel/profile-page', type: 'text/html', href: 'https://social.example.org/@alice' },
+        { rel: 'self', type: 'application/activity+json', href: 'https://social.example.org/users/alice' },
+      ],
+    }
+    expect(parseMastodonWebFinger(json)).toBe('social.example.org')
+    expect(() => parseMastodonWebFinger({ links: [] })).toThrow('no account')
+  })
+})
+
+describe('parseRedditFeed', () => {
+  const escape = (html: string) => html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  const entry = (id: string, title: string, content: string, thumb?: string) =>
+    `<entry><author><name>/u/someone</name></author><content type="html">${escape(content)}</content><id>t3_${id}</id>` +
+    (thumb ? `<media:thumbnail url="${thumb.replace(/&/g, '&amp;')}" />` : '') +
+    `<link href="https://www.reddit.com/r/pics/comments/${id}/x/" /><updated>2026-10-19T05:48:42+00:00</updated>` +
+    `<published>2026-10-19T05:48:42+00:00</published><title>${escape(title)}</title></entry>`
+  const feed = (entries: string[]) =>
+    '<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">' +
+    '<logo>https://thumbs/pics.png</logo><title>newest submissions : pics</title>' +
+    entries.join('') +
+    '</feed>'
+
+  it('reads a photo, a post of text, and a shared link, each with its title', () => {
+    const result = parseRedditFeed(
+      feed([
+        entry(
+          '1x9os2h',
+          'A walk & a view',
+          '<table><tr><td><img src="https://preview.redd.it/a.jpeg?width=640&amp;s=1" /></td><td> <span><a href="https://i.redd.it/a.jpeg">[link]</a></span> <span><a href="https://www.reddit.com/r/pics/comments/1x9os2h/x/">[comments]</a></span></td></tr></table>',
+          'https://preview.redd.it/a.jpeg?width=640&s=1',
+        ),
+        entry(
+          '1vgbkge',
+          'Hello',
+          '<!-- SC_OFF --><div class="md"><p>Hi &amp; welcome</p> <p>see <a href="/r/RDDT/">r/RDDT</a></p></div><!-- SC_ON --> <span><a href="https://www.reddit.com/r/pics/comments/1vgbkge/x/">[link]</a></span>',
+        ),
+        entry('1t4nr7v', 'A podcast', '<span><a href="https://example.com/podcast">[link]</a></span>', 'https://external-preview.redd.it/p.jpeg?width=140&s=2'),
+      ]),
+      'r/pics',
+    )
+    expect(result.info).toEqual({ avatar: 'https://thumbs/pics.png' })
+    expect(result.posts[0]).toMatchObject({
+      id: '1x9os2h',
+      url: 'https://www.reddit.com/r/pics/comments/1x9os2h/x/',
+      text: 'A walk & a view',
+      image: 'https://preview.redd.it/a.jpeg?width=640&s=1',
+      media: [{ type: 'image', url: 'https://i.redd.it/a.jpeg', thumb: 'https://preview.redd.it/a.jpeg?width=640&s=1' }],
+      createdAtMs: Date.parse('2026-10-19T05:48:42+00:00'),
+    })
+    expect(result.posts[1]).toMatchObject({ text: 'Hello\n\nHi & welcome\n\nsee https://www.reddit.com/r/RDDT/', media: [] })
+    expect(result.posts[2]).toMatchObject({
+      text: 'A podcast\n\nhttps://example.com/podcast',
+      image: 'https://external-preview.redd.it/p.jpeg?width=140&s=2',
+      media: [],
+    })
+  })
+
+  it('throws on what is not a feed, as the page Reddit blocks a request with', () => {
+    expect(() => parseRedditFeed('<html>blocked</html>', 'r/pics')).toThrow('no feed')
   })
 })
 
@@ -372,6 +824,12 @@ describe('mediaFileName', () => {
     expect(mediaFileName(post, 0, { type: 'video', url: 'https://v/a.mp4?tag=1' })).toBe('x_NASA_123_1.mp4')
     expect(mediaFileName(post, 1, { type: 'image', url: 'https://pbs/media/a.png?name=large' })).toBe('x_NASA_123_2.png')
     expect(mediaExtension({ type: 'image', url: 'https://cdn/no-extension' })).toBe('jpg')
+    expect(mediaFileName({ site: 'reddit', handle: 'r/pics', id: 'abc' }, 0, { type: 'image', url: 'https://i.redd.it/a.png' })).toBe(
+      'reddit_r_pics_abc_1.png',
+    )
+    expect(
+      mediaFileName({ site: 'mastodon', handle: 'a@b.social', id: 'https://b.social/users/a/statuses/1' }, 0, { type: 'image', url: 'https://f/a.png' }),
+    ).toBe('mastodon_a_b.social_https___b.social_users_a_statuses_1_1.png')
   })
 })
 

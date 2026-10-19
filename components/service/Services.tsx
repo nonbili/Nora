@@ -5,6 +5,7 @@ import {
   IconFacebook,
   IconInstagram,
   IconLinkedIn,
+  IconMastodon,
   IconReddit,
   IconThreads,
   IconTikTok,
@@ -38,6 +39,9 @@ export const services: Record<string, [string, () => ReactNode]> = {
   vk: ['VK', () => <IconVK />],
   x: ['X', () => <IconTwitter />],
 }
+
+/** The icon of a site, also of one that is not a service, as Mastodon: it is on many servers. */
+export const siteIcon = (site: string) => (site === 'mastodon' ? <IconMastodon /> : services[site]?.[1]())
 
 export const ServiceManager: React.FC<{ hideTitle?: boolean }> = ({ hideTitle = false }) => {
   const disabledServices = useValue(settings$.disabledServicesArr)

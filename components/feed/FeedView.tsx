@@ -14,15 +14,18 @@ import {
   WATCH_INTERVAL_OPTIONS,
   formatPostAge,
   mediaKey,
+  refreshesMedia,
   uniquePostsNewestFirst,
   splitInterval,
   watchKey,
   watchProfileUrl,
+  watchSiteLabels,
+  watchSourceLabel,
   type WatchPost,
   type WatchSite,
 } from '@/lib/watch'
 import { NouMenu } from '../menu/NouMenu'
-import { services } from '../service/Services'
+import { siteIcon } from '../service/Services'
 import {
   WATCH_ERROR_NEEDS_LOGIN,
   WATCH_ERROR_RATE_LIMITED,
@@ -37,8 +40,6 @@ import { share } from '@/lib/share'
 import { clearWatchMedia, ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
 import { feedTabActions, feedTabUrl } from '@/lib/feed-tab'
 import { openFeedTab } from '@/lib/page'
-
-const siteLabel = { x: 'X', instagram: 'Instagram' } as const
 
 const intervalKeys = { minutes: 'feed.intervalMinutes', hours: 'feed.intervalHours', days: 'feed.intervalDays' } as const
 
@@ -75,7 +76,7 @@ const ChoicePicker: React.FC<{
 
 /** What to tell about how a profile is being checked; null when all is well. */
 const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean } | null => {
-  const site = siteLabel[profile.site]
+  const site = watchSiteLabels[profile.site]
   if (profile.error === WATCH_ERROR_NEEDS_LOGIN) return { text: t('feed.statusNeedsLogin', { site }), warn: true }
   if (profile.error === WATCH_ERROR_RATE_LIMITED) return { text: t('feed.statusRateLimited', { site }), warn: true }
   if (profile.error) return { text: t('feed.statusFailed', { error: profile.error }), warn: true }
@@ -101,7 +102,7 @@ const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> = ({ uri
         className="absolute items-center justify-center overflow-hidden rounded-full bg-white"
         style={{ width: badge + 2, height: badge + 2, right: -2, bottom: -2 }}
       >
-        <View style={{ transform: [{ scale: badge / SERVICE_ICON_SIZE }] }}>{services[site]?.[1]()}</View>
+        <View style={{ transform: [{ scale: badge / SERVICE_ICON_SIZE }] }}>{siteIcon(site)}</View>
       </View>
     </View>
   )
@@ -121,7 +122,7 @@ const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, on
     if (coverFailed) return
     setCoverFailed(true)
     // A cover that no longer loads either: the post is read again for new addresses, once.
-    if (post.site === 'instagram') ensurePostMedia(post, { force: true }).catch(() => {})
+    if (refreshesMedia(post.site)) ensurePostMedia(post, { force: true }).catch(() => {})
   }
   if (!source) return null
   const width = first?.width
@@ -184,7 +185,7 @@ const PostRow: React.FC<{
             {profile?.name || post.handle}
           </NouText>
           <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
-            @{post.handle} · {formatPostAge(post.createdAtMs, now)}
+            {watchSourceLabel(post)} · {formatPostAge(post.createdAtMs, now)}
           </NouText>
           {unread ? <View className="h-2 w-2 rounded-full bg-indigo-500" /> : null}
           <View className="ml-auto">
@@ -197,7 +198,7 @@ const PostRow: React.FC<{
               items={[
                 ...(post.media?.length ? [{ label: t('feed.saveMedia'), handler: () => void save() }] : []),
                 { label: t('menus.share'), handler: () => share(post.url) },
-                { label: t('feed.openOn', { site: siteLabel[post.site] }), handler: onOpenOriginal },
+                { label: t('feed.openOn', { site: watchSiteLabels[post.site] }), handler: onOpenOriginal },
               ]}
             />
           </View>
@@ -215,7 +216,13 @@ const PostRow: React.FC<{
         <View className="pr-3">
           <PostMedia
             post={post}
-            onOpen={() => ui$.feedGallery.set({ postKey: post.key, profileKey: watchKey(post), index: 0 })}
+            // A cover alone, of a link or of what the feed does not have, as a Reddit video: the post opens.
+            // Media still to be read, as of an Instagram post, is read by the gallery.
+            onOpen={() =>
+              post.media?.length || post.mediaComplete === false
+                ? ui$.feedGallery.set({ postKey: post.key, profileKey: watchKey(post), index: 0 })
+                : onOpenOriginal()
+            }
           />
         </View>
       </View>
@@ -395,7 +402,7 @@ export const FeedView: React.FC<{
   }
 
   const unwatch = (profile: WatchedProfile) => {
-    confirmDestructiveAction(t('feed.unwatch'), t('feed.unwatchConfirm', { handle: profile.handle }), t('feed.unwatch'), () => {
+    confirmDestructiveAction(t('feed.unwatch'), t('feed.unwatchConfirm', { handle: profile.handle, source: watchSourceLabel(profile), interpolation: { escapeValue: false } }), t('feed.unwatch'), () => {
       setSelectedKey(null)
       watch$.unwatch(profile.key)
     })
@@ -422,7 +429,7 @@ export const FeedView: React.FC<{
                 )}
               >
                 {profile ? <Avatar uri={profile.avatar} size={20} site={profile.site} /> : null}
-                <NouText className="text-sm">{profile ? `@${profile.handle}` : t('feed.all')}</NouText>
+                <NouText className="text-sm">{profile ? watchSourceLabel(profile) : t('feed.all')}</NouText>
                 {status?.warn ? <View className="h-1.5 w-1.5 rounded-full bg-amber-500" /> : null}
               </Pressable>
             )
@@ -439,7 +446,7 @@ export const FeedView: React.FC<{
                 {selected.name || selected.handle}
               </NouText>
               <NouText className="text-sm text-zinc-600 dark:text-zinc-400">
-                @{selected.handle} · {siteLabel[selected.site]}
+                {watchSourceLabel(selected)} · {watchSiteLabels[selected.site]}
               </NouText>
             </View>
             <MaterialIcons name="open-in-new" size={18} color={iconColor} />
@@ -530,7 +537,7 @@ export const FeedView: React.FC<{
           {loggedOutSites.length ? (
             <View className="mx-4 mb-3 rounded-2xl bg-amber-50 px-4 py-3 dark:bg-amber-500/10">
               <NouText className="text-sm text-amber-800 dark:text-amber-300">
-                {t('feed.loginHint', { sites: loggedOutSites.map((site) => siteLabel[site]).join(', ') })}
+                {t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
               </NouText>
             </View>
           ) : null}

@@ -11,12 +11,10 @@ import { NouMenu } from '../menu/NouMenu'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
 import { watch$ } from '@/states/watch'
-import { findWatchPost, mediaKey, type WatchMedia, type WatchPost } from '@/lib/watch'
+import { findWatchPost, mediaKey, refreshesMedia, watchSiteLabels, type WatchMedia, type WatchPost } from '@/lib/watch'
 import { ensurePostMedia, holdMedia, keepPostMediaItem, keptMediaUri, saveWatchPostMedia, savesToDownloads, touchMedia, watchMedia$ } from '@/lib/watch-media'
 import { showToast } from '@/lib/toast'
 import { share } from '@/lib/share'
-
-const siteLabel = { x: 'X', instagram: 'Instagram' } as const
 
 // The height of the seek bar and buttons the video player draws at its bottom.
 const VIDEO_CONTROLS_HEIGHT = 112
@@ -73,7 +71,7 @@ const GalleryItem: React.FC<{
   // Only once: a video that fails with a fresh address has some other problem.
   const retried = useRef(false)
   const onVideoError = useCallback(() => {
-    if (post.site === 'instagram' && !retried.current) {
+    if (refreshesMedia(post.site) && !retried.current) {
       retried.current = true
       ensurePostMedia(post, { force: true }).catch(() => setFailed(true))
     } else {
@@ -212,7 +210,7 @@ export const FeedGalleryModal = () => {
               </View>
             }
             items={[
-              { label: t('feed.openOn', { site: siteLabel[post.site] }), handler: openOriginal },
+              { label: t('feed.openOn', { site: watchSiteLabels[post.site] }), handler: openOriginal },
               { label: t('menus.share'), handler: () => share(post.url) },
             ]}
           />
@@ -222,7 +220,7 @@ export const FeedGalleryModal = () => {
         <View className="absolute inset-0 items-center justify-center px-8" pointerEvents="box-none">
           <NouText className="mb-4 text-center text-zinc-300">{t('feed.mediaFailed')}</NouText>
           <Pressable onPress={openOriginal} className="rounded-full bg-white/15 px-4 py-2">
-            <NouText className="text-white">{t('feed.openOn', { site: siteLabel[post.site] })}</NouText>
+            <NouText className="text-white">{t('feed.openOn', { site: watchSiteLabels[post.site] })}</NouText>
           </Pressable>
         </View>
       ) : null}

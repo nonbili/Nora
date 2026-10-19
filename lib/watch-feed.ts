@@ -10,17 +10,32 @@ import {
   mergeWatchPosts,
   INSTAGRAM_PAGE_HEADERS,
   backgroundIntervalMinutes,
+  blueskyFeedUrl,
+  blueskyVideoDids,
+  didDocumentUrl,
+  parseDidDocumentPds,
   dueWatchProfiles,
+  mastodonLookupUrl,
+  mastodonStatusesUrl,
+  parseBlueskyFeed,
   parseInstagramProfileInfo,
   parseInstagramProfilePage,
+  mastodonWebFingerUrl,
+  parseMastodonStatuses,
+  parseMastodonWebFinger,
+  parseRedditFeed,
+  parseThreadsProfilePage,
   parseXTimeline,
+  redditFeedUrl,
+  splitMastodonHandle,
   watchProfileUrl,
+  watchSourceLabel,
   xTimelineUrl,
   type WatchFetchResult,
   type WatchPost,
   type WatchSite,
 } from '@/lib/watch'
-import { isWatchWebViewAvailable, loadInWatchWebView } from '@/lib/watch-webview'
+import { THREADS_POSTS_MARKER, isWatchWebViewAvailable, loadInWatchWebView } from '@/lib/watch-webview'
 import { syncWatchMedia } from '@/lib/watch-media'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
 
@@ -85,18 +100,22 @@ const parseCookieHeader = (raw: string): Record<string, string> => {
   return out
 }
 
-const siteCookieOrigin: Record<WatchSite, string> = {
+// The sites an account helps with; the others are read the same without one.
+const siteCookieOrigin: Partial<Record<WatchSite, string>> = {
   x: 'https://x.com',
   instagram: 'https://www.instagram.com',
 }
 
-const isSignedIn: Record<WatchSite, (cookies: Record<string, string>) => boolean> = {
+const isSignedIn: Partial<Record<WatchSite, (cookies: Record<string, string>) => boolean>> = {
   x: (cookies) => Boolean(cookies.auth_token && cookies.ct0),
   instagram: (cookies) => Boolean(cookies.sessionid),
 }
 
-/** The cookies of the first Nora profile signed in to the site, or '' when there is none. */
+/** The cookies of the first Nora profile signed in to the site, or '' when there is none or it needs none. */
 const findSignedInCookies = async (site: WatchSite): Promise<string> => {
+  const origin = siteCookieOrigin[site]
+  const signedIn = isSignedIn[site]
+  if (!origin || !signedIn) return ''
   const profileIds = Array.from(
     new Set(
       settings$.profiles
@@ -107,8 +126,8 @@ const findSignedInCookies = async (site: WatchSite): Promise<string> => {
   )
   for (const profileId of profileIds) {
     try {
-      const header = await NoraViewModule.getCookies(siteCookieOrigin[site], profileId)
-      if (header && isSignedIn[site](parseCookieHeader(header))) {
+      const header = await NoraViewModule.getCookies(origin, profileId)
+      if (header && signedIn(parseCookieHeader(header))) {
         return header
       }
     } catch (e) {
@@ -236,12 +255,96 @@ const fetchInstagram = async (
   return parseInstagramProfilePage(html, handle)
 }
 
+/** A page or an API's answer from a site that is read without an account, as text. */
+const fetchText = (url: string, headers: Record<string, string>, deadline: number): Promise<string> =>
+  withDeadline(deadline, async (signal) => {
+    const res = await fetch(url, { signal, headers: { 'user-agent': DESKTOP_USER_AGENT, ...headers }, credentials: 'omit' })
+    // An account would not help: a 401 or 403 is a failure like any other.
+    checkStatus(res, true)
+    return res.text()
+  })
+
+const fetchJson = async (url: string, deadline: number): Promise<any> => {
+  const text = await fetchText(url, { accept: 'application/json' }, deadline)
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new WatchFetchError('not JSON')
+  }
+}
+
+/** The profile's page, as for Instagram: by a plain request, or else as loaded by the hidden webview. */
+const fetchThreads = async (handle: string, _cookie: string, source: WatchRunSource, deadline: number): Promise<WatchFetchResult> => {
+  const url = watchProfileUrl({ site: 'threads', handle })
+  try {
+    return parseThreadsProfilePage(await fetchText(url, INSTAGRAM_PAGE_HEADERS, deadline), handle)
+  } catch (e) {
+    if (isRateLimited(e) || !canUseWebView(source) || !timeLeft(deadline)) throw e
+    console.warn('watch threads page failed, trying the webview', handle, e)
+  }
+  return parseThreadsProfilePage(await loadInWatchWebView(url, timeLeft(deadline), THREADS_POSTS_MARKER), handle)
+}
+
+// The server each Bluesky account with a video is on, where its videos are kept.
+const blueskyServers = new Map<string, string>()
+
+const fetchBluesky = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number) => {
+  const json = await fetchJson(blueskyFeedUrl(handle), deadline)
+  for (const did of blueskyVideoDids(json)) {
+    const url = didDocumentUrl(did)
+    if (blueskyServers.has(did) || !url || !timeLeft(deadline)) continue
+    try {
+      const pds = parseDidDocumentPds(await fetchJson(url, deadline))
+      if (pds) blueskyServers.set(did, pds)
+    } catch (e) {
+      // Bluesky's own server is asked instead, which has the videos of the accounts it hosts.
+      if (isRateLimited(e)) break
+      console.warn('watch bluesky server lookup failed', did, e)
+    }
+  }
+  return parseBlueskyFeed(json, handle, (did) => blueskyServers.get(did))
+}
+
+// The server each handle was found on, when that is not its domain.
+const mastodonServers = new Map<string, string>()
+
+const lookUpMastodon = async (handle: string, server: string, deadline: number) => {
+  const account = await fetchJson(mastodonLookupUrl(handle, server), deadline)
+  if (!account?.id) throw new WatchFetchError(account?.error || 'no account')
+  return account
+}
+
+// Asked of the profile's own server; one that only answers with an account fails.
+const fetchMastodon = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number) => {
+  let server = mastodonServers.get(handle) || splitMastodonHandle(handle).host
+  let account: any
+  try {
+    account = await lookUpMastodon(handle, server, deadline)
+  } catch (e) {
+    if (isRateLimited(e) || mastodonServers.has(handle)) throw e
+    // The handle's domain may not be the server the account is on.
+    server = parseMastodonWebFinger(await fetchJson(mastodonWebFingerUrl(handle), deadline))
+    if (server === splitMastodonHandle(handle).host) throw e
+    account = await lookUpMastodon(handle, server, deadline)
+    mastodonServers.set(handle, server)
+  }
+  return parseMastodonStatuses(account, await fetchJson(mastodonStatusesUrl(server, account.id), deadline), handle, server)
+}
+
+// The feed Reddit has for a subreddit or a user still answers without an account, unlike its JSON.
+const fetchReddit = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number) =>
+  parseRedditFeed(await fetchText(redditFeedUrl(handle), { accept: 'application/atom+xml, application/xml;q=0.9, */*;q=0.8' }, deadline), handle)
+
 const fetchers: Record<
   WatchSite,
   (handle: string, cookie: string, source: WatchRunSource, deadline: number) => Promise<WatchFetchResult>
 > = {
   x: fetchX,
   instagram: fetchInstagram,
+  threads: fetchThreads,
+  bluesky: fetchBluesky,
+  mastodon: fetchMastodon,
+  reddit: fetchReddit,
 }
 
 const isStillWatched = (key: string) => watch$.profiles.peek().some((profile) => profile.key === key)
@@ -255,7 +358,7 @@ const checkProfile = async (
   const now = Date.now()
   // Whether an account was there to use, even when the profile was read in the end without it:
   // the feed tells to log in only where that would help.
-  const mode = cookie ? 'loggedIn' : 'loggedOut'
+  const mode = cookie ? 'loggedIn' : siteCookieOrigin[profile.site] ? 'loggedOut' : undefined
   try {
     const result = await fetchers[profile.site](profile.handle, cookie, source, deadline)
     // It can be unwatched while the request is out.
@@ -271,6 +374,7 @@ const checkProfile = async (
     watch$.updateProfile(profile.key, {
       ...(result.info.name ? { name: result.info.name } : {}),
       ...(result.info.avatar ? { avatar: result.info.avatar } : {}),
+      ...(result.info.url ? { url: result.info.url } : {}),
       mode,
       lastCheckedAt: now,
       lastSuccessAt: now,
@@ -307,7 +411,7 @@ const notifyFresh = async (profile: WatchedProfile, fresh: WatchPost[]) => {
     await ensureNotificationChannel()
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: current.name ? `${current.name} (@${current.handle})` : `@${current.handle}`,
+        title: current.name ? `${current.name} (${watchSourceLabel(current)})` : watchSourceLabel(current),
         body: fresh.length === 1 ? latest.text || t('feed.newPost') : t('feed.newPosts', { count: fresh.length }),
         // One post opens on its own; several open on the profile, where they all are.
         data: { url: fresh.length === 1 ? latest.url : watchProfileUrl(current) },

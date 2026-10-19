@@ -10,6 +10,7 @@ import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
 import { watch$ } from '@/states/watch'
 import { feedTabUrl } from '@/lib/feed-tab'
+import { watchSiteLabels, watchSourceLabel } from '@/lib/watch'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
 import { clsx } from '@/lib/utils'
@@ -100,9 +101,9 @@ export const TimelineModal = () => {
                   />
                   <NouText className="flex-1" numberOfLines={1}>
                     {profile.name ? `${profile.name} ` : ''}
-                    <NouText className="text-zinc-600 dark:text-zinc-400">@{profile.handle}</NouText>
+                    <NouText className="text-zinc-600 dark:text-zinc-400">{watchSourceLabel(profile)}</NouText>
                   </NouText>
-                  <NouText className="text-xs text-zinc-500">{profile.site === 'x' ? 'X' : 'Instagram'}</NouText>
+                  <NouText className="text-xs text-zinc-500">{watchSiteLabels[profile.site]}</NouText>
                 </Pressable>
               )
             })}

@@ -1,8 +1,20 @@
-/** Watching a profile on X or Instagram: which page is a profile, and reading its latest posts. */
+/**
+ * Watching a profile on X, Instagram, Threads, Bluesky or Mastodon, or a subreddit or user on
+ * Reddit: which page is one, and reading its latest posts.
+ */
 
 import { getProfileUsername, isInstagramHost } from './instagram'
 
-export type WatchSite = 'x' | 'instagram'
+export type WatchSite = 'x' | 'instagram' | 'threads' | 'bluesky' | 'mastodon' | 'reddit'
+
+export const watchSiteLabels: Record<WatchSite, string> = {
+  x: 'X',
+  instagram: 'Instagram',
+  threads: 'Threads',
+  bluesky: 'Bluesky',
+  mastodon: 'Mastodon',
+  reddit: 'Reddit',
+}
 
 export interface WatchTarget {
   site: WatchSite
@@ -41,6 +53,8 @@ export interface WatchPost {
 export interface WatchProfileInfo {
   name?: string
   avatar?: string
+  // The profile's page, where the site tells it: a Mastodon account can be on a server its handle does not name.
+  url?: string
 }
 
 export interface WatchFetchResult {
@@ -57,6 +71,24 @@ const xReservedPaths = new Set([
 ])
 
 const X_PROFILE_PATH = /^\/([A-Za-z0-9_]{1,15})(?:\/(?:media|with_replies))?\/?$/
+
+const isThreadsHost = (host: string) => /^(?:www\.)?threads\.(?:com|net)$/.test(host)
+
+const THREADS_PROFILE_PATH = /^\/@([A-Za-z0-9._]{1,30})(?:\/(?:replies|media|reposts))?\/?$/
+
+const BLUESKY_PROFILE_PATH = /^\/profile\/((?:did:[a-z]+:[A-Za-z0-9._:%-]+)|(?:[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+))\/?$/
+
+const isRedditHost = (host: string) => /^(?:(?:www|old|new|m|np|sh)\.)?reddit\.com$/.test(host)
+
+const SUBREDDIT_PATH = /^\/r\/([A-Za-z0-9_]{2,21})(?:\/(?:hot|new|top|rising))?\/?$/
+
+const REDDIT_USER_PATH = /^\/(?:u|user)\/([A-Za-z0-9_-]{3,20})(?:\/(?:overview|submitted|posts))?\/?$/
+
+// A profile on a Mastodon server, local or as seen from another server: /@user or /@user@host.
+const MASTODON_PROFILE_PATH = /^\/@([A-Za-z0-9_]{1,30})(?:@([a-z0-9-]+(?:\.[a-z0-9-]+)+))?\/?$/
+
+// Sites with profiles at /@name too, which are not Mastodon servers.
+const notMastodonHost = /(?:^|\.)(?:youtube|tiktok|medium|substack|figma|replit|vimeo|pinterest|bsky)\.(?:com|app)$/
 
 /** The profile a page is of, when it is one that can be watched; null for any other page. */
 export function getWatchTarget(url: string | null | undefined): WatchTarget | null {
@@ -78,14 +110,63 @@ export function getWatchTarget(url: string | null | undefined): WatchTarget | nu
     const handle = getProfileUsername(hostname, pathname)
     return handle ? { site: 'instagram', handle } : null
   }
+  if (isThreadsHost(hostname)) {
+    const match = pathname.match(THREADS_PROFILE_PATH)
+    return match ? { site: 'threads', handle: match[1] } : null
+  }
+  if (hostname === 'bsky.app') {
+    const match = pathname.match(BLUESKY_PROFILE_PATH)
+    if (!match) return null
+    try {
+      return { site: 'bluesky', handle: decodeURIComponent(match[1]) }
+    } catch {
+      return null
+    }
+  }
+  if (isRedditHost(hostname)) {
+    const subreddit = pathname.match(SUBREDDIT_PATH)
+    if (subreddit) return { site: 'reddit', handle: `r/${subreddit[1]}` }
+    const user = pathname.match(REDDIT_USER_PATH)
+    return user ? { site: 'reddit', handle: `u/${user[1]}` } : null
+  }
+  if (!notMastodonHost.test(hostname)) {
+    const match = pathname.match(MASTODON_PROFILE_PATH)
+    return match ? { site: 'mastodon', handle: `${match[1]}@${match[2] || hostname}` } : null
+  }
   return null
 }
 
-/** Handles are not case sensitive on either site, so a profile is told by its lower case handle. */
+/** Handles are not case sensitive on any of the sites, so a profile is told by its lower case handle. */
 export const watchKey = ({ site, handle }: WatchTarget) => `${site}:${handle.toLowerCase()}`
 
-export const watchProfileUrl = ({ site, handle }: WatchTarget) =>
-  site === 'x' ? `https://x.com/${handle}` : `https://www.instagram.com/${handle}/`
+/** The user and server of a Mastodon handle, user@host. */
+export const splitMastodonHandle = (handle: string) => {
+  const at = handle.lastIndexOf('@')
+  return { user: handle.slice(0, at), host: handle.slice(at + 1) }
+}
+
+export const watchProfileUrl = ({ site, handle, url }: WatchTarget & { url?: string }) => {
+  if (url) return url
+  switch (site) {
+    case 'x':
+      return `https://x.com/${handle}`
+    case 'instagram':
+      return `https://www.instagram.com/${handle}/`
+    case 'threads':
+      return `https://www.threads.com/@${handle}`
+    case 'bluesky':
+      return `https://bsky.app/profile/${handle}`
+    case 'mastodon': {
+      const { user, host } = splitMastodonHandle(handle)
+      return `https://${host}/@${user}`
+    }
+    case 'reddit':
+      return `https://www.reddit.com/${handle.replace(/^u\//, 'user/')}/`
+  }
+}
+
+/** How a source is named to the user: @handle, but a subreddit or user of Reddit as Reddit has it, r/name or u/name. */
+export const watchSourceLabel = ({ site, handle }: WatchTarget) => (site === 'reddit' ? handle : `@${handle}`)
 
 // --- X ----------------------------------------------------------------------
 
@@ -378,6 +459,374 @@ export function parseInstagramProfilePage(html: string, handle: string): WatchFe
   return { info: { name: name || undefined, avatar: metaContent(html, 'og:image') }, posts }
 }
 
+/** The text of a post given as HTML: paragraphs and line breaks kept, a link as its address, made whole with `origin`. */
+export const htmlToText = (html: string, origin = '') =>
+  decodeEntities(
+    html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
+      // A mention or a hashtag reads as it is shown; any other link is shortened, so its address is given.
+      .replace(/<a\s([^>]*)>([\s\S]*?)<\/a>/gi, (_, attributes: string, inner: string) => {
+        const href = attributes.match(/href="([^"]*)"/)?.[1]
+        if (!href || /class="[^"]*\b(?:mention|hashtag)\b/.test(attributes)) return inner
+        return href.startsWith('/') ? `${origin}${href}` : href
+      })
+      .replace(/<[^>]+>/g, ''),
+  ).trim()
+
+// --- Threads ----------------------------------------------------------------
+
+const THREADS_MEDIA_KEY = 'mediaData'
+
+const threadsItem = (item: any): WatchMedia | null => {
+  const image: string | undefined = item?.image_versions2?.candidates?.[0]?.url
+  const size = { width: item?.original_width || undefined, height: item?.original_height || undefined }
+  const video: string | undefined = item?.video_versions?.[0]?.url
+  if (video) return { type: 'video', url: video, thumb: image, ...size }
+  return image ? { type: 'image', url: image, ...size } : null
+}
+
+const threadsMedia = (post: any): WatchMedia[] => {
+  const items = Array.isArray(post?.carousel_media) && post.carousel_media.length ? post.carousel_media : [post]
+  return items.map(threadsItem).filter((item: WatchMedia | null): item is WatchMedia => Boolean(item))
+}
+
+/**
+ * Reads the posts a Threads profile page comes with, the same with or without an account. Each is
+ * the first of its thread: the others are the author's replies to it.
+ */
+export function parseThreadsProfilePage(html: string, handle: string): WatchFetchResult {
+  let mediaData: any
+  for (const match of html.matchAll(/<script type="application\/json"[^>]*>([\s\S]*?)<\/script>/g)) {
+    if (!match[1].includes(`"${THREADS_MEDIA_KEY}"`)) continue
+    try {
+      mediaData = findWithKey(JSON.parse(match[1]), THREADS_MEDIA_KEY)?.[THREADS_MEDIA_KEY]
+    } catch {}
+    if (Array.isArray(mediaData?.edges)) break
+  }
+  if (!Array.isArray(mediaData?.edges)) {
+    throw new Error('no posts in the page')
+  }
+  const posts: WatchFetchResult['posts'] = []
+  for (const edge of mediaData.edges) {
+    const post = edge?.node?.thread_items?.[0]?.post
+    if (!post?.code) continue
+    const reposted = post.text_post_app_info?.share_info?.reposted_post
+    const shown = reposted?.code ? reposted : post
+    const media = threadsMedia(shown)
+    posts.push({
+      id: shown.code,
+      site: 'threads',
+      handle,
+      url: `https://www.threads.com/@${shown.user?.username || handle}/post/${shown.code}`,
+      text: shown.caption?.text || '',
+      image: media[0]?.thumb || media[0]?.url,
+      media,
+      mediaComplete: true,
+      // A repost shows up when it was reposted.
+      createdAtMs: (post.taken_at || shown.taken_at || 0) * 1000,
+      repostOf: shown !== post ? shown.user?.username : undefined,
+    })
+  }
+  const title = metaContent(html, 'og:title')
+  const name = title?.match(/^(.*?) \(@[^)]+\)/)?.[1]
+  return { info: { name: name || undefined, avatar: metaContent(html, 'og:image') }, posts }
+}
+
+/** The page of one post, which has all its photos and videos, as a profile page does for its newest. */
+export const threadsPostUrl = (post: Pick<WatchPost, 'url'>) => post.url
+
+const findPostWithCode = (value: any, code: string): any => {
+  if (!value || typeof value !== 'object') return undefined
+  if (!Array.isArray(value) && value.code === code && (value.image_versions2 || value.carousel_media || value.video_versions)) {
+    return value
+  }
+  for (const child of Object.values(value)) {
+    const found = findPostWithCode(child, code)
+    if (found) return found
+  }
+  return undefined
+}
+
+/** Reads the photos and videos of a post from its own page, which needs no account. */
+export function parseThreadsPostPage(html: string, code: string): WatchMedia[] {
+  for (const match of html.matchAll(/<script type="application\/json"[^>]*>([\s\S]*?)<\/script>/g)) {
+    if (!match[1].includes(`"code":"${code}"`)) continue
+    let post: any
+    try {
+      post = findPostWithCode(JSON.parse(match[1]), code)
+    } catch {}
+    const media = post ? threadsMedia(post) : []
+    if (media.length) return media
+  }
+  throw new Error('no media in the post page')
+}
+
+/** Whether the addresses of a post's media expire, so that the post is read again for new ones. */
+export const refreshesMedia = (site: WatchSite) => site === 'instagram' || site === 'threads'
+
+// --- Bluesky ----------------------------------------------------------------
+
+/** A profile's posts and reposts, without its replies, from Bluesky's public API: it needs no account. */
+export const blueskyFeedUrl = (handle: string) =>
+  `https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=${encodeURIComponent(handle)}&limit=30&filter=posts_no_replies`
+
+// Bluesky's own server, which sends a request on to the server of an account it hosts.
+const BLUESKY_PDS = 'https://bsky.social'
+
+/**
+ * A video's own file, as it was uploaded, from the server of the account it is in, its PDS. The feed
+ * has it only as a stream, which can't be kept on the phone.
+ */
+export const blueskyVideoUrl = (did: string, cid: string, pds = BLUESKY_PDS) =>
+  `${pds}/xrpc/com.atproto.sync.getBlob?did=${encodeURIComponent(did)}&cid=${encodeURIComponent(cid)}`
+
+/** Where the document of an account's id is, which tells the server it is on. */
+export const didDocumentUrl = (did: string): string | undefined => {
+  if (did.startsWith('did:plc:')) return `https://plc.directory/${did}`
+  if (!did.startsWith('did:web:')) return undefined
+  try {
+    const [host, ...path] = did.slice('did:web:'.length).split(':').map(decodeURIComponent)
+    return path.length ? `https://${host}/${path.join('/')}/did.json` : `https://${host}/.well-known/did.json`
+  } catch {
+    return undefined
+  }
+}
+
+/** The server an account is on, its PDS, from the document of its id. */
+export function parseDidDocumentPds(json: any): string | undefined {
+  const service = (Array.isArray(json?.service) ? json.service : []).find(
+    (entry: any) => typeof entry?.id === 'string' && entry.id.endsWith('#atproto_pds'),
+  )
+  const endpoint = service?.serviceEndpoint
+  return typeof endpoint === 'string' && /^https:\/\/[^/]+/.test(endpoint) ? endpoint.replace(/\/+$/, '') : undefined
+}
+
+const AT_POST_URI = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/]+)$/
+
+const utf8Length = (codePoint: number) => (codePoint < 0x80 ? 1 : codePoint < 0x800 ? 2 : codePoint < 0x10000 ? 3 : 4)
+
+/** The text of a post with its links in full: Bluesky shortens them, and tells where each is in bytes of UTF-8. */
+export function expandBlueskyLinks(text: string, facets: any): string {
+  const links = (Array.isArray(facets) ? facets : [])
+    .map((facet: any) => ({
+      start: facet?.index?.byteStart,
+      end: facet?.index?.byteEnd,
+      uri: facet?.features?.find((feature: any) => feature?.$type === 'app.bsky.richtext.facet#link')?.uri,
+    }))
+    .filter((link) => typeof link.uri === 'string' && Number.isInteger(link.start) && link.end > link.start)
+    .sort((a, b) => a.start - b.start)
+  if (!links.length) return text
+  let out = ''
+  let byte = 0
+  let next = 0
+  let written = -1
+  for (const char of text) {
+    while (links[next] && byte >= links[next].end) next += 1
+    const link = links[next]
+    if (!link || byte < link.start) {
+      out += char
+    } else if (written !== next) {
+      out += link.uri
+      written = next
+    }
+    byte += utf8Length(char.codePointAt(0)!)
+  }
+  return out
+}
+
+const embeddedMedia = (embed: any) => (embed?.$type === 'app.bsky.embed.recordWithMedia#view' ? embed.media : embed)
+
+/** The accounts whose videos are in a feed: the server each is on is asked for before the feed is read. */
+export function blueskyVideoDids(json: any): string[] {
+  const dids = new Set<string>()
+  for (const item of Array.isArray(json?.feed) ? json.feed : []) {
+    const did = typeof item?.post?.uri === 'string' ? item.post.uri.match(AT_POST_URI)?.[1] : undefined
+    if (did && embeddedMedia(item.post.embed)?.$type === 'app.bsky.embed.video#view') dids.add(did)
+  }
+  return [...dids]
+}
+
+const blueskyMedia = (embed: any, did: string, pds?: string): WatchMedia[] => {
+  const media = embeddedMedia(embed)
+  const size = (aspectRatio: any) => ({ width: aspectRatio?.width, height: aspectRatio?.height })
+  if (media?.$type === 'app.bsky.embed.images#view') {
+    return (media.images || [])
+      .filter((image: any) => image?.fullsize)
+      .map((image: any): WatchMedia => ({ type: 'image', url: image.fullsize, thumb: image.thumb, ...size(image.aspectRatio) }))
+  }
+  if (media?.$type === 'app.bsky.embed.video#view' && media.cid) {
+    return [{ type: 'video', url: blueskyVideoUrl(did, media.cid, pds), thumb: media.thumbnail, ...size(media.aspectRatio) }]
+  }
+  return []
+}
+
+/** `pdsOf` tells the server of an account, where its videos are; Bluesky's own when it is not known. */
+export function parseBlueskyFeed(json: any, handle: string, pdsOf: (did: string) => string | undefined = () => undefined): WatchFetchResult {
+  if (!Array.isArray(json?.feed)) {
+    throw new Error(json?.message || 'no feed')
+  }
+  const info: WatchProfileInfo = {}
+  const posts: WatchFetchResult['posts'] = []
+  for (const item of json.feed) {
+    const post = item?.post
+    const parts = typeof post?.uri === 'string' ? post.uri.match(AT_POST_URI) : null
+    if (!parts) continue
+    const [, did, rkey] = parts
+    const repost = item.reason?.$type === 'app.bsky.feed.defs#reasonRepost'
+    // Everything in the feed is the profile's own post or its repost.
+    const owner = repost ? item.reason.by : post.author
+    if (!info.name && !info.avatar && owner) {
+      info.name = owner.displayName || undefined
+      info.avatar = owner.avatar || undefined
+    }
+    const media = blueskyMedia(post.embed, did, pdsOf(did))
+    const external = post.embed?.$type === 'app.bsky.embed.external#view' ? post.embed.external : undefined
+    let text = expandBlueskyLinks(post.record?.text || '', post.record?.facets)
+    if (external?.uri && !text.includes(external.uri)) text = text ? `${text}\n${external.uri}` : external.uri
+    posts.push({
+      // A record's key is only unique within its author's repository.
+      id: `${did}/${rkey}`,
+      site: 'bluesky',
+      handle,
+      url: `https://bsky.app/profile/${post.author?.handle || did}/post/${rkey}`,
+      text,
+      image: media[0]?.thumb || media[0]?.url || external?.thumb,
+      media,
+      mediaComplete: true,
+      // A repost shows up in the feed when it was reposted.
+      createdAtMs: Date.parse((repost ? item.reason.indexedAt : post.record?.createdAt) || post.indexedAt) || 0,
+      repostOf: repost ? post.author?.handle : undefined,
+    })
+  }
+  return { info, posts }
+}
+
+// --- Mastodon ---------------------------------------------------------------
+
+/** The account of a handle on the server it is on; its posts are asked for by the account's id. */
+export const mastodonLookupUrl = (handle: string, server = splitMastodonHandle(handle).host) =>
+  `https://${server}/api/v1/accounts/lookup?acct=${encodeURIComponent(handle)}`
+
+export const mastodonStatusesUrl = (server: string, id: string) =>
+  `https://${server}/api/v1/accounts/${encodeURIComponent(id)}/statuses?limit=30&exclude_replies=true`
+
+/**
+ * Where an account is asked about, which a handle's domain may only name: a server can give its
+ * accounts the handles of another domain. Its WebFinger answer links the account on its own server.
+ */
+export const mastodonWebFingerUrl = (handle: string) =>
+  `https://${splitMastodonHandle(handle).host}/.well-known/webfinger?resource=${encodeURIComponent(`acct:${handle}`)}`
+
+export function parseMastodonWebFinger(json: any): string {
+  const self = (Array.isArray(json?.links) ? json.links : []).find(
+    (link: any) => link?.rel === 'self' && typeof link.href === 'string',
+  )
+  try {
+    return new URL(self.href).host
+  } catch {
+    throw new Error('no account')
+  }
+}
+
+const mastodonMedia = (attachment: any): WatchMedia | null => {
+  const url: string | undefined = attachment?.url || attachment?.remote_url
+  if (!url) return null
+  const original = attachment.meta?.original
+  const size = { width: original?.width, height: original?.height }
+  if (attachment.type === 'image') return { type: 'image', url, thumb: attachment.preview_url || undefined, ...size }
+  if (attachment.type === 'video' || attachment.type === 'gifv') return { type: 'video', url, thumb: attachment.preview_url || undefined, ...size }
+  return null
+}
+
+/** The posts of an account, as the server it is on, `server`, has them. */
+export function parseMastodonStatuses(account: any, statuses: any, handle: string, server = splitMastodonHandle(handle).host): WatchFetchResult {
+  if (!Array.isArray(statuses)) {
+    throw new Error(statuses?.error || 'no posts')
+  }
+  const posts: WatchFetchResult['posts'] = []
+  for (const status of statuses) {
+    const shown = status?.reblog || status
+    if (!shown?.id) continue
+    const media = (shown.media_attachments || []).map(mastodonMedia).filter((item: WatchMedia | null): item is WatchMedia => Boolean(item))
+    const content = htmlToText(shown.content || '')
+    posts.push({
+      // The same post has an id of its own on each server; its address is the same everywhere.
+      id: shown.uri || shown.id,
+      site: 'mastodon',
+      handle,
+      // On the profile's own server, where the post has this id.
+      url: `https://${server}/@${shown.account?.acct || splitMastodonHandle(handle).user}/${shown.id}`,
+      text: [shown.spoiler_text, content].filter(Boolean).join('\n\n'),
+      image: media[0]?.thumb || media[0]?.url || shown.card?.image || undefined,
+      media,
+      mediaComplete: true,
+      createdAtMs: Date.parse(status.created_at) || 0,
+      repostOf: status.reblog ? shown.account?.acct : undefined,
+    })
+  }
+  const url = typeof account?.url === 'string' && /^https:\/\//.test(account.url) ? account.url : undefined
+  return { info: { name: account?.display_name || undefined, avatar: account?.avatar || undefined, url }, posts }
+}
+
+// --- Reddit -----------------------------------------------------------------
+
+/** The newest posts of a subreddit, r/name, or of a user, u/name, as a feed: it needs no account. */
+export const redditFeedUrl = (handle: string) =>
+  handle.startsWith('u/')
+    ? `https://www.reddit.com/user/${encodeURIComponent(handle.slice(2))}/submitted/.rss`
+    : `https://www.reddit.com/r/${encodeURIComponent(handle.slice(2))}/new/.rss`
+
+const xmlTag = (xml: string, tag: string) => xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`))?.[1]
+
+const xmlAttribute = (xml: string, tag: string, attribute: string) => {
+  const value = xml.match(new RegExp(`<${tag}\\s[^>]*${attribute}="([^"]*)"`))?.[1]
+  return value === undefined ? undefined : decodeEntities(value)
+}
+
+const REDDIT_IMAGE = /^https:\/\/(?:i\.redd\.it|i\.imgur\.com)\/[^?#]+\.(?:jpe?g|png|gif|webp)(?:[?#]|$)/i
+
+// Links that are of the post itself, not one it shares.
+const REDDIT_OWN_LINK = /^https:\/\/(?:(?:www\.)?reddit\.com|v\.redd\.it|i\.redd\.it)\//
+
+/**
+ * Reads the posts of a feed of Reddit. Only a single photo comes as the post's media; a gallery
+ * or a video only as its cover, which opens the post.
+ */
+export function parseRedditFeed(xml: string, handle: string): WatchFetchResult {
+  if (!/<feed[\s>]/.test(xml)) {
+    throw new Error('no feed')
+  }
+  const posts: WatchFetchResult['posts'] = []
+  for (const [entry] of xml.matchAll(/<entry>[\s\S]*?<\/entry>/g)) {
+    const id = xmlTag(entry, 'id')?.replace(/^t3_/, '')
+    const url = xmlAttribute(entry, 'link', 'href')
+    if (!id || !url) continue
+    // The content is HTML, given as text of the feed.
+    const html = decodeEntities(xmlTag(entry, 'content') || '')
+    const link = html.match(/<a href="([^"]*)">\[link\]<\/a>/)?.[1]
+    const linkUrl = link ? decodeEntities(link) : undefined
+    const body = html.match(/<div class="md">([\s\S]*?)<\/div>/)?.[1]
+    const thumb = xmlAttribute(entry, 'media:thumbnail', 'url')
+    const media: WatchMedia[] = linkUrl && REDDIT_IMAGE.test(linkUrl) ? [{ type: 'image', url: linkUrl, thumb }] : []
+    const title = decodeEntities(xmlTag(entry, 'title') || '')
+    const shared = linkUrl && !REDDIT_OWN_LINK.test(linkUrl) ? linkUrl : undefined
+    posts.push({
+      id,
+      site: 'reddit',
+      handle,
+      url,
+      text: [title, body ? htmlToText(body, 'https://www.reddit.com') : '', shared].filter(Boolean).join('\n\n'),
+      image: thumb || media[0]?.url,
+      media,
+      mediaComplete: true,
+      createdAtMs: Date.parse(xmlTag(entry, 'published') || xmlTag(entry, 'updated') || '') || 0,
+    })
+  }
+  const feedHead = xml.split('<entry>')[0]
+  return { info: { avatar: xmlTag(feedHead, 'logo')?.trim() || undefined }, posts }
+}
+
 /** How long ago a post was made, short as the sites show it: 5m, 3h, 2d, or its date after a week. */
 export function formatPostAge(createdAtMs: number, now: number, locale?: string) {
   const minutes = Math.max(0, Math.floor((now - createdAtMs) / 60000))
@@ -509,7 +958,10 @@ export function mediaToEvict(
 
 /** A name for a saved file that tells where it is from. */
 export const mediaFileName = (post: Pick<WatchPost, 'site' | 'handle' | 'id'>, index: number, item: WatchMedia) =>
-  `${post.site}_${post.handle}_${post.id}_${index + 1}.${mediaExtension(item)}`
+  // A handle can have a / (r/name) or an @ (user@host) in it, and an id be an address (Mastodon).
+  `${post.site}_${fileSafe(post.handle)}_${fileSafe(post.id)}_${index + 1}.${mediaExtension(item)}`
+
+const fileSafe = (value: string) => value.replace(/[^A-Za-z0-9._-]/g, '_')
 
 export const mediaExtension = (item: WatchMedia) => {
   if (item.type === 'video') return 'mp4'

@@ -84,7 +84,7 @@ export const WatchWebViewHost = () => {
         profile={WATCH_WEBVIEW_PROFILE}
         // The desktop site, as Anonymous mode uses for Instagram: its profile page comes with its posts.
         useragent={getUserAgent('win32', true)}
-        scriptOnStart={buildWatchPageScript(job.id)}
+        scriptOnStart={buildWatchPageScript(job.id, job.marker)}
         onMessage={onMessage}
         active
         visible

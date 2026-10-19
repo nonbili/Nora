@@ -15,6 +15,9 @@ import {
   mediaExpired,
   mediaToEvict,
   parseInstagramEmbed,
+  parseThreadsPostPage,
+  refreshesMedia,
+  threadsPostUrl,
   watchKey,
   type KeptMediaEntry,
   type WatchMedia,
@@ -105,11 +108,11 @@ const detailRequests = new SharedRequests<WatchMedia[]>(30 * 1000)
 const downloadRequests = new SharedRequests<string | undefined>(5 * 60 * 1000)
 
 /**
- * Whether an Instagram post has to be read from its embed page: only its cover is known, or an
- * address of a photo or video that is not kept has expired.
+ * Whether an Instagram or Threads post has to be read again from its own page: only its cover is
+ * known, or an address of a photo or video that is not kept has expired.
  */
 const needsDetails = (post: WatchPost) => {
-  if (post.site !== 'instagram') return false
+  if (!refreshesMedia(post.site)) return false
   if (post.mediaComplete === false) return true
   const notKept = (post.media || []).filter((_, index) => !watchMedia$.files[mediaKey(post.key, index)].peek())
   return mediaExpired(notKept, Date.now())
@@ -117,30 +120,34 @@ const needsDetails = (post: WatchPost) => {
 
 /**
  * All the media of a post. An Instagram post read from a profile page only has its cover, and
- * the rest is read from its embed page, which needs no account.
+ * the rest is read from its embed page, which needs no account; a Threads post whose addresses
+ * have expired is read from its own page.
  */
 export const ensurePostMedia = async (
   post: WatchPost,
   { force = false, signal }: { force?: boolean; signal?: AbortSignal } = {},
 ): Promise<WatchMedia[]> => {
-  if (post.site !== 'instagram' || (!force && !needsDetails(post))) {
+  if (!refreshesMedia(post.site) || (!force && !needsDetails(post))) {
     return post.media || []
   }
+  const threads = post.site === 'threads'
   const media = await detailRequests.run(post.key, async (requestSignal) => {
-    const res = await fetch(instagramEmbedUrl(post.id), {
+    const res = await fetch(threads ? threadsPostUrl(post) : instagramEmbedUrl(post.id), {
       signal: requestSignal,
       headers: {
         'user-agent': DESKTOP_USER_AGENT,
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'accept-language': 'en-US,en;q=0.9',
-        'sec-fetch-dest': 'iframe',
+        // The embed page is in a frame of another site; a post's own page is a page of its own.
+        'sec-fetch-dest': threads ? 'document' : 'iframe',
         'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': 'cross-site',
+        'sec-fetch-site': threads ? 'none' : 'cross-site',
       },
       credentials: 'omit',
     })
-    if (!res.ok) throw new Error(`embed HTTP ${res.status}`)
-    return parseInstagramEmbed(await res.text())
+    if (!res.ok) throw new Error(`${threads ? 'post page' : 'embed'} HTTP ${res.status}`)
+    const html = await res.text()
+    return threads ? parseThreadsPostPage(html, post.id) : parseInstagramEmbed(html)
   }, signal)
   // Each caller's own copy: a post two profiles share is in both their lists.
   updatePost(post, { media, mediaComplete: true })
@@ -218,7 +225,7 @@ export const keepPostMediaItem = async (post: WatchPost, index: number, signal?:
   try {
     return await keepMediaItem(post, index, media[index], signal)
   } catch (e) {
-    if (post.site !== 'instagram' || signal?.aborted || e instanceof MediaClearedError) throw e
+    if (!refreshesMedia(post.site) || signal?.aborted || e instanceof MediaClearedError) throw e
     const fresh = await ensurePostMedia(currentPost(post), { force: true, signal })
     return fresh[index] ? keepMediaItem(post, index, fresh[index], signal) : undefined
   }

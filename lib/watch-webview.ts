@@ -16,6 +16,7 @@ const SCRIPT_MAX_TRIES = 30
 export interface WatchWebViewJob {
   id: number
   url: string
+  marker: string
 }
 
 export const watchWebView$ = observable<{ job: WatchWebViewJob | null; hostMounted: boolean }>({
@@ -29,11 +30,16 @@ let current: { id: number; resolve: (html: string) => void; reject: (error: Erro
 
 export const isWatchWebViewAvailable = () => watchWebView$.hostMounted.peek()
 
+// What the data of a profile page's posts has in it, on Instagram.
+export const INSTAGRAM_POSTS_MARKER = 'polaris_ordered_timeline_connection'
+// And on Threads.
+export const THREADS_POSTS_MARKER = '"mediaData"'
+
 /**
- * The script run in the page. It sends back the page's preview tags and the data its grid of
- * posts is drawn from, as a small page of their own, or nothing when the posts never come.
+ * The script run in the page. It sends back the page's preview tags and the data its posts are
+ * drawn from, told by `marker`, as a small page of their own, or nothing when the posts never come.
  */
-export const buildWatchPageScript = (id: number) => `(function () {
+export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER) => `(function () {
   if (window.__noraWatchStarted) return;
   window.__noraWatchStarted = true;
   var tries = 0;
@@ -45,7 +51,7 @@ export const buildWatchPageScript = (id: number) => `(function () {
     var found = false;
     document.querySelectorAll('meta[property^="og:"]').forEach(function (meta) { parts.push(meta.outerHTML); });
     document.querySelectorAll('script[type="application/json"]').forEach(function (script) {
-      if (script.textContent.indexOf('polaris_ordered_timeline_connection') !== -1) {
+      if (script.textContent.indexOf(${JSON.stringify(marker)}) !== -1) {
         found = true;
         parts.push('<script type="application/json">' + script.textContent + '</' + 'script>');
       }
@@ -77,7 +83,7 @@ export const onWatchWebViewMessage = (id: number, html: string) => {
 export const onWatchWebViewError = (id: number, error: Error) => finish(id, { error })
 
 /** The page's preview tags and post data, read by the hidden webview; one page at a time. */
-export const loadInWatchWebView = (url: string, timeoutMs = PAGE_TIMEOUT_MS): Promise<string> => {
+export const loadInWatchWebView = (url: string, timeoutMs = PAGE_TIMEOUT_MS, marker = INSTAGRAM_POSTS_MARKER): Promise<string> => {
   const run = () =>
     new Promise<string>((resolve, reject) => {
       if (!watchWebView$.hostMounted.peek()) {
@@ -86,7 +92,7 @@ export const loadInWatchWebView = (url: string, timeoutMs = PAGE_TIMEOUT_MS): Pr
       }
       const id = nextId++
       current = { id, resolve, reject }
-      watchWebView$.job.set({ id, url })
+      watchWebView$.job.set({ id, url, marker })
       setTimeout(() => finish(id, { error: new Error('page timed out') }), Math.min(timeoutMs, PAGE_TIMEOUT_MS))
     })
   const result = queue.then(run, run)

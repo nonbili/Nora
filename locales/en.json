@@ -104,7 +104,7 @@
     "tools": "Tools",
     "zoom": "Zoom",
     "viewInSplitView": "View in split view",
-    "watch": "Watch @{{handle}}"
+    "watch": "Watch {{source}}"
   },
   "modals": {
     "downloadVideo": "Download video",
@@ -469,7 +469,7 @@
     "siteDataClearFailed": "Failed to clear site data",
   "addToHomeScreenFailed": "This launcher does not support home screen shortcuts",
     "pressBackAgainToExit": "Press back again to exit",
-    "profileWatched": "Watching @{{handle}}. New posts show up in Feed."
+    "profileWatched": "Watching {{source}}. New posts show up in Feed."
   },
   "feed": {
     "label": "Feed",
@@ -477,8 +477,8 @@
     "refresh": "Refresh",
     "notify": "Notify me of new posts",
     "unwatch": "Unwatch",
-    "unwatchConfirm": "Stop watching @{{handle}} and remove its posts from the feed?",
-    "empty": "Open an account on X or Instagram and choose Watch from the menu. Its new posts will show up here, even without logging in.",
+    "unwatchConfirm": "Stop watching {{source}} and remove its posts from the feed?",
+    "empty": "Open an account on X, Instagram, Threads, Bluesky or Mastodon, or a subreddit, and choose Watch from the menu. Its new posts will show up here, even without logging in.",
     "noPosts": "No posts yet. Pull the latest with Refresh.",
     "repostOf": "Reposted from @{{handle}}",
     "loginHint": "Some sources are checked without logging in, which can be delayed or blocked. Log in to {{sites}} in any Nora profile for more reliable updates.",

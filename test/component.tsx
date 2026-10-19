@@ -15,6 +15,7 @@ mock.module('@/lib/download-notifications', () => ({ ensureDownloadNotificationP
 mock.module('@/components/service/Services', () => ({
   ServiceIcon: () => null,
   services: [],
+  siteIcon: () => null,
   getService: () => undefined,
 }))
 mock.module('@/components/menu/NouContextMenu', () => ({

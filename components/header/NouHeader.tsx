@@ -39,7 +39,7 @@ import { useHeaderAnimation } from './header-animation'
 import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
 import { useTwColor } from '@/lib/theme'
 import { watch$ } from '@/states/watch'
-import { getWatchTarget, watchKey } from '@/lib/watch'
+import { getWatchTarget, watchKey, watchSourceLabel } from '@/lib/watch'
 import { refreshWatched } from '@/lib/watch-feed'
 
 // The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
@@ -279,7 +279,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const watchMenuItems = watchTarget
     ? [
         {
-          label: t('menus.watch', { handle: watchTarget.handle }),
+          label: t('menus.watch', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }),
           icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
           systemImage: 'dot.radiowaves.left.and.right',
           metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),
@@ -290,7 +290,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
               return
             }
             watch$.watch(watchTarget)
-            showToast(t('toast.profileWatched', { handle: watchTarget.handle }))
+            showToast(t('toast.profileWatched', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }))
             // Fills the feed with what the profile has posted so far.
             void refreshWatched('manual', [watchKey(watchTarget)])
           },

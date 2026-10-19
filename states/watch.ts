@@ -18,6 +18,8 @@ export interface WatchedProfile {
   handle: string
   name?: string
   avatar?: string
+  // The profile's page, when the site told it.
+  url?: string
   addedAt: number
   notify: boolean
   // Minutes between checks for this profile; the default for all when not set.
