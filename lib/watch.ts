@@ -9,6 +9,17 @@ export interface WatchTarget {
   handle: string
 }
 
+/** A photo or a video of a post. */
+export interface WatchMedia {
+  type: 'image' | 'video'
+  // The full size photo, or the video file.
+  url: string
+  // A smaller picture to show for it: a video's cover.
+  thumb?: string
+  width?: number
+  height?: number
+}
+
 export interface WatchPost {
   key: string
   id: string
@@ -16,7 +27,11 @@ export interface WatchPost {
   handle: string
   url: string
   text: string
+  // The picture shown for the post in the feed.
   image?: string
+  media?: WatchMedia[]
+  // False while only the post's cover is known: Instagram tells the rest on the post's own embed page.
+  mediaComplete?: boolean
   createdAtMs: number
   // When Nora first saw it; 0 for the posts a profile already had when it was watched.
   firstSeenAt: number
@@ -85,6 +100,36 @@ const xImage = (tweet: any): string | undefined => {
   return Array.isArray(media) ? media[0]?.media_url_https : undefined
 }
 
+// A video is kept at up to about 720p: what a phone shows well, at a fraction of the largest file.
+const X_VIDEO_MAX_BITRATE = 2_500_000
+
+/** The mp4 to keep of a video: the best one up to the bitrate above, or the smallest there is. */
+export const pickXVideoVariant = (variants: { content_type?: string; bitrate?: number; url?: string }[] | undefined) => {
+  const mp4s = (variants || []).filter((variant) => variant.content_type === 'video/mp4' && variant.url)
+  const fitting = mp4s.filter((variant) => (variant.bitrate || 0) <= X_VIDEO_MAX_BITRATE)
+  const sorted = (fitting.length ? fitting : mp4s).sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))
+  return (fitting.length ? sorted[0] : sorted[sorted.length - 1])?.url
+}
+
+const xMedia = (tweet: any): WatchMedia[] => {
+  const media = tweet?.extended_entities?.media || tweet?.entities?.media
+  const items: WatchMedia[] = []
+  for (const item of Array.isArray(media) ? media : []) {
+    const thumb: string | undefined = item?.media_url_https
+    if (!thumb) continue
+    const width = item.original_info?.width
+    const height = item.original_info?.height
+    if (item.type === 'video' || item.type === 'animated_gif') {
+      const url = pickXVideoVariant(item.video_info?.variants)
+      if (url) items.push({ type: 'video', url, thumb, width, height })
+    } else {
+      // "large" is up to 2048px; the original can be several times that.
+      items.push({ type: 'image', url: `${thumb}?name=large`, thumb, width, height })
+    }
+  }
+  return items
+}
+
 // The text comes with its links shortened, and a link to the post's own media at the end.
 const xText = (tweet: any): string => {
   let text: string = tweet?.full_text || tweet?.text || ''
@@ -148,6 +193,8 @@ export function parseXTimeline(html: string, handle: string): WatchFetchResult {
       url: `https://x.com${tweet.permalink || `/${user?.screen_name || handle}/status/${tweet.id_str}`}`,
       text: xText(shown),
       image: xImage(shown),
+      media: xMedia(shown),
+      mediaComplete: true,
       createdAtMs: parseXDate(tweet.created_at),
       repostOf: tweet.retweeted_status ? shown.user?.screen_name : undefined,
     })
@@ -161,6 +208,59 @@ export const INSTAGRAM_APP_ID = '936619743392459'
 
 export const instagramProfileInfoUrl = (handle: string) =>
   `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`
+
+const graphItem = (node: any): WatchMedia | null => {
+  if (!node?.display_url) return null
+  const size = { width: node.dimensions?.width, height: node.dimensions?.height }
+  if (node.is_video) {
+    return node.video_url ? { type: 'video', url: node.video_url, thumb: node.display_url, ...size } : null
+  }
+  return { type: 'image', url: node.display_url, ...size }
+}
+
+/** The media of a post in the shape of Instagram's older API: on its embed page, and in a profile's data with an account. */
+const instagramGraphMedia = (node: any): { media: WatchMedia[]; mediaComplete: boolean } => {
+  const children = node?.edge_sidecar_to_children?.edges
+  const nodes = Array.isArray(children) && children.length ? children.map((edge: any) => edge?.node) : [node]
+  const media = nodes.map(graphItem)
+  // A video without its file, or a carousel without its photos, still has to be read from the embed page.
+  const complete = media.every(Boolean) && !(node?.__typename === 'GraphSidecar' && !children?.length)
+  return { media: media.filter((item: WatchMedia | null): item is WatchMedia => Boolean(item)), mediaComplete: complete }
+}
+
+/** The page Instagram embeds a post with: needs no account, and has the post's photos and video. */
+export const instagramEmbedUrl = (code: string) => `https://www.instagram.com/p/${encodeURIComponent(code)}/embed/captioned/`
+
+/**
+ * Reads the media of a post from its embed page. A video or a carousel comes as data for the
+ * page's player; a single photo only as the page's picture, the largest of its sizes.
+ */
+export function parseInstagramEmbed(html: string): WatchMedia[] {
+  const context = html.match(/"contextJSON":"((?:[^"\\]|\\.)*)"/)
+  if (context) {
+    let shortcodeMedia: any
+    try {
+      shortcodeMedia = JSON.parse(JSON.parse(`"${context[1]}"`))?.gql_data?.shortcode_media
+    } catch {}
+    if (shortcodeMedia) {
+      const { media } = instagramGraphMedia(shortcodeMedia)
+      if (media.length) return media
+    }
+  }
+  const image = html.match(/<img[^>]*class="EmbeddedMediaImage"[^>]*>/)?.[0]
+  if (image) {
+    const srcset = image.match(/srcset="([^"]*)"/)?.[1]
+    const candidates = (srcset ? decodeEntities(srcset).split(',') : [])
+      .map((entry) => entry.trim().split(/\s+/))
+      .map(([url, size]) => ({ url, width: parseInt(size, 10) || 0 }))
+      .filter((candidate) => candidate.url)
+      .sort((a, b) => b.width - a.width)
+    const src = image.match(/src="([^"]*)"/)?.[1]
+    const url = candidates[0]?.url || (src ? decodeEntities(src) : undefined)
+    if (url) return [{ type: 'image', url }]
+  }
+  throw new Error('no media in the embed page')
+}
 
 export function parseInstagramProfileInfo(json: any, handle: string): WatchFetchResult {
   const user = json?.data?.user
@@ -181,6 +281,7 @@ export function parseInstagramProfileInfo(json: any, handle: string): WatchFetch
       url: `https://www.instagram.com/${node.product_type === 'clips' ? 'reel' : 'p'}/${node.shortcode}/`,
       text: node.edge_media_to_caption?.edges?.[0]?.node?.text || '',
       image: node.thumbnail_src || node.display_url,
+      ...instagramGraphMedia(node),
       createdAtMs: (node.taken_at_timestamp || 0) * 1000,
     })
   }
@@ -264,6 +365,11 @@ export function parseInstagramProfilePage(html: string, handle: string): WatchFe
       url: `https://www.instagram.com/${node.product_type === 'clips' ? 'reel' : 'p'}/${node.code}/`,
       text: node.caption?.text || '',
       image: node.display_uri || undefined,
+      // Only the cover: the photos of a carousel and a video's file are on the post's embed page.
+      media: node.display_uri
+        ? [{ type: node.product_type === 'clips' || node.media_type === 2 ? 'video' : 'image', url: node.display_uri, thumb: node.display_uri }]
+        : [],
+      mediaComplete: false,
       createdAtMs: node.pk ? instagramPostTime(String(node.pk)) : 0,
     })
   }
@@ -308,6 +414,108 @@ export function splitInterval(minutes: number): { unit: 'minutes' | 'hours' | 'd
   return { unit: 'minutes', count: minutes }
 }
 
+// --- kept media -------------------------------------------------------------
+
+/** When a signed Instagram media address stops working: its `oe` parameter, seconds in hex. */
+export const instagramUrlExpiresAt = (url: string): number | undefined => {
+  const match = url.match(/[?&]oe=([0-9A-Fa-f]{8})(?:&|$)/)
+  return match ? parseInt(match[1], 16) * 1000 : undefined
+}
+
+// A little ahead of the time itself: an address that works now may not by the time it is used.
+const EXPIRY_MARGIN_MS = 10 * 60 * 1000
+
+/** Whether an address of these media no longer works, or is about to stop. */
+export const mediaExpired = (media: WatchMedia[] | undefined, now: number) =>
+  (media || []).some((item) =>
+    [item.url, item.thumb].some((url) => {
+      const expiresAt = url ? instagramUrlExpiresAt(url) : undefined
+      return expiresAt !== undefined && expiresAt - EXPIRY_MARGIN_MS <= now
+    }),
+  )
+
+/** The name a photo or video of a post is kept under. */
+export const mediaKey = (postKey: string, index: number) => `${postKey}#${index}`
+
+export const mediaPostKey = (key: string) => key.slice(0, key.lastIndexOf('#'))
+
+export interface KeptMediaEntry {
+  key: string
+  bytes: number
+  postCreatedAt: number
+  usedAt: number
+}
+
+/**
+ * What to delete of the kept media: that of posts no longer kept, and, while it all takes more
+ * than the limit, that of the oldest posts, down to a little under the limit so it is not done
+ * again at the next file.
+ */
+export function mediaToEvict(
+  entries: KeptMediaEntry[],
+  limitBytes: number,
+  livePostKeys: Set<string>,
+  // Files in use, being shown or saved, which are kept whatever they are.
+  inUse: Set<string> = new Set(),
+): string[] {
+  const evict = entries
+    .filter((entry) => !livePostKeys.has(mediaPostKey(entry.key)) && !inUse.has(entry.key))
+    .map((entry) => entry.key)
+  const live = entries.filter((entry) => livePostKeys.has(mediaPostKey(entry.key)))
+  let total = live.reduce((sum, entry) => sum + entry.bytes, 0)
+  if (total <= limitBytes) return evict
+  const target = limitBytes * 0.9
+  const oldestFirst = [...live].sort((a, b) => a.postCreatedAt - b.postCreatedAt || a.usedAt - b.usedAt)
+  for (const entry of oldestFirst) {
+    if (total <= target) break
+    if (inUse.has(entry.key)) continue
+    evict.push(entry.key)
+    total -= entry.bytes
+  }
+  return evict
+}
+
+/** A name for a saved file that tells where it is from. */
+export const mediaFileName = (post: Pick<WatchPost, 'site' | 'handle' | 'id'>, index: number, item: WatchMedia) =>
+  `${post.site}_${post.handle}_${post.id}_${index + 1}.${mediaExtension(item)}`
+
+export const mediaExtension = (item: WatchMedia) => {
+  if (item.type === 'video') return 'mp4'
+  const match = item.url.match(/\.(png|webp|gif|jpe?g)(?:[?#]|$)/i)
+  return match ? match[1].toLowerCase().replace('jpeg', 'jpg') : 'jpg'
+}
+
+export const mediaMimeType = (item: WatchMedia) => {
+  const extension = mediaExtension(item)
+  return extension === 'mp4' ? 'video/mp4' : `image/${extension === 'jpg' ? 'jpeg' : extension}`
+}
+
+/**
+ * A post as the given profile's list has it: a post two profiles share is in both lists, and each
+ * copy is brought up to date with its own profile. Any profile's copy when that one has none.
+ */
+export function findWatchPost(postsByProfile: Record<string, WatchPost[] | undefined>, profileKey: string, key: string) {
+  const own = postsByProfile[profileKey]?.find((post) => post.key === key)
+  if (own) return own
+  for (const posts of Object.values(postsByProfile)) {
+    const post = posts?.find((candidate) => candidate.key === key)
+    if (post) return post
+  }
+  return undefined
+}
+
+/**
+ * The posts of several profiles as one list, newest first. A post two watched profiles share,
+ * as a collaboration on Instagram, is in both their lists; it is shown once, as the first has it.
+ */
+export function uniquePostsNewestFirst(lists: (WatchPost[] | undefined)[]): WatchPost[] {
+  const byKey = new Map<string, WatchPost>()
+  for (const post of lists.flatMap((list) => list || [])) {
+    if (!byKey.has(post.key)) byKey.set(post.key, post)
+  }
+  return [...byKey.values()].sort((a, b) => b.createdAtMs - a.createdAtMs)
+}
+
 // --- merging ----------------------------------------------------------------
 
 export const MAX_POSTS_PER_PROFILE = 50
@@ -328,7 +536,18 @@ export function mergeWatchPosts(
   // What is kept of a post that was fetched again is brought up to date: its text can be edited.
   const updated = existing.map((post) => {
     const again = fetchedByKey.get(post.key)
-    return again ? { ...post, ...again, key: post.key, firstSeenAt: post.firstSeenAt } : post
+    if (!again) return post
+    // What the embed page told of a post is not lost to a fetch that only knows its cover: the
+    // photos of a carousel kept on the phone stay reachable. Expired addresses of photos that are
+    // not kept have the post read from its embed page again when they are needed.
+    const keepMedia = post.mediaComplete && !again.mediaComplete
+    return {
+      ...post,
+      ...again,
+      key: post.key,
+      firstSeenAt: post.firstSeenAt,
+      ...(keepMedia ? { media: post.media, mediaComplete: true } : {}),
+    }
   })
   const known = new Set(existing.map((post) => post.key))
   const newest = existing.reduce((max, post) => Math.max(max, post.createdAtMs), 0)

@@ -21,6 +21,8 @@ import {
   type WatchSite,
 } from '@/lib/watch'
 import { isWatchWebViewAvailable, loadInWatchWebView } from '@/lib/watch-webview'
+import { syncWatchMedia } from '@/lib/watch-media'
+import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
 
 let Notifications: typeof import('expo-notifications') | undefined
 let TaskManager: typeof import('expo-task-manager') | undefined
@@ -41,6 +43,8 @@ export const WATCH_TASK = 'nora.watch.poll'
 const NOTIFICATION_CHANNEL_ID = 'watch'
 // After the site said to slow down, or that it wants an account.
 const RETRY_AFTER_MS = 60 * 60 * 1000
+// How often, while Nora is open, it looks for profiles whose interval is up; only those are asked for.
+const FOREGROUND_POLL_MS = 5 * 60 * 1000
 // Between two requests, so a long list does not arrive at a site as a burst.
 const REQUEST_GAP_MS = 1500
 // How long one run may take. The system stops a background task that runs too long, so a long
@@ -126,52 +130,76 @@ const checkStatus = (res: Response, signedIn: boolean) => {
   }
 }
 
-const fetchX = async (handle: string, cookie: string): Promise<WatchFetchResult> => {
-  const res = await fetch(xTimelineUrl(handle), {
-    headers: {
-      'user-agent': DESKTOP_USER_AGENT,
-      accept: 'text/html',
-      'accept-language': 'en-US,en;q=0.9',
-      ...(cookie ? { cookie } : {}),
-    },
-  })
-  checkStatus(res, Boolean(cookie))
-  return parseXTimeline(await res.text(), handle)
+// Each request is cancelled at the run's deadline, and in any case after this long: a stalled one
+// would hold up the run, and every refresh after it, for as long as it hangs.
+const REQUEST_TIMEOUT_MS = 30 * 1000
+
+const timeLeft = (deadline: number) => Math.max(0, Math.min(deadline - Date.now(), REQUEST_TIMEOUT_MS))
+
+/** Runs a request, reading its answer included, with a signal that cancels it when its time is up. */
+const withDeadline = async <T>(deadline: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeLeft(deadline))
+  try {
+    return await run(controller.signal)
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
-const fetchInstagramApi = async (handle: string, cookie: string): Promise<WatchFetchResult> => {
-  const csrf = parseCookieHeader(cookie).csrftoken
-  const res = await fetch(instagramProfileInfoUrl(handle), {
-    headers: {
-      'user-agent': DESKTOP_USER_AGENT,
-      accept: '*/*',
-      'accept-language': 'en-US,en;q=0.9',
-      'x-ig-app-id': INSTAGRAM_APP_ID,
-      'x-requested-with': 'XMLHttpRequest',
-      referer: `https://www.instagram.com/${handle}/`,
-      cookie,
-      ...(csrf ? { 'x-csrftoken': csrf } : {}),
-    },
+const fetchX = (handle: string, cookie: string, _source: WatchRunSource, deadline: number): Promise<WatchFetchResult> =>
+  withDeadline(deadline, async (signal) => {
+    const res = await fetch(xTimelineUrl(handle), {
+      signal,
+      headers: {
+        'user-agent': DESKTOP_USER_AGENT,
+        accept: 'text/html',
+        'accept-language': 'en-US,en;q=0.9',
+        ...(cookie ? { cookie } : {}),
+      },
+    })
+    checkStatus(res, Boolean(cookie))
+    return parseXTimeline(await res.text(), handle)
   })
-  checkStatus(res, true)
-  let json: any
-  try {
-    json = await res.json()
-  } catch {
-    throw new WatchFetchError('not JSON')
-  }
-  return parseInstagramProfileInfo(json, handle)
-}
+
+const fetchInstagramApi = (handle: string, cookie: string, deadline: number): Promise<WatchFetchResult> =>
+  withDeadline(deadline, async (signal) => {
+    const csrf = parseCookieHeader(cookie).csrftoken
+    const res = await fetch(instagramProfileInfoUrl(handle), {
+      signal,
+      headers: {
+        'user-agent': DESKTOP_USER_AGENT,
+        accept: '*/*',
+        'accept-language': 'en-US,en;q=0.9',
+        'x-ig-app-id': INSTAGRAM_APP_ID,
+        'x-requested-with': 'XMLHttpRequest',
+        referer: `https://www.instagram.com/${handle}/`,
+        cookie,
+        ...(csrf ? { 'x-csrftoken': csrf } : {}),
+      },
+    })
+    checkStatus(res, true)
+    let json: any
+    try {
+      json = await res.json()
+    } catch (e) {
+      if (signal.aborted) throw e
+      throw new WatchFetchError('not JSON')
+    }
+    return parseInstagramProfileInfo(json, handle)
+  })
 
 // The profile's own page, as a browser on a computer would ask for it, without cookies.
-const fetchInstagramPage = async (handle: string): Promise<WatchFetchResult> => {
-  const res = await fetch(watchProfileUrl({ site: 'instagram', handle }), {
-    headers: { 'user-agent': DESKTOP_USER_AGENT, ...INSTAGRAM_PAGE_HEADERS },
-    credentials: 'omit',
+const fetchInstagramPage = (handle: string, deadline: number): Promise<WatchFetchResult> =>
+  withDeadline(deadline, async (signal) => {
+    const res = await fetch(watchProfileUrl({ site: 'instagram', handle }), {
+      signal,
+      headers: { 'user-agent': DESKTOP_USER_AGENT, ...INSTAGRAM_PAGE_HEADERS },
+      credentials: 'omit',
+    })
+    checkStatus(res, false)
+    return parseInstagramProfilePage(await res.text(), handle)
   })
-  checkStatus(res, false)
-  return parseInstagramProfilePage(await res.text(), handle)
-}
 
 // The hidden webview needs the app's UI, so a background run goes without it.
 const canUseWebView = (source: WatchRunSource) =>
@@ -184,45 +212,59 @@ const isRateLimited = (e: unknown) => e instanceof WatchFetchError && e.message 
  * profile's page; and when a plain request for that is not answered with its posts, the page
  * as loaded by a real browser, in a webview out of sight.
  */
-const fetchInstagram = async (handle: string, cookie: string, source: WatchRunSource): Promise<WatchFetchResult> => {
+const fetchInstagram = async (
+  handle: string,
+  cookie: string,
+  source: WatchRunSource,
+  deadline: number,
+): Promise<WatchFetchResult> => {
   if (cookie) {
     try {
-      return await fetchInstagramApi(handle, cookie)
+      return await fetchInstagramApi(handle, cookie, deadline)
     } catch (e) {
       // A limit on the API is not one on the page, which is asked for next.
       console.warn('watch instagram api failed', handle, e)
     }
   }
   try {
-    return await fetchInstagramPage(handle)
+    return await fetchInstagramPage(handle, deadline)
   } catch (e) {
-    if (isRateLimited(e) || !canUseWebView(source)) throw e
+    if (isRateLimited(e) || !canUseWebView(source) || !timeLeft(deadline)) throw e
     console.warn('watch instagram page failed, trying the webview', handle, e)
   }
-  const html = await loadInWatchWebView(watchProfileUrl({ site: 'instagram', handle }))
+  const html = await loadInWatchWebView(watchProfileUrl({ site: 'instagram', handle }), timeLeft(deadline))
   return parseInstagramProfilePage(html, handle)
 }
 
-const fetchers: Record<WatchSite, (handle: string, cookie: string, source: WatchRunSource) => Promise<WatchFetchResult>> = {
+const fetchers: Record<
+  WatchSite,
+  (handle: string, cookie: string, source: WatchRunSource, deadline: number) => Promise<WatchFetchResult>
+> = {
   x: fetchX,
   instagram: fetchInstagram,
 }
 
 const isStillWatched = (key: string) => watch$.profiles.peek().some((profile) => profile.key === key)
 
-const checkProfile = async (profile: WatchedProfile, cookie: string, source: WatchRunSource): Promise<WatchPost[]> => {
+const checkProfile = async (
+  profile: WatchedProfile,
+  cookie: string,
+  source: WatchRunSource,
+  deadline: number,
+): Promise<WatchPost[]> => {
   const now = Date.now()
   // Whether an account was there to use, even when the profile was read in the end without it:
   // the feed tells to log in only where that would help.
   const mode = cookie ? 'loggedIn' : 'loggedOut'
   try {
-    const result = await fetchers[profile.site](profile.handle, cookie, source)
+    const result = await fetchers[profile.site](profile.handle, cookie, source, deadline)
     // It can be unwatched while the request is out.
     if (!isStillWatched(profile.key)) {
       return []
     }
+    // When the answer came, not when it was asked for: the feed may have been looked at between.
     const { posts, fresh } = mergeWatchPosts(watch$.posts[profile.key].peek() || [], result.posts, {
-      now,
+      now: Date.now(),
       initial: !profile.lastSuccessAt,
     })
     watch$.posts[profile.key].set(posts)
@@ -322,12 +364,16 @@ const runRefresh = async (source: WatchRunSource) => {
     if (cookies[profile.site] === undefined) {
       cookies[profile.site] = await findSignedInCookies(profile.site)
     }
-    const fresh = await checkProfile(profile, cookies[profile.site] || '', source)
+    const fresh = await checkProfile(profile, cookies[profile.site] || '', source, start + RUN_BUDGET_MS[source])
     found += fresh.length
     if (profile.notify && fresh.length) {
       await notifyFresh(profile, fresh)
     }
   }
+  // The media of what was found, kept for the feed within its own time and storage limits. The
+  // background task has to wait for it to be done; in the app the posts are shown without waiting.
+  const media = syncWatchMedia(source).catch((e) => console.warn('watch media sync failed', e))
+  if (source === 'background') await media
   return found
 }
 
@@ -350,7 +396,11 @@ if (isAvailable && TaskManager && !TaskManager.isTaskDefined(WATCH_TASK)) {
 /** How often the background task should run, or null when nothing is watched. */
 const wantedTaskInterval = () => {
   const profiles = watch$.profiles.peek()
-  return profiles.length ? backgroundIntervalMinutes(profiles, watch$.checkIntervalMinutes.peek()) : null
+  if (!profiles.length) return null
+  const interval = backgroundIntervalMinutes(profiles, watch$.checkIntervalMinutes.peek())
+  // All background tasks of the app run on one schedule, set by the last one registered: it
+  // must not be longer than what the mention notifications register theirs with.
+  return settings$.mentionNotificationsEnabled.peek() ? Math.min(interval, MENTION_POLL_INTERVAL_MINUTES) : interval
 }
 
 // What the task was registered with by this run of the app; a run starts by registering it anew.
@@ -398,10 +448,22 @@ if (isAvailable) {
   // Every check changes the list too; the task is only registered again when its interval changes.
   watch$.profiles.onChange(() => void syncBackgroundTask())
   watch$.checkIntervalMinutes.onChange(() => void syncBackgroundTask())
-  AppState.addEventListener('change', (state) => {
+  settings$.mentionNotificationsEnabled.onChange(() => void syncBackgroundTask())
+  // While Nora is open the background task does not run on iOS, and on Android only when the
+  // system gets to it; a profile whose interval is up is checked from here then.
+  let foregroundTimer: ReturnType<typeof setInterval> | undefined
+  const syncForegroundTimer = (state: string) => {
     if (state === 'active') {
       void refreshWatched('foreground')
+      if (!foregroundTimer) {
+        foregroundTimer = setInterval(() => void refreshWatched('foreground'), FOREGROUND_POLL_MS)
+      }
+    } else if (foregroundTimer) {
+      clearInterval(foregroundTimer)
+      foregroundTimer = undefined
     }
-  })
+  }
+  AppState.addEventListener('change', syncForegroundTimer)
+  syncForegroundTimer(AppState.currentState)
   void syncBackgroundTask()
 }

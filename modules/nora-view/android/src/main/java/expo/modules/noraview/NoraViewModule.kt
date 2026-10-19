@@ -256,6 +256,38 @@ class NoraViewModule : Module() {
       }
     }
 
+    // Copies a file the app already has, like media kept for the feed, to the shared
+    // Downloads, where the user's other apps can see it. Android 10 and later only: before
+    // that it takes a storage permission, and the app shares the file instead.
+    AsyncFunction("saveFileToDownloads") Coroutine { sourceUri: String, fileName: String, mimeType: String? ->
+      val context = appContext.reactContext ?: return@Coroutine false
+      withContext(Dispatchers.IO) {
+        val source = File(Uri.parse(sourceUri).path ?: return@withContext false)
+        if (!source.exists()) return@withContext false
+        val type = mimeType ?: "application/octet-stream"
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) return@withContext false
+        try {
+          val values = android.content.ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, type)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+          }
+          val resolver = context.contentResolver
+          val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return@withContext false
+          try {
+            resolver.openOutputStream(uri)?.use { output -> source.inputStream().use { it.copyTo(output) } }
+          } catch (e: Exception) {
+            resolver.delete(uri, null, null)
+            throw e
+          }
+          true
+        } catch (e: Exception) {
+          log("saveFileToDownloads failed: ${e.message}")
+          false
+        }
+      }
+    }
+
     AsyncFunction("openExternalUrl") { url: String ->
       handleExternalAppUrl(appContext.reactContext ?: appContext.throwingActivity, url)
     }

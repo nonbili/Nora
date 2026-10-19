@@ -1,16 +1,26 @@
 import { describe, expect, it } from 'bun:test'
 import {
   backgroundIntervalMinutes,
+  findWatchPost,
   formatPostAge,
+  instagramUrlExpiresAt,
+  mediaExpired,
+  mediaExtension,
+  mediaFileName,
+  mediaKey,
+  mediaToEvict,
   getWatchTarget,
   instagramPostTime,
+  parseInstagramEmbed,
   parseInstagramProfilePage,
+  pickXVideoVariant,
   parseXDate,
   mergeWatchPosts,
   parseInstagramProfileInfo,
   parseXTimeline,
   postKey,
   splitInterval,
+  uniquePostsNewestFirst,
   watchIntervalMinutes,
   watchKey,
   type WatchPost,
@@ -237,6 +247,132 @@ describe('formatPostAge', () => {
   })
 })
 
+describe('pickXVideoVariant', () => {
+  const variants = [
+    { content_type: 'application/x-mpegURL', url: 'https://v/playlist.m3u8' },
+    { content_type: 'video/mp4', bitrate: 632000, url: 'https://v/320.mp4' },
+    { content_type: 'video/mp4', bitrate: 2176000, url: 'https://v/720.mp4' },
+    { content_type: 'video/mp4', bitrate: 10368000, url: 'https://v/1080.mp4' },
+  ]
+
+  it('takes the best mp4 up to about 720p', () => {
+    expect(pickXVideoVariant(variants)).toBe('https://v/720.mp4')
+  })
+
+  it('takes the smallest when every one is larger', () => {
+    expect(pickXVideoVariant(variants.slice(3))).toBe('https://v/1080.mp4')
+  })
+
+  it('is undefined without an mp4', () => {
+    expect(pickXVideoVariant(variants.slice(0, 1))).toBeUndefined()
+  })
+})
+
+const embedPage = (shortcodeMedia: unknown) =>
+  `<script>{"require":[["PolarisEmbedSimple","init",[],[{"isRichEmbed":true,"contextJSON":${JSON.stringify(
+    JSON.stringify({ context: {}, gql_data: { shortcode_media: shortcodeMedia } }),
+  )}}]]]}</script>`
+
+describe('parseInstagramEmbed', () => {
+  it('reads the file and cover of a video', () => {
+    expect(
+      parseInstagramEmbed(
+        embedPage({ __typename: 'GraphVideo', is_video: true, display_url: 'https://cdn/c.jpg', video_url: 'https://cdn/v.mp4', dimensions: { width: 1080, height: 1920 } }),
+      ),
+    ).toEqual([{ type: 'video', url: 'https://cdn/v.mp4', thumb: 'https://cdn/c.jpg', width: 1080, height: 1920 }])
+  })
+
+  it('reads each photo and video of a carousel', () => {
+    const media = parseInstagramEmbed(
+      embedPage({
+        __typename: 'GraphSidecar',
+        display_url: 'https://cdn/1.jpg',
+        edge_sidecar_to_children: {
+          edges: [
+            { node: { is_video: false, display_url: 'https://cdn/1.jpg' } },
+            { node: { is_video: true, display_url: 'https://cdn/2.jpg', video_url: 'https://cdn/2.mp4' } },
+          ],
+        },
+      }),
+    )
+    expect(media.map((item) => [item.type, item.url])).toEqual([
+      ['image', 'https://cdn/1.jpg'],
+      ['video', 'https://cdn/2.mp4'],
+    ])
+  })
+
+  it('reads the largest size of a single photo from the picture of the page', () => {
+    const html = `<script>{"contextJSON":null}</script><img class="EmbeddedMediaImage" alt="x" src="https://cdn/s.jpg?a=1&amp;b=2" srcset="https://cdn/640.jpg?a=1&amp;b=2 640w,https://cdn/1080.jpg?a=1&amp;b=2 1080w,https://cdn/320.jpg 320w" />`
+    expect(parseInstagramEmbed(html)).toEqual([{ type: 'image', url: 'https://cdn/1080.jpg?a=1&b=2' }])
+  })
+
+  it('throws on a page without media', () => {
+    expect(() => parseInstagramEmbed('<html>Sorry, this page is not available</html>')).toThrow()
+  })
+})
+
+describe('mediaToEvict', () => {
+  const entry = (postKey: string, index: number, bytes: number, postCreatedAt: number, usedAt = 0) => ({
+    key: mediaKey(postKey, index),
+    bytes,
+    postCreatedAt,
+    usedAt,
+  })
+
+  it('deletes the media of posts that are no longer kept', () => {
+    const entries = [entry('x:1', 0, 10, 1), entry('x:2', 0, 10, 2)]
+    expect(mediaToEvict(entries, 1000, new Set(['x:2']))).toEqual([mediaKey('x:1', 0)])
+  })
+
+  it('keeps everything under the limit', () => {
+    expect(mediaToEvict([entry('x:1', 0, 10, 1)], 100, new Set(['x:1']))).toEqual([])
+  })
+
+  it('deletes the media of the oldest posts first, to a little under the limit', () => {
+    const entries = [entry('x:3', 0, 40, 3), entry('x:1', 0, 40, 1), entry('x:1', 1, 40, 1), entry('x:2', 0, 40, 2)]
+    const live = new Set(['x:1', 'x:2', 'x:3'])
+    // 160 over a limit of 100, down to 90 or less: the oldest post's two files bring it to 80.
+    expect(mediaToEvict(entries, 100, live)).toEqual([mediaKey('x:1', 0), mediaKey('x:1', 1)])
+  })
+
+  it('never deletes a file in use, and takes the next oldest instead', () => {
+    const entries = [entry('x:3', 0, 40, 3), entry('x:1', 0, 40, 1), entry('x:1', 1, 40, 1), entry('x:2', 0, 40, 2)]
+    const live = new Set(['x:2', 'x:3'])
+    const inUse = new Set([mediaKey('x:1', 0)])
+    // x:1 is no longer kept, but its first file is being saved; the oldest live post goes in its place.
+    expect(mediaToEvict(entries, 60, live, inUse)).toEqual([mediaKey('x:1', 1), mediaKey('x:2', 0)])
+  })
+})
+
+describe('instagramUrlExpiresAt', () => {
+  it('reads when a signed address stops working', () => {
+    expect(instagramUrlExpiresAt('https://cdn/a.jpg?stp=x&oe=6ADB6A8C&_nc_sid=1')).toBe(0x6adb6a8c * 1000)
+    expect(instagramUrlExpiresAt('https://pbs.twimg.com/media/a.jpg?name=large')).toBeUndefined()
+  })
+})
+
+describe('mediaExpired', () => {
+  const at = 0x6adb6a8c * 1000
+  const media = [{ type: 'image' as const, url: 'https://cdn/a.jpg?oe=6ADB6A8C' }]
+  it('is true from a little before the address stops working', () => {
+    expect(mediaExpired(media, at - 60 * 60 * 1000)).toBe(false)
+    expect(mediaExpired(media, at - 60 * 1000)).toBe(true)
+  })
+
+  it('is false for addresses that do not expire', () => {
+    expect(mediaExpired([{ type: 'image', url: 'https://pbs.twimg.com/a.jpg' }], Date.now())).toBe(false)
+  })
+})
+
+describe('mediaFileName', () => {
+  it('tells the site, profile and post, with the extension of the media', () => {
+    const post = { site: 'x' as const, handle: 'NASA', id: '123' }
+    expect(mediaFileName(post, 0, { type: 'video', url: 'https://v/a.mp4?tag=1' })).toBe('x_NASA_123_1.mp4')
+    expect(mediaFileName(post, 1, { type: 'image', url: 'https://pbs/media/a.png?name=large' })).toBe('x_NASA_123_2.png')
+    expect(mediaExtension({ type: 'image', url: 'https://cdn/no-extension' })).toBe('jpg')
+  })
+})
+
 describe('watchIntervalMinutes', () => {
   it('is the choice of the profile, or else the one for all', () => {
     expect(watchIntervalMinutes({ checkIntervalMinutes: 15 }, 60)).toBe(15)
@@ -264,6 +400,28 @@ describe('splitInterval', () => {
   })
 })
 
+describe('findWatchPost', () => {
+  it('takes the copy of the given profile, or else any', () => {
+    const shared = kept('2', 20)
+    const posts = { 'x:a': [{ ...shared, handle: 'a' }], 'x:b': [{ ...shared, handle: 'b' }] }
+    expect(findWatchPost(posts, 'x:b', shared.key)?.handle).toBe('b')
+    expect(findWatchPost(posts, 'x:c', shared.key)?.handle).toBe('a')
+    expect(findWatchPost(posts, 'x:a', 'x:9')).toBeUndefined()
+  })
+})
+
+describe('uniquePostsNewestFirst', () => {
+  it('shows a post two profiles share once, as the first list has it', () => {
+    const shared = kept('2', 20)
+    const lists = [[kept('3', 30), { ...shared, handle: 'first' }], [{ ...shared, handle: 'second' }, kept('1', 10)], undefined]
+    expect(uniquePostsNewestFirst(lists).map((post) => [post.id, post.handle])).toEqual([
+      ['3', 'nasa'],
+      ['2', 'first'],
+      ['1', 'nasa'],
+    ])
+  })
+})
+
 describe('mergeWatchPosts', () => {
   it('reports no post of the first fetch as new', () => {
     const { posts, fresh } = mergeWatchPosts([], [fetched('1', 10), fetched('2', 20)], { now: 99, initial: true })
@@ -283,6 +441,24 @@ describe('mergeWatchPosts', () => {
     const { posts, fresh } = mergeWatchPosts([kept('1', 0, 5)], [{ ...fetched('1', 10), text: 'edited' }], { now: 99, initial: false })
     expect(posts).toEqual([{ ...kept('1', 10, 5), text: 'edited' }])
     expect(fresh).toEqual([])
+  })
+
+  it('keeps the media read from the embed page over a fetch that only knows the cover', () => {
+    const full = [{ type: 'image' as const, url: 'https://cdn/1.jpg' }, { type: 'image' as const, url: 'https://cdn/2.jpg' }]
+    const existing = [{ ...kept('1', 10), media: full, mediaComplete: true }]
+    const { posts } = mergeWatchPosts(existing, [{ ...fetched('1', 10), media: [full[0]], mediaComplete: false }], { now: 99, initial: false })
+    expect(posts[0].media).toEqual(full)
+    expect(posts[0].mediaComplete).toBe(true)
+  })
+
+  it('keeps the media read from the embed page even once its addresses have expired', () => {
+    // Its photos may be kept on the phone; it is read again only for the ones that are not.
+    const full = [{ type: 'image' as const, url: 'https://cdn/1.jpg?oe=00000001' }, { type: 'image' as const, url: 'https://cdn/2.jpg?oe=00000001' }]
+    const cover = { type: 'image' as const, url: 'https://cdn/cover.jpg' }
+    const existing = [{ ...kept('1', 10), media: full, mediaComplete: true }]
+    const { posts } = mergeWatchPosts(existing, [{ ...fetched('1', 10), media: [cover], mediaComplete: false }], { now: 99_000, initial: false })
+    expect(posts[0].media).toEqual(full)
+    expect(posts[0].mediaComplete).toBe(true)
   })
 
   it('keeps an older post that only now shows up, without reporting it', () => {

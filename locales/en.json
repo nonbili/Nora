@@ -499,7 +499,18 @@
     "intervalHours_one": "{{count}} hour",
     "intervalHours_other": "{{count}} hours",
     "intervalDays_one": "{{count}} day",
-    "intervalDays_other": "{{count}} days"
+    "intervalDays_other": "{{count}} days",
+    "openOn": "Open on {{site}}",
+    "saveMedia": "Save media",
+    "mediaSaved_one": "Saved {{count}} file to Downloads",
+    "mediaSaved_other": "Saved {{count}} files to Downloads",
+    "mediaSaveFailed": "Could not save the media",
+    "mediaFailed": "Could not load this media",
+    "mediaWifiOnly": "Download media only on Wi-Fi",
+    "mediaLimit": "Media storage",
+    "mediaUsage": "{{used}} of {{limit}} used. Media of the oldest posts is removed first.",
+    "mediaClear": "Clear media",
+    "mediaClearConfirm": "Remove all photos and videos kept for the feed? They are downloaded again when needed."
   },
   "usageLimits": {
     "label": "Usage limits",

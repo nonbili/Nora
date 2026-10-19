@@ -15,6 +15,8 @@ interface Store {
   cookieModalOpen: boolean
   downloadVideoModalUrl: string
   feedModalOpen: boolean
+  // The post whose media the feed's gallery shows, and the photo or video it opened at.
+  feedGallery: { postKey: string; profileKey: string; index: number } | null
   navModalOpen: boolean
   profileLinkUrl: string
   autoProfilesModalOpen: boolean
@@ -63,6 +65,7 @@ export const ui$ = observable<Store>({
   cookieModalOpen: false,
   downloadVideoModalUrl: '',
   feedModalOpen: false,
+  feedGallery: null,
   navModalOpen: false,
   profileLinkUrl: '',
   autoProfilesModalOpen: false,

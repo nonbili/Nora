@@ -15,6 +15,8 @@ import { watch$, type WatchedProfile } from '@/states/watch'
 import {
   WATCH_INTERVAL_OPTIONS,
   formatPostAge,
+  mediaKey,
+  uniquePostsNewestFirst,
   splitInterval,
   watchKey,
   watchProfileUrl,
@@ -33,6 +35,8 @@ import { clsx } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
+import { share } from '@/lib/share'
+import { clearWatchMedia, ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
 
 const siteLabel = { x: 'X', instagram: 'Instagram' } as const
 
@@ -43,15 +47,20 @@ const formatInterval = (minutes: number) => {
   return t(intervalKeys[unit], { count })
 }
 
-/** A row that tells how often, with a menu to choose another interval. */
-const IntervalPicker: React.FC<{
+const MEDIA_LIMIT_OPTIONS_MB = [250, 500, 1024, 2048, 5120]
+
+const formatMegabytes = (mb: number) => (mb >= 1024 ? `${+(mb / 1024).toFixed(1)} GB` : `${Math.round(mb)} MB`)
+
+/** A row with a value and a menu to choose another. */
+const ChoicePicker: React.FC<{
+  label: string
   value: string
   options: { label: string; minutes: number | undefined }[]
   onSelect: (minutes: number | undefined) => void
   iconColor: string
-}> = ({ value, options, onSelect, iconColor }) => (
+}> = ({ label, value, options, onSelect, iconColor }) => (
   <View className="flex-row items-center justify-between gap-3">
-    <NouText className="font-medium">{t('feed.checkEvery')}</NouText>
+    <NouText className="font-medium">{label}</NouText>
     <NouMenu
       trigger={
         <View className="h-9 flex-row items-center gap-1 rounded-full border border-zinc-300 pl-3 pr-2 dark:border-zinc-700">
@@ -98,44 +107,121 @@ const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> = ({ uri
   )
 }
 
+/** The first photo or video of a post, with how many more there are; opens the gallery. */
+const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, onOpen }) => {
+  const first = post.media?.[0]
+  const kept = useValue(watchMedia$.files[mediaKey(post.key, 0)])
+  const keptUri = first?.type === 'image' ? keptMediaUri(kept) : undefined
+  // The cover each check of the profile brings anew comes before the media's own addresses, which
+  // are kept from when the post was read and can have expired since.
+  const [coverFailed, setCoverFailed] = useState(false)
+  const remote = coverFailed ? first?.thumb || first?.url : post.image || first?.thumb || first?.url
+  const source = keptUri || remote
+  const onError = () => {
+    if (coverFailed) return
+    setCoverFailed(true)
+    // A cover that no longer loads either: the post is read again for new addresses, once.
+    if (post.site === 'instagram') ensurePostMedia(post, { force: true }).catch(() => {})
+  }
+  if (!source) return null
+  const width = first?.width
+  const height = first?.height
+  // As the photo is, within what a feed shows well; a square when its size is not known.
+  const aspectRatio = width && height ? Math.min(Math.max(width / height, 0.8), 1.91) : post.site === 'instagram' ? 1 : 16 / 9
+  return (
+    <Pressable onPress={onOpen} className="mt-2" accessibilityRole="imagebutton">
+      <Image
+        source={source}
+        onError={onError}
+        contentFit="cover"
+        className="rounded-xl bg-zinc-200 dark:bg-zinc-800"
+        style={{ width: '100%', aspectRatio, borderRadius: 12 }}
+      />
+      {first?.type === 'video' ? (
+        <View className="absolute inset-0 items-center justify-center" pointerEvents="none">
+          <View className="h-12 w-12 items-center justify-center rounded-full bg-black/50">
+            <MaterialIcons name="play-arrow" size={30} color="#fff" />
+          </View>
+        </View>
+      ) : null}
+      {(post.media?.length || 0) > 1 ? (
+        <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-black/60 px-2 py-0.5" pointerEvents="none">
+          <MaterialIcons name="collections" size={12} color="#fff" />
+          <NouText className="text-xs text-white">{post.media?.length}</NouText>
+        </View>
+      ) : null}
+    </Pressable>
+  )
+}
+
 const PostRow: React.FC<{
   post: WatchPost
   profile?: WatchedProfile
   unread: boolean
   now: number
-  onPress: () => void
-}> = ({ post, profile, unread, now, onPress }) => (
-  <Pressable onPress={onPress} className="flex-row gap-3 px-4 py-3 active:bg-zinc-200 dark:active:bg-zinc-900">
-    <Avatar uri={profile?.avatar} size={36} site={post.site} />
-    <View className="flex-1">
-      <View className="flex-row items-center gap-1.5">
-        <NouText className="shrink font-semibold" numberOfLines={1}>
-          {profile?.name || post.handle}
-        </NouText>
-        <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
-          @{post.handle} · {formatPostAge(post.createdAtMs, now)}
-        </NouText>
-        {unread ? <View className="ml-auto h-2 w-2 rounded-full bg-indigo-500" /> : null}
+  iconColor: string
+  onOpenOriginal: () => void
+}> = ({ post, profile, unread, now, iconColor, onOpenOriginal }) => {
+  const [expanded, setExpanded] = useState(false)
+
+  const save = async () => {
+    try {
+      const saved = await saveWatchPostMedia(post)
+      // The share sheet tells for itself what became of the files.
+      if (!saved) showToast(t('feed.mediaSaveFailed'))
+      else if (savesToDownloads) showToast(t('feed.mediaSaved', { count: saved }))
+    } catch {
+      showToast(t('feed.mediaSaveFailed'))
+    }
+  }
+
+  return (
+    <View className="flex-row gap-3 py-3 pl-4 pr-1">
+      <Avatar uri={profile?.avatar} size={36} site={post.site} />
+      <View className="flex-1">
+        <View className="flex-row items-center gap-1.5">
+          <NouText className="shrink font-semibold" numberOfLines={1}>
+            {profile?.name || post.handle}
+          </NouText>
+          <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+            @{post.handle} · {formatPostAge(post.createdAtMs, now)}
+          </NouText>
+          {unread ? <View className="h-2 w-2 rounded-full bg-indigo-500" /> : null}
+          <View className="ml-auto">
+            <NouMenu
+              trigger={
+                <View className="h-8 w-8 items-center justify-center">
+                  <MaterialIcons name="more-vert" size={18} color={iconColor} />
+                </View>
+              }
+              items={[
+                ...(post.media?.length ? [{ label: t('feed.saveMedia'), handler: () => void save() }] : []),
+                { label: t('menus.share'), handler: () => share(post.url) },
+                { label: t('feed.openOn', { site: siteLabel[post.site] }), handler: onOpenOriginal },
+              ]}
+            />
+          </View>
+        </View>
+        {post.repostOf ? (
+          <NouText className="text-xs text-zinc-600 dark:text-zinc-400">{t('feed.repostOf', { handle: post.repostOf })}</NouText>
+        ) : null}
+        {post.text ? (
+          <Pressable onPress={() => setExpanded((value) => !value)} className="pr-3">
+            <NouText className="mt-1 leading-5" numberOfLines={expanded ? undefined : 8}>
+              {post.text}
+            </NouText>
+          </Pressable>
+        ) : null}
+        <View className="pr-3">
+          <PostMedia
+            post={post}
+            onOpen={() => ui$.feedGallery.set({ postKey: post.key, profileKey: watchKey(post), index: 0 })}
+          />
+        </View>
       </View>
-      {post.repostOf ? (
-        <NouText className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">{t('feed.repostOf', { handle: post.repostOf })}</NouText>
-      ) : null}
-      {post.text ? (
-        <NouText className="mt-1 leading-5" numberOfLines={8}>
-          {post.text}
-        </NouText>
-      ) : null}
-      {post.image ? (
-        <Image
-          source={post.image}
-          contentFit="cover"
-          className="mt-2 rounded-xl bg-zinc-200 dark:bg-zinc-800"
-          style={{ width: '100%', aspectRatio: post.site === 'instagram' ? 1 : 16 / 9, borderRadius: 12 }}
-        />
-      ) : null}
     </View>
-  </Pressable>
-)
+  )
+}
 
 export const FeedModal = () => {
   const tw = useTwColor()
@@ -144,6 +230,11 @@ export const FeedModal = () => {
   const open = useValue(ui$.feedModalOpen)
   const profiles = useValue(watch$.profiles)
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
+  const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
+  const mediaLimitMB = useValue(watch$.mediaLimitMB)
+  const mediaUsedBytes = useValue(() =>
+    Object.values(watchMedia$.files.get()).reduce((sum, kept) => sum + (kept?.bytes || 0), 0),
+  )
   const postsByProfile = useValue(watch$.posts)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -191,9 +282,9 @@ export const FeedModal = () => {
   // Not memoized: the store changes its arrays in place, so they keep their identity across changes.
   const profileByKey = new Map(profiles.map((profile) => [profile.key, profile]))
   const selected = selectedKey ? profileByKey.get(selectedKey) : undefined
-  const posts = (selected ? [selected.key] : profiles.map((profile) => profile.key))
-    .flatMap((key) => postsByProfile[key] || [])
-    .sort((a, b) => b.createdAtMs - a.createdAtMs)
+  const posts = uniquePostsNewestFirst(
+    (selected ? [selected.key] : profiles.map((profile) => profile.key)).map((key) => postsByProfile[key]),
+  )
 
   // Sites that some profile is checked on without an account, and so less reliably.
   const loggedOutSites = Array.from(
@@ -215,6 +306,10 @@ export const FeedModal = () => {
     if (!(await enableWatchNotifications(profile.key))) {
       showToast(t('feed.notificationPermissionDenied'))
     }
+  }
+
+  const clearMedia = () => {
+    confirmDestructiveAction(t('feed.mediaClear'), t('feed.mediaClearConfirm'), t('feed.mediaClear'), clearWatchMedia)
   }
 
   const unwatch = (profile: WatchedProfile) => {
@@ -272,7 +367,8 @@ export const FeedModal = () => {
               {selectedStatus.text}
             </NouText>
           ) : null}
-          <IntervalPicker
+          <ChoicePicker
+            label={t('feed.checkEvery')}
             value={selected.checkIntervalMinutes ? formatInterval(selected.checkIntervalMinutes) : t('feed.intervalDefault', { interval: formatInterval(defaultInterval) })}
             options={[
               { label: t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }), minutes: undefined },
@@ -289,13 +385,33 @@ export const FeedModal = () => {
       ) : profiles.length ? (
         <>
           <View className="mx-4 mb-3 gap-1 rounded-2xl bg-white px-4 py-3 dark:bg-zinc-900">
-            <IntervalPicker
+            <ChoicePicker
+              label={t('feed.checkEvery')}
               value={formatInterval(defaultInterval)}
               options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes }))}
               onSelect={(minutes) => minutes && watch$.checkIntervalMinutes.set(minutes)}
               iconColor={iconColor}
             />
             <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.intervalHint')}</NouText>
+            <View className="my-2 h-px bg-zinc-200 dark:bg-zinc-800" />
+            <NouSwitch label={t('feed.mediaWifiOnly')} value={mediaWifiOnly} onPress={() => watch$.mediaWifiOnly.set(!mediaWifiOnly)} />
+            <View className="mt-2">
+              <ChoicePicker
+                label={t('feed.mediaLimit')}
+                value={formatMegabytes(mediaLimitMB)}
+                options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), minutes: mb }))}
+                onSelect={(mb) => mb && watch$.mediaLimitMB.set(mb)}
+                iconColor={iconColor}
+              />
+            </View>
+            <View className="mt-1 flex-row items-center justify-between gap-3">
+              <NouText className="flex-1 text-sm text-zinc-600 dark:text-zinc-400">
+                {t('feed.mediaUsage', { used: formatMegabytes(mediaUsedBytes / 1024 / 1024), limit: formatMegabytes(mediaLimitMB) })}
+              </NouText>
+              <NouButton variant="outline" size="1" disabled={!mediaUsedBytes} onPress={clearMedia}>
+                {t('feed.mediaClear')}
+              </NouButton>
+            </View>
           </View>
           {loggedOutSites.length ? (
             <View className="mx-4 mb-3 rounded-2xl bg-amber-50 px-4 py-3 dark:bg-amber-500/10">
@@ -349,7 +465,8 @@ export const FeedModal = () => {
             profile={profileByKey.get(watchKey(item))}
             unread={item.firstSeenAt > unreadSince}
             now={now}
-            onPress={() => openUrl(item.url)}
+            iconColor={iconColor}
+            onOpenOriginal={() => openUrl(item.url)}
           />
         )}
         ListFooterComponent={<View className="h-16" />}

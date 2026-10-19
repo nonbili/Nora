@@ -77,7 +77,7 @@ export const onWatchWebViewMessage = (id: number, html: string) => {
 export const onWatchWebViewError = (id: number, error: Error) => finish(id, { error })
 
 /** The page's preview tags and post data, read by the hidden webview; one page at a time. */
-export const loadInWatchWebView = (url: string): Promise<string> => {
+export const loadInWatchWebView = (url: string, timeoutMs = PAGE_TIMEOUT_MS): Promise<string> => {
   const run = () =>
     new Promise<string>((resolve, reject) => {
       if (!watchWebView$.hostMounted.peek()) {
@@ -87,7 +87,7 @@ export const loadInWatchWebView = (url: string): Promise<string> => {
       const id = nextId++
       current = { id, resolve, reject }
       watchWebView$.job.set({ id, url })
-      setTimeout(() => finish(id, { error: new Error('page timed out') }), PAGE_TIMEOUT_MS)
+      setTimeout(() => finish(id, { error: new Error('page timed out') }), Math.min(timeoutMs, PAGE_TIMEOUT_MS))
     })
   const result = queue.then(run, run)
   queue = result.catch(() => {})

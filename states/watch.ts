@@ -29,6 +29,10 @@ interface Store {
   feedSeenAt: number
   // Minutes between checks of a profile that has no choice of its own.
   checkIntervalMinutes: number
+  // Media of new posts is kept on the phone ahead of time only on Wi-Fi.
+  mediaWifiOnly: boolean
+  // How much kept media may take, in MB; the media of the oldest posts goes first.
+  mediaLimitMB: number
 
   isWatched: (target: WatchTarget) => boolean
   watch: (target: WatchTarget) => void
@@ -47,6 +51,8 @@ export const watch$: Observable<Store> = observable<Store>({
   posts: {},
   feedSeenAt: 0,
   checkIntervalMinutes: DEFAULT_WATCH_INTERVAL_MINUTES,
+  mediaWifiOnly: true,
+  mediaLimitMB: 1024,
 
   isWatched: (target) => watch$.profiles.get().some((profile) => profile.key === watchKey(target)),
 
@@ -79,10 +85,14 @@ export const watch$: Observable<Store> = observable<Store>({
 
   unreadCount: () => {
     const seenAt = watch$.feedSeenAt.get()
-    return Object.values(watch$.posts.get()).reduce(
-      (count, posts) => count + posts.filter((post) => post.firstSeenAt > seenAt).length,
-      0,
-    )
+    // A post two watched profiles share is in both lists, and shown once.
+    const unread = new Set<string>()
+    for (const posts of Object.values(watch$.posts.get())) {
+      for (const post of posts || []) {
+        if (post.firstSeenAt > seenAt) unread.add(post.key)
+      }
+    }
+    return unread.size
   },
 
   markFeedSeen: () => watch$.feedSeenAt.set(Date.now()),

@@ -18,6 +18,8 @@ declare class NoraViewModule extends NativeModule {
     profile: string,
     userAgent: string,
   ): Promise<boolean>
+  // Android only: iOS saves through the share sheet instead.
+  saveFileToDownloads?(sourceUri: string, fileName: string, mimeType: string | null): Promise<boolean>
   reloadBlocklistFromDisk?(enabled: boolean, revision: number): Promise<boolean>
   reloadBlocklistFromSourceFiles?(enabled: boolean, revision: number): Promise<boolean>
   setSettings(settings: object): void
