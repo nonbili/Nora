@@ -159,8 +159,9 @@ export const FeedGalleryModal = () => {
   }
 
   const openOriginal = () => {
-    tabs$.openTab(post.url)
-    ui$.assign({ feedGallery: null, feedModalOpen: false })
+    // The gallery is opened from the feed tab, and back in the opened tab comes back to it.
+    tabs$.openTab(post.url, { source: 'child', parentTabId: tabs$.currentTab()?.id })
+    ui$.feedGallery.set(null)
   }
 
   return (

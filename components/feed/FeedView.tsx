@@ -1,14 +1,12 @@
-import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, View, useColorScheme, useWindowDimensions } from 'react-native'
-import { useCallback, useEffect, useState } from 'react'
+import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, View, useColorScheme } from 'react-native'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useValue } from '@legendapp/state/react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { Image } from 'expo-image'
 import { t } from 'i18next'
 import { NouText } from '../NouText'
 import { NouButton } from '../button/NouButton'
 import { NouSwitch } from '../switch/NouSwitch'
-import { BaseModal } from './BaseModal'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
 import { watch$, type WatchedProfile } from '@/states/watch'
@@ -37,6 +35,7 @@ import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
 import { share } from '@/lib/share'
 import { clearWatchMedia, ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
+import { feedTabActions } from '@/lib/feed-tab'
 
 const siteLabel = { x: 'X', instagram: 'Instagram' } as const
 
@@ -223,11 +222,15 @@ const PostRow: React.FC<{
   )
 }
 
-export const FeedModal = () => {
+/** The posts of the watched profiles, newest first, as the feed tab shows them. */
+export const FeedView: React.FC<{
+  tabId: string
+  // On screen, which side by side tabs can be without being the one in focus.
+  active: boolean
+  focused: boolean
+}> = ({ tabId, active, focused }) => {
   const tw = useTwColor()
   const isDark = useColorScheme() === 'dark'
-  const { width } = useWindowDimensions()
-  const open = useValue(ui$.feedModalOpen)
   const profiles = useValue(watch$.profiles)
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
   const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
@@ -238,11 +241,10 @@ export const FeedModal = () => {
   const postsByProfile = useValue(watch$.posts)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
-  // What was unread when the feed was opened stays marked while it is open.
+  // What was unread when the tab was switched to stays marked while it is shown.
   const [unreadSince, setUnreadSince] = useState(0)
   const [now, setNow] = useState(() => Date.now())
-
-  const onClose = useCallback(() => ui$.feedModalOpen.set(false), [])
+  const listRef = useRef<FlatList<WatchPost>>(null)
 
   const refresh = useCallback(async (source: 'foreground' | 'manual') => {
     setRefreshing(true)
@@ -255,29 +257,35 @@ export const FeedModal = () => {
   }, [])
 
   useEffect(() => {
-    if (!open) {
-      setSelectedKey(null)
-      return
-    }
+    if (!active) return
+    // The tab comes back to the whole feed, which is what is marked read.
+    setSelectedKey(null)
     setUnreadSince(watch$.feedSeenAt.peek())
     setNow(Date.now())
     watch$.markFeedSeen()
     void refresh('foreground')
     return () => watch$.markFeedSeen()
-  }, [open, refresh])
+  }, [active, refresh])
 
   useEffect(() => {
-    if (!open) return
+    feedTabActions.set(tabId, {
+      refresh: () => void refresh('manual'),
+      scrollToTop: () => listRef.current?.scrollToOffset({ offset: 0, animated: true }),
+    })
+    return () => {
+      feedTabActions.delete(tabId)
+    }
+  }, [tabId, refresh])
+
+  // Back leaves a profile for the whole feed before it leaves the tab.
+  useEffect(() => {
+    if (!focused || !selectedKey) return
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      onClose()
+      setSelectedKey(null)
       return true
     })
     return () => subscription.remove()
-  }, [open, onClose])
-
-  if (!open) {
-    return null
-  }
+  }, [focused, selectedKey])
 
   // Not memoized: the store changes its arrays in place, so they keep their identity across changes.
   const profileByKey = new Map(profiles.map((profile) => [profile.key, profile]))
@@ -293,10 +301,8 @@ export const FeedModal = () => {
 
   const iconColor = isDark ? tw('#f8fafc') : tw('#334155')
 
-  const openUrl = (url: string) => {
-    tabs$.openTab(url)
-    onClose()
-  }
+  // Back in the opened tab comes back to the feed.
+  const openUrl = (url: string) => tabs$.openTab(url, { source: 'child', parentTabId: tabId })
 
   const toggleNotify = async (profile: WatchedProfile) => {
     if (profile.notify) {
@@ -434,12 +440,9 @@ export const FeedModal = () => {
     </View>
   )
 
-  const content = (
+  return (
     <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
-      <View className="flex-row items-center gap-2 px-3 py-3">
-        <Pressable onPress={onClose} className="h-11 w-11 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-900">
-          <MaterialIcons name="close" color={iconColor} size={22} />
-        </Pressable>
+      <View className="flex-row items-center gap-2 py-1 pl-4 pr-2">
         <NouText className="flex-1 text-lg font-semibold">{t('feed.label')}</NouText>
         {profiles.length ? (
           <Pressable
@@ -454,6 +457,7 @@ export const FeedModal = () => {
         ) : null}
       </View>
       <FlatList
+        ref={listRef}
         data={posts}
         keyExtractor={(post) => post.key}
         ListHeaderComponent={header}
@@ -472,17 +476,5 @@ export const FeedModal = () => {
         ListFooterComponent={<View className="h-16" />}
       />
     </View>
-  )
-
-  return width < 768 ? (
-    <View className="absolute inset-0 z-10 bg-zinc-100 dark:bg-zinc-950">
-      <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
-        {content}
-      </SafeAreaView>
-    </View>
-  ) : (
-    <BaseModal onClose={onClose} className="bg-transparent" useNativeModal={false} safeAreaEdges={['left', 'right']}>
-      {content}
-    </BaseModal>
   )
 }

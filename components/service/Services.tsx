@@ -21,6 +21,7 @@ import { NouSwitch } from '../switch/NouSwitch'
 import { settings$ } from '@/states/settings'
 import { useValue } from '@legendapp/state/react'
 import { hostHomes } from '@/content/css'
+import { isFeedTabUrl } from '@/lib/feed-tab'
 import { t } from 'i18next'
 import { useTwColor } from '@/lib/theme'
 
@@ -77,6 +78,14 @@ export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, ico
     return (
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
         <Image source={icon} style={{ width: size, height: size }} contentFit="contain" onError={() => setErrored(true)} />
+      </View>
+    )
+  }
+
+  if (isFeedTabUrl(url)) {
+    return (
+      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+        <MaterialIcons name="dynamic-feed" size={Math.max(16, size - 4)} color={fallbackColor} />
       </View>
     )
   }

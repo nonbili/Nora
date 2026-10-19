@@ -21,6 +21,7 @@ import {
   type ChildBackParentByTabId,
 } from '@/lib/tab-behavior'
 import { removeTrackingParams } from '@/lib/url'
+import { isFeedTabUrl } from '@/lib/feed-tab'
 import { autoProfiles$ } from './auto-profiles'
 import { isAnonymousProfile } from '@/lib/anonymous'
 import {
@@ -284,7 +285,8 @@ const resolveOpenProfile = (url: string, options?: OpenTabOptions): Pick<Tab, 'p
     return { profile: fallbackProfile, profileMode: 'manual' }
   }
 
-  if (options?.source === 'child' && parentTab?.profile) {
+  // The feed tab has no site of its own: what it opens takes the profile of its own site.
+  if (options?.source === 'child' && parentTab?.profile && !isFeedTabUrl(parentTab.url)) {
     recordAutoProfile(parentTab.profile)
     return {
       profile: parentTab.profile,
@@ -431,7 +433,7 @@ export const tabs$: Observable<Store> = observable<Store>({
     const tab: Tab = {
       id: genId(),
       url,
-      isLoading: Boolean(url),
+      isLoading: Boolean(url) && !isFeedTabUrl(url),
       ...profile,
       backToNewTab: !url,
     }

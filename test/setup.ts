@@ -188,4 +188,4 @@ class MMKVStub {
   }
 }
 
-mock.module('react-native-mmkv', () => ({ MMKV: MMKVStub }))
+mock.module('react-native-mmkv', () => ({ MMKV: MMKVStub, createMMKV: () => new MMKVStub() }))

@@ -6,6 +6,7 @@ import { isAuthCallbackUrl } from './auth-callback'
 import { isExternalAppUrl } from './url-schemes'
 import { parseTabShortcutUrl } from './tab-shortcut'
 import { tabGroups$ } from '@/states/tab-groups'
+import { FEED_TAB_URL, isFeedTabUrl } from './feed-tab'
 export { removeTrackingParams } from './url'
 export { isAuthCallbackUrl } from './auth-callback'
 
@@ -33,7 +34,7 @@ export function cleanSharedUrl(url: string) {
 
 // A home-screen shortcut points at the tab it was pinned from. Focus that tab when it is
 // still around, and fall back to opening its url in a new tab when it is gone.
-function focusShortcutTab(tabId: string) {
+function focusTab(tabId: string) {
   const exists = tabs$.tabs.get().some((tab) => tab.id === tabId)
   if (!exists) {
     return false
@@ -46,16 +47,30 @@ function focusShortcutTab(tabId: string) {
   return true
 }
 
+/** Brings up the feed tab, opening one when there is none. */
+export function openFeedTab() {
+  const existing = tabs$.tabs.get().find((tab) => isFeedTabUrl(tab.url))
+  if (existing && focusTab(existing.id)) {
+    return
+  }
+  tabGroups$.setActiveGroup(null)
+  tabs$.openTab(FEED_TAB_URL)
+}
+
 export async function openSharedUrl(url: string, replace = false) {
   const shortcut = parseTabShortcutUrl(url)
   if (shortcut) {
-    if (focusShortcutTab(shortcut.id)) {
+    if (focusTab(shortcut.id)) {
       return
     }
     // The pinned tab is gone, so its url opens as a new ungrouped tab -- which the desktop
     // layout only shows once no group is active.
     tabGroups$.setActiveGroup(null)
     url = shortcut.url
+  }
+  if (isFeedTabUrl(url)) {
+    openFeedTab()
+    return
   }
   if (isAuthCallbackUrl(url)) {
     await onReceiveAuthUrl(url)

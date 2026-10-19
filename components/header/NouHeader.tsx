@@ -4,7 +4,8 @@ import MaterialCommunityIcons from '@react-native-vector-icons/material-design-i
 import React, { useCallback, useEffect, useRef } from 'react'
 import { useValue, useObserve } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
-import { removeTrackingParams } from '@/lib/page'
+import { openFeedTab, removeTrackingParams } from '@/lib/page'
+import { feedTabActions, isFeedTabUrl } from '@/lib/feed-tab'
 import { settings$, resolveZoom } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
@@ -135,7 +136,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const isFacebookMessenger = hostname.endsWith('.facebook.com') && (pathname === '/messages' || pathname.startsWith('/messages/'))
   // Instagram is always its desktop site in the Anonymous profile, whatever the switch says.
   const anonymousDesktopSite = showAnonymousToggle && anonymousOnThisSite && wantsAnonymousDesktopSite(hostname)
-  const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com') || anonymousDesktopSite
+  const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com') || anonymousDesktopSite || isFeedTabUrl(currentTab?.url)
 
   const onLayout = (event: LayoutChangeEvent) => {
     // In the desktop layout the header is a full height sidebar, and its height means
@@ -156,10 +157,22 @@ export const NouHeader: React.FC<{}> = ({}) => {
   // registry is keyed by tab id and is already correct at that point.
   const activeWebview = () => getTabWebview(tabs$.currentTab()?.id || '') || webview
 
+  // The feed tab has no webview: it refreshes and scrolls its own list.
+  const isFeedTab = isFeedTabUrl(currentTab?.url)
+  const feedActions = () => feedTabActions.get(tabs$.currentTab()?.id || '')
+
   const scrollToTop = () => {
+    if (isFeedTab) {
+      feedActions()?.scrollToTop()
+      return
+    }
     void scrollWebviewToTop(activeWebview())
   }
   const reloadPage = () => {
+    if (isFeedTab) {
+      feedActions()?.refresh()
+      return
+    }
     reloadWebview(activeWebview(), currentTab?.url)
   }
   const goForward = () => {
@@ -530,25 +543,33 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     ...(!desktopLayout ? blocklistMenuItems : []),
                     ...(!desktopLayout ? anonymousMenuItems : []),
                     ...watchMenuItems,
-                    {
-                      label: t('menus.zoom') || 'Zoom',
-                      icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,
-                      systemImage: 'plus.magnifyingglass',
-                      metaLabel: `${resolveZoom(host, siteZoom, defaultZoom)}%`,
-                      handler: () => ui$.zoomModalOpen.set(true),
-                    },
+                    ...(isFeedTab
+                      ? []
+                      : [
+                          {
+                            label: t('menus.zoom') || 'Zoom',
+                            icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,
+                            systemImage: 'plus.magnifyingglass',
+                            metaLabel: `${resolveZoom(host, siteZoom, defaultZoom)}%`,
+                            handler: () => ui$.zoomModalOpen.set(true),
+                          },
+                        ]),
                     {
                       label: t('menus.addBookmark'),
                       icon: <MaterialIcons name="bookmark-add" size={18} color={headerControlColor} />,
                       systemImage: 'bookmark',
                       handler: addBookmark,
                     },
-                    {
-                      label: t('menus.share'),
-                      icon: <MaterialIcons name="share" size={18} color={headerControlColor} />,
-                      systemImage: 'square.and.arrow.up',
-                      handler: () => (currentTab ? share(currentTab.url) : {}),
-                    },
+                    ...(isFeedTab
+                      ? []
+                      : [
+                          {
+                            label: t('menus.share'),
+                            icon: <MaterialIcons name="share" size={18} color={headerControlColor} />,
+                            systemImage: 'square.and.arrow.up',
+                            handler: () => (currentTab ? share(currentTab.url) : {}),
+                          },
+                        ]),
                     ...(currentTab && canPinTabToHomeScreen(currentTab)
                       ? [
                           {
@@ -572,7 +593,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
                       systemImage: 'list.bullet.rectangle',
                       metaLabel: feedUnreadCount ? String(feedUnreadCount) : undefined,
-                      handler: () => ui$.feedModalOpen.set(true),
+                      handler: () => openFeedTab(),
                     },
                   ]),
               {

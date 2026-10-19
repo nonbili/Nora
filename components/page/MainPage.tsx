@@ -16,7 +16,6 @@ import { ProfileLinkModal } from '../modal/ProfileLinkModal'
 import { RenameViewModal } from '../modal/RenameViewModal'
 import { RenameGroupModal } from '../modal/RenameGroupModal'
 import { ZoomModal } from '../modal/ZoomModal'
-import { FeedModal } from '../modal/FeedModal'
 import { FeedGalleryModal } from '../modal/FeedGalleryModal'
 import { WatchWebViewHost } from '../watch/WatchWebViewHost'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
@@ -92,7 +91,6 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
           <>
             <DownloadVideoModal contentJs={contentJs} />
             <TabModal />
-            <FeedModal />
             <FeedGalleryModal />
             <WatchWebViewHost />
           </>,

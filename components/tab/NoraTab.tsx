@@ -57,6 +57,8 @@ import {
 import { blocklist$ } from '@/states/blocklist'
 import { buildAnonymousModeScript, isAnonymousModeActive, isAnonymousProfile, wantsAnonymousDesktopSite } from '@/lib/anonymous'
 import { twColor, useTwColor } from '@/lib/theme'
+import { isFeedTabUrl } from '@/lib/feed-tab'
+import { FeedTab } from './FeedTab'
 
 const LOAD_URL_MAX_RETRIES = 5
 const LOAD_URL_RETRY_DELAY = 100
@@ -210,7 +212,7 @@ const buildUserScriptRunner = (host: string) => {
   `
 }
 
-export const NoraTab: React.FC<{
+export interface NoraTabProps {
   tab: Tab
   index: number
   isActive?: boolean
@@ -224,7 +226,13 @@ export const NoraTab: React.FC<{
     measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => void
   } | null>
   slotSwitcher?: ReactNode
-}> = ({
+}
+
+/** A tab is a web page, or the feed of watched profiles. */
+export const NoraTab: React.FC<NoraTabProps> = (props) =>
+  isFeedTabUrl(props.tab.url) ? <FeedTab {...props} /> : <WebTab {...props} />
+
+const WebTab: React.FC<NoraTabProps> = ({
   tab,
   index,
   isActive = false,
