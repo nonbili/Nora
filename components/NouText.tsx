@@ -7,9 +7,16 @@ import { clsx } from '@/lib/utils'
 const isTextColor = (cls: string) =>
   /^text-(?:\[|inherit$|current$|transparent$|black$|white$)/.test(cls) || /^text-[a-z]+-\d{2,3}(?:\/\d+)?$/.test(cls)
 
-export const NouText: React.FC<TextProps> = ({ className, ...rest }) => {
+/** Whether a className sets a text color of its own, for light and for dark. */
+export const textColorsIn = (className: string | undefined) => {
   const classes = className?.split(/\s+/).filter(Boolean) ?? []
-  const hasColor = classes.some((cls) => !cls.includes(':') && isTextColor(cls))
-  const hasDarkColor = classes.some((cls) => cls.startsWith('dark:') && isTextColor(cls.slice(5)))
+  return {
+    hasColor: classes.some((cls) => !cls.includes(':') && isTextColor(cls)),
+    hasDarkColor: classes.some((cls) => cls.startsWith('dark:') && isTextColor(cls.slice(5))),
+  }
+}
+
+export const NouText: React.FC<TextProps> = ({ className, ...rest }) => {
+  const { hasColor, hasDarkColor } = textColorsIn(className)
   return <Text className={clsx(!hasColor && 'text-zinc-900', !hasDarkColor && 'dark:text-gray-100', className)} {...rest} />
 }

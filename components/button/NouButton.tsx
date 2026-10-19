@@ -1,5 +1,5 @@
 import { clsx, nIf } from '@/lib/utils'
-import { NouText } from '../NouText'
+import { NouText, textColorsIn } from '../NouText'
 import { ActivityIndicator, TouchableOpacity } from 'react-native'
 import { useTwColor } from '@/lib/theme'
 
@@ -24,6 +24,8 @@ export const NouButton = ({
   const tw = useTwColor()
   const isDisabled = Boolean(disabled || loading)
   const spinnerColor = variant === 'solid' ? '#ffffff' : variant === 'soft' ? tw('#4338ca') : tw('#475569')
+  // As in NouText, a color the caller sets has to replace the variant's: either would win by stylesheet order.
+  const { hasColor, hasDarkColor } = textColorsIn(textClassName)
 
   return (
     <TouchableOpacity
@@ -45,13 +47,15 @@ export const NouButton = ({
       {nIf(loading, <ActivityIndicator color={spinnerColor} />)}
       <NouText
         className={clsx(
-          variant === 'solid' && !isDisabled && 'text-white',
-          variant === 'soft' && !isDisabled && 'text-indigo-700 dark:text-zinc-100',
-          variant === 'outline' && !isDisabled && 'text-zinc-700 dark:text-zinc-200',
+          variant === 'solid' && !isDisabled && !hasColor && 'text-white',
+          variant === 'soft' && !isDisabled && !hasColor && 'text-indigo-700',
+          variant === 'soft' && !isDisabled && !hasDarkColor && 'dark:text-zinc-100',
+          variant === 'outline' && !isDisabled && !hasColor && 'text-zinc-700',
+          variant === 'outline' && !isDisabled && !hasDarkColor && 'dark:text-zinc-200',
           isDisabled && 'text-zinc-500 dark:text-zinc-400',
           textClassName,
         )}
-        style={variant === 'solid' && !isDisabled ? { color: '#ffffff' } : undefined}
+        style={variant === 'solid' && !isDisabled && !hasColor ? { color: '#ffffff' } : undefined}
       >
         {children}
       </NouText>
