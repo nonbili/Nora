@@ -20,6 +20,8 @@ interface Store {
   timelineModal: { timelineId?: string; profileKey?: string; tabId?: string } | null
   // The list of all watched sources, opened from the feed tab whose links it opens beside.
   sourcesModal: { tabId?: string } | null
+  // Adding sources by their links or from a file: into the timeline it was opened from, if any.
+  addSourcesModal: { timelineId?: string } | null
   navModalOpen: boolean
   profileLinkUrl: string
   autoProfilesModalOpen: boolean
@@ -70,6 +72,7 @@ export const ui$ = observable<Store>({
   feedGallery: null,
   timelineModal: null,
   sourcesModal: null,
+  addSourcesModal: null,
   navModalOpen: false,
   profileLinkUrl: '',
   autoProfilesModalOpen: false,
