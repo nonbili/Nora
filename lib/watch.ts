@@ -407,6 +407,38 @@ export const watchIntervalMinutes = (profile: { checkIntervalMinutes?: number },
 export const backgroundIntervalMinutes = (profiles: { checkIntervalMinutes?: number }[], defaultMinutes: number) =>
   Math.max(MIN_BACKGROUND_INTERVAL_MINUTES, Math.min(...profiles.map((profile) => watchIntervalMinutes(profile, defaultMinutes))))
 
+// A refresh by hand does not ask again for a profile checked this recently, however often it is tapped.
+export const MANUAL_REFRESH_COOLDOWN_MS = 30 * 1000
+
+interface DueProfile {
+  key: string
+  checkIntervalMinutes?: number
+  lastCheckedAt?: number
+  retryAfter?: number
+}
+
+/**
+ * The profiles a run checks, the ones checked longest ago first: by hand, all of those asked
+ * for (all when none are named) unless just checked; otherwise those whose interval is up.
+ */
+export function dueWatchProfiles<T extends DueProfile>(
+  profiles: T[],
+  { manual, keys, now, defaultMinutes }: { manual: boolean; keys?: string[]; now: number; defaultMinutes: number },
+): T[] {
+  return (
+    profiles
+      .filter((profile) => !keys || keys.includes(profile.key))
+      // A refresh by hand tries again even a profile the site asked to wait with.
+      .filter((profile) => manual || !profile.retryAfter || profile.retryAfter <= now)
+      .filter((profile) => {
+        if (!profile.lastCheckedAt) return true
+        const since = now - profile.lastCheckedAt
+        return manual ? since >= MANUAL_REFRESH_COOLDOWN_MS : since >= watchIntervalMinutes(profile, defaultMinutes) * 60000
+      })
+      .sort((a, b) => (a.lastCheckedAt || 0) - (b.lastCheckedAt || 0))
+  )
+}
+
 /** An interval as the largest unit it is a whole number of. */
 export function splitInterval(minutes: number): { unit: 'minutes' | 'hours' | 'days'; count: number } {
   if (minutes % 1440 === 0) return { unit: 'days', count: minutes / 1440 }

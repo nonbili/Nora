@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   backgroundIntervalMinutes,
+  dueWatchProfiles,
   findWatchPost,
   formatPostAge,
   instagramUrlExpiresAt,
@@ -389,6 +390,37 @@ describe('backgroundIntervalMinutes', () => {
 
   it('is never shorter than the system allows', () => {
     expect(backgroundIntervalMinutes([{ checkIntervalMinutes: 5 }], 60)).toBe(15)
+  })
+})
+
+describe('dueWatchProfiles', () => {
+  const now = 10 * 60 * 60 * 1000
+  const profiles = [
+    { key: 'x:fresh', lastCheckedAt: now - 10 * 1000 },
+    { key: 'x:recent', lastCheckedAt: now - 5 * 60 * 1000 },
+    { key: 'x:old', lastCheckedAt: now - 2 * 60 * 60 * 1000 },
+    { key: 'x:waiting', lastCheckedAt: now - 3 * 60 * 60 * 1000, retryAfter: now + 60 * 1000 },
+    { key: 'x:new' },
+  ]
+  const keysOf = (list: { key: string }[]) => list.map((profile) => profile.key)
+
+  it('checks on its own only those whose interval is up and the site does not hold back', () => {
+    expect(keysOf(dueWatchProfiles(profiles, { manual: false, now, defaultMinutes: 60 }))).toEqual(['x:new', 'x:old'])
+  })
+
+  it('checks by hand all but those just checked, the oldest first', () => {
+    expect(keysOf(dueWatchProfiles(profiles, { manual: true, now, defaultMinutes: 60 }))).toEqual([
+      'x:new',
+      'x:waiting',
+      'x:old',
+      'x:recent',
+    ])
+  })
+
+  it('checks only the profiles asked for', () => {
+    const keys = ['x:recent', 'x:fresh']
+    expect(keysOf(dueWatchProfiles(profiles, { manual: true, keys, now, defaultMinutes: 60 }))).toEqual(['x:recent'])
+    expect(dueWatchProfiles(profiles, { manual: false, keys, now, defaultMinutes: 60 })).toEqual([])
   })
 })
 

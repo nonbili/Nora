@@ -10,10 +10,10 @@ import {
   mergeWatchPosts,
   INSTAGRAM_PAGE_HEADERS,
   backgroundIntervalMinutes,
+  dueWatchProfiles,
   parseInstagramProfileInfo,
   parseInstagramProfilePage,
   parseXTimeline,
-  watchIntervalMinutes,
   watchProfileUrl,
   xTimelineUrl,
   type WatchFetchResult,
@@ -323,13 +323,17 @@ let running: Promise<number> | null = null
 
 /**
  * Checks the watched profiles that are due, the ones checked longest ago first, for as long
- * as the run may take. Resolves to how many new posts were found.
+ * as the run may take; by hand, only those of `keys` when given. Resolves to how many new
+ * posts were found.
  */
-export const refreshWatched = (source: WatchRunSource): Promise<number> => {
+export const refreshWatched = (source: WatchRunSource, keys?: string[]): Promise<number> => {
   if (running) {
-    return running
+    // A run on its own is done by the one going on. One by hand waits for it, and then asks
+    // for what that one did not just check.
+    if (source !== 'manual') return running
+    return running.then(() => refreshWatched(source, keys))
   }
-  running = runRefresh(source).finally(() => {
+  running = runRefresh(source, keys).finally(() => {
     running = null
   })
   return running
@@ -337,21 +341,14 @@ export const refreshWatched = (source: WatchRunSource): Promise<number> => {
 
 export const isRefreshingWatched = () => Boolean(running)
 
-const runRefresh = async (source: WatchRunSource) => {
+const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
   const start = Date.now()
-  const defaultMinutes = watch$.checkIntervalMinutes.peek()
-  const due = watch$.profiles
-    .peek()
-    // A refresh by hand tries again even a profile the site asked to wait with.
-    .filter((profile) => source === 'manual' || !profile.retryAfter || profile.retryAfter <= start)
-    // Each profile at its own interval, unless the feed is refreshed by hand.
-    .filter(
-      (profile) =>
-        source === 'manual' ||
-        !profile.lastCheckedAt ||
-        start - profile.lastCheckedAt >= watchIntervalMinutes(profile, defaultMinutes) * 60000,
-    )
-    .sort((a, b) => (a.lastCheckedAt || 0) - (b.lastCheckedAt || 0))
+  const due = dueWatchProfiles(watch$.profiles.peek(), {
+    manual: source === 'manual',
+    keys,
+    now: start,
+    defaultMinutes: watch$.checkIntervalMinutes.peek(),
+  })
   const cookies: Partial<Record<WatchSite, string>> = {}
   let found = 0
   for (const [i, profile] of due.entries()) {

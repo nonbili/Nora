@@ -249,11 +249,13 @@ export const FeedView: React.FC<{
   const [unreadOnShow, setUnreadOnShow] = useState<{ keys: Set<string>; at: number }>(() => ({ keys: new Set(), at: 0 }))
   const [now, setNow] = useState(() => Date.now())
   const listRef = useRef<FlatList<WatchPost>>(null)
+  // The profiles a refresh by hand asks for: the one shown, those of the timeline, or all.
+  const shownKeysRef = useRef<string[] | undefined>(undefined)
 
   const refresh = useCallback(async (source: 'foreground' | 'manual') => {
     setRefreshing(true)
     try {
-      await refreshWatched(source)
+      await refreshWatched(source, source === 'manual' ? shownKeysRef.current : undefined)
     } finally {
       setRefreshing(false)
       setNow(Date.now())
@@ -293,6 +295,10 @@ export const FeedView: React.FC<{
   const selected = selectedKey ? profiles.find((profile) => profile.key === selectedKey) : undefined
   const hasSelection = Boolean(selected)
   const shownProfileKey = selected?.key
+  const shownKeys = selected ? [selected.key] : timeline ? profiles.map((profile) => profile.key) : undefined
+  useEffect(() => {
+    shownKeysRef.current = shownKeys
+  })
 
   // What was shown is read once it gives way: to another profile, the whole timeline, or another tab.
   useEffect(() => {

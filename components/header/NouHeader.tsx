@@ -292,7 +292,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
             watch$.watch(watchTarget)
             showToast(t('toast.profileWatched', { handle: watchTarget.handle }))
             // Fills the feed with what the profile has posted so far.
-            void refreshWatched('foreground')
+            void refreshWatched('manual', [watchKey(watchTarget)])
           },
         },
       ]
