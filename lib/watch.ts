@@ -516,6 +516,37 @@ export function uniquePostsNewestFirst(lists: (WatchPost[] | undefined)[]): Watc
   return [...byKey.values()].sort((a, b) => b.createdAtMs - a.createdAtMs)
 }
 
+/** Some of the watched profiles, which a feed tab can show on their own. */
+export interface WatchTimeline {
+  id: string
+  name: string
+  profileKeys: string[]
+}
+
+/**
+ * The posts of these profiles not shown yet: first seen after a tab last showed one of the profiles
+ * that have it, whichever view that was.
+ */
+export function unreadPostKeys(
+  posts: Record<string, WatchPost[] | undefined>,
+  profileKeys: string[],
+  seenAtOf: (profileKey: string) => number,
+): Set<string> {
+  const wanted = new Set(profileKeys)
+  const unread = new Set<string>()
+  const read = new Set<string>()
+  // Every profile is looked at: a post these share with another was read where that other was shown.
+  for (const [profileKey, list] of Object.entries(posts)) {
+    const seenAt = seenAtOf(profileKey)
+    for (const post of list || []) {
+      if (post.firstSeenAt <= seenAt) read.add(post.key)
+      else if (wanted.has(profileKey)) unread.add(post.key)
+    }
+  }
+  for (const key of read) unread.delete(key)
+  return unread
+}
+
 // --- merging ----------------------------------------------------------------
 
 export const MAX_POSTS_PER_PROFILE = 50

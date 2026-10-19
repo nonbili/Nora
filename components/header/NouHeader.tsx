@@ -279,7 +279,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const watchMenuItems = watchTarget
     ? [
         {
-          label: t('menus.watchProfile'),
+          label: t('menus.watch', { handle: watchTarget.handle }),
           icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
           systemImage: 'dot.radiowaves.left.and.right',
           metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),

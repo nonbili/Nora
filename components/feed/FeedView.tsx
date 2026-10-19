@@ -9,7 +9,7 @@ import { NouButton } from '../button/NouButton'
 import { NouSwitch } from '../switch/NouSwitch'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
-import { watch$, type WatchedProfile } from '@/states/watch'
+import { getTimeline, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
   WATCH_INTERVAL_OPTIONS,
   formatPostAge,
@@ -35,7 +35,8 @@ import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
 import { share } from '@/lib/share'
 import { clearWatchMedia, ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
-import { feedTabActions } from '@/lib/feed-tab'
+import { feedTabActions, feedTabUrl } from '@/lib/feed-tab'
+import { openFeedTab } from '@/lib/page'
 
 const siteLabel = { x: 'X', instagram: 'Instagram' } as const
 
@@ -222,16 +223,19 @@ const PostRow: React.FC<{
   )
 }
 
-/** The posts of the watched profiles, newest first, as the feed tab shows them. */
+/** The posts of the watched profiles, or of a timeline of them, newest first, as a feed tab shows them. */
 export const FeedView: React.FC<{
   tabId: string
+  timelineId?: string
   // On screen, which side by side tabs can be without being the one in focus.
   active: boolean
   focused: boolean
-}> = ({ tabId, active, focused }) => {
+}> = ({ tabId, timelineId, active, focused }) => {
   const tw = useTwColor()
   const isDark = useColorScheme() === 'dark'
-  const profiles = useValue(watch$.profiles)
+  const allProfiles = useValue(watch$.profiles)
+  const timelines = useValue(watch$.timelines)
+  const timeline = useValue(() => getTimeline(timelineId))
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
   const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
   const mediaLimitMB = useValue(watch$.mediaLimitMB)
@@ -241,8 +245,8 @@ export const FeedView: React.FC<{
   const postsByProfile = useValue(watch$.posts)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
-  // What was unread when the tab was switched to stays marked while it is shown.
-  const [unreadSince, setUnreadSince] = useState(0)
+  // What was unread when the tab was switched to stays marked while it is shown, as does what comes in since.
+  const [unreadOnShow, setUnreadOnShow] = useState<{ keys: Set<string>; at: number }>(() => ({ keys: new Set(), at: 0 }))
   const [now, setNow] = useState(() => Date.now())
   const listRef = useRef<FlatList<WatchPost>>(null)
 
@@ -256,16 +260,21 @@ export const FeedView: React.FC<{
     }
   }, [])
 
+  const shownTimelineId = timeline?.id
+
+  useEffect(() => {
+    setSelectedKey(null)
+  }, [shownTimelineId])
+
   useEffect(() => {
     if (!active) return
-    // The tab comes back to the whole feed, which is what is marked read.
+    // The tab comes back to the whole timeline, which is what is marked read.
     setSelectedKey(null)
-    setUnreadSince(watch$.feedSeenAt.peek())
+    setUnreadOnShow({ keys: unreadKeys(shownTimelineId), at: Date.now() })
     setNow(Date.now())
-    watch$.markFeedSeen()
+    watch$.markFeedSeen(shownTimelineId)
     void refresh('foreground')
-    return () => watch$.markFeedSeen()
-  }, [active, refresh])
+  }, [active, shownTimelineId, refresh])
 
   useEffect(() => {
     feedTabActions.set(tabId, {
@@ -277,19 +286,30 @@ export const FeedView: React.FC<{
     }
   }, [tabId, refresh])
 
+  // Not memoized: the store changes its arrays in place, so they keep their identity across changes.
+  const profiles = timeline ? allProfiles.filter((profile) => timeline.profileKeys.includes(profile.key)) : allProfiles
+  const profileByKey = new Map(allProfiles.map((profile) => [profile.key, profile]))
+  // A profile taken out of the timeline is no longer the one shown.
+  const selected = selectedKey ? profiles.find((profile) => profile.key === selectedKey) : undefined
+  const hasSelection = Boolean(selected)
+  const shownProfileKey = selected?.key
+
+  // What was shown is read once it gives way: to another profile, the whole timeline, or another tab.
+  useEffect(() => {
+    if (!active) return
+    return () => watch$.markFeedSeen(shownTimelineId, shownProfileKey)
+  }, [active, shownTimelineId, shownProfileKey])
+
   // Back leaves a profile for the whole feed before it leaves the tab.
   useEffect(() => {
-    if (!focused || !selectedKey) return
+    if (!focused || !hasSelection) return
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       setSelectedKey(null)
       return true
     })
     return () => subscription.remove()
-  }, [focused, selectedKey])
+  }, [focused, hasSelection])
 
-  // Not memoized: the store changes its arrays in place, so they keep their identity across changes.
-  const profileByKey = new Map(profiles.map((profile) => [profile.key, profile]))
-  const selected = selectedKey ? profileByKey.get(selectedKey) : undefined
   const posts = uniquePostsNewestFirst(
     (selected ? [selected.key] : profiles.map((profile) => profile.key)).map((key) => postsByProfile[key]),
   )
@@ -303,6 +323,56 @@ export const FeedView: React.FC<{
 
   // Back in the opened tab comes back to the feed.
   const openUrl = (url: string) => tabs$.openTab(url, { source: 'child', parentTabId: tabId })
+
+  const showTimeline = (id?: string) => {
+    const index = tabs$.tabs.peek().findIndex((tab) => tab?.id === tabId)
+    if (index !== -1) tabs$.tabs[index].url.set(feedTabUrl(id))
+  }
+
+  const unreadLabel = (id?: string) => {
+    const count = unreadKeys(id).size
+    return count ? String(count) : undefined
+  }
+
+  const timelineMenuItems = [
+    {
+      label: t('feed.label'),
+      icon: <MaterialIcons name={timeline ? 'dynamic-feed' : 'check'} size={18} color={iconColor} />,
+      systemImage: timeline ? undefined : 'checkmark',
+      metaLabel: unreadLabel(),
+      handler: () => showTimeline(),
+    },
+    ...timelines.map((current) => ({
+      label: current.name,
+      icon: <MaterialIcons name={current.id === timeline?.id ? 'check' : 'view-list'} size={18} color={iconColor} />,
+      systemImage: current.id === timeline?.id ? 'checkmark' : undefined,
+      metaLabel: unreadLabel(current.id),
+      handler: () => showTimeline(current.id),
+    })),
+    { label: '', handler: () => {}, kind: 'separator' as const },
+    {
+      label: t('feed.newTimeline'),
+      icon: <MaterialIcons name="playlist-add" size={18} color={iconColor} />,
+      systemImage: 'plus',
+      handler: () => ui$.timelineModal.set({ tabId }),
+    },
+    ...(timeline
+      ? [
+          {
+            label: t('feed.editTimeline'),
+            icon: <MaterialIcons name="edit" size={18} color={iconColor} />,
+            systemImage: 'pencil',
+            handler: () => ui$.timelineModal.set({ timelineId: timeline.id, tabId }),
+          },
+        ]
+      : []),
+    {
+      label: t('feed.openInNewTab'),
+      icon: <MaterialIcons name="open-in-new" size={18} color={iconColor} />,
+      systemImage: 'plus.square.on.square',
+      handler: () => openFeedTab(timeline?.id, true),
+    },
+  ]
 
   const toggleNotify = async (profile: WatchedProfile) => {
     if (profile.notify) {
@@ -332,7 +402,7 @@ export const FeedView: React.FC<{
       {profiles.length ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2 px-4 pb-3">
           {[undefined, ...profiles].map((profile) => {
-            const active = (profile?.key ?? null) === selectedKey
+            const active = (profile?.key ?? null) === (selected?.key ?? null)
             const status = profile ? profileStatus(profile) : null
             return (
               <Pressable
@@ -384,11 +454,43 @@ export const FeedView: React.FC<{
             iconColor={iconColor}
           />
           <NouSwitch label={t('feed.notify')} value={selected.notify} onPress={() => void toggleNotify(selected)} />
+          <View className="gap-2">
+            <NouText className="font-medium">{t('feed.timelines')}</NouText>
+            <View className="flex-row flex-wrap gap-2">
+              {timelines.map((current) => {
+                const included = current.profileKeys.includes(selected.key)
+                return (
+                  <Pressable
+                    key={current.id}
+                    onPress={() => watch$.setInTimeline(current.id, selected.key, !included)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: included }}
+                    className={clsx(
+                      'h-8 flex-row items-center gap-1 rounded-full border px-3',
+                      included
+                        ? 'border-indigo-300 bg-indigo-100 dark:border-indigo-400/40 dark:bg-indigo-500/20'
+                        : 'border-zinc-300 dark:border-zinc-700',
+                    )}
+                  >
+                    {included ? <MaterialIcons name="check" size={14} color={iconColor} /> : null}
+                    <NouText className="text-sm">{current.name}</NouText>
+                  </Pressable>
+                )
+              })}
+              <Pressable
+                onPress={() => ui$.timelineModal.set({ profileKey: selected.key })}
+                className="h-8 flex-row items-center gap-1 rounded-full border border-dashed border-zinc-300 px-3 dark:border-zinc-700"
+              >
+                <MaterialIcons name="add" size={14} color={iconColor} />
+                <NouText className="text-sm">{t('feed.newTimeline')}</NouText>
+              </Pressable>
+            </View>
+          </View>
           <NouButton variant="outline" size="1" className="self-start" textClassName="text-red-600 dark:text-red-400" onPress={() => unwatch(selected)}>
             {t('feed.unwatch')}
           </NouButton>
         </View>
-      ) : profiles.length ? (
+      ) : profiles.length && !timeline ? (
         <>
           <View className="mx-4 mb-3 gap-1 rounded-2xl bg-white px-4 py-3 dark:bg-zinc-900">
             <ChoicePicker
@@ -435,7 +537,7 @@ export const FeedView: React.FC<{
     <View className="items-center px-8 py-16">
       <MaterialIcons name="dynamic-feed" size={40} color={iconColor} />
       <NouText className="mt-4 text-center text-zinc-600 dark:text-zinc-400">
-        {profiles.length ? t('feed.noPosts') : t('feed.empty')}
+        {profiles.length ? t('feed.noPosts') : timeline && allProfiles.length ? t('feed.timelineEmpty') : t('feed.empty')}
       </NouText>
     </View>
   )
@@ -443,7 +545,19 @@ export const FeedView: React.FC<{
   return (
     <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
       <View className="flex-row items-center gap-2 py-1 pl-4 pr-2">
-        <NouText className="flex-1 text-lg font-semibold">{t('feed.label')}</NouText>
+        <View className="min-w-0 flex-1 flex-row">
+          <NouMenu
+            trigger={
+              <View className="h-11 min-w-0 flex-row items-center gap-1">
+                <NouText className="shrink text-lg font-semibold" numberOfLines={1}>
+                  {timeline?.name || t('feed.label')}
+                </NouText>
+                <MaterialIcons name="arrow-drop-down" size={22} color={iconColor} />
+              </View>
+            }
+            items={timelineMenuItems}
+          />
+        </View>
         {profiles.length ? (
           <Pressable
             onPress={() => void refresh('manual')}
@@ -467,7 +581,7 @@ export const FeedView: React.FC<{
           <PostRow
             post={item}
             profile={profileByKey.get(watchKey(item))}
-            unread={item.firstSeenAt > unreadSince}
+            unread={unreadOnShow.keys.has(item.key) || (unreadOnShow.at > 0 && item.firstSeenAt > unreadOnShow.at)}
             now={now}
             iconColor={iconColor}
             onOpenOriginal={() => openUrl(item.url)}

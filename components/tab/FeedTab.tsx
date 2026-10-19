@@ -6,6 +6,8 @@ import { t } from 'i18next'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
+import { getTimeline } from '@/states/watch'
+import { getFeedTimelineId } from '@/lib/feed-tab'
 import { clsx, isAndroid, isWeb, nIf } from '@/lib/utils'
 import { useTwColor } from '@/lib/theme'
 import { NouText } from '../NouText'
@@ -42,7 +44,9 @@ export const FeedTab: React.FC<NoraTabProps> = ({
     headerPosition,
   })
   const shown = isWeb || desktopChrome ? desktopVisible : isActive
-  const label = t('feed.label')
+  const timelineId = getFeedTimelineId(tab.url)
+  const timelineName = useValue(() => getTimeline(timelineId)?.name)
+  const label = timelineName || t('feed.label')
 
   // Nothing loads here: the tab is ready as soon as it is there, and is not put to sleep.
   useEffect(() => {
@@ -105,7 +109,7 @@ export const FeedTab: React.FC<NoraTabProps> = ({
         style={desktopVariant === 'deck' ? { width: deckTabWidth } : undefined}
       >
         {chrome}
-        <FeedView tabId={tab.id} active={shown} focused={isActive} />
+        <FeedView tabId={tab.id} timelineId={timelineId} active={shown} focused={isActive} />
       </View>
     )
   }
@@ -136,7 +140,7 @@ export const FeedTab: React.FC<NoraTabProps> = ({
       }
     >
       {nIf(desktopChrome, chrome)}
-      <FeedView tabId={tab.id} active={shown} focused={isActive} />
+      <FeedView tabId={tab.id} timelineId={timelineId} active={shown} focused={isActive} />
     </TabRoot>
   )
 }

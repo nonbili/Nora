@@ -16,6 +16,8 @@ interface Store {
   downloadVideoModalUrl: string
   // The post whose media the feed's gallery shows, and the photo or video it opened at.
   feedGallery: { postKey: string; profileKey: string; index: number } | null
+  // The timeline to change, or none to make one: with the profile to start it with, and the feed tab to show it in.
+  timelineModal: { timelineId?: string; profileKey?: string; tabId?: string } | null
   navModalOpen: boolean
   profileLinkUrl: string
   autoProfilesModalOpen: boolean
@@ -64,6 +66,7 @@ export const ui$ = observable<Store>({
   cookieModalOpen: false,
   downloadVideoModalUrl: '',
   feedGallery: null,
+  timelineModal: null,
   navModalOpen: false,
   profileLinkUrl: '',
   autoProfilesModalOpen: false,

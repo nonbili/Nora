@@ -21,6 +21,7 @@ import {
   postKey,
   splitInterval,
   uniquePostsNewestFirst,
+  unreadPostKeys,
   watchIntervalMinutes,
   watchKey,
   type WatchPost,
@@ -472,5 +473,24 @@ describe('mergeWatchPosts', () => {
     const { posts } = mergeWatchPosts([], many, { now: 99, initial: true })
     expect(posts).toHaveLength(50)
     expect(posts[0].id).toBe('59')
+  })
+})
+
+describe('unreadPostKeys', () => {
+  const posts = {
+    'x:a': [kept('1', 1, 0), kept('2', 2, 200), kept('shared', 3, 300)],
+    'x:b': [kept('3', 4, 300), kept('shared', 3, 300)],
+  }
+  const seenAt = (times: Record<string, number>) => (key: string) => times[key] ?? 100
+
+  it('counts the posts first seen after their profile was last shown', () => {
+    expect([...unreadPostKeys(posts, ['x:a', 'x:b'], seenAt({}))].sort()).toEqual(['x:2', 'x:3', 'x:shared'])
+    expect([...unreadPostKeys(posts, ['x:a'], seenAt({}))].sort()).toEqual(['x:2', 'x:shared'])
+    expect([...unreadPostKeys(posts, ['x:a', 'x:b'], seenAt({ 'x:a': 250 }))].sort()).toEqual(['x:3', 'x:shared'])
+  })
+
+  it('takes a post two profiles share as read once either was shown', () => {
+    expect([...unreadPostKeys(posts, ['x:a', 'x:b'], seenAt({ 'x:b': 300 }))]).toEqual(['x:2'])
+    expect([...unreadPostKeys(posts, ['x:a'], seenAt({ 'x:b': 300 }))]).toEqual(['x:2'])
   })
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { FEED_TAB_URL, isFeedTabUrl } from './feed-tab'
+import { FEED_TAB_URL, feedTabUrl, getFeedTimelineId, isFeedTabUrl } from './feed-tab'
 
 describe('isFeedTabUrl', () => {
   it('tells the feed tab from web pages', () => {
@@ -9,5 +9,14 @@ describe('isFeedTabUrl', () => {
     expect(isFeedTabUrl('https://feed')).toBe(false)
     expect(isFeedTabUrl('')).toBe(false)
     expect(isFeedTabUrl(undefined)).toBe(false)
+  })
+})
+
+describe('feedTabUrl', () => {
+  it('names the timeline a tab shows, and none for the whole feed', () => {
+    expect(feedTabUrl()).toBe(FEED_TAB_URL)
+    expect(getFeedTimelineId(feedTabUrl())).toBeUndefined()
+    expect(getFeedTimelineId(feedTabUrl('a b'))).toBe('a b')
+    expect(getFeedTimelineId('https://x.com/?timeline=a')).toBeUndefined()
   })
 })

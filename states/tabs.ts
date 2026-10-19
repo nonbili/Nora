@@ -387,7 +387,8 @@ export const tabs$: Observable<Store> = observable<Store>({
       lastOpenedUrl = ''
     }, 1000)
 
-    if (settings$.oneTabPerSite.get()) {
+    // Each feed tab can show a timeline of its own.
+    if (settings$.oneTabPerSite.get() && !isFeedTabUrl(url)) {
       try {
         const newUrl = new URL(url)
         if (newUrl.hostname) {

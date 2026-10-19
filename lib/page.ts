@@ -6,7 +6,7 @@ import { isAuthCallbackUrl } from './auth-callback'
 import { isExternalAppUrl } from './url-schemes'
 import { parseTabShortcutUrl } from './tab-shortcut'
 import { tabGroups$ } from '@/states/tab-groups'
-import { FEED_TAB_URL, isFeedTabUrl } from './feed-tab'
+import { feedTabUrl, getFeedTimelineId, isFeedTabUrl } from './feed-tab'
 export { removeTrackingParams } from './url'
 export { isAuthCallbackUrl } from './auth-callback'
 
@@ -47,14 +47,16 @@ function focusTab(tabId: string) {
   return true
 }
 
-/** Brings up the feed tab, opening one when there is none. */
-export function openFeedTab() {
-  const existing = tabs$.tabs.get().find((tab) => isFeedTabUrl(tab.url))
+/** Brings up the tab of a timeline, or of the whole feed, opening one when there is none or a new one is asked for. */
+export function openFeedTab(timelineId?: string, newTab = false) {
+  const existing = newTab
+    ? undefined
+    : tabs$.tabs.get().find((tab) => isFeedTabUrl(tab.url) && getFeedTimelineId(tab.url) === timelineId)
   if (existing && focusTab(existing.id)) {
     return
   }
   tabGroups$.setActiveGroup(null)
-  tabs$.openTab(FEED_TAB_URL)
+  tabs$.openTab(feedTabUrl(timelineId))
 }
 
 export async function openSharedUrl(url: string, replace = false) {
@@ -69,7 +71,7 @@ export async function openSharedUrl(url: string, replace = false) {
     url = shortcut.url
   }
   if (isFeedTabUrl(url)) {
-    openFeedTab()
+    openFeedTab(getFeedTimelineId(url))
     return
   }
   if (isAuthCallbackUrl(url)) {
