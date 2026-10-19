@@ -4,7 +4,7 @@ import '@/lib/watch-feed'
 import './global.css'
 
 import { StatusBar } from 'expo-status-bar'
-import { AppState, Appearance, View, useColorScheme } from 'react-native'
+import { AppState, Appearance, LogBox, View, useColorScheme } from 'react-native'
 import { useObserveEffect, useValue } from '@legendapp/state/react'
 import { Slot } from 'expo-router'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -12,6 +12,9 @@ import { settings$ } from '@/states/settings'
 import { useEffect } from 'react'
 import { applyPalette, getDynamicPalette } from '@/lib/dynamic-palette'
 import { dynamicPalette$ } from '@/lib/theme'
+
+// The banners LogBox shows in development cover the toolbar at the bottom.
+LogBox.ignoreAllLogs()
 
 function RootLayoutContent() {
   useObserveEffect(settings$.theme, ({ value }) => {
