@@ -33,10 +33,13 @@ export const NouButton = ({
         'flex-row gap-2 justify-center rounded-full',
         size === '1' && 'py-1 px-3',
         size === '2' && 'py-2 px-6',
+        // A border on every variant, so buttons side by side are of the same height.
+        variant !== 'outline' && 'border border-transparent',
         variant === 'solid' && !isDisabled && 'bg-indigo-600 dark:bg-indigo-500',
         variant === 'soft' && !isDisabled && 'bg-indigo-100 dark:bg-zinc-800',
         variant === 'outline' && !isDisabled && 'border border-zinc-300 dark:border-zinc-700 bg-transparent',
-        variant === 'solid' && isDisabled && 'bg-zinc-300 dark:bg-zinc-700',
+        // Still the color of the action, so it reads as one that is not ready yet rather than as another kind of button.
+        variant === 'solid' && isDisabled && 'bg-indigo-600 opacity-40 dark:bg-indigo-500',
         variant === 'soft' && isDisabled && 'bg-zinc-200 dark:bg-zinc-800/80',
         variant === 'outline' && isDisabled && 'border border-zinc-200 dark:border-zinc-800 bg-transparent',
         className,
@@ -52,10 +55,10 @@ export const NouButton = ({
           variant === 'soft' && !isDisabled && !hasDarkColor && 'dark:text-zinc-100',
           variant === 'outline' && !isDisabled && !hasColor && 'text-zinc-700',
           variant === 'outline' && !isDisabled && !hasDarkColor && 'dark:text-zinc-200',
-          isDisabled && 'text-zinc-500 dark:text-zinc-400',
+          isDisabled && variant !== 'solid' && 'text-zinc-500 dark:text-zinc-400',
           textClassName,
         )}
-        style={variant === 'solid' && !isDisabled && !hasColor ? { color: '#ffffff' } : undefined}
+        style={variant === 'solid' && !hasColor ? { color: '#ffffff' } : undefined}
       >
         {children}
       </NouText>

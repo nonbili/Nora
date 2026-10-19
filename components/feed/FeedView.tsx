@@ -1,4 +1,4 @@
-import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, View, useColorScheme } from 'react-native'
+import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, View, useColorScheme, type LayoutRectangle, type ScrollViewInstance } from 'react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useValue } from '@legendapp/state/react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
@@ -12,6 +12,7 @@ import { tabs$ } from '@/states/tabs'
 import { getTimeline, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
   WATCH_INTERVAL_OPTIONS,
+  feedChipSources,
   formatPostAge,
   mediaKey,
   refreshesMedia,
@@ -37,23 +38,22 @@ import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
 import { share } from '@/lib/share'
-import { clearWatchMedia, ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
+import { ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
 import { feedTabActions, feedTabUrl } from '@/lib/feed-tab'
 import { openFeedTab } from '@/lib/page'
 
+// Enough chips to reach the sources most likely wanted; the rest are found in the list of them all.
+const CHIP_LIMIT = 12
+
 const intervalKeys = { minutes: 'feed.intervalMinutes', hours: 'feed.intervalHours', days: 'feed.intervalDays' } as const
 
-const formatInterval = (minutes: number) => {
+export const formatInterval = (minutes: number) => {
   const { unit, count } = splitInterval(minutes)
   return t(intervalKeys[unit], { count })
 }
 
-const MEDIA_LIMIT_OPTIONS_MB = [250, 500, 1024, 2048, 5120]
-
-const formatMegabytes = (mb: number) => (mb >= 1024 ? `${+(mb / 1024).toFixed(1)} GB` : `${Math.round(mb)} MB`)
-
 /** A row with a value and a menu to choose another. */
-const ChoicePicker: React.FC<{
+export const ChoicePicker: React.FC<{
   label: string
   value: string
   options: { label: string; minutes: number | undefined }[]
@@ -90,17 +90,16 @@ const SERVICE_ICON_SIZE = 24
 
 /** A profile's picture, with the icon of its site at its corner: the same handle can be on both. */
 export const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> = ({ uri, size, site }) => {
-  const badge = Math.round(size * 0.45)
+  const badge = Math.round(size * 0.4)
   return (
     <View style={{ width: size, height: size }}>
-      {uri ? (
-        <Image source={uri} style={{ width: size, height: size, borderRadius: size / 2 }} />
-      ) : (
-        <View className="rounded-full bg-zinc-300 dark:bg-zinc-700" style={{ width: size, height: size }} />
-      )}
+      {/* Pictures with a clear background, as many subreddit icons, still fill a circle. */}
+      <View className="overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700" style={{ width: size, height: size }}>
+        {uri ? <Image source={uri} contentFit="cover" style={{ width: size, height: size }} /> : null}
+      </View>
       <View
         className="absolute items-center justify-center overflow-hidden rounded-full bg-white"
-        style={{ width: badge + 2, height: badge + 2, right: -2, bottom: -2 }}
+        style={{ width: badge + 3, height: badge + 3, right: -3, bottom: -3 }}
       >
         <View style={{ transform: [{ scale: badge / SERVICE_ICON_SIZE }] }}>{siteIcon(site)}</View>
       </View>
@@ -155,6 +154,9 @@ const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, on
   )
 }
 
+/** Whether a name says no more than the handle beside it, as a subreddit's does. */
+const sameAsName = (name: string, handle: string) => name.replace(/^@/, '').toLowerCase() === handle.replace(/^@/, '').toLowerCase()
+
 const PostRow: React.FC<{
   post: WatchPost
   profile?: WatchedProfile
@@ -164,6 +166,8 @@ const PostRow: React.FC<{
   onOpenOriginal: () => void
 }> = ({ post, profile, unread, now, iconColor, onOpenOriginal }) => {
   const [expanded, setExpanded] = useState(false)
+  const name = profile?.name || post.handle
+  const source = watchSourceLabel(post)
 
   const save = async () => {
     try {
@@ -182,10 +186,11 @@ const PostRow: React.FC<{
       <View className="flex-1">
         <View className="flex-row items-center gap-1.5">
           <NouText className="shrink font-semibold" numberOfLines={1}>
-            {profile?.name || post.handle}
+            {name}
           </NouText>
           <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
-            {watchSourceLabel(post)} · {formatPostAge(post.createdAtMs, now)}
+            {sameAsName(name, source) ? '' : `${source} · `}
+            {formatPostAge(post.createdAtMs, now)}
           </NouText>
           {unread ? <View className="h-2 w-2 rounded-full bg-indigo-500" /> : null}
           <View className="ml-auto">
@@ -244,11 +249,6 @@ export const FeedView: React.FC<{
   const timelines = useValue(watch$.timelines)
   const timeline = useValue(() => getTimeline(timelineId))
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
-  const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
-  const mediaLimitMB = useValue(watch$.mediaLimitMB)
-  const mediaUsedBytes = useValue(() =>
-    Object.values(watchMedia$.files.get()).reduce((sum, kept) => sum + (kept?.bytes || 0), 0),
-  )
   const postsByProfile = useValue(watch$.posts)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -270,6 +270,28 @@ export const FeedView: React.FC<{
   }, [])
 
   const shownTimelineId = timeline?.id
+  const picked = useValue(ui$.feedSelection)
+
+  // A source picked from the list of them all, for this tab.
+  useEffect(() => {
+    if (picked?.tabId !== tabId) return
+    setSelectedKey(picked.profileKey)
+    ui$.feedSelection.set(null)
+  }, [picked, tabId])
+
+  const chipsRef = useRef<ScrollViewInstance>(null)
+  const chipLayouts = useRef(new Map<string, LayoutRectangle>())
+  const chipsView = useRef({ offset: 0, width: 0 })
+  // The chip of a source just shown, to scroll to once it is laid out, if it is not in view.
+  const chipToReveal = useRef<string | null>(null)
+  const revealChip = (key: string) => {
+    const layout = chipLayouts.current.get(key)
+    if (!layout) return
+    chipToReveal.current = null
+    const { offset, width } = chipsView.current
+    if (layout.x >= offset && layout.x + layout.width <= offset + width) return
+    chipsRef.current?.scrollTo({ x: Math.max(0, layout.x - 16), animated: true })
+  }
 
   useEffect(() => {
     setSelectedKey(null)
@@ -301,6 +323,11 @@ export const FeedView: React.FC<{
   // A profile taken out of the timeline is no longer the one shown.
   const selected = selectedKey ? profiles.find((profile) => profile.key === selectedKey) : undefined
   const hasSelection = Boolean(selected)
+  useEffect(() => {
+    if (!selectedKey) return
+    chipToReveal.current = selectedKey
+    revealChip(selectedKey)
+  }, [selectedKey])
   const shownProfileKey = selected?.key
   const shownKeys = selected ? [selected.key] : timeline ? profiles.map((profile) => profile.key) : undefined
   useEffect(() => {
@@ -322,6 +349,9 @@ export const FeedView: React.FC<{
     })
     return () => subscription.remove()
   }, [focused, hasSelection])
+
+  const isUnread = (post: WatchPost) =>
+    unreadOnShow.keys.has(post.key) || (unreadOnShow.at > 0 && post.firstSeenAt > unreadOnShow.at)
 
   const posts = uniquePostsNewestFirst(
     (selected ? [selected.key] : profiles.map((profile) => profile.key)).map((key) => postsByProfile[key]),
@@ -398,6 +428,12 @@ export const FeedView: React.FC<{
       handler: () => ui$.addSourcesModal.set({ timelineId: timeline?.id }),
     },
     {
+      label: t('feed.settings'),
+      icon: <MaterialIcons name="tune" size={18} color={iconColor} />,
+      systemImage: 'slider.horizontal.3',
+      handler: () => ui$.feedSettingsModalOpen.set(true),
+    },
+    {
       label: t('feed.openInNewTab'),
       icon: <MaterialIcons name="open-in-new" size={18} color={iconColor} />,
       systemImage: 'plus.square.on.square',
@@ -415,10 +451,6 @@ export const FeedView: React.FC<{
     }
   }
 
-  const clearMedia = () => {
-    confirmDestructiveAction(t('feed.mediaClear'), t('feed.mediaClearConfirm'), t('feed.mediaClear'), clearWatchMedia)
-  }
-
   const unwatch = (profile: WatchedProfile) => {
     confirmDestructiveAction(t('feed.unwatch'), t('feed.unwatchConfirm', { handle: profile.handle, source: watchSourceLabel(profile), interpolation: { escapeValue: false } }), t('feed.unwatch'), () => {
       setSelectedKey(null)
@@ -428,17 +460,40 @@ export const FeedView: React.FC<{
 
   const selectedStatus = selected ? profileStatus(selected) : null
 
+  const chips = feedChipSources(profiles, postsByProfile, isUnread, CHIP_LIMIT, selected?.key)
+
+  // Handles that are on more than one site, whose chips also tell the site.
+  const handleCounts = new Map<string, number>()
+  for (const profile of profiles) {
+    const handle = profile.handle.toLowerCase()
+    handleCounts.set(handle, (handleCounts.get(handle) || 0) + 1)
+  }
+  const sharedHandles = new Set([...handleCounts].filter(([, count]) => count > 1).map(([handle]) => handle))
+
   const header = (
     <View>
       {profiles.length ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2 px-4 pb-3">
-          {[undefined, ...profiles].map((profile) => {
+        <ScrollView
+          ref={chipsRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-2 px-4 pb-3"
+          onLayout={(e) => (chipsView.current.width = e.nativeEvent.layout.width)}
+          onScroll={(e) => (chipsView.current.offset = e.nativeEvent.contentOffset.x)}
+          scrollEventThrottle={64}
+        >
+          {[undefined, ...chips.shown].map((profile) => {
             const active = (profile?.key ?? null) === (selected?.key ?? null)
             const status = profile ? profileStatus(profile) : null
             return (
               <Pressable
                 key={profile?.key ?? 'all'}
                 onPress={() => setSelectedKey(profile?.key ?? null)}
+                onLayout={(e) => {
+                  if (!profile) return
+                  chipLayouts.current.set(profile.key, e.nativeEvent.layout)
+                  if (chipToReveal.current === profile.key) revealChip(profile.key)
+                }}
                 className={clsx(
                   'h-9 flex-row items-center gap-1.5 rounded-full border px-3',
                   active
@@ -446,12 +501,26 @@ export const FeedView: React.FC<{
                     : 'border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900',
                 )}
               >
-                {profile ? <Avatar uri={profile.avatar} size={20} site={profile.site} /> : null}
+                {profile ? <Avatar uri={profile.avatar} size={22} site={profile.site} /> : null}
                 <NouText className="text-sm">{profile ? watchSourceLabel(profile) : t('feed.all')}</NouText>
+                {profile && sharedHandles.has(profile.handle.toLowerCase()) ? (
+                  <NouText className="text-xs text-zinc-500 dark:text-zinc-400">{watchSiteLabels[profile.site]}</NouText>
+                ) : null}
                 {status?.warn ? <View className="h-1.5 w-1.5 rounded-full bg-amber-500" /> : null}
               </Pressable>
             )
           })}
+          {chips.hidden ? (
+            <Pressable
+              onPress={() => ui$.sourcesModal.set({ tabId, timelineId: timeline?.id, pick: true })}
+              accessibilityRole="button"
+              accessibilityLabel={t('feed.chooseSource')}
+              className="h-9 flex-row items-center gap-1 rounded-full border border-dashed border-zinc-300 pl-3 pr-2 dark:border-zinc-700"
+            >
+              <NouText className="text-sm">{t('feed.moreSources', { count: chips.hidden })}</NouText>
+              <MaterialIcons name="chevron-right" size={18} color={iconColor} />
+            </Pressable>
+          ) : null}
         </ScrollView>
       ) : null}
 
@@ -521,45 +590,12 @@ export const FeedView: React.FC<{
             {t('feed.unwatch')}
           </NouButton>
         </View>
-      ) : profiles.length && !timeline ? (
-        <>
-          <View className="mx-4 mb-3 gap-1 rounded-2xl bg-white px-4 py-3 dark:bg-zinc-900">
-            <ChoicePicker
-              label={t('feed.checkEvery')}
-              value={formatInterval(defaultInterval)}
-              options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes }))}
-              onSelect={(minutes) => minutes && watch$.checkIntervalMinutes.set(minutes)}
-              iconColor={iconColor}
-            />
-            <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.intervalHint')}</NouText>
-            <View className="my-2 h-px bg-zinc-200 dark:bg-zinc-800" />
-            <NouSwitch label={t('feed.mediaWifiOnly')} value={mediaWifiOnly} onPress={() => watch$.mediaWifiOnly.set(!mediaWifiOnly)} />
-            <View className="mt-2">
-              <ChoicePicker
-                label={t('feed.mediaLimit')}
-                value={formatMegabytes(mediaLimitMB)}
-                options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), minutes: mb }))}
-                onSelect={(mb) => mb && watch$.mediaLimitMB.set(mb)}
-                iconColor={iconColor}
-              />
-            </View>
-            <View className="mt-1 flex-row items-center justify-between gap-3">
-              <NouText className="flex-1 text-sm text-zinc-600 dark:text-zinc-400">
-                {t('feed.mediaUsage', { used: formatMegabytes(mediaUsedBytes / 1024 / 1024), limit: formatMegabytes(mediaLimitMB) })}
-              </NouText>
-              <NouButton variant="outline" size="1" disabled={!mediaUsedBytes} onPress={clearMedia}>
-                {t('feed.mediaClear')}
-              </NouButton>
-            </View>
-          </View>
-          {loggedOutSites.length ? (
-            <View className="mx-4 mb-3 rounded-2xl bg-amber-50 px-4 py-3 dark:bg-amber-500/10">
-              <NouText className="text-sm text-amber-800 dark:text-amber-300">
-                {t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
-              </NouText>
-            </View>
-          ) : null}
-        </>
+      ) : !timeline && loggedOutSites.length ? (
+        <View className="mx-4 mb-3 rounded-2xl bg-amber-50 px-4 py-3 dark:bg-amber-500/10">
+          <NouText className="text-sm text-amber-800 dark:text-amber-300">
+            {t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
+          </NouText>
+        </View>
       ) : null}
     </View>
   )
@@ -591,6 +627,16 @@ export const FeedView: React.FC<{
         </View>
         {profiles.length ? (
           <Pressable
+            onPress={() => ui$.feedSettingsModalOpen.set(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('feed.settings')}
+            className="h-11 w-11 items-center justify-center rounded-full"
+          >
+            <MaterialIcons name="tune" color={iconColor} size={22} />
+          </Pressable>
+        ) : null}
+        {profiles.length ? (
+          <Pressable
             onPress={() => void refresh('manual')}
             disabled={refreshing}
             accessibilityRole="button"
@@ -612,7 +658,7 @@ export const FeedView: React.FC<{
           <PostRow
             post={item}
             profile={profileByKey.get(watchKey(item))}
-            unread={unreadOnShow.keys.has(item.key) || (unreadOnShow.at > 0 && item.firstSeenAt > unreadOnShow.at)}
+            unread={isUnread(item)}
             now={now}
             iconColor={iconColor}
             onOpenOriginal={() => openUrl(item.url)}

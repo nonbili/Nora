@@ -1030,6 +1030,37 @@ export function sortWatchSources<
   })
 }
 
+/**
+ * The sources a feed has chips for, so that a long list stays short: those with unread posts first,
+ * then the latest to post, up to the limit; the one shown is kept even when it is past it.
+ */
+export function feedChipSources<T extends WatchTarget & { name?: string; addedAt: number; lastSuccessAt?: number; key: string }>(
+  sources: T[],
+  posts: Record<string, WatchPost[] | undefined>,
+  isUnread: (post: WatchPost) => boolean,
+  limit: number,
+  selectedKey?: string,
+): { shown: T[]; hidden: number } {
+  const hasUnread = (source: T) => Boolean(posts[source.key]?.some(isUnread))
+  const byPost = sortWatchSources(sources, posts, 'updated')
+  const ordered = [...byPost.filter(hasUnread), ...byPost.filter((source) => !hasUnread(source))]
+  if (ordered.length <= limit) return { shown: ordered, hidden: 0 }
+  const shown = ordered.slice(0, limit)
+  const selected = selectedKey ? ordered.slice(limit).find((source) => source.key === selectedKey) : undefined
+  if (selected) shown.push(selected)
+  return { shown, hidden: ordered.length - shown.length }
+}
+
+/** The sources whose name, handle or site has the words typed, all of them, and that are on the site chosen, if any. */
+export function filterWatchSources<T extends WatchTarget & { name?: string }>(sources: T[], query: string, site?: WatchSite): T[] {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean)
+  return sources.filter((source) => {
+    if (site && source.site !== site) return false
+    const text = [source.name || '', source.handle, watchSiteLabels[source.site]].join(' ').toLowerCase()
+    return words.every((word) => text.includes(word.replace(/^@/, '')))
+  })
+}
+
 /** Some of the watched profiles, which a feed tab can show on their own. */
 export interface WatchTimeline {
   id: string

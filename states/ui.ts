@@ -18,10 +18,14 @@ interface Store {
   feedGallery: { postKey: string; profileKey: string; index: number } | null
   // The timeline to change, or none to make one: with the profile to start it with, and the feed tab to show it in.
   timelineModal: { timelineId?: string; profileKey?: string; tabId?: string } | null
-  // The list of all watched sources, opened from the feed tab whose links it opens beside.
-  sourcesModal: { tabId?: string } | null
+  // The list of all watched sources, opened from the feed tab whose links it opens beside; or, to pick
+  // one, the sources of the timeline that tab shows.
+  sourcesModal: { tabId?: string; timelineId?: string; pick?: boolean } | null
+  // A source picked from that list, for its feed tab to show.
+  feedSelection: { tabId: string; profileKey: string } | null
   // Adding sources by their links or from a file: into the timeline it was opened from, if any.
   addSourcesModal: { timelineId?: string } | null
+  feedSettingsModalOpen: boolean
   navModalOpen: boolean
   profileLinkUrl: string
   autoProfilesModalOpen: boolean
@@ -72,7 +76,9 @@ export const ui$ = observable<Store>({
   feedGallery: null,
   timelineModal: null,
   sourcesModal: null,
+  feedSelection: null,
   addSourcesModal: null,
+  feedSettingsModalOpen: false,
   navModalOpen: false,
   profileLinkUrl: '',
   autoProfilesModalOpen: false,

@@ -36,6 +36,8 @@ import {
   splitInterval,
   uniquePostsNewestFirst,
   sortWatchSources,
+  feedChipSources,
+  filterWatchSources,
   unreadPostKeys,
   watchIntervalMinutes,
   watchKey,
@@ -940,6 +942,48 @@ describe('sortWatchSources', () => {
     expect(order('added')).toEqual(['amy', 'bob', 'carl'])
     expect(order('synced')).toEqual(['carl', 'bob', 'amy'])
     expect(order('synced', true)).toEqual(['bob', 'carl', 'amy'])
+  })
+})
+
+describe('feedChipSources', () => {
+  const source = (handle: string) => ({ key: `x:${handle}`, site: 'x' as const, handle, addedAt: 0 })
+  const sources = [source('old'), source('quiet'), source('new'), source('unread')]
+  const posts = { 'x:old': [kept('1', 10)], 'x:new': [kept('2', 30)], 'x:unread': [kept('3', 20)] }
+  const unread = (post: WatchPost) => post.key === postKey({ site: 'x', id: '3' })
+  const handles = (list: { handle: string }[]) => list.map((current) => current.handle)
+
+  it('puts those with unread posts first, then the latest to post', () => {
+    const { shown, hidden } = feedChipSources(sources, posts, unread, 10)
+    expect(handles(shown)).toEqual(['unread', 'new', 'old', 'quiet'])
+    expect(hidden).toBe(0)
+  })
+
+  it('stops at the limit, and keeps the one shown past it', () => {
+    expect(feedChipSources(sources, posts, unread, 2)).toMatchObject({ hidden: 2 })
+    const { shown, hidden } = feedChipSources(sources, posts, unread, 2, 'x:quiet')
+    expect(handles(shown)).toEqual(['unread', 'new', 'quiet'])
+    expect(hidden).toBe(1)
+  })
+})
+
+describe('filterWatchSources', () => {
+  const sources = [
+    { site: 'x' as const, handle: 'NASA', name: 'NASA' },
+    { site: 'instagram' as const, handle: 'nasa' },
+    { site: 'reddit' as const, handle: 'r/pics', name: 'Pictures' },
+  ]
+  const sites = (query: string, site?: 'x' | 'reddit') => filterWatchSources(sources, query, site).map((current) => current.site)
+
+  it('matches name, handle and site, without case or a leading @', () => {
+    expect(sites('nasa')).toEqual(['x', 'instagram'])
+    expect(sites('@nasa insta')).toEqual(['instagram'])
+    expect(sites('pictures')).toEqual(['reddit'])
+    expect(sites('')).toEqual(['x', 'instagram', 'reddit'])
+  })
+
+  it('keeps to the site chosen', () => {
+    expect(sites('nasa', 'x')).toEqual(['x'])
+    expect(sites('', 'reddit')).toEqual(['reddit'])
   })
 })
 

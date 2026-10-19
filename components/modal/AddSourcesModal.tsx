@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ScrollView, TextInput, View } from 'react-native'
+import { Pressable, ScrollView, TextInput, View, useColorScheme } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import * as Clipboard from 'expo-clipboard'
@@ -58,6 +58,7 @@ const importSources = async (timelineId?: string) => {
 /** Adds sources by their links, without opening them, or from a file; into the timeline it was opened from, if any. */
 export const AddSourcesModal = () => {
   const tw = useTwColor()
+  const isDark = useColorScheme() === 'dark'
   const target = useValue(ui$.addSourcesModal)
   const profiles = useValue(watch$.profiles)
   const timelines = useValue(watch$.timelines)
@@ -108,7 +109,9 @@ export const AddSourcesModal = () => {
       <View className="w-full p-4">
         <NouText className="mb-4 text-lg font-bold">{t('feed.addSources')}</NouText>
         <TextInput
-          className="mb-3 max-h-40 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          // A few lines tall, as it takes a link on each.
+          className="mb-3 max-h-40 rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          style={{ minHeight: 96, textAlignVertical: 'top' }}
           value={text}
           onChangeText={setText}
           placeholder={t('feed.addSourcesPlaceholder')}
@@ -152,14 +155,15 @@ export const AddSourcesModal = () => {
             })}
           </ScrollView>
         ) : (
-          <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.addSourcesHint')}</NouText>
+          <NouText className="text-sm leading-5 text-zinc-500 dark:text-zinc-400">{t('feed.addSourcesHint')}</NouText>
         )}
-        {/* Wraps on narrow screens, with Cancel and Add on a line of their own at the right. */}
+        {/* Importing is the lesser way in, so it is a link rather than a button beside Add. */}
         <View className="mt-6 flex-row flex-wrap items-center justify-end gap-3">
           <View className="grow items-start">
-            <NouButton size="1" variant="outline" onPress={() => void importFile()}>
-              {t('feed.importSources')}
-            </NouButton>
+            <Pressable onPress={() => void importFile()} accessibilityRole="button" className="h-9 flex-row items-center gap-1.5">
+              <MaterialIcons name="upload-file" size={18} color={tw(isDark ? '#818cf8' : '#4f46e5')} />
+              <NouText className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{t('feed.importSources')}</NouText>
+            </Pressable>
           </View>
           <View className="flex-row gap-3">
             <NouButton size="1" variant="outline" onPress={onClose}>

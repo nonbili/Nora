@@ -1,6 +1,6 @@
 import { clsx, isIos, isWeb } from '@/lib/utils'
 import { ReactNode, useEffect, useState } from 'react'
-import { Keyboard, KeyboardAvoidingView, Modal, Pressable, View } from 'react-native'
+import { Keyboard, KeyboardAvoidingView, Modal, Pressable, View, useWindowDimensions } from 'react-native'
 import { createPortal } from 'react-dom'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -11,24 +11,26 @@ export const BaseCenterModal: React.FC<{
   align?: 'center' | 'top' | 'keyboard'
   children: ReactNode
   onClose: () => void
-}> = ({
-  className,
-  keyboardAvoidingClassName,
-  containerClassName,
-  align = 'keyboard',
-  children,
-  onClose,
-}) => {
+}> = ({ className, keyboardAvoidingClassName, containerClassName, align = 'keyboard', children, onClose }) => {
   const insets = useSafeAreaInsets()
+  const { height } = useWindowDimensions()
   const [keyboardVisible, setKeyboardVisible] = useState(false)
+  // Where the keyboard starts, from the top of the screen; none while it is hidden.
+  const [keyboardTop, setKeyboardTop] = useState<number | null>(null)
 
   useEffect(() => {
     if (isWeb) {
       return
     }
 
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true))
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false))
+    const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+      setKeyboardVisible(true)
+      setKeyboardTop(e.endCoordinates.screenY)
+    })
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false)
+      setKeyboardTop(null)
+    })
 
     return () => {
       showSub.remove()
@@ -46,7 +48,10 @@ export const BaseCenterModal: React.FC<{
 
   const topAligned = align === 'top' || (align === 'keyboard' && keyboardVisible)
 
-  const innerCls = clsx('rounded-lg bg-zinc-100 dark:bg-gray-950 w-[30rem] lg:w-[40rem] xl:w-[50rem] max-w-[80vw]', containerClassName)
+  const innerCls = clsx(
+    'rounded-2xl bg-zinc-100 dark:bg-gray-950 w-[30rem] lg:w-[40rem] xl:w-[50rem] max-w-[80vw]',
+    containerClassName,
+  )
 
   const body = (
     <View
@@ -59,7 +64,10 @@ export const BaseCenterModal: React.FC<{
         pointerEvents="box-none"
         className={keyboardAvoidingClassName}
       >
-        <View className={innerCls}>{children}</View>
+        {/* No taller than what the screen shows above the keyboard; a dialog lets its list shrink to fit. */}
+        <View className={innerCls} style={{ maxHeight: (keyboardTop ?? height - insets.bottom) - insets.top - 24 }}>
+          {children}
+        </View>
       </KeyboardAvoidingView>
     </View>
   )

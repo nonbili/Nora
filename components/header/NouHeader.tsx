@@ -416,9 +416,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
         {nIf(
           !desktopLayout,
           <TouchableOpacity className="flex-row items-center p-3" onPress={() => ui$.tabModalOpen.set(true)}>
+            {/* The size of the icons beside it, with a line as heavy as theirs. */}
             <View
-              className="rounded-md px-2 py-1 border"
-              style={{ borderColor: headerControlColor, borderWidth: isDark ? 1 : 1.25 }}
+              className="h-[22px] min-w-[22px] items-center justify-center rounded-[6px] px-1"
+              style={{ borderColor: headerControlColor, borderWidth: isDark ? 1.5 : 1.75 }}
             >
               <NouText className="text-xs font-semibold" style={{ color: headerControlColor }}>{tabsCount}</NouText>
             </View>
