@@ -1035,6 +1035,8 @@ export interface WatchTimeline {
   id: string
   name: string
   profileKeys: string[]
+  // Shown on the new tab page, next to the whole feed.
+  pinned?: boolean
 }
 
 /**

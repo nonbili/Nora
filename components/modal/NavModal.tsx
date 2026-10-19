@@ -18,6 +18,8 @@ import { getHomeUrl } from '@/lib/page'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { bookmarks$ } from '@/states/bookmarks'
+import { unreadKeys, watch$ } from '@/states/watch'
+import { feedTabUrl } from '@/lib/feed-tab'
 import { t } from 'i18next'
 import { useEffect, useRef, useState } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
@@ -54,6 +56,15 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   const disabledServices = useValue(settings$.disabledServicesArr)
   const profiles = useValue(settings$.profiles)
   const bookmarks = useValue(bookmarks$.bookmarks)
+  // The whole feed, then the timelines pinned here, each with its unread count.
+  const feedLinks = useValue(() =>
+    isWeb || !settings$.feedEnabled.get()
+      ? []
+      : [
+          { id: undefined, name: t('feed.label') },
+          ...watch$.timelines.get().filter((timeline) => timeline.pinned),
+        ].map(({ id, name }) => ({ id, name, unread: unreadKeys(id).size })),
+  )
   const oneHandModeSetting = useValue(settings$.oneHandMode)
   const oneHandMode = !isWeb && oneHandModeSetting
   const enabledSearchProviderIds = useValue(settings$.enabledSearchProviderIds)
@@ -249,6 +260,27 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
           </View>
         </View>
         <View className="mt-6 lg:mt-10 flex-row flex-wrap justify-center gap-x-6 gap-y-7">
+          {feedLinks.map((link) => (
+            <TouchableHighlight
+              key={link.id || 'feed'}
+              onPress={() => onPress(feedTabUrl(link.id))}
+              underlayColor={isDark ? tw('#1f2937') : tw('#e0f2fe')}
+            >
+              <View className={cls}>
+                <MaterialIcons
+                  name={link.id ? 'view-list' : 'dynamic-feed'}
+                  size={18}
+                  color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
+                />
+                <Text className="flex-1 text-sm text-zinc-900 dark:text-zinc-100" numberOfLines={1}>
+                  {link.name}
+                </Text>
+                {link.unread ? (
+                  <Text className="text-xs font-medium text-indigo-600 dark:text-indigo-300">{link.unread}</Text>
+                ) : null}
+              </View>
+            </TouchableHighlight>
+          ))}
           {Object.entries(services).map(([value, [label, icon]]) =>
             nIf(
               !disabledServices.includes(value),

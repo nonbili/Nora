@@ -86,6 +86,23 @@ describe('watch transfer', () => {
     ])
   })
 
+  it('carries which timelines are pinned to the new tab page', () => {
+    watch$.watch({ site: 'x', handle: 'jack' })
+    const pinnedId = watch$.createTimeline('Friends', ['x:jack'])
+    watch$.updateTimeline(pinnedId, { pinned: true })
+    watch$.createTimeline('News', [])
+    const backup = normalizeWatchBackup(createWatchBackup())!
+    expect(backup.timelines).toEqual([{ name: 'Friends', profileKeys: ['x:jack'], pinned: true }, { name: 'News', profileKeys: [] }])
+
+    reset()
+    watch$.createTimeline('friends', [])
+    applyWatchBackup(backup)
+    expect(watch$.timelines.get().map(({ name, pinned }) => ({ name, pinned }))).toEqual([
+      { name: 'friends', pinned: true },
+      { name: 'News', pinned: undefined },
+    ])
+  })
+
   it('reads profile pages and the RSS feeds of the sites', () => {
     expect(sourceFromUrl('https://www.reddit.com/r/rust/.rss')).toEqual({ site: 'reddit', handle: 'r/rust' })
     expect(sourceFromUrl('https://old.reddit.com/user/spez.rss')).toEqual({ site: 'reddit', handle: 'u/spez' })

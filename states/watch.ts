@@ -63,7 +63,7 @@ interface Store {
   // Marks the profiles a tab shows as read: one when it shows only that one.
   markFeedSeen: (timelineId?: string, profileKey?: string) => void
   createTimeline: (name: string, profileKeys: string[]) => string
-  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys'>>) => void
+  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys' | 'pinned'>>) => void
   deleteTimeline: (id: string) => void
   setInTimeline: (id: string, profileKey: string, included: boolean) => void
 }

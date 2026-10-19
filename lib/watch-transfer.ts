@@ -18,6 +18,7 @@ export interface WatchSourceBackup extends WatchTarget {
 export interface WatchTimelineBackup {
   name: string
   profileKeys: string[]
+  pinned?: boolean
 }
 
 export interface WatchBackup {
@@ -59,7 +60,11 @@ export const createWatchBackup = (): WatchBackup => ({
     notify: profile.notify,
     ...(profile.checkIntervalMinutes ? { checkIntervalMinutes: profile.checkIntervalMinutes } : {}),
   })),
-  timelines: watch$.timelines.get().map((timeline) => ({ name: timeline.name, profileKeys: [...timeline.profileKeys] })),
+  timelines: watch$.timelines.get().map((timeline) => ({
+    name: timeline.name,
+    profileKeys: [...timeline.profileKeys],
+    ...(timeline.pinned ? { pinned: true } : {}),
+  })),
 })
 
 /** A source of a backup, when it is one Nora could have watched: its page has to read back as the same source. */
@@ -102,11 +107,13 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     const keys = (Array.isArray(item.profileKeys) ? item.profileKeys : []).filter(
       (key): key is string => typeof key === 'string' && profiles.has(key),
     )
+    const pinned = item.pinned === true
     const existing = timelines.get(timelineName(name))
     if (existing) {
       existing.profileKeys = Array.from(new Set([...existing.profileKeys, ...keys]))
+      if (pinned) existing.pinned = true
     } else {
-      timelines.set(timelineName(name), { name, profileKeys: Array.from(new Set(keys)) })
+      timelines.set(timelineName(name), { name, profileKeys: Array.from(new Set(keys)), ...(pinned ? { pinned } : {}) })
     }
   }
 
@@ -160,8 +167,10 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
       if (same) {
         const merged = Array.from(new Set([...same.profileKeys, ...keys]))
         if (merged.length !== same.profileKeys.length) watch$.updateTimeline(same.id, { profileKeys: merged })
+        if (timeline.pinned && !same.pinned) watch$.updateTimeline(same.id, { pinned: true })
       } else {
-        watch$.createTimeline(timeline.name, keys)
+        const id = watch$.createTimeline(timeline.name, keys)
+        if (timeline.pinned) watch$.updateTimeline(id, { pinned: true })
       }
     }
   })

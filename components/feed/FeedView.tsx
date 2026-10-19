@@ -379,6 +379,12 @@ export const FeedView: React.FC<{
             systemImage: 'pencil',
             handler: () => ui$.timelineModal.set({ timelineId: timeline.id, tabId }),
           },
+          {
+            label: timeline.pinned ? t('feed.unpinFromNewTab') : t('feed.pinToNewTab'),
+            icon: <MaterialIcons name="push-pin" size={18} color={iconColor} />,
+            systemImage: timeline.pinned ? 'pin.slash' : 'pin',
+            handler: () => watch$.updateTimeline(timeline.id, { pinned: !timeline.pinned }),
+          },
         ]
       : []),
     {

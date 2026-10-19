@@ -515,6 +515,8 @@
     "timelines": "Timelines",
     "newTimeline": "New timeline",
     "editTimeline": "Edit timeline",
+    "pinToNewTab": "Pin to new tab page",
+    "unpinFromNewTab": "Unpin from new tab page",
     "deleteTimeline": "Delete timeline",
     "deleteTimelineConfirm": "Delete the timeline {{name}}? Its sources stay watched.",
     "timelineNamePlaceholder": "e.g. Friends",
