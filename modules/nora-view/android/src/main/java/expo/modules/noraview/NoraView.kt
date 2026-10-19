@@ -269,11 +269,17 @@ fun installGoogleOAuthShim(webView: WebView) {
 /**
  * @param openInApp when set, a link that asks for an app can be answered by loading its web page
  * here, in the tab; it is set only while the anonymous mode is on for the tab, see [inAppUrlFor].
+ * @param followed whether the person followed the link, rather than the page going there on its own.
  */
-fun shouldNoraOverrideUrlLoading(view: WebView, url: String, openInApp: ((String) -> Unit)? = null): Boolean {
+fun shouldNoraOverrideUrlLoading(
+  view: WebView,
+  url: String,
+  openInApp: ((String) -> Unit)? = null,
+  followed: Boolean = true,
+): Boolean {
   val uri = Uri.parse(url)
   if (uri.scheme?.lowercase() !in INTERNAL_SCHEMES) {
-    return handleExternalAppUrl(view.context, url, openInApp)
+    return handleExternalAppUrl(view.context, url, openInApp, followed)
   }
 
   if (!shouldOpenInSystemBrowser(uri)) {
@@ -366,7 +372,7 @@ fun inAppUrlFor(url: String?, hosts: Collection<String>): String? {
 /** The sites Nora shows, which is what an app link is checked against. */
 private fun inAppHosts() = VIEW_HOSTS.toList() + nouController.settings.internalHosts.map { it.lowercase() }
 
-fun handleExternalAppUrl(context: Context, url: String, openInApp: ((String) -> Unit)? = null): Boolean {
+fun handleExternalAppUrl(context: Context, url: String, openInApp: ((String) -> Unit)? = null, followed: Boolean = true): Boolean {
   val uri = Uri.parse(url)
   val scheme = uri.scheme?.lowercase()
   val isInternalScheme = scheme in INTERNAL_SCHEMES
@@ -413,12 +419,15 @@ fun handleExternalAppUrl(context: Context, url: String, openInApp: ((String) -> 
       try {
         val fallbackIntent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
         val fallbackUrl = fallbackIntent.getStringExtra("browser_fallback_url")
-        if (openInApp != null) {
-          val inApp = inAppUrlFor(fallbackUrl, inAppHosts())
-          if (inApp != null) {
-            openInApp(inApp)
-            return true
-          }
+        val inApp = inAppUrlFor(fallbackUrl ?: fallbackIntent.dataString, inAppHosts())
+        if (openInApp != null && inApp != null) {
+          openInApp(inApp)
+          return true
+        }
+        // A page of a site Nora shows that sends itself to its missing app on its own, as Threads does
+        // as soon as it loads, stays as it is: its page is not handed to the system browser unasked.
+        if (!followed && inApp != null) {
+          return true
         }
         if (!fallbackUrl.isNullOrEmpty()) {
           context.startActivity(
@@ -868,7 +877,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
            * [allowInApp]: this is the person's own tap, on the page itself, with the anonymous mode on --
            * the one place a link that asks for an app is answered by opening its page in the tab.
            */
-          private fun overrideUrlLoading(view: WebView, url: String, allowInApp: Boolean): Boolean {
+          private fun overrideUrlLoading(view: WebView, url: String, allowInApp: Boolean, followed: Boolean = true): Boolean {
             if (url.startsWith("http://") && !nouController.settings.allowHttpWebsite) {
               showHttpBlockedPage(url)
               return true
@@ -894,6 +903,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               view,
               url,
               if (allowInApp) { target -> view.post { view.loadUrl(target) } } else null,
+              followed,
             )
           }
 
@@ -901,7 +911,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             // Not a frame of the page, which a page can send anywhere without being asked, and not without
             // a tap. Without the anonymous mode an app link is handled as it always was.
             val allowInApp = request.isForMainFrame && request.hasGesture() && openAppLinksInTab
-            return overrideUrlLoading(view, request.url.toString(), allowInApp)
+            return overrideUrlLoading(view, request.url.toString(), allowInApp, request.hasGesture())
           }
 
           override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
