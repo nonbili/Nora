@@ -549,7 +549,7 @@ if (isAvailable) {
   // While Nora is open the background task does not run on iOS, and on Android only when the
   // system gets to it; a profile whose interval is up is checked from here then.
   let foregroundTimer: ReturnType<typeof setInterval> | undefined
-  const syncForegroundTimer = (state: string) => {
+  const syncForegroundTimer = (state: string | null | undefined) => {
     if (state === 'active' && settings$.feedEnabled.peek()) {
       void refreshWatched('foreground')
       if (!foregroundTimer) {

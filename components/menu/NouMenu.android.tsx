@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native'
 import { colors } from '@/lib/colors'
 import type { Item, NouMenuHandle } from './NouMenu'
 import { forwardRef, ReactNode, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -27,7 +28,7 @@ export const NouMenu = forwardRef<
   const isDark = colorScheme !== 'light'
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const insets = useSafeAreaInsets()
-  const triggerRef = useRef<View>(null)
+  const triggerRef = useRef<ViewInstance>(null)
   const clearItemsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const visibleItems = imperativeItems ?? items
   const horizontalPadding = 8

@@ -16,7 +16,7 @@ export async function saveFile(filename: string, content: string) {
 
   const file = new File(Paths.cache, filename)
   file.create({ overwrite: true })
-  file.write(content)
+  await file.write(content)
   await shareAsync(file.uri, {
     mimeType: getMimeType(filename),
     UTI: filename.toLowerCase().endsWith('.json') ? 'public.json' : 'public.plain-text',

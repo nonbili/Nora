@@ -76,7 +76,6 @@ const DISPLAY_METRICS_FIX = `
     screenMetrics.xdpi = activityMetrics.xdpi
     screenMetrics.ydpi = activityMetrics.ydpi
     com.facebook.react.uimanager.DisplayMetricsHolder.setScreenDisplayMetrics(screenMetrics)
-    com.facebook.react.uimanager.DisplayMetricsHolder.setWindowDisplayMetrics(activityMetrics)
   }
 
   override fun onResume() {
@@ -129,6 +128,13 @@ const withSecondaryDisplayMetricsFix: ConfigPlugin = (config) =>
       }
       config.modResults.contents = config.modResults.contents.replace(anchor, `${anchor}\n${DISPLAY_METRICS_FIX}`)
     }
+
+    // RN 0.88 computes window metrics in DeviceInfoModule and removed this setter.
+    // Remove the old injection when prebuilding an existing native project too.
+    config.modResults.contents = config.modResults.contents.replace(
+      /\n[ \t]*com\.facebook\.react\.uimanager\.DisplayMetricsHolder\.setWindowDisplayMetrics\(activityMetrics\)/g,
+      '',
+    )
 
     // This was an abandoned pointer-event experiment. Leaving it behind changes
     // event dispatch globally and conflicts with the scoped mouse bridge above.

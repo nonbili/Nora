@@ -1,7 +1,8 @@
+import type { ViewInstance, ScrollViewInstance } from 'react-native'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useValue } from '@legendapp/state/react'
-import { Animated, LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native'
+import { Animated, LayoutChangeEvent, Pressable, View } from 'react-native'
 import { settings$ } from '@/states/settings'
 import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { tabGroups$, type TabGroupLayout } from '@/states/tab-groups'
@@ -39,8 +40,8 @@ export const NativeTabHost: React.FC<{ desktopLayout: boolean }> = ({ desktopLay
   const deckTabWidth = useValue(settings$.deckTabWidth)
   const focusedEmptySlotByGroup = useValue(desktopWorkspaceState$.focusedEmptySlotByGroup)
   const [size, setSize] = useState({ width: 0, height: 0 })
-  const scrollRef = useRef<ScrollView>(null)
-  const workspaceViewportRef = useRef<View>(null)
+  const scrollRef = useRef<ScrollViewInstance>(null)
+  const workspaceViewportRef = useRef<ViewInstance>(null)
   const prevTabCountRef = useRef(tabs.length)
   const deckScrollX = useRef(new Animated.Value(0)).current
 

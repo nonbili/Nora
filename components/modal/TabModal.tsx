@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native'
 import { ui$ } from '@/states/ui'
 import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
@@ -32,7 +33,7 @@ export const TabModal = () => {
   const iconColor = isDark ? tw(colors.icon) : tw(colors.iconLight)
   const [iosMenuOpen, setIosMenuOpen] = useState(false)
   const [iosMenuAnchor, setIosMenuAnchor] = useState<Anchor | null>(null)
-  const iosMenuTriggerRef = useRef<View>(null)
+  const iosMenuTriggerRef = useRef<ViewInstance>(null)
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const insets = useSafeAreaInsets()
 

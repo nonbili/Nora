@@ -148,7 +148,7 @@ export async function writeBlocklistSourceFile(id: BlocklistSourceId, body: stri
   if (!file.exists) {
     file.create({ overwrite: true, intermediates: true })
   }
-  file.write(body)
+  await file.write(body)
 }
 
 export async function writeBlocklistMatcherSnapshot(snapshot: PersistedBlocklistMatcherSnapshot) {
@@ -165,7 +165,7 @@ export async function writeBlocklistMatcherSnapshot(snapshot: PersistedBlocklist
   if (!file.exists) {
     file.create({ overwrite: true, intermediates: true })
   }
-  file.write(JSON.stringify(snapshot))
+  await file.write(JSON.stringify(snapshot))
 }
 
 export async function deleteBlocklistSourceFiles(ids: readonly BlocklistSourceId[]) {

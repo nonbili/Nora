@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native'
 import { ui$ } from '@/states/ui'
 import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
@@ -78,7 +79,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   const [providerAnchor, setProviderAnchor] = useState<Anchor | null>(null)
   const awaitingCreatedProfileRef = useRef(false)
   const createdProfileId = useValue(ui$.createdProfileId)
-  const providerTriggerRef = useRef<View>(null)
+  const providerTriggerRef = useRef<ViewInstance>(null)
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'

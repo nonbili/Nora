@@ -1,3 +1,4 @@
+import type { ScrollViewInstance } from 'react-native'
 import { BackHandler, Keyboard, KeyboardAvoidingView, Linking, Pressable, ScrollView, View, useColorScheme, useWindowDimensions } from 'react-native'
 import { NouText } from '../NouText'
 import { version } from '../../package.json'
@@ -129,7 +130,7 @@ export const SettingsModal = () => {
   const { width } = useWindowDimensions()
   const [pageStack, setPageStack] = useState<SettingsPage[]>(['home'])
   const [keyboardInset, setKeyboardInset] = useState(0)
-  const scrollRef = useRef<ScrollView>(null)
+  const scrollRef = useRef<ScrollViewInstance>(null)
   const scrollPositionsRef = useRef<Partial<Record<SettingsPage, number>>>({ home: 0 })
 
   const scrollToEnd = () => {

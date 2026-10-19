@@ -1,3 +1,4 @@
+import type { ViewInstance, ScrollViewInstance } from 'react-native'
 import React, { useEffect, useMemo, useRef } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { batch } from '@legendapp/state'
@@ -68,7 +69,7 @@ const TabRow: React.FC<{
 }> = ({ collapsed, groupId, groups, isActive, clipRef, openMenu, tab }) => {
   const tw = useTwColor()
   const profileColor = getProfileColor(tab.profile)
-  const rowRef = useRef<View>(null)
+  const rowRef = useRef<ViewInstance>(null)
   const itemsRef = useRef<Item[]>([])
   const openMenuRef = useRef(openMenu)
   const webviewActionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -380,7 +381,7 @@ export const DesktopTabsSidebar: React.FC<{ collapsed?: boolean }> = ({ collapse
   const groups = useValue(tabGroups$.groups)
   const menuRef = useRef<NouMenuHandle>(null)
   const sidebarViewportRef = useRef<Measurable | null>(null)
-  const setSidebarViewportRef = (scrollView: ScrollView | null) => {
+  const setSidebarViewportRef = (scrollView: ScrollViewInstance | null) => {
     sidebarViewportRef.current = scrollView?.getNativeScrollRef() ?? null
   }
   const colorScheme = useColorScheme()

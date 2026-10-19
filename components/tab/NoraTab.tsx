@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native'
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
 import { NoraView } from '@/modules/nora-view'
 import { useObserveEffect, useValue } from '@legendapp/state/react'
@@ -279,7 +280,7 @@ const WebTab: React.FC<NoraTabProps> = ({
   const nativeRef = useRef<any>(null)
   const webviewRef = useRef<WebviewTag | null>(null)
   const desktopMenuRef = useRef<NouMenuHandle>(null)
-  const desktopHeaderRef = useRef<View>(null)
+  const desktopHeaderRef = useRef<ViewInstance>(null)
   const nativeMenuItemsRef = useRef<Item[]>([])
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
   const webviewListenersRef = useRef<AbortController | null>(null)

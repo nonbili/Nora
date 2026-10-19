@@ -20,7 +20,7 @@ async function shareCookiesTxt(contents: string, fileName: string) {
     throw new Error('Sharing is unavailable')
   }
   const file = new File(Paths.cache, fileName)
-  file.write(contents)
+  await file.write(contents)
   await Sharing.shareAsync(file.uri, {
     mimeType: 'text/plain',
     UTI: 'public.plain-text',

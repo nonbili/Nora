@@ -1,3 +1,4 @@
+import type { TextInputInstance } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
 import { BaseCenterModal } from './BaseCenterModal'
@@ -18,7 +19,7 @@ export const UrlModal = () => {
   const urlModalTargetTabId = useValue(ui$.urlModalTargetTabId)
   const tabs = useValue(tabs$.tabs)
   const [url, setUrl] = useState('')
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<TextInputInstance>(null)
   const targetTabIndex = urlModalTargetTabId == null ? -1 : tabs.findIndex((tab) => tab?.id === urlModalTargetTabId)
   const targetTab = targetTabIndex === -1 ? null : tabs[targetTabIndex]
   const isEditingTab = urlModalMode === 'editTab' && targetTab != null

@@ -1,5 +1,12 @@
 import { mock } from 'bun:test'
 
+// SDK 58's compiled global declarations import type-only classes as runtime values.
+// The native runtime is supplied below, so these declarations need no runtime setup.
+mock.module(
+  new URL('./ts-declarations/global.js', import.meta.resolve('expo-modules-core')).pathname,
+  () => ({}),
+)
+
 // Font assets reach the graph through icon packages; bun has no loader for them.
 Bun.plugin({
   name: 'asset-stub',
@@ -96,6 +103,7 @@ mock.module('react-native', () => ({
   Vibration: { vibrate: () => {} },
   ToastAndroid: { show: () => {}, SHORT: 0, LONG: 1 },
   Image: host('Image'),
+  AssetRegistry: { getAssetByID: () => undefined },
   TextInput: host('TextInput'),
   TouchableOpacity: host('TouchableOpacity'),
   TouchableHighlight: host('TouchableHighlight'),
