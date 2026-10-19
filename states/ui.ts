@@ -18,6 +18,8 @@ interface Store {
   feedGallery: { postKey: string; profileKey: string; index: number } | null
   // The timeline to change, or none to make one: with the profile to start it with, and the feed tab to show it in.
   timelineModal: { timelineId?: string; profileKey?: string; tabId?: string } | null
+  // The list of all watched sources, opened from the feed tab whose links it opens beside.
+  sourcesModal: { tabId?: string } | null
   navModalOpen: boolean
   profileLinkUrl: string
   autoProfilesModalOpen: boolean
@@ -67,6 +69,7 @@ export const ui$ = observable<Store>({
   downloadVideoModalUrl: '',
   feedGallery: null,
   timelineModal: null,
+  sourcesModal: null,
   navModalOpen: false,
   profileLinkUrl: '',
   autoProfilesModalOpen: false,

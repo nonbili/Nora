@@ -77,7 +77,7 @@ const ChoicePicker: React.FC<{
 )
 
 /** What to tell about how a profile is being checked; null when all is well. */
-const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean } | null => {
+export const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean } | null => {
   const site = watchSiteLabels[profile.site]
   if (profile.error === WATCH_ERROR_NEEDS_LOGIN) return { text: t('feed.statusNeedsLogin', { site }), warn: true }
   if (profile.error === WATCH_ERROR_RATE_LIMITED) return { text: t('feed.statusRateLimited', { site }), warn: true }
@@ -91,7 +91,7 @@ const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean }
 const SERVICE_ICON_SIZE = 24
 
 /** A profile's picture, with the icon of its site at its corner: the same handle can be on both. */
-const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> = ({ uri, size, site }) => {
+export const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> = ({ uri, size, site }) => {
   const badge = Math.round(size * 0.45)
   return (
     <View style={{ width: size, height: size }}>
@@ -381,6 +381,12 @@ export const FeedView: React.FC<{
           },
         ]
       : []),
+    {
+      label: t('feed.manageSources'),
+      icon: <MaterialIcons name="manage-accounts" size={18} color={iconColor} />,
+      systemImage: 'person.2',
+      handler: () => ui$.sourcesModal.set({ tabId }),
+    },
     {
       label: t('feed.importSources'),
       icon: <MaterialIcons name="file-download" size={18} color={iconColor} />,

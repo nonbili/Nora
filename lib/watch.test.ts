@@ -35,12 +35,14 @@ import {
   postKey,
   splitInterval,
   uniquePostsNewestFirst,
+  sortWatchSources,
   unreadPostKeys,
   watchIntervalMinutes,
   watchKey,
   watchProfileUrl,
   watchSourceLabel,
   type WatchPost,
+  type WatchSourceSort,
 } from './watch'
 
 describe('getWatchTarget', () => {
@@ -910,6 +912,34 @@ describe('uniquePostsNewestFirst', () => {
       ['2', 'first'],
       ['1', 'nasa'],
     ])
+  })
+})
+
+describe('sortWatchSources', () => {
+  const source = (handle: string, addedAt: number, lastSuccessAt?: number, name?: string) => ({
+    key: `x:${handle}`,
+    site: 'x' as const,
+    handle,
+    name,
+    addedAt,
+    lastSuccessAt,
+  })
+  const sources = [source('bob', 2, 20), source('amy', 3), source('carl', 1, 30, 'Zed')]
+  const posts = { 'x:bob': [kept('1', 10), kept('2', 50)], 'x:carl': [kept('3', 40)] }
+  const order = (sort: WatchSourceSort, reversed?: boolean) =>
+    sortWatchSources(sources, posts, sort, reversed).map((current) => current.handle)
+
+  it('orders by name, the shown one before the handle', () => {
+    expect(order('name')).toEqual(['amy', 'bob', 'carl'])
+    expect(order('name', true)).toEqual(['carl', 'bob', 'amy'])
+  })
+
+  it('orders by time newest first, with those that have none last either way', () => {
+    expect(order('updated')).toEqual(['bob', 'carl', 'amy'])
+    expect(order('updated', true)).toEqual(['carl', 'bob', 'amy'])
+    expect(order('added')).toEqual(['amy', 'bob', 'carl'])
+    expect(order('synced')).toEqual(['carl', 'bob', 'amy'])
+    expect(order('synced', true)).toEqual(['bob', 'carl', 'amy'])
   })
 })
 

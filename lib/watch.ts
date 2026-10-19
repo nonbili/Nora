@@ -1001,6 +1001,35 @@ export function uniquePostsNewestFirst(lists: (WatchPost[] | undefined)[]): Watc
   return [...byKey.values()].sort((a, b) => b.createdAtMs - a.createdAtMs)
 }
 
+/** How the list of watched sources is ordered: by name, or by the newest post, when watched, or the last good check. */
+export type WatchSourceSort = 'name' | 'updated' | 'added' | 'synced'
+
+export const WATCH_SOURCE_SORTS: WatchSourceSort[] = ['name', 'updated', 'added', 'synced']
+
+/**
+ * The sources in the order asked for: A to Z by name, newest first by time, or the other way round when
+ * reversed. A source with no such time yet, as one never checked, comes last either way.
+ */
+export function sortWatchSources<
+  T extends WatchTarget & { name?: string; addedAt: number; lastSuccessAt?: number; key: string },
+>(sources: T[], posts: Record<string, WatchPost[] | undefined>, sort: WatchSourceSort, reversed = false): T[] {
+  const time = (source: T): number | undefined => {
+    if (sort === 'added') return source.addedAt
+    if (sort === 'synced') return source.lastSuccessAt
+    const list = posts[source.key]
+    return list?.length ? Math.max(...list.map((post) => post.createdAtMs)) : undefined
+  }
+  const label = (source: T) => source.name || source.handle
+  const direction = reversed ? -1 : 1
+  return [...sources].sort((a, b) => {
+    if (sort === 'name') return direction * label(a).localeCompare(label(b), undefined, { sensitivity: 'base' })
+    const ta = time(a)
+    const tb = time(b)
+    if (ta === undefined || tb === undefined) return ta === tb ? 0 : ta === undefined ? 1 : -1
+    return direction * (tb - ta)
+  })
+}
+
 /** Some of the watched profiles, which a feed tab can show on their own. */
 export interface WatchTimeline {
   id: string

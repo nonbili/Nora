@@ -523,7 +523,20 @@
     "importSources": "Import sources",
     "importSourcesDone": "Added: {{added}}, already watched: {{existing}}, not recognized: {{unrecognized}}",
     "importSourcesEmpty": "No sources found. Use an OPML file or a list of profile links.",
-    "importSourcesFailed": "Import failed: {{message}}"
+    "importSourcesFailed": "Import failed: {{message}}",
+    "manageSources": "Manage sources",
+    "sourcesCount_one": "{{count}} source",
+    "sourcesCount_other": "{{count}} sources",
+    "sortBy": "Sort by",
+    "sortName": "Name (A–Z)",
+    "sortUpdated": "Last updated",
+    "sortAdded": "Last added",
+    "sortSynced": "Last synced",
+    "sortReversed": "Reversed",
+    "lastPost": "Last post {{age}}",
+    "noPostsYet": "No posts yet",
+    "syncedAgo": "synced {{age}}",
+    "neverSynced": "never synced"
   },
   "usageLimits": {
     "label": "Usage limits",

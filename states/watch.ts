@@ -8,6 +8,7 @@ import {
   watchKey,
   type WatchPost,
   type WatchSite,
+  type WatchSourceSort,
   type WatchTarget,
   type WatchTimeline,
 } from '@/lib/watch'
@@ -47,6 +48,9 @@ interface Store {
   mediaWifiOnly: boolean
   // How much kept media may take, in MB; the media of the oldest posts goes first.
   mediaLimitMB: number
+  // How the list of sources to manage is ordered.
+  sourcesSort: WatchSourceSort
+  sourcesSortReversed: boolean
 
   isWatched: (target: WatchTarget) => boolean
   watch: (target: WatchTarget) => void
@@ -76,6 +80,8 @@ export const watch$: Observable<Store> = observable<Store>({
   checkIntervalMinutes: DEFAULT_WATCH_INTERVAL_MINUTES,
   mediaWifiOnly: true,
   mediaLimitMB: 1024,
+  sourcesSort: 'name',
+  sourcesSortReversed: false,
 
   isWatched: (target) => watch$.profiles.get().some((profile) => profile.key === watchKey(target)),
 

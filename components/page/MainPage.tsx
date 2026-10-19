@@ -18,6 +18,7 @@ import { RenameGroupModal } from '../modal/RenameGroupModal'
 import { ZoomModal } from '../modal/ZoomModal'
 import { FeedGalleryModal } from '../modal/FeedGalleryModal'
 import { TimelineModal } from '../modal/TimelineModal'
+import { SourcesModal } from '../modal/SourcesModal'
 import { WatchWebViewHost } from '../watch/WatchWebViewHost'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { useLocales } from 'expo-localization'
@@ -94,6 +95,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
             <TabModal />
             <FeedGalleryModal />
             <TimelineModal />
+            <SourcesModal />
             <WatchWebViewHost />
           </>,
         )}
