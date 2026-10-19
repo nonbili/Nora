@@ -343,6 +343,14 @@ const setActiveTabIndexInternal = (index: number, reason: TabActivationReason = 
     ui$.activeCanGoBack.set(false)
   }
 
+  // The desktop workspace only shows the active group's tabs and swaps any other active
+  // tab back out, so the group has to follow the tab -- otherwise closing a tab, going
+  // back, or jumping to a tab in another group lands on whatever that view shows first.
+  const nextGroupId = findGroupForTab(nextTabId)?.groupId ?? null
+  if (tabGroups$.activeGroupId.get() !== nextGroupId) {
+    tabGroups$.setActiveGroup(nextGroupId)
+  }
+
   // Visiting a dormant tab is the strongest possible signal that it should load now.
   if (tabs[index]?.isDormant) {
     tabs$.tabs[index].isDormant.set(false)
@@ -872,6 +880,9 @@ export const tabs$: Observable<Store> = observable<Store>({
     const closedTab = tabs$.tabs[activeIndex].get()
     pushRecentlyClosedTabs(closedTab ? [closedTab] : [])
     tabs$.tabs.splice(activeIndex, 1)
+    if (activeTabId && activeTabId in tabs$.orders.get()) {
+      tabs$.orders[activeTabId].delete()
+    }
     savedViews$.cleanupClosedTabIds(activeTabId ? [activeTabId] : [])
     tabGroups$.cleanupClosedTabIds(activeTabId ? [activeTabId] : [])
     syncRuntimeTabMetadata()

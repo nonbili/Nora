@@ -327,3 +327,65 @@ describe('reopening a closed tab', () => {
     expect(tabGroups$.sidebarOrder.get()).toEqual([])
   })
 })
+
+describe('closing a tab opened from a grouped tab', () => {
+  beforeEach(() => {
+    tabGroups$.groups.set([])
+    tabGroups$.activeGroupId.set(null)
+    tabs$.recentlyClosedTabs.set([])
+  })
+
+  it('returns to the opener and switches back to its group', () => {
+    tabs$.tabs.set([
+      { id: 'tab-1', url: 'https://1.example' },
+      { id: 'tab-3', url: 'https://3.example' },
+      { id: 'tab-4', url: 'https://4.example' },
+    ])
+    tabs$.orders.set({ 'tab-1': 0, 'tab-3': 1, 'tab-4': 2 })
+    tabGroups$.groups.set([{ id: 'split', name: 'Split', layout: 'split-view', tabIds: ['tab-3', 'tab-4'] }])
+    tabGroups$.setActiveGroup('split')
+    tabs$.setActiveTabById('tab-3', 'user')
+
+    // A link opened from a page lands in the ungrouped section, as the desktop does it.
+    tabGroups$.setActiveGroup(null)
+    const childTabId = tabs$.openTab('https://6.example', { parentTabId: 'tab-3', source: 'child' }) as string
+    tabs$.closeTab(tabs$.tabs.get().findIndex((tab) => tab.id === childTabId))
+
+    expect(tabs$.currentTab()?.id).toBe('tab-3')
+    expect(tabGroups$.activeGroupId.get()).toBe('split')
+  })
+
+  it('switches back to the group when going back closes the child tab', () => {
+    tabs$.tabs.set([
+      { id: 'tab-1', url: 'https://1.example' },
+      { id: 'tab-3', url: 'https://3.example' },
+    ])
+    tabs$.orders.set({ 'tab-1': 0, 'tab-3': 1 })
+    tabGroups$.groups.set([{ id: 'split', name: 'Split', layout: 'split-view', tabIds: ['tab-3', null] }])
+    tabs$.setActiveTabById('tab-3', 'user')
+
+    tabGroups$.setActiveGroup(null)
+    const childTabId = tabs$.openTab('https://7.example', { parentTabId: 'tab-3', source: 'child' }) as string
+    expect(tabs$.handleBackPress()).toBe(true)
+
+    expect(tabs$.tabs.get().some((tab) => tab.id === childTabId)).toBe(false)
+    expect(tabs$.orders.get()).not.toHaveProperty(childTabId)
+    expect(tabs$.currentTab()?.id).toBe('tab-3')
+    expect(tabGroups$.activeGroupId.get()).toBe('split')
+  })
+
+  it('follows a tab activated directly into or out of a group', () => {
+    tabs$.tabs.set([
+      { id: 'tab-1', url: 'https://1.example' },
+      { id: 'tab-3', url: 'https://3.example' },
+    ])
+    tabGroups$.groups.set([{ id: 'deck', name: 'Deck', layout: 'deck', tabIds: ['tab-3'] }])
+    tabs$.setActiveTabIndex(0, 'user')
+
+    tabs$.setActiveTabIndex(1, 'user')
+    expect(tabGroups$.activeGroupId.get()).toBe('deck')
+
+    tabs$.setActiveTabIndex(0, 'user')
+    expect(tabGroups$.activeGroupId.get()).toBeNull()
+  })
+})

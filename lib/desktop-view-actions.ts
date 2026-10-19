@@ -51,6 +51,25 @@ export const openUrlInDesktopTab = (tabId: string, url: string) => {
   tabs$.updateTabUrl(url, tabIndex)
 }
 
+// Tabs in the order the sidebar lists them: ungrouped tabs and group sections share one
+// order, and a group lists its own tabs in slot order.
+export const getSidebarOrderedTabIds = () => {
+  const tabs = tabs$.tabs.get()
+  const groups = tabGroups$.groups.get()
+  const groupedTabIds = getGroupedTabIds(groups)
+  const ungroupedTabIds = getOrderedTabIds(tabs, tabs$.orders.get()).filter((tabId) => !groupedTabIds.has(tabId))
+  const items = getSidebarItems(ungroupedTabIds, groups.map((group) => group.id), tabGroups$.sidebarOrder.get())
+  const tabIdSet = new Set(tabs.map((tab) => tab.id))
+  const groupById = new Map(groups.map((group) => [group.id, group]))
+  return items.flatMap((item) =>
+    item.kind === 'tab'
+      ? [item.tabId]
+      : (groupById.get(item.groupId)?.tabIds ?? []).filter(
+          (tabId): tabId is string => typeof tabId === 'string' && tabIdSet.has(tabId),
+        ),
+  )
+}
+
 export const openTabForActiveDesktopView = () => {
   openTabInDesktopGroup(tabGroups$.activeGroupId.get())
 }

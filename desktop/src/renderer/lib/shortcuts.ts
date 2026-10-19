@@ -1,5 +1,5 @@
 import { tabs$ } from '../../../../states/tabs'
-import { openTabForActiveDesktopView } from '../../../../lib/desktop-view-actions'
+import { getSidebarOrderedTabIds, openTabForActiveDesktopView } from '../../../../lib/desktop-view-actions'
 
 export function handleShortcuts(e: {
   metaKey?: boolean
@@ -35,11 +35,12 @@ export function handleShortcuts(e: {
       : tabs$.tabs.get().findIndex((tab) => tab.id === e.sourceTabId)
     if (index >= 0) tabs$.closeTab(index)
   } else if (key >= '1' && key <= '9') {
-    const targetIndex = parseInt(key) - 1
-    const tabs = tabs$.tabs.get()
-    if (targetIndex < tabs.length) {
+    // As in other browsers, 9 is the last tab however many there are.
+    const tabIds = getSidebarOrderedTabIds()
+    const tabId = key === '9' ? tabIds.at(-1) : tabIds[parseInt(key) - 1]
+    if (tabId) {
       e.preventDefault?.()
-      tabs$.setActiveTabIndex(targetIndex, 'user')
+      tabs$.setActiveTabById(tabId, 'user')
     }
   }
 }
