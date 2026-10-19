@@ -6,7 +6,7 @@ import { Asset } from 'expo-asset'
 import { settings$ } from '@/states/settings'
 import { useIncomingShare } from 'expo-sharing'
 import { parseSharedUrl } from '@/lib/share-intent'
-import { useLinkingURL } from 'expo-linking'
+import { addEventListener as addLinkingListener, getLinkingURL } from 'expo-linking'
 import { MainPage } from '@/components/page/MainPage'
 import { nIf } from '@/lib/utils'
 import NoraViewModule from '@/modules/nora-view'
@@ -17,14 +17,7 @@ import { showToast } from '@/lib/toast'
 import { loadWebRtcGuardScript } from '@/lib/webrtc'
 import { loadYouTubeGuardScript } from '@/lib/youtube-guard'
 import { t } from 'i18next'
-
-let Notifications: typeof import('expo-notifications') | undefined
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  Notifications = require('expo-notifications')
-} catch {
-  // ignore
-}
+import { onNotificationOpened } from '@/lib/notifications'
 
 const getHost = (url: string | undefined) => {
   if (!url) return ''
@@ -76,7 +69,6 @@ export default function HomeScreen() {
   const [scriptOnStart, setScriptOnStart] = useState('')
   const { resolvedSharedPayloads, clearSharedPayloads, isResolving } = useIncomingShare()
   const handledPayloadKeyRef = useRef<string | null>(null)
-  const linkingUrl = useLinkingURL()
 
   useEffect(() => {
     if (isResolving) {
@@ -108,25 +100,20 @@ export default function HomeScreen() {
     clearSharedPayloads()
   }, [resolvedSharedPayloads, isResolving, clearSharedPayloads])
 
+  // Every link that arrives is opened, also one the same as the last: two notifications of
+  // Nora's own module can open the same profile.
   useEffect(() => {
-    if (linkingUrl) {
-      openSharedUrl(linkingUrl)
+    const initialUrl = getLinkingURL()
+    if (initialUrl) {
+      openSharedUrl(initialUrl)
     }
-  }, [linkingUrl])
-
-  useEffect(() => {
-    if (!Notifications) return
-
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      const url = response?.notification?.request?.content?.data?.url
-      if (typeof url === 'string') openSharedUrl(url)
-    })
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const url = response?.notification?.request?.content?.data?.url
-      if (typeof url === 'string') openSharedUrl(url)
+    const sub = addLinkingListener('url', ({ url }) => {
+      if (url) openSharedUrl(url)
     })
     return () => sub.remove()
   }, [])
+
+  useEffect(() => onNotificationOpened(openSharedUrl), [])
 
   useEffect(() => {
     ;(async () => {

@@ -1,9 +1,11 @@
 package expo.modules.noraview
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.CookieManager
@@ -14,6 +16,7 @@ import androidx.webkit.ProfileStore
 import androidx.webkit.ProxyConfig
 import androidx.webkit.ProxyController
 import androidx.webkit.WebViewFeature
+import expo.modules.kotlin.Promise
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.functions.Queues
 import expo.modules.kotlin.jni.JavaScriptObject
@@ -290,6 +293,44 @@ class NoraViewModule : Module() {
 
     AsyncFunction("openExternalUrl") { url: String ->
       handleExternalAppUrl(appContext.reactContext ?: appContext.throwingActivity, url)
+    }
+
+    Function("areNotificationsEnabled") {
+      val context = appContext.reactContext
+      context != null && NoraNotifications.areEnabled(context)
+    }
+
+    // Resolves to whether notifications may be posted; Android 13 and later ask the user first.
+    AsyncFunction("requestNotificationPermission") { promise: Promise ->
+      val context = appContext.reactContext
+      val permissions = appContext.permissions
+      if (context == null) {
+        promise.resolve(false)
+      } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || permissions == null) {
+        promise.resolve(NoraNotifications.areEnabled(context))
+      } else {
+        permissions.askForPermissions(
+          { promise.resolve(NoraNotifications.areEnabled(context)) },
+          Manifest.permission.POST_NOTIFICATIONS
+        )
+      }
+    }
+
+    Function("postNotification") {
+      channelId: String,
+      channelName: String,
+      highImportance: Boolean,
+      id: Int,
+      title: String,
+      body: String,
+      url: String? ->
+      val context = appContext.reactContext
+      try {
+        context != null && NoraNotifications.post(context, channelId, channelName, highImportance, id, title, body, url)
+      } catch (e: Exception) {
+        log("postNotification failed: ${e.message}")
+        false
+      }
     }
 
     Function("isPinShortcutSupported") {

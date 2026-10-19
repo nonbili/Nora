@@ -72,6 +72,8 @@ export interface Settings {
   translationTargetLanguage: string | null
   doubleBackToExitApp: boolean
   mentionNotificationsEnabled: boolean
+  // The feed of watched profiles: when off, nothing is checked and the feed is out of the menus.
+  feedEnabled: boolean
   protectWebRtcIp: boolean
 
   proxyEnabled: boolean
@@ -189,6 +191,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
         : null,
     doubleBackToExitApp: bool(value?.doubleBackToExitApp),
     mentionNotificationsEnabled: bool(value?.mentionNotificationsEnabled),
+    feedEnabled: bool(value?.feedEnabled, true),
     protectWebRtcIp: bool(value?.protectWebRtcIp, true),
 
     proxyEnabled: bool(value?.proxyEnabled),
@@ -265,6 +268,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.mentionNotificationsEnabled !== 'boolean') {
     data.mentionNotificationsEnabled = false
   }
+  if (typeof data.feedEnabled !== 'boolean') {
+    data.feedEnabled = true
+  }
   data.xDefaultHomeTimeline = normalizeXHomeTimeline(data.xDefaultHomeTimeline)
   if (typeof data.hideXHomeTimelineTabs !== 'boolean') {
     data.hideXHomeTimelineTabs = false
@@ -339,6 +345,7 @@ export const settings$: Observable<Store> = observable<Store>({
   translationTargetLanguage: null,
   doubleBackToExitApp: false,
   mentionNotificationsEnabled: false,
+  feedEnabled: true,
   protectWebRtcIp: true,
 
   proxyEnabled: false,

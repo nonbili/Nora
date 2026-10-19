@@ -20,6 +20,18 @@ declare class NoraViewModule extends NativeModule {
   ): Promise<boolean>
   // Android only: iOS saves through the share sheet instead.
   saveFileToDownloads?(sourceUri: string, fileName: string, mimeType: string | null): Promise<boolean>
+  // Android only: notifications without expo-notifications, which the F-Droid build lacks.
+  areNotificationsEnabled?(): boolean
+  requestNotificationPermission?(): Promise<boolean>
+  postNotification?(
+    channelId: string,
+    channelName: string,
+    highImportance: boolean,
+    id: number,
+    title: string,
+    body: string,
+    url: string | null,
+  ): boolean
   reloadBlocklistFromDisk?(enabled: boolean, revision: number): Promise<boolean>
   reloadBlocklistFromSourceFiles?(enabled: boolean, revision: number): Promise<boolean>
   setSettings(settings: object): void

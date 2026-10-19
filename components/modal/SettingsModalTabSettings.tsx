@@ -38,6 +38,8 @@ import { builtinUserStyleDefinitions } from '@/lib/user-styles'
 import { userStyles$ } from '@/states/user-styles'
 import { settingsUi, SettingsSurface, SettingsRow } from './SettingsPrimitives'
 import { useLocales } from 'expo-localization'
+import { tabs$ } from '@/states/tabs'
+import { isFeedTabUrl } from '@/lib/feed-tab'
 import { resolveI18nLanguageFromExpoLocale, supportedI18nLanguages, toBcp47Locale } from '@/lib/i18n'
 import { colors } from '@/lib/colors'
 import { isDynamicColorAvailable } from '@/lib/dynamic-palette'
@@ -158,6 +160,22 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                   label={<NouText>{t('settings.oneTabPerSite')}</NouText>}
                   value={settings.oneTabPerSite}
                   onPress={() => settings$.oneTabPerSite.toggle()}
+                />
+              </SettingsRow>,
+            )}
+            {nIf(
+              !isWeb,
+              <SettingsRow>
+                <NouSwitch
+                  label={<NouText>{t('settings.feed')}</NouText>}
+                  value={settings.feedEnabled}
+                  onPress={() => {
+                    const next = !settings.feedEnabled
+                    settings$.feedEnabled.set(next)
+                    if (!next) {
+                      tabs$.closeTabsByIds(tabs$.tabs.get().filter((tab) => isFeedTabUrl(tab.url)).map((tab) => tab.id))
+                    }
+                  }}
                 />
               </SettingsRow>,
             )}

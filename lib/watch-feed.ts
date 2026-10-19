@@ -39,19 +39,23 @@ import { THREADS_POSTS_MARKER, isWatchWebViewAvailable, loadInWatchWebView } fro
 import { syncWatchMedia } from '@/lib/watch-media'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
 
-let Notifications: typeof import('expo-notifications') | undefined
+import {
+  ensureNotificationChannel as ensureChannel,
+  isNotificationsAvailable,
+  presentNotification,
+  requestNotificationPermission,
+} from '@/lib/notifications'
+
 let TaskManager: typeof import('expo-task-manager') | undefined
 let BackgroundTask: typeof import('expo-background-task') | undefined
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  Notifications = require('expo-notifications')
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   TaskManager = require('expo-task-manager')
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   BackgroundTask = require('expo-background-task')
 } catch (e) {
-  console.warn('Failed to load expo-notifications or related modules', e)
+  console.warn('Failed to load expo-task-manager or expo-background-task', e)
 }
 
 export const WATCH_TASK = 'nora.watch.poll'
@@ -395,28 +399,18 @@ const checkProfile = async (
   }
 }
 
-const ensureNotificationChannel = async () => {
-  if (Platform.OS !== 'android' || !Notifications) return
-  await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL_ID, {
-    name: t('feed.notificationChannel'),
-    importance: Notifications.AndroidImportance.DEFAULT,
-  })
-}
+const notificationChannel = () => ({ id: NOTIFICATION_CHANNEL_ID, name: t('feed.notificationChannel') })
 
 const notifyFresh = async (profile: WatchedProfile, fresh: WatchPost[]) => {
-  if (!Notifications || !fresh.length) return
+  if (!fresh.length) return
   const latest = fresh[0]
   const current = watch$.profiles.peek().find((p) => p.key === profile.key) || profile
   try {
-    await ensureNotificationChannel()
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: current.name ? `${current.name} (${watchSourceLabel(current)})` : watchSourceLabel(current),
-        body: fresh.length === 1 ? latest.text || t('feed.newPost') : t('feed.newPosts', { count: fresh.length }),
-        // One post opens on its own; several open on the profile, where they all are.
-        data: { url: fresh.length === 1 ? latest.url : watchProfileUrl(current) },
-      },
-      trigger: Platform.OS === 'android' ? { channelId: NOTIFICATION_CHANNEL_ID } : null,
+    await presentNotification(notificationChannel(), {
+      title: current.name ? `${current.name} (${watchSourceLabel(current)})` : watchSourceLabel(current),
+      body: fresh.length === 1 ? latest.text || t('feed.newPost') : t('feed.newPosts', { count: fresh.length }),
+      // One post opens on its own; several open on the profile, where they all are.
+      url: fresh.length === 1 ? latest.url : watchProfileUrl(current),
     })
   } catch (e) {
     console.warn('watch notification failed', e)
@@ -431,6 +425,7 @@ let running: Promise<number> | null = null
  * posts were found.
  */
 export const refreshWatched = (source: WatchRunSource, keys?: string[]): Promise<number> => {
+  if (!settings$.feedEnabled.peek()) return Promise.resolve(0)
   if (running) {
     // A run on its own is done by the one going on. One by hand waits for it, and then asks
     // for what that one did not just check.
@@ -456,7 +451,8 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
   const cookies: Partial<Record<WatchSite, string>> = {}
   let found = 0
   for (const [i, profile] of due.entries()) {
-    if (Date.now() - start > RUN_BUDGET_MS[source]) {
+    // The feed can be turned off while a run goes on.
+    if (Date.now() - start > RUN_BUDGET_MS[source] || !settings$.feedEnabled.peek()) {
       break
     }
     if (i > 0) {
@@ -467,12 +463,13 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
     }
     const fresh = await checkProfile(profile, cookies[profile.site] || '', source, start + RUN_BUDGET_MS[source])
     found += fresh.length
-    if (profile.notify && fresh.length) {
+    if (profile.notify && fresh.length && settings$.feedEnabled.peek()) {
       await notifyFresh(profile, fresh)
     }
   }
   // The media of what was found, kept for the feed within its own time and storage limits. The
   // background task has to wait for it to be done; in the app the posts are shown without waiting.
+  if (!settings$.feedEnabled.peek()) return found
   const media = syncWatchMedia(source).catch((e) => console.warn('watch media sync failed', e))
   if (source === 'background') await media
   return found
@@ -497,7 +494,7 @@ if (isAvailable && TaskManager && !TaskManager.isTaskDefined(WATCH_TASK)) {
 /** How often the background task should run, or null when nothing is watched. */
 const wantedTaskInterval = () => {
   const profiles = watch$.profiles.peek()
-  if (!profiles.length) return null
+  if (!profiles.length || !settings$.feedEnabled.peek()) return null
   const interval = backgroundIntervalMinutes(profiles, watch$.checkIntervalMinutes.peek())
   // All background tasks of the app run on one schedule, set by the last one registered: it
   // must not be longer than what the mention notifications register theirs with.
@@ -535,12 +532,11 @@ const syncBackgroundTask = () => {
 
 /** Asks for permission to notify, and turns notifications on for one watched profile if given. */
 export const enableWatchNotifications = async (key: string): Promise<boolean> => {
-  if (!Notifications) return false
-  const current = await Notifications.getPermissionsAsync()
-  const granted = current.granted || (await Notifications.requestPermissionsAsync()).granted
+  if (!isNotificationsAvailable) return false
+  const granted = await requestNotificationPermission()
   if (granted) {
     watch$.setNotify(key, true)
-    await ensureNotificationChannel()
+    await ensureChannel(notificationChannel())
   }
   return granted
 }
@@ -554,7 +550,7 @@ if (isAvailable) {
   // system gets to it; a profile whose interval is up is checked from here then.
   let foregroundTimer: ReturnType<typeof setInterval> | undefined
   const syncForegroundTimer = (state: string) => {
-    if (state === 'active') {
+    if (state === 'active' && settings$.feedEnabled.peek()) {
       void refreshWatched('foreground')
       if (!foregroundTimer) {
         foregroundTimer = setInterval(() => void refreshWatched('foreground'), FOREGROUND_POLL_MS)
@@ -565,6 +561,10 @@ if (isAvailable) {
     }
   }
   AppState.addEventListener('change', syncForegroundTimer)
+  settings$.feedEnabled.onChange(() => {
+    void syncBackgroundTask()
+    syncForegroundTimer(AppState.currentState)
+  })
   syncForegroundTimer(AppState.currentState)
   void syncBackgroundTask()
 }

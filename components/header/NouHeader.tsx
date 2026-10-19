@@ -112,6 +112,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const anonymousDisabledHosts = useValue(settings$.anonymousDisabledHosts)
   const watchedProfiles = useValue(watch$.profiles)
   const feedUnreadCount = useValue(watch$.unreadCount)
+  const feedEnabled = useValue(settings$.feedEnabled)
 
   if (currentTab?.url) {
     try {
@@ -274,7 +275,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
       ]
     : []
 
-  const watchTarget = isWeb ? null : getWatchTarget(currentTab?.url)
+  const watchTarget = isWeb || !feedEnabled ? null : getWatchTarget(currentTab?.url)
   const watchingThisProfile = !!watchTarget && watchedProfiles.some((profile) => profile.key === watchKey(watchTarget))
   const watchMenuItems = watchTarget
     ? [
@@ -585,7 +586,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
               ...(isWeb
                 ? []
                 : [{ label: '', handler: () => {}, kind: 'separator' as const }]),
-              ...(isWeb
+              ...(isWeb || !feedEnabled
                 ? []
                 : [
                     {

@@ -10,33 +10,26 @@ import {
   type FacebookNotificationCounts,
 } from '@/lib/facebook-notification-poller'
 
-let Notifications: typeof import('expo-notifications') | undefined
+import {
+  ensureNotificationChannel as ensureChannel,
+  isNotificationsAvailable,
+  presentNotification,
+  requestNotificationPermission,
+} from '@/lib/notifications'
+
 let TaskManager: typeof import('expo-task-manager') | undefined
 let BackgroundTask: typeof import('expo-background-task') | undefined
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  Notifications = require('expo-notifications')
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   TaskManager = require('expo-task-manager')
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   BackgroundTask = require('expo-background-task')
 } catch (e) {
-  console.warn('Failed to load expo-notifications or related modules', e)
+  console.warn('Failed to load expo-task-manager or expo-background-task', e)
 }
 
-if (Notifications) {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    }),
-  })
-}
-
-export const isMentionNotificationsAvailable = Boolean(Notifications && TaskManager && BackgroundTask)
+export const isMentionNotificationsAvailable = Boolean(isNotificationsAvailable && TaskManager && BackgroundTask)
 
 const storage = Platform.OS !== 'web' ? createMMKV({ id: 'mention-notifications' }) : null as unknown as MMKV
 const SEEN_KEY = 'seenIds'
@@ -48,7 +41,7 @@ const FOREGROUND_POLL_MIN_AGE_MS = 5 * 60 * 1000
 const FOREGROUND_POLL_INTERVAL_MS = 5 * 60 * 1000
 const FOREGROUND_POLL_BACKGROUND_GRACE_MS = 60 * 60 * 1000
 export const BACKGROUND_POLL_MIN_INTERVAL_MINUTES = 15
-const NOTIFICATION_CHANNEL_ID = 'mentions'
+const NOTIFICATION_CHANNEL = { id: 'mentions', name: 'Social notifications', high: true }
 
 export const POLL_TASK = 'nora.mentionNotifications.poll'
 
@@ -313,14 +306,7 @@ const pollers: ServicePoller[] = [
   { id: 'facebook', poll: pollFacebook },
 ]
 
-const ensureNotificationChannel = async () => {
-  if (Platform.OS !== 'android' || !Notifications) return
-  await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL_ID, {
-    name: 'Social notifications',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-  })
-}
+const ensureNotificationChannel = () => ensureChannel(NOTIFICATION_CHANNEL)
 
 export const pollAll = async (): Promise<PollResult> => {
   const merged: PollResult = { loggedIn: false, items: [], errors: [] }
@@ -383,16 +369,7 @@ export const runPollAndNotify = async (source: 'foreground' | 'background' | 'ma
     // Each await below is another chance for the setting to be turned off.
     if (!settings$.mentionNotificationsEnabled.get()) break
     try {
-      if (Notifications) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: item.title,
-            body: item.body || ' ',
-            data: { url: item.url },
-            sound: 'default',
-          },
-          trigger: Platform.OS === 'android' ? { channelId: NOTIFICATION_CHANNEL_ID } : null,
-        })
+      if (await presentNotification(NOTIFICATION_CHANNEL, { title: item.title, body: item.body || ' ', url: item.url })) {
         fired += 1
       }
     } catch (e) {
@@ -461,14 +438,6 @@ if (TaskManager && !TaskManager.isTaskDefined(POLL_TASK)) {
   })
 }
 
-const ensurePermission = async (): Promise<boolean> => {
-  if (!Notifications) return false
-  const cur = await Notifications.getPermissionsAsync()
-  if (cur.granted) return true
-  const req = await Notifications.requestPermissionsAsync()
-  return !!req.granted
-}
-
 const registerBackgroundPollTask = async () => {
   if (!BackgroundTask) return
   await BackgroundTask.registerTaskAsync(POLL_TASK, { minimumInterval: BACKGROUND_POLL_MIN_INTERVAL_MINUTES })
@@ -489,7 +458,7 @@ export const enableMentionNotifications = async (): Promise<{ ok: boolean; reaso
   if (!isMentionNotificationsAvailable) {
     return { ok: false, reason: 'Notifications not supported on this device' }
   }
-  const granted = await ensurePermission()
+  const granted = await requestNotificationPermission()
   if (!granted) return { ok: false, reason: 'notification permission denied' }
   await ensureNotificationChannel()
   try {
