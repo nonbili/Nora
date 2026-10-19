@@ -272,31 +272,34 @@ fun installGoogleOAuthShim(webView: WebView) {
  */
 fun shouldNoraOverrideUrlLoading(view: WebView, url: String, openInApp: ((String) -> Unit)? = null): Boolean {
   val uri = Uri.parse(url)
-  val host = uri.host
-  val scheme = uri.scheme?.lowercase()
-  val normalizedHost = host?.lowercase()
-  val dynamicInternalHosts = nouController.settings.internalHosts.map { it.lowercase() }.toSet()
-  val isInternalScheme = scheme in INTERNAL_SCHEMES
-  val isFacebookHost = normalizedHost?.endsWith(".facebook.com") == true && normalizedHost != "l.facebook.com"
-
-  if (!isInternalScheme) {
+  if (uri.scheme?.lowercase() !in INTERNAL_SCHEMES) {
     return handleExternalAppUrl(view.context, url, openInApp)
   }
 
-  if (host in VIEW_HOSTS ||
-    (normalizedHost != null && normalizedHost in dynamicInternalHosts) ||
-    isFacebookHost ||
-    !nouController.settings.openExternalLinkInSystemBrowser
-  ) {
+  if (!shouldOpenInSystemBrowser(uri)) {
     return false
-  } else {
-    try {
-      view.getContext().startActivity(Intent(Intent.ACTION_VIEW, uri))
-    } catch (e: ActivityNotFoundException) {
-      e.printStackTrace()
-    }
-    return true
   }
+  return openInSystemBrowser(view.context, uri)
+}
+
+/** A web link to a host Nora doesn't handle itself, while the setting to leave such links to the system browser is on. */
+fun shouldOpenInSystemBrowser(uri: Uri): Boolean {
+  if (!nouController.settings.openExternalLinkInSystemBrowser) return false
+  if (uri.scheme?.lowercase() !in INTERNAL_SCHEMES) return false
+  val host = uri.host
+  val normalizedHost = host?.lowercase()
+  val dynamicInternalHosts = nouController.settings.internalHosts.map { it.lowercase() }.toSet()
+  val isFacebookHost = normalizedHost?.endsWith(".facebook.com") == true && normalizedHost != "l.facebook.com"
+  return !(host in VIEW_HOSTS || (normalizedHost != null && normalizedHost in dynamicInternalHosts) || isFacebookHost)
+}
+
+fun openInSystemBrowser(context: Context, uri: Uri): Boolean {
+  try {
+    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+  } catch (e: ActivityNotFoundException) {
+    e.printStackTrace()
+  }
+  return true
 }
 
 // `<input accept>` may carry extensions (`.jpg`), bare MIME types
@@ -1042,6 +1045,20 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           newWebView.settings.userAgentString = view.settings.userAgentString
           var decided = false
 
+          // A web link the person left to the system browser: the popup is of no use, whether it is
+          // still the blank placeholder or has just started loading the real URL.
+          fun handOffToSystemBrowser(popup: WebView, url: String): Boolean {
+            val uri = Uri.parse(url)
+            if (uri.scheme?.lowercase() !in setOf("http", "https") || isGoogleOAuthPopupUrl(url) || !shouldOpenInSystemBrowser(uri)) {
+              return false
+            }
+            decided = true
+            popup.stopLoading()
+            if (popupWebView === popup) dismissPopup() else popup.post { popup.destroy() }
+            openInSystemBrowser(popup.context, uri)
+            return true
+          }
+
           newWebView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(popup: WebView, url: String, favicon: Bitmap?) {
               if (Uri.parse(url).host in GOOGLE_AUTH_HOSTS) {
@@ -1055,6 +1072,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
                 if (popupWebView !== popup) showPopup(popup)
                 return
               }
+              if (handOffToSystemBrowser(popup, url)) return
               decided = true
               if (isGoogleOAuthPopupUrl(url)) {
                 if (popupWebView !== popup) showPopup(popup)
@@ -1067,15 +1085,13 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             }
 
             override fun shouldOverrideUrlLoading(popup: WebView, url: String): Boolean {
-              if (!decided) {
-                // Pre-first-load redirect; defer the new-tab decision to onPageStarted.
-                return shouldNoraOverrideUrlLoading(popup, url)
-              }
               return shouldNoraOverrideUrlLoading(popup, url)
             }
 
             override fun shouldOverrideUrlLoading(popup: WebView, request: WebResourceRequest): Boolean {
-              return shouldOverrideUrlLoading(popup, request.url.toString())
+              val url = request.url.toString()
+              if (request.isForMainFrame && handOffToSystemBrowser(popup, url)) return true
+              return shouldOverrideUrlLoading(popup, url)
             }
           }
 
