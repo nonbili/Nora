@@ -14,6 +14,7 @@ import { refreshWatched } from '@/lib/watch-feed'
 import { applyWatchBackup, parseSourceList, sourceFromUrl } from '@/lib/watch-transfer'
 import { showToast } from '@/lib/toast'
 import { useTwColor } from '@/lib/theme'
+import { isIos } from '@/lib/utils'
 
 /** The links in what was typed or pasted, each with the source it is of, if any. */
 const readLinks = (text: string) =>
@@ -110,6 +111,12 @@ export const AddSourcesModal = () => {
       onSubmit={save}
       submitLabel={toAdd.length ? t('feed.addSourcesSubmit', { count: toAdd.length }) : t('feed.add')}
       submitDisabled={!toAdd.length}
+      footerAccessory={(
+        <Pressable onPress={() => void importFile()} accessibilityRole="button" style={isIos ? { minHeight: 44 } : { height: 36 }} className="flex-row items-center gap-1.5">
+          <MaterialIcons name="upload-file" size={18} color={tw(isDark ? '#818cf8' : '#4f46e5')} />
+          <NouText className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{t('feed.importSources')}</NouText>
+        </Pressable>
+      )}
     >
       <TextInput
         // A few lines tall, as it takes a link on each.
@@ -160,10 +167,6 @@ export const AddSourcesModal = () => {
       ) : (
         <NouText className="text-sm leading-5 text-zinc-500 dark:text-zinc-400">{t('feed.addSourcesHint')}</NouText>
       )}
-      <Pressable onPress={() => void importFile()} accessibilityRole="button" style={{ minHeight: 44 }} className="mt-6 flex-row items-center gap-1.5 self-start">
-        <MaterialIcons name="upload-file" size={18} color={tw(isDark ? '#818cf8' : '#4f46e5')} />
-        <NouText className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{t('feed.importSources')}</NouText>
-      </Pressable>
     </FormModal>
   )
 }

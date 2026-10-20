@@ -177,7 +177,7 @@ export const TabModal = () => {
             <TouchableOpacity className="flex-1 min-w-0" onPress={() => onPress(index)}>
               <View
                 className={clsx(
-                  'min-h-11 flex-1 flex-row items-center gap-3 rounded-md border py-2 px-2',
+                  'flex-1 flex-row items-center gap-3 rounded-md border py-2 px-2',
                   index === activeTabIndex
                     ? 'bg-indigo-200 border-indigo-300 dark:bg-indigo-500/30 dark:border-indigo-400/40'
                     : 'bg-white border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
@@ -193,10 +193,10 @@ export const TabModal = () => {
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              className="min-h-11 min-w-11 items-center justify-center p-2 rounded-full"
+              className="items-center justify-center p-2 rounded-full"
               accessibilityRole="button"
               accessibilityLabel={t('menus.close')}
-              style={{ minWidth: 44, minHeight: 44 }}
+              style={isIos ? { minWidth: 44, minHeight: 44 } : undefined}
               onPress={() => tabs$.closeTab(index)}
             >
               <MaterialIcons name="close" size={20} color={iconColor} />

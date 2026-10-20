@@ -13,6 +13,7 @@ import { feedTabUrl } from '@/lib/feed-tab'
 import { watchSiteLabels, watchSourceLabel } from '@/lib/watch'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
+import { isIos } from '@/lib/utils'
 
 /** Shows a timeline in the feed tab it was asked for from, or the whole feed when it is gone. */
 const showInTab = (tabId: string | undefined, timelineId?: string) => {
@@ -76,6 +77,11 @@ export const TimelineModal = () => {
       onSubmit={save}
       submitLabel={t('buttons.save')}
       submitDisabled={!name.trim()}
+      footerAccessory={editing ? (
+        <NouButton size="1" variant="outline" textClassName="text-red-600 dark:text-red-400" onPress={remove}>
+          {t('feed.deleteTimeline')}
+        </NouButton>
+      ) : undefined}
     >
       <TextInput
         className="mb-3 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
@@ -83,7 +89,7 @@ export const TimelineModal = () => {
         onChangeText={setName}
         placeholder={t('feed.timelineNamePlaceholder')}
         placeholderTextColor={tw('#9ca3af')}
-        style={{ minHeight: 44 }}
+        style={isIos ? { minHeight: 44 } : undefined}
         autoFocus={!editing}
       />
       {profiles.length ? (
@@ -96,8 +102,8 @@ export const TimelineModal = () => {
                 onPress={() => toggle(profile.key)}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked }}
-                className="min-h-11 flex-row items-center gap-3 py-2"
-                style={{ minHeight: 44 }}
+                className="flex-row items-center gap-3 py-2"
+                style={isIos ? { minHeight: 44 } : undefined}
               >
                 <MaterialIcons
                   name={checked ? 'check-box' : 'check-box-outline-blank'}
@@ -116,11 +122,6 @@ export const TimelineModal = () => {
       ) : (
         <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.empty')}</NouText>
       )}
-      {editing ? (
-        <NouButton className="mt-6 self-start" size="1" variant="outline" textClassName="text-red-600 dark:text-red-400" onPress={remove}>
-          {t('feed.deleteTimeline')}
-        </NouButton>
-      ) : null}
     </FormModal>
   )
 }

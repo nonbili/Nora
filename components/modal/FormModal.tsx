@@ -11,21 +11,25 @@ export interface FormModalProps {
   onSubmit: () => void
   submitLabel: string
   submitDisabled?: boolean
+  footerAccessory?: ReactNode
   children: ReactNode
 }
 
-export const FormModal = ({ title, onClose, onSubmit, submitLabel, submitDisabled, children }: FormModalProps) => (
+export const FormModal = ({ title, onClose, onSubmit, submitLabel, submitDisabled, footerAccessory, children }: FormModalProps) => (
   <BaseCenterModal onClose={onClose}>
     <View className="w-full p-4" style={{ flexShrink: 1 }}>
       <NouText className="mb-4 text-lg font-bold">{title}</NouText>
       {children}
-      <View className="mt-6 flex-row justify-end gap-3">
-        <NouButton size="1" variant="outline" onPress={onClose}>
-          {t('buttons.cancel')}
-        </NouButton>
-        <NouButton size="1" disabled={submitDisabled} onPress={onSubmit}>
-          {submitLabel}
-        </NouButton>
+      <View className="mt-6 flex-row flex-wrap items-center justify-end gap-3">
+        {footerAccessory ? <View className="grow items-start">{footerAccessory}</View> : null}
+        <View className="flex-row gap-3">
+          <NouButton size="1" variant="outline" onPress={onClose}>
+            {t('buttons.cancel')}
+          </NouButton>
+          <NouButton size="1" disabled={submitDisabled} onPress={onSubmit}>
+            {submitLabel}
+          </NouButton>
+        </View>
       </View>
     </View>
   </BaseCenterModal>

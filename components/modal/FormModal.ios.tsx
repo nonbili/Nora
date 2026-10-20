@@ -1,10 +1,10 @@
 import { Button, Host, NavigationStack, RNHostView, Toolbar, ToolbarItem } from '@expo/ui/swift-ui'
 import { disabled, navigationBarTitleDisplayMode, navigationTitle } from '@expo/ui/swift-ui/modifiers'
-import { Modal, ScrollView } from 'react-native'
+import { Modal, ScrollView, View } from 'react-native'
 import { t } from 'i18next'
 import type { FormModalProps } from './FormModal'
 
-export const FormModal = ({ title, onClose, onSubmit, submitLabel, submitDisabled, children }: FormModalProps) => (
+export const FormModal = ({ title, onClose, onSubmit, submitLabel, submitDisabled, footerAccessory, children }: FormModalProps) => (
   <Modal visible animationType="slide" presentationStyle="pageSheet" allowSwipeDismissal onRequestClose={onClose}>
     <Host style={{ flex: 1 }}>
       <NavigationStack>
@@ -18,6 +18,7 @@ export const FormModal = ({ title, onClose, onSubmit, submitLabel, submitDisable
               automaticallyAdjustKeyboardInsets
             >
               {children}
+              {footerAccessory ? <View className="mt-6 items-start">{footerAccessory}</View> : null}
             </ScrollView>
           </RNHostView>
           <Toolbar.Content>
