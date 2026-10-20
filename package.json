@@ -9,6 +9,7 @@
   "versionCode": 97,
   "buildNumber": "38",
   "scripts": {
+    "test:sync:local": "bun scripts/test-sync-local.ts",
     "bundle": "bun build --target browser --format iife content/main.ts content/webrtc.ts content/youtube.ts --outdir assets/scripts --entry-naming '[name].bjs'",
     "bundle:es": "esbuild --bundle content/main.ts --outfile=assets/scripts/main.bjs && esbuild --bundle content/webrtc.ts --outfile=assets/scripts/webrtc.bjs && esbuild --bundle content/youtube.ts --outfile=assets/scripts/youtube.bjs",
     "dev": "bun bundle --watch",

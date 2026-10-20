@@ -57,14 +57,9 @@ Install from App Store, Google Play, F-Droid, or download APK from GitHub.
 
 <img src="metadata/en-US/images/phoneScreenshots/1.jpg" width="240" alt="drawer"> <img src="metadata/en-US/images/phoneScreenshots/2.jpg" width="240" alt="instagram"> <img src="metadata/en-US/images/phoneScreenshots/3.jpg" width="240" alt="twitter">
 
-## Development
+## Contributing
 
-```
-bun link
-bun install
-bun dev
-bun run android
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development and testing instructions.
 
 ## Translation
 
