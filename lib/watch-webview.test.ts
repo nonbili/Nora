@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import {
+  TIKTOK_POSTS_MARKER,
   WATCH_WEBVIEW_RATE_LIMITED,
   buildWatchPageScript,
   loadInWatchWebView,
@@ -80,6 +81,36 @@ describe('buildWatchPageScript with more', () => {
     expect(html).toContain('<script type="application/json">{"post_id":"1"}</script>')
     expect(html).toContain('<script type="application/json">{"post_id":"2"}</script>')
     expect(html).not.toContain('other')
+  })
+})
+
+describe('buildWatchPageScript with fetch', () => {
+  it('keeps the answers the page asks for with fetch, as TikTok does its posts, not its empty list in the page', async () => {
+    const sent: string[] = []
+    const timers: (() => void)[] = []
+    const answer = (text: string) => ({ clone: () => ({ text: () => Promise.resolve(text) }) })
+    const pageFetch = (url: string) => Promise.resolve(answer(url === '/api/post/item_list/' ? '{"itemList":[{"id":"1"}]}' : '{"other":1}'))
+    const document = {
+      readyState: 'complete',
+      scrollingElement: { scrollHeight: 900 },
+      querySelectorAll: (selector: string) => (selector.startsWith('meta') ? [] : [{ textContent: '{"userInfo":{"itemList":[]}}' }]),
+    }
+    const window = { fetch: pageFetch, NoraI: { onMessage: (payload: string) => sent.push(payload) }, scrollTo: () => {} } as any
+    new Function('window', 'document', 'setTimeout', buildWatchPageScript(5, TIKTOK_POSTS_MARKER, 1))(
+      window,
+      document,
+      (callback: () => void) => timers.push(callback),
+    )
+    timers.shift()!()
+    expect(sent).toHaveLength(0)
+    // The page still gets its answers.
+    expect(await window.fetch('/api/other/')).toHaveProperty('clone')
+    await window.fetch('/api/post/item_list/')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    timers.shift()!()
+    expect(sent).toHaveLength(1)
+    const { html } = JSON.parse(sent[0]).data
+    expect(html).toBe('<script type="application/json">{"itemList":[{"id":"1"}]}</script>')
   })
 })
 

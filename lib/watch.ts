@@ -1,11 +1,11 @@
 /**
- * Watching a profile on X, Instagram, Threads, Bluesky or Mastodon, a subreddit or user on
- * Reddit, or a page, profile or group on Facebook: which page is one, and reading its latest posts.
+ * Watching a profile on X, Instagram, Threads, Bluesky, Mastodon or TikTok, a subreddit or user
+ * on Reddit, or a page, profile or group on Facebook: which page is one, and reading its latest posts.
  */
 
 import { getProfileUsername, isInstagramHost } from './instagram'
 
-export type WatchSite = 'x' | 'instagram' | 'threads' | 'bluesky' | 'mastodon' | 'reddit' | 'facebook'
+export type WatchSite = 'x' | 'instagram' | 'threads' | 'bluesky' | 'mastodon' | 'reddit' | 'facebook' | 'tiktok'
 
 export const watchSiteLabels: Record<WatchSite, string> = {
   x: 'X',
@@ -15,6 +15,7 @@ export const watchSiteLabels: Record<WatchSite, string> = {
   mastodon: 'Mastodon',
   reddit: 'Reddit',
   facebook: 'Facebook',
+  tiktok: 'TikTok',
 }
 
 export interface WatchTarget {
@@ -31,6 +32,8 @@ export interface WatchMedia {
   thumb?: string
   width?: number
   height?: number
+  // What the file has to be asked for with: a TikTok video works only with the cookie it was made for.
+  headers?: Record<string, string>
 }
 
 export interface WatchPost {
@@ -111,6 +114,10 @@ const FACEBOOK_PEOPLE_PATH = /^\/people\/[^/]+\/(\d+)\/?$/
 
 const FACEBOOK_GROUP_PATH = /^\/groups\/([A-Za-z0-9.]+)(?:\/(?:about|media|files|events|members))?\/?$/
 
+const isTikTokHost = (host: string) => /^(?:(?:www|m)\.)?tiktok\.com$/.test(host)
+
+const TIKTOK_PROFILE_PATH = /^\/@([A-Za-z0-9_.]{2,24})\/?$/
+
 // A profile on a Mastodon server, local or as seen from another server: /@user or /@user@host.
 const MASTODON_PROFILE_PATH = /^\/@([A-Za-z0-9_]{1,30})(?:@([a-z0-9-]+(?:\.[a-z0-9-]+)+))?\/?$/
 
@@ -168,6 +175,10 @@ export function getWatchTarget(url: string | null | undefined): WatchTarget | nu
     const match = pathname.match(FACEBOOK_NAME_PATH)
     return match && isFacebookName(match[1]) ? { site: 'facebook', handle: match[1] } : null
   }
+  if (isTikTokHost(hostname)) {
+    const match = pathname.match(TIKTOK_PROFILE_PATH)
+    return match ? { site: 'tiktok', handle: match[1] } : null
+  }
   if (!notMastodonHost.test(hostname)) {
     const match = pathname.match(MASTODON_PROFILE_PATH)
     return match ? { site: 'mastodon', handle: `${match[1]}@${match[2] || hostname}` } : null
@@ -203,6 +214,8 @@ export const watchProfileUrl = ({ site, handle, url }: WatchTarget & { url?: str
       return `https://www.reddit.com/${handle.replace(/^u\//, 'user/')}/`
     case 'facebook':
       return /^\d+$/.test(handle) ? `https://www.facebook.com/profile.php?id=${handle}` : `https://www.facebook.com/${handle}/`
+    case 'tiktok':
+      return `https://www.tiktok.com/@${handle}`
   }
 }
 
@@ -609,7 +622,8 @@ export function parseThreadsPostPage(html: string, code: string): WatchMedia[] {
 }
 
 /** Whether the addresses of a post's media expire, so that the post is read again for new ones. */
-export const refreshesMedia = (site: WatchSite) => site === 'instagram' || site === 'threads' || site === 'facebook'
+export const refreshesMedia = (site: WatchSite) =>
+  site === 'instagram' || site === 'threads' || site === 'facebook' || site === 'tiktok'
 
 // --- Bluesky ----------------------------------------------------------------
 
@@ -1258,6 +1272,120 @@ export const parseRedditCommunityCard = (html: string) => {
   return src ? decodeEntities(src) : undefined
 }
 
+// --- TikTok -----------------------------------------------------------------
+
+// What TikTok's video files are asked for with: the cookie of the page they were read from, as the
+// address is made for it, and its site as the referer.
+export const TIKTOK_REFERER = 'https://www.tiktok.com/'
+
+export const tiktokVideoHeaders = (chainToken: string | undefined): Record<string, string> | undefined =>
+  chainToken ? { cookie: `tt_chain_token=${chainToken}`, referer: TIKTOK_REFERER } : undefined
+
+/** The cookie TikTok makes its video addresses for, from a cookie header or the set-cookie of an answer. */
+export const parseTikTokChainToken = (cookies: string | null | undefined) =>
+  cookies?.match(/(?:^|[;,]\s*)tt_chain_token=([^;,\s]+)/)?.[1]
+
+/** The page of one post, which has all its photos or its video: /video/ for both, as a photo's own page comes without them. */
+export const tiktokPostPageUrl = (post: Pick<WatchPost, 'handle' | 'id'>) =>
+  `https://www.tiktok.com/@${post.handle}/video/${post.id}`
+
+const tiktokImageUrl = (image: any): string | undefined => {
+  const list = image?.imageURL?.urlList
+  return Array.isArray(list) && typeof list[0] === 'string' ? list[0] : undefined
+}
+
+/** The photos of a photo post, or its video, with its cover. */
+const tiktokMedia = (item: any, headers?: Record<string, string>): WatchMedia[] => {
+  const images = item?.imagePost?.images
+  if (Array.isArray(images) && images.length) {
+    return images.flatMap((image: any): WatchMedia[] => {
+      const url = tiktokImageUrl(image)
+      return url ? [{ type: 'image', url, width: image.imageWidth || undefined, height: image.imageHeight || undefined }] : []
+    })
+  }
+  const video = item?.video
+  if (!video?.playAddr) return []
+  return [
+    {
+      type: 'video',
+      url: video.playAddr,
+      thumb: video.cover || video.originCover || undefined,
+      width: video.width || undefined,
+      height: video.height || undefined,
+      ...(headers ? { headers } : {}),
+    },
+  ]
+}
+
+const tiktokPost = (item: any, handle: string, headers?: Record<string, string>): WatchFetchResult['posts'][number] | null => {
+  if (!item?.id || item.isAd) return null
+  const media = tiktokMedia(item, headers)
+  const photo = Boolean(item.imagePost)
+  const author = item.author?.uniqueId || handle
+  return {
+    id: String(item.id),
+    site: 'tiktok',
+    handle,
+    url: `https://www.tiktok.com/@${author}/${photo ? 'photo' : 'video'}/${item.id}`,
+    // Its lines are apart by line separators, which are not drawn as such.
+    text: (item.desc || '').replace(/[\u2028\u2029]/g, '\n'),
+    image: item.imagePost?.cover ? tiktokImageUrl(item.imagePost.cover) : media[0]?.thumb || media[0]?.url,
+    media,
+    mediaComplete: true,
+    createdAtMs: (Number(item.createTime) || 0) * 1000,
+  }
+}
+
+/**
+ * Reads the posts of a TikTok profile from the answers its page asked for them with, as the hidden
+ * webview keeps them: newest first, but those pinned to the top. `chainToken` is the cookie
+ * the webview had, which its video addresses only work with.
+ */
+export function parseTikTokItemLists(html: string, handle: string, chainToken?: string): WatchFetchResult {
+  const headers = tiktokVideoHeaders(chainToken)
+  const posts: WatchFetchResult['posts'] = []
+  const pinnedIds: string[] = []
+  const seen = new Set<string>()
+  let info: WatchProfileInfo = {}
+  for (const match of html.matchAll(/<script type="application\/json"[^>]*>([\s\S]*?)<\/script>/g)) {
+    let json: any
+    try {
+      json = JSON.parse(match[1])
+    } catch {
+      continue
+    }
+    if (!Array.isArray(json?.itemList)) continue
+    for (const item of json.itemList) {
+      const post = tiktokPost(item, handle, headers)
+      if (!post || seen.has(post.id)) continue
+      seen.add(post.id)
+      posts.push(post)
+      if (item.isPinnedItem) pinnedIds.push(post.id)
+      if (!info.name && item.author?.uniqueId?.toLowerCase() === handle.toLowerCase()) {
+        info = { name: item.author.nickname || undefined, avatar: item.author.avatarLarger || item.author.avatarMedium || undefined }
+      }
+    }
+  }
+  if (!posts.length) {
+    throw new Error('no posts in the page')
+  }
+  return { info, posts, pinnedIds }
+}
+
+/** The media of one post, and its cover, from its own page, read without the webview; `chainToken` is the cookie that page set. */
+export function parseTikTokPostPage(html: string, chainToken?: string): { media: WatchMedia[]; cover?: string } {
+  const data = html.match(/<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([\s\S]*?)<\/script>/)?.[1]
+  let item: any
+  try {
+    item = data ? JSON.parse(data)?.__DEFAULT_SCOPE__?.['webapp.video-detail']?.itemInfo?.itemStruct : undefined
+  } catch {}
+  const post = item ? tiktokPost(item, item.author?.uniqueId || '', tiktokVideoHeaders(chainToken)) : null
+  if (!post?.media?.length) {
+    throw new Error('no media in the post page')
+  }
+  return { media: post.media, cover: post.image }
+}
+
 /** How long ago a post was made, short as the sites show it: 5m, 3h, 2d, or its date after a week. */
 export function formatPostAge(createdAtMs: number, now: number, locale?: string) {
   const minutes = Math.max(0, Math.floor((now - createdAtMs) / 60000))
@@ -1334,6 +1462,12 @@ export const instagramUrlExpiresAt = (url: string): number | undefined => {
   return match ? parseInt(match[1], 16) * 1000 : undefined
 }
 
+/** When a signed TikTok address stops working: its `expire` parameter for a video, `x-expires` for a photo, in seconds. */
+export const tiktokUrlExpiresAt = (url: string): number | undefined => {
+  const match = url.match(/[?&](?:x-)?expires?=(\d{9,11})(?:&|$)/)
+  return match ? Number(match[1]) * 1000 : undefined
+}
+
 // A little ahead of the time itself: an address that works now may not by the time it is used.
 const EXPIRY_MARGIN_MS = 10 * 60 * 1000
 
@@ -1341,7 +1475,7 @@ const EXPIRY_MARGIN_MS = 10 * 60 * 1000
 export const mediaExpired = (media: WatchMedia[] | undefined, now: number, margin = EXPIRY_MARGIN_MS) =>
   (media || []).some((item) =>
     [item.url, item.thumb].some((url) => {
-      const expiresAt = url ? instagramUrlExpiresAt(url) : undefined
+      const expiresAt = url ? (instagramUrlExpiresAt(url) ?? tiktokUrlExpiresAt(url)) : undefined
       return expiresAt !== undefined && expiresAt - margin <= now
     }),
   )

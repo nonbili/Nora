@@ -18,7 +18,10 @@ import {
   parseFacebookPostPage,
   parseInstagramEmbed,
   parseThreadsPostPage,
+  parseTikTokChainToken,
+  parseTikTokPostPage,
   refreshesMedia,
+  tiktokPostPageUrl,
   threadsPostUrl,
   watchKey,
   type KeptMediaEntry,
@@ -103,8 +106,8 @@ const detailRequests = new SharedRequests<{ media: WatchMedia[]; cover?: string 
 const downloadRequests = new SharedRequests<string | undefined>(5 * 60 * 1000)
 
 /**
- * Whether an Instagram, Threads or Facebook post has to be read again from its own page: only its
- * cover is known, or an address of a photo or video that is not kept has expired.
+ * Whether an Instagram, Threads, Facebook or TikTok post has to be read again from its own page:
+ * only its cover is known, or an address of a photo or video that is not kept has expired.
  */
 const needsDetails = (post: WatchPost) => {
   if (!refreshesMedia(post.site)) return false
@@ -117,10 +120,10 @@ const notKeptMedia = (post: WatchPost) => (post.media || []).filter((_, index) =
 
 /**
  * All the media of a post. An Instagram post read from a profile page only has its cover, and
- * the rest is read from its embed page, which needs no account; a Threads or Facebook post whose
- * addresses have expired is read from its own page, a Facebook one with the account the feed
- * uses, as most profiles and all groups show their posts only to one, along with its cover. When
- * that fails, the addresses there are do while they have not expired yet.
+ * the rest is read from its embed page, which needs no account; a Threads, Facebook or TikTok
+ * post whose addresses have expired is read from its own page, a Facebook one with the account
+ * the feed uses, as most profiles and all groups show their posts only to one, along with its
+ * cover. When that fails, the addresses there are do while they have not expired yet.
  */
 export const ensurePostMedia = async (
   post: WatchPost,
@@ -133,7 +136,8 @@ export const ensurePostMedia = async (
   const ownPage = post.site !== 'instagram'
   const read = detailRequests.run(post.key, async (requestSignal) => {
     const account = post.site === 'facebook' ? await findSignedInCookies('facebook') : null
-    const res = await fetch(ownPage ? threadsPostUrl(post) : instagramEmbedUrl(post.id), {
+    const url = post.site === 'tiktok' ? tiktokPostPageUrl(post) : ownPage ? threadsPostUrl(post) : instagramEmbedUrl(post.id)
+    const res = await fetch(url, {
       signal: requestSignal,
       headers: {
         'user-agent': DESKTOP_USER_AGENT,
@@ -150,6 +154,8 @@ export const ensurePostMedia = async (
     if (!res.ok) throw new Error(`${ownPage ? 'post page' : 'embed'} HTTP ${res.status}`)
     const html = await res.text()
     if (post.site === 'threads') return { media: parseThreadsPostPage(html, post.id) }
+    // Its videos are made for the cookie the page was answered with.
+    if (post.site === 'tiktok') return parseTikTokPostPage(html, parseTikTokChainToken(res.headers.get('set-cookie')))
     return ownPage ? parseFacebookPostPage(html, post) : { media: parseInstagramEmbed(html) }
   }, signal)
   let media: WatchMedia[]
@@ -203,7 +209,7 @@ export const keepMediaItem = (
     try {
       file = await File.downloadFileAsync(item.url, destination, {
         idempotent: true,
-        headers: { 'user-agent': DESKTOP_USER_AGENT },
+        headers: { 'user-agent': DESKTOP_USER_AGENT, ...item.headers },
         signal: requestSignal,
       })
     } catch (e) {

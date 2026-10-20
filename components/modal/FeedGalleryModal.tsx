@@ -20,13 +20,14 @@ import { share } from '@/lib/share'
 // The height of the seek bar and buttons the video player draws at its bottom.
 const VIDEO_CONTROLS_HEIGHT = 112
 
-const VideoItem: React.FC<{ uri: string; width: number; height: number; onError: () => void }> = ({
-  uri,
-  width,
-  height,
-  onError,
-}) => {
-  const player = useVideoPlayer(uri, (p) => {
+const VideoItem: React.FC<{
+  uri: string
+  headers?: Record<string, string>
+  width: number
+  height: number
+  onError: () => void
+}> = ({ uri, headers, width, height, onError }) => {
+  const player = useVideoPlayer(headers ? { uri, headers } : uri, (p) => {
     p.loop = true
     p.play()
   })
@@ -81,7 +82,15 @@ const GalleryItem: React.FC<{
   }, [post])
 
   if (item.type === 'video' && active && !failed) {
-    return <VideoItem uri={keptUri || item.url} width={width} height={height} onError={onVideoError} />
+    return (
+      <VideoItem
+        uri={keptUri || item.url}
+        headers={keptUri ? undefined : item.headers}
+        width={width}
+        height={height}
+        onError={onVideoError}
+      />
+    )
   }
   const source = item.type === 'video' ? item.thumb || item.url : keptUri || item.url
   return (

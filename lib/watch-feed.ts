@@ -28,7 +28,10 @@ import {
   parseRedditListing,
   parseRedditPosts,
   parseThreadsProfilePage,
+  parseTikTokChainToken,
+  parseTikTokItemLists,
   parseXTimeline,
+  TIKTOK_REFERER,
   redditCommunityCardUrl,
   redditListingUrl,
   redditPostsUrl,
@@ -44,11 +47,14 @@ import {
 import {
   FACEBOOK_POSTS_MARKER,
   THREADS_POSTS_MARKER,
+  TIKTOK_POSTS_MARKER,
+  WATCH_WEBVIEW_PROFILE,
   WATCH_WEBVIEW_RATE_LIMITED,
   isWatchWebViewAvailable,
   loadInWatchWebView,
 } from '@/lib/watch-webview'
 import { syncWatchMedia } from '@/lib/watch-media'
+import NoraViewModule from '@/modules/nora-view'
 import { accountChoice, findSignedInCookies, parseCookieHeader, siteCookieOrigin, type SiteAccount } from '@/lib/watch-account'
 import { getProfilePosts, setProfilePosts } from '@/lib/watch-db'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
@@ -436,6 +442,26 @@ const fetchFacebook = async (
   }
 }
 
+/**
+ * The profile's page, as loaded by the hidden webview, which asks TikTok for its posts as a
+ * browser does: a plain request can't, as the page signs what it asks with. Its videos work only
+ * with the cookie the webview has, which they are kept with.
+ */
+const fetchTikTok = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number): Promise<WatchFetchResult> => {
+  const html = await loadInWatchWebView(watchProfileUrl({ site: 'tiktok', handle }), timeLeft(deadline), {
+    marker: TIKTOK_POSTS_MARKER,
+    // Its posts come after the page, in an answer the script waits for.
+    more: 1,
+  })
+  let chainToken: string | undefined
+  try {
+    chainToken = parseTikTokChainToken(await NoraViewModule.getCookies(TIKTOK_REFERER, WATCH_WEBVIEW_PROFILE))
+  } catch (e) {
+    console.warn('watch tiktok getCookies failed', e)
+  }
+  return parseTikTokItemLists(html, handle, chainToken)
+}
+
 const fetchers: Record<
   WatchSite,
   (
@@ -453,6 +479,7 @@ const fetchers: Record<
   mastodon: fetchMastodon,
   reddit: fetchReddit,
   facebook: fetchFacebook,
+  tiktok: fetchTikTok,
 }
 
 const isStillWatched = (key: string) => watch$.profiles.peek().some((profile) => profile.key === key)
@@ -564,6 +591,10 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
     // The feed can be turned off while a run goes on.
     if (Date.now() - start > RUN_BUDGET_MS[source] || !settings$.feedEnabled.peek()) {
       break
+    }
+    // Read only in the webview: it waits for Nora to be open, not failing meanwhile.
+    if (profile.site === 'tiktok' && !canUseWebView(source)) {
+      continue
     }
     if (i > 0) {
       await sleep(REQUEST_GAP_MS + Math.random() * REQUEST_GAP_MS)

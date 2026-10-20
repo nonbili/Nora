@@ -48,6 +48,8 @@ export const INSTAGRAM_POSTS_MARKER = 'polaris_ordered_timeline_connection'
 export const THREADS_POSTS_MARKER = '"mediaData"'
 // And on Facebook, in the page and in each of the answers that bring more as it is scrolled.
 export const FACEBOOK_POSTS_MARKER = '"post_id"'
+// And on TikTok, in the answers that bring a profile's videos, as its page asks for them.
+export const TIKTOK_POSTS_MARKER = '"itemList":[{'
 
 // What a page is rejected with when one of the answers it asked for said to slow down: what it has then is no more than its first posts.
 export const WATCH_WEBVIEW_RATE_LIMITED = 'rate limited in the page'
@@ -56,10 +58,10 @@ export const WATCH_WEBVIEW_RATE_LIMITED = 'rate limited in the page'
  * The script run in the page. It sends back the page's preview tags and the data its posts are
  * drawn from, told by `marker`, as a small page of their own, or nothing when the posts never come.
  * With `more`, it also keeps the answers the page asks its site for while it is scrolled down,
- * as Facebook brings the posts after its first, until that many parts with posts are there or
- * no more come; with `until`, until a post as old as that has come instead: a post of the page,
- * as Facebook has them, not one it shares, one pinned to its top, nor an ad. It tells when one of
- * those answers said to slow down, as Facebook's do.
+ * as Facebook brings the posts after its first, and TikTok all of them, until that many parts
+ * with posts are there or no more come; with `until`, until a post as old as that has come
+ * instead: a post of the page, as Facebook has them, not one it shares, one pinned to its top,
+ * nor an ad. It tells when one of those answers said to slow down, as Facebook's do.
  */
 export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER, more = 0, until = 0) => `(function () {
   if (window.__noraWatchStarted) return;
@@ -118,6 +120,18 @@ export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER
         } catch (e) {}
       });
       return xhrSend.apply(this, arguments);
+    };
+  }
+  // And those asked for with fetch, as TikTok asks for its posts.
+  if (${more > 0} && window.fetch) {
+    var pageFetch = window.fetch;
+    window.fetch = function () {
+      return pageFetch.apply(this, arguments).then(function (res) {
+        try {
+          res.clone().text().then(keep, function () {});
+        } catch (e) {}
+        return res;
+      });
     };
   }
   function send(html) {
