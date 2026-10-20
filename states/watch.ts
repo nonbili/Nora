@@ -28,6 +28,8 @@ export interface WatchedProfile {
   checkIntervalMinutes?: number
   // How the last check got through: with the cookies of a profile signed in to the site, or without.
   mode?: 'loggedIn' | 'loggedOut'
+  // The Nora profile whose account the last check used.
+  accountProfileId?: string
   // When a tab last showed its posts; the feed's own time for a profile not shown since there was one.
   seenAt?: number
   lastCheckedAt?: number
@@ -53,6 +55,10 @@ interface Store {
   // How the list of sources to manage is ordered.
   sourcesSort: WatchSourceSort
   sourcesSortReversed: boolean
+  // Whether sources are checked with the account of a Nora profile logged in to their site.
+  useAccounts: boolean
+  // The Nora profile to take each site's account from; any profile logged in to it when not set.
+  accountProfiles: Partial<Record<WatchSite, string>>
 
   isWatched: (target: WatchTarget) => boolean
   watch: (target: WatchTarget) => void
@@ -84,6 +90,8 @@ export const watch$: Observable<Store> = observable<Store>({
   postsPerSource: DEFAULT_POSTS_PER_SOURCE,
   sourcesSort: 'name',
   sourcesSortReversed: false,
+  useAccounts: true,
+  accountProfiles: {},
 
   isWatched: (target) => watch$.profiles.get().some((profile) => profile.key === watchKey(target)),
 

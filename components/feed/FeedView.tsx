@@ -8,6 +8,7 @@ import { NouText } from '../NouText'
 import { NouButton } from '../button/NouButton'
 import { NouSwitch } from '../switch/NouSwitch'
 import { ui$ } from '@/states/ui'
+import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { getTimeline, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
@@ -80,10 +81,24 @@ export const ChoicePicker: React.FC<{
 /** What to tell about how a profile is being checked; null when all is well. */
 export const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean } | null => {
   const site = watchSiteLabels[profile.site]
-  if (profile.error === WATCH_ERROR_NEEDS_LOGIN) return { text: t('feed.statusNeedsLogin', { site }), warn: true }
+  const useAccounts = watch$.useAccounts.peek()
+  const chosen = watch$.accountProfiles[profile.site].peek()
+  const profileName = (id?: string) => settings$.profiles.peek().find((p) => p?.id === id)?.name
+  if (profile.error === WATCH_ERROR_NEEDS_LOGIN) {
+    return { text: t(useAccounts ? 'feed.statusNeedsLogin' : 'feed.statusNeedsLoginAccountsOff', { site }), warn: true }
+  }
   if (profile.error === WATCH_ERROR_RATE_LIMITED) return { text: t('feed.statusRateLimited', { site }), warn: true }
   if (profile.error) return { text: t('feed.statusFailed', { error: profile.error }), warn: true }
-  if (profile.mode === 'loggedOut') return { text: t('feed.statusLoggedOut', { site }), warn: false }
+  if (profile.mode === 'loggedOut') {
+    if (!useAccounts) return { text: t('feed.statusAccountsOff'), warn: false }
+    const chosenName = profileName(chosen)
+    if (chosenName) return { text: t('feed.statusLoggedOutInProfile', { site, profile: chosenName }), warn: false }
+    return { text: t('feed.statusLoggedOut', { site }), warn: false }
+  }
+  if (profile.mode === 'loggedIn') {
+    const name = profileName(profile.accountProfileId)
+    if (name) return { text: t('feed.statusLoggedIn', { site, profile: name }), warn: false }
+  }
   if (!profile.lastCheckedAt) return { text: t('feed.statusPending'), warn: false }
   return null
 }
@@ -365,10 +380,14 @@ export const FeedView: React.FC<{
     if (posts.length >= limit) setPage({ view, limit: limit + FEED_PAGE_SIZE })
   }
 
-  // Sites that some profile is checked on without an account, and so less reliably.
-  const loggedOutSites = Array.from(
-    new Set(profiles.filter((profile) => profile.mode === 'loggedOut' || profile.error === WATCH_ERROR_NEEDS_LOGIN).map((p) => p.site)),
-  )
+  // Sites that some profile is checked on without an account, and so less reliably; not told when
+  // the user turned accounts off.
+  const useAccounts = useValue(watch$.useAccounts)
+  const loggedOutSites = useAccounts
+    ? Array.from(
+        new Set(profiles.filter((profile) => profile.mode === 'loggedOut' || profile.error === WATCH_ERROR_NEEDS_LOGIN).map((p) => p.site)),
+      )
+    : []
 
   const iconColor = isDark ? tw('#f8fafc') : tw('#334155')
 

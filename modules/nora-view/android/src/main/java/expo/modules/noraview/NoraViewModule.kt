@@ -237,12 +237,12 @@ class NoraViewModule : Module() {
         try {
           val manager = if (profile != null && profile != "default" &&
             WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+            // A profile with no store of its own has no cookies, not those of the default profile.
             ProfileStore.getInstance().getProfile(profile)?.cookieManager
-              ?: CookieManager.getInstance()
           } else {
             CookieManager.getInstance()
           }
-          manager.getCookie(url) ?: ""
+          manager?.getCookie(url) ?: ""
         } catch (e: Exception) {
           log("getCookies failed: ${e.message}")
           ""

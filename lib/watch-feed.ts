@@ -116,12 +116,15 @@ const isSignedIn: Partial<Record<WatchSite, (cookies: Record<string, string>) =>
   instagram: (cookies) => Boolean(cookies.sessionid),
 }
 
-/** The cookies of the first Nora profile signed in to the site, or '' when there is none or it needs none. */
-const findSignedInCookies = async (site: WatchSite): Promise<string> => {
-  const origin = siteCookieOrigin[site]
-  const signedIn = isSignedIn[site]
-  if (!origin || !signedIn) return ''
-  const profileIds = Array.from(
+interface SiteAccount {
+  cookie: string
+  // The Nora profile the cookies are of, told in the source's status.
+  profileId: string
+}
+
+// The Nora profiles an account can be taken from.
+const accountProfileIds = () =>
+  Array.from(
     new Set(
       settings$.profiles
         .peek()
@@ -129,17 +132,39 @@ const findSignedInCookies = async (site: WatchSite): Promise<string> => {
         .filter((id): id is string => Boolean(id) && !isAnonymousProfile(id)),
     ),
   )
+
+/** The Nora profile to take the site's account from: the one chosen while it is still there, else any. */
+const chosenAccountProfile = (site: WatchSite, profileIds: string[]): string | undefined => {
+  const chosen = watch$.accountProfiles[site].peek()
+  return chosen && profileIds.includes(chosen) ? chosen : undefined
+}
+
+/** What decides which account a site is checked with; a run looks again when it changes. */
+const accountChoice = (site: WatchSite) =>
+  watch$.useAccounts.peek() ? (chosenAccountProfile(site, accountProfileIds()) ?? '') : null
+
+/**
+ * The cookies of the Nora profile chosen for the site, or else of the first one signed in to it;
+ * null when there is none, the site needs none, or the user turned accounts off.
+ */
+const findSignedInCookies = async (site: WatchSite): Promise<SiteAccount | null> => {
+  const origin = siteCookieOrigin[site]
+  const signedIn = isSignedIn[site]
+  if (!origin || !signedIn || !watch$.useAccounts.peek()) return null
+  const all = accountProfileIds()
+  const chosen = chosenAccountProfile(site, all)
+  const profileIds = chosen ? [chosen] : all
   for (const profileId of profileIds) {
     try {
       const header = await NoraViewModule.getCookies(origin, profileId)
       if (header && signedIn(parseCookieHeader(header))) {
-        return header
+        return { cookie: header, profileId }
       }
     } catch (e) {
       console.warn('watch getCookies failed', site, e)
     }
   }
-  return ''
+  return null
 }
 
 const checkStatus = (res: Response, signedIn: boolean) => {
@@ -181,6 +206,8 @@ const fetchX = (handle: string, cookie: string, _source: WatchRunSource, deadlin
         'accept-language': 'en-US,en;q=0.9',
         ...(cookie ? { cookie } : {}),
       },
+      // Only the cookies of the profile chosen above, never those the app's own requests keep.
+      credentials: 'omit',
     })
     checkStatus(res, Boolean(cookie))
     return parseXTimeline(await res.text(), handle)
@@ -201,6 +228,7 @@ const fetchInstagramApi = (handle: string, cookie: string, deadline: number): Pr
         cookie,
         ...(csrf ? { 'x-csrftoken': csrf } : {}),
       },
+      credentials: 'omit',
     })
     checkStatus(res, true)
     let json: any
@@ -356,11 +384,12 @@ const isStillWatched = (key: string) => watch$.profiles.peek().some((profile) =>
 
 const checkProfile = async (
   profile: WatchedProfile,
-  cookie: string,
+  account: SiteAccount | null,
   source: WatchRunSource,
   deadline: number,
 ): Promise<WatchPost[]> => {
   const now = Date.now()
+  const cookie = account?.cookie || ''
   // Whether an account was there to use, even when the profile was read in the end without it:
   // the feed tells to log in only where that would help.
   const mode = cookie ? 'loggedIn' : siteCookieOrigin[profile.site] ? 'loggedOut' : undefined
@@ -382,6 +411,7 @@ const checkProfile = async (
       ...(result.info.avatar ? { avatar: result.info.avatar } : {}),
       ...(result.info.url ? { url: result.info.url } : {}),
       mode,
+      accountProfileId: account?.profileId,
       lastCheckedAt: now,
       lastSuccessAt: now,
       retryAfter: undefined,
@@ -392,6 +422,7 @@ const checkProfile = async (
     if (isStillWatched(profile.key)) {
       watch$.updateProfile(profile.key, {
         mode,
+        accountProfileId: account?.profileId,
         lastCheckedAt: now,
         retryAfter: e instanceof WatchFetchError && e.retry ? now + RETRY_AFTER_MS : undefined,
         error: e?.message || String(e),
@@ -450,7 +481,8 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
     now: start,
     defaultMinutes: watch$.checkIntervalMinutes.peek(),
   })
-  const cookies: Partial<Record<WatchSite, string>> = {}
+  // Each site's account, looked up once a run unless the user changes which to use while it goes on.
+  const accounts: Partial<Record<WatchSite, { choice: string | null; account: SiteAccount | null }>> = {}
   let found = 0
   for (const [i, profile] of due.entries()) {
     // The feed can be turned off while a run goes on.
@@ -460,10 +492,11 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
     if (i > 0) {
       await sleep(REQUEST_GAP_MS + Math.random() * REQUEST_GAP_MS)
     }
-    if (cookies[profile.site] === undefined) {
-      cookies[profile.site] = await findSignedInCookies(profile.site)
+    const choice = accountChoice(profile.site)
+    if (accounts[profile.site]?.choice !== choice) {
+      accounts[profile.site] = { choice, account: await findSignedInCookies(profile.site) }
     }
-    const fresh = await checkProfile(profile, cookies[profile.site] || '', source, start + RUN_BUDGET_MS[source])
+    const fresh = await checkProfile(profile, accounts[profile.site]?.account || null, source, start + RUN_BUDGET_MS[source])
     found += fresh.length
     if (profile.notify && fresh.length && settings$.feedEnabled.peek()) {
       await notifyFresh(profile, fresh)

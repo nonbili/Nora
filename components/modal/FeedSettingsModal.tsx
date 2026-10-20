@@ -8,7 +8,9 @@ import { NouSwitch } from '../switch/NouSwitch'
 import { ChoicePicker, formatInterval } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
 import { watch$ } from '@/states/watch'
-import { POSTS_PER_SOURCE_OPTIONS, WATCH_INTERVAL_OPTIONS } from '@/lib/watch'
+import { settings$ } from '@/states/settings'
+import { POSTS_PER_SOURCE_OPTIONS, WATCH_ACCOUNT_SITES, WATCH_INTERVAL_OPTIONS, watchSiteLabels } from '@/lib/watch'
+import { isAnonymousProfile } from '@/lib/anonymous'
 import { clearWatchMedia, watchMedia$ } from '@/lib/watch-media'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
@@ -33,6 +35,11 @@ export const FeedSettingsModal = () => {
   const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
   const mediaLimitMB = useValue(watch$.mediaLimitMB)
   const postsPerSource = useValue(watch$.postsPerSource)
+  const useAccounts = useValue(watch$.useAccounts)
+  const accountProfiles = useValue(watch$.accountProfiles)
+  const profiles = useValue(() =>
+    settings$.profiles.get().filter((profile) => profile && !isAnonymousProfile(profile.id)),
+  )
   const mediaUsedBytes = useValue(() =>
     Object.values(watchMedia$.files.get()).reduce((sum, kept) => sum + (kept?.bytes || 0), 0),
   )
@@ -76,6 +83,41 @@ export const FeedSettingsModal = () => {
             />
             <Hint>{t('feed.postsPerSourceHint')}</Hint>
           </View>
+          <Divider />
+          <View className="py-3">
+            <NouSwitch
+              label={t('feed.useAccounts')}
+              value={useAccounts}
+              onPress={() => watch$.useAccounts.set(!useAccounts)}
+            />
+            <Hint>
+              {t('feed.useAccountsHint', {
+                sites: WATCH_ACCOUNT_SITES.map((site) => watchSiteLabels[site]).join(', '),
+              })}
+            </Hint>
+          </View>
+          {useAccounts && profiles.length > 1
+            ? WATCH_ACCOUNT_SITES.map((site) => {
+                // The menu gives back a number: the place of the profile in the list, or none for any.
+                const chosen = profiles.find((profile) => profile.id === accountProfiles[site])
+                return (
+                  <View key={site} className="pb-3">
+                    <ChoicePicker
+                      label={t('feed.accountFrom', { site: watchSiteLabels[site] })}
+                      value={chosen?.name ?? t('feed.accountAnyProfile')}
+                      options={[
+                        { label: t('feed.accountAnyProfile'), minutes: undefined },
+                        ...profiles.map((profile, index) => ({ label: profile.name, minutes: index })),
+                      ]}
+                      onSelect={(index) =>
+                        watch$.accountProfiles[site].set(index === undefined ? undefined : profiles[index].id)
+                      }
+                      iconColor={iconColor}
+                    />
+                  </View>
+                )
+              })
+            : null}
           <Divider />
           <NouSwitch
             className="py-3"

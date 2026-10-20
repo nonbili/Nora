@@ -1048,6 +1048,9 @@ export interface WatchTimeline {
 // How many of a profile's latest posts are kept, unless another number is chosen.
 export const DEFAULT_POSTS_PER_SOURCE = 100
 
+// The sites whose sources are checked better with an account, taken from a Nora profile logged in to them.
+export const WATCH_ACCOUNT_SITES: WatchSite[] = ['x', 'instagram']
+
 export const POSTS_PER_SOURCE_OPTIONS = [50, 100, 200, 500, 1000]
 
 export const postKey = (post: Pick<WatchPost, 'site' | 'id'>) => `${post.site}:${post.id}`
