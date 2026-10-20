@@ -37,6 +37,7 @@ import {
 } from '@/lib/watch'
 import { THREADS_POSTS_MARKER, isWatchWebViewAvailable, loadInWatchWebView } from '@/lib/watch-webview'
 import { syncWatchMedia } from '@/lib/watch-media'
+import { getProfilePosts, setProfilePosts } from '@/lib/watch-db'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
 
 import {
@@ -370,11 +371,12 @@ const checkProfile = async (
       return []
     }
     // When the answer came, not when it was asked for: the feed may have been looked at between.
-    const { posts, fresh } = mergeWatchPosts(watch$.posts[profile.key].peek() || [], result.posts, {
+    const { posts, fresh } = mergeWatchPosts(getProfilePosts(profile.key), result.posts, {
       now: Date.now(),
       initial: !profile.lastSuccessAt,
+      max: watch$.postsPerSource.peek(),
     })
-    watch$.posts[profile.key].set(posts)
+    setProfilePosts(profile.key, posts)
     watch$.updateProfile(profile.key, {
       ...(result.info.name ? { name: result.info.name } : {}),
       ...(result.info.avatar ? { avatar: result.info.avatar } : {}),

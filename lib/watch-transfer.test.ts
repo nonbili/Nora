@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { watch$ } from '@/states/watch'
+import { deleteProfilePosts, getProfilePosts, setProfilePosts } from '@/lib/watch-db'
 import { applyWatchBackup, createWatchBackup, normalizeWatchBackup, parseSourceList, sourceFromUrl, watchNotifyKeys } from './watch-transfer'
 
 const reset = () => {
   watch$.profiles.set([])
-  watch$.posts.set({})
+  deleteProfilePosts('bluesky:alice.bsky.social')
   watch$.timelines.set([])
   watch$.checkIntervalMinutes.set(60)
   watch$.mediaWifiOnly.set(true)
   watch$.mediaLimitMB.set(1024)
+  watch$.postsPerSource.set(100)
 }
 
 describe('watch transfer', () => {
@@ -18,12 +20,12 @@ describe('watch transfer', () => {
     watch$.watch({ site: 'x', handle: 'Jack' })
     watch$.updateProfile('x:jack', { name: 'Jack', avatar: 'https://a', lastCheckedAt: 1, error: 'boom', notify: true, checkIntervalMinutes: 30 })
     watch$.createTimeline('Friends', ['x:jack'])
-    watch$.posts['x:jack'].set([])
 
     const backup = createWatchBackup()
     expect(backup.profiles).toEqual([{ site: 'x', handle: 'Jack', name: 'Jack', notify: true, checkIntervalMinutes: 30 }])
     expect(backup.timelines).toEqual([{ name: 'Friends', profileKeys: ['x:jack'] }])
     expect(backup.checkIntervalMinutes).toBe(60)
+    expect(backup.postsPerSource).toBe(100)
   })
 
   it('drops sources that cannot be watched and timeline keys of no source', () => {
@@ -54,11 +56,12 @@ describe('watch transfer', () => {
 
   it('adds new sources, keeps the ones watched, and merges timelines by name', () => {
     watch$.watch({ site: 'bluesky', handle: 'alice.bsky.social' })
-    watch$.posts['bluesky:alice.bsky.social'].set([{ key: 'k' } as any])
+    setProfilePosts('bluesky:alice.bsky.social', [{ key: 'k', createdAtMs: 1, firstSeenAt: 0 } as any])
     watch$.createTimeline('Friends', ['bluesky:alice.bsky.social'])
 
     const result = applyWatchBackup({
       checkIntervalMinutes: 120,
+      postsPerSource: 200,
       profiles: [
         { site: 'bluesky', handle: 'alice.bsky.social', notify: true },
         { site: 'reddit', handle: 'r/rust', checkIntervalMinutes: 30 },
@@ -74,7 +77,8 @@ describe('watch transfer', () => {
       watchNotifyKeys({ profiles: [{ site: 'bluesky', handle: 'Alice.bsky.social', notify: true }, { site: 'x', handle: 'jack' }], timelines: [] }),
     ).toEqual(['bluesky:alice.bsky.social'])
     expect(watch$.checkIntervalMinutes.get()).toBe(120)
-    expect(watch$.posts['bluesky:alice.bsky.social'].get()).toHaveLength(1)
+    expect(watch$.postsPerSource.get()).toBe(200)
+    expect(getProfilePosts('bluesky:alice.bsky.social')).toHaveLength(1)
     const profiles = watch$.profiles.get()
     expect(profiles.map((profile) => profile.key)).toEqual(['bluesky:alice.bsky.social', 'reddit:r/rust'])
     // Left for enableWatchNotifications, which asks for permission first.

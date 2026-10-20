@@ -975,32 +975,6 @@ export const mediaMimeType = (item: WatchMedia) => {
   return extension === 'mp4' ? 'video/mp4' : `image/${extension === 'jpg' ? 'jpeg' : extension}`
 }
 
-/**
- * A post as the given profile's list has it: a post two profiles share is in both lists, and each
- * copy is brought up to date with its own profile. Any profile's copy when that one has none.
- */
-export function findWatchPost(postsByProfile: Record<string, WatchPost[] | undefined>, profileKey: string, key: string) {
-  const own = postsByProfile[profileKey]?.find((post) => post.key === key)
-  if (own) return own
-  for (const posts of Object.values(postsByProfile)) {
-    const post = posts?.find((candidate) => candidate.key === key)
-    if (post) return post
-  }
-  return undefined
-}
-
-/**
- * The posts of several profiles as one list, newest first. A post two watched profiles share,
- * as a collaboration on Instagram, is in both their lists; it is shown once, as the first has it.
- */
-export function uniquePostsNewestFirst(lists: (WatchPost[] | undefined)[]): WatchPost[] {
-  const byKey = new Map<string, WatchPost>()
-  for (const post of lists.flatMap((list) => list || [])) {
-    if (!byKey.has(post.key)) byKey.set(post.key, post)
-  }
-  return [...byKey.values()].sort((a, b) => b.createdAtMs - a.createdAtMs)
-}
-
 /** How the list of watched sources is ordered: by name, or by the newest post, when watched, or the last good check. */
 export type WatchSourceSort = 'name' | 'updated' | 'added' | 'synced'
 
@@ -1012,12 +986,11 @@ export const WATCH_SOURCE_SORTS: WatchSourceSort[] = ['name', 'updated', 'added'
  */
 export function sortWatchSources<
   T extends WatchTarget & { name?: string; addedAt: number; lastSuccessAt?: number; key: string },
->(sources: T[], posts: Record<string, WatchPost[] | undefined>, sort: WatchSourceSort, reversed = false): T[] {
+>(sources: T[], newestPostAt: Record<string, number | undefined>, sort: WatchSourceSort, reversed = false): T[] {
   const time = (source: T): number | undefined => {
     if (sort === 'added') return source.addedAt
     if (sort === 'synced') return source.lastSuccessAt
-    const list = posts[source.key]
-    return list?.length ? Math.max(...list.map((post) => post.createdAtMs)) : undefined
+    return newestPostAt[source.key]
   }
   const label = (source: T) => source.name || source.handle
   const direction = reversed ? -1 : 1
@@ -1036,13 +1009,13 @@ export function sortWatchSources<
  */
 export function feedChipSources<T extends WatchTarget & { name?: string; addedAt: number; lastSuccessAt?: number; key: string }>(
   sources: T[],
-  posts: Record<string, WatchPost[] | undefined>,
-  isUnread: (post: WatchPost) => boolean,
+  newestPostAt: Record<string, number | undefined>,
+  unreadSourceKeys: Set<string>,
   limit: number,
   selectedKey?: string,
 ): { shown: T[]; hidden: number } {
-  const hasUnread = (source: T) => Boolean(posts[source.key]?.some(isUnread))
-  const byPost = sortWatchSources(sources, posts, 'updated')
+  const hasUnread = (source: T) => unreadSourceKeys.has(source.key)
+  const byPost = sortWatchSources(sources, newestPostAt, 'updated')
   const ordered = [...byPost.filter(hasUnread), ...byPost.filter((source) => !hasUnread(source))]
   if (ordered.length <= limit) return { shown: ordered, hidden: 0 }
   const shown = ordered.slice(0, limit)
@@ -1070,33 +1043,12 @@ export interface WatchTimeline {
   pinned?: boolean
 }
 
-/**
- * The posts of these profiles not shown yet: first seen after a tab last showed one of the profiles
- * that have it, whichever view that was.
- */
-export function unreadPostKeys(
-  posts: Record<string, WatchPost[] | undefined>,
-  profileKeys: string[],
-  seenAtOf: (profileKey: string) => number,
-): Set<string> {
-  const wanted = new Set(profileKeys)
-  const unread = new Set<string>()
-  const read = new Set<string>()
-  // Every profile is looked at: a post these share with another was read where that other was shown.
-  for (const [profileKey, list] of Object.entries(posts)) {
-    const seenAt = seenAtOf(profileKey)
-    for (const post of list || []) {
-      if (post.firstSeenAt <= seenAt) read.add(post.key)
-      else if (wanted.has(profileKey)) unread.add(post.key)
-    }
-  }
-  for (const key of read) unread.delete(key)
-  return unread
-}
-
 // --- merging ----------------------------------------------------------------
 
-export const MAX_POSTS_PER_PROFILE = 50
+// How many of a profile's latest posts are kept, unless another number is chosen.
+export const DEFAULT_POSTS_PER_SOURCE = 100
+
+export const POSTS_PER_SOURCE_OPTIONS = [50, 100, 200, 500, 1000]
 
 export const postKey = (post: Pick<WatchPost, 'site' | 'id'>) => `${post.site}:${post.id}`
 
@@ -1108,7 +1060,7 @@ export const postKey = (post: Pick<WatchPost, 'site' | 'id'>) => `${post.site}:$
 export function mergeWatchPosts(
   existing: WatchPost[],
   fetched: WatchFetchResult['posts'],
-  { now, initial }: { now: number; initial: boolean },
+  { now, initial, max = DEFAULT_POSTS_PER_SOURCE }: { now: number; initial: boolean; max?: number },
 ): { posts: WatchPost[]; fresh: WatchPost[] } {
   const fetchedByKey = new Map(fetched.map((post) => [postKey(post), post]))
   // What is kept of a post that was fetched again is brought up to date: its text can be edited.
@@ -1141,7 +1093,7 @@ export function mergeWatchPosts(
     const isNew = !initial && post.createdAtMs >= newest
     fresh.push({ ...post, key, firstSeenAt: isNew ? now : 0 })
   }
-  const posts = [...updated, ...fresh].sort((a, b) => b.createdAtMs - a.createdAtMs).slice(0, MAX_POSTS_PER_PROFILE)
+  const posts = [...updated, ...fresh].sort((a, b) => b.createdAtMs - a.createdAtMs).slice(0, max)
   const keptKeys = new Set(posts.map((post) => post.key))
   return { posts, fresh: fresh.filter((post) => post.firstSeenAt && keptKeys.has(post.key)) }
 }

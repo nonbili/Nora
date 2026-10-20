@@ -22,6 +22,8 @@ import {
   type WatchSite,
   type WatchSourceSort,
 } from '@/lib/watch'
+import { getNewestPostTimes } from '@/lib/watch-db'
+import { useWatchPosts } from '@/lib/use-watch-posts'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
 import { clsx } from '@/lib/utils'
@@ -51,7 +53,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
   const tw = useTwColor()
   const allProfiles = useValue(watch$.profiles)
   const timeline = useValue(() => (pick ? getTimeline(timelineId) : undefined))
-  const posts = useValue(watch$.posts)
+  const newestPostAt = useWatchPosts(getNewestPostTimes)
   const sort = useValue(watch$.sourcesSort)
   const reversed = useValue(watch$.sourcesSortReversed)
   const [now] = useState(() => Date.now())
@@ -66,7 +68,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
   const sites = [...new Set(profiles.map((profile) => profile.site))].sort((a, b) =>
     watchSiteLabels[a].localeCompare(watchSiteLabels[b]),
   )
-  const sorted = sortWatchSources(filterWatchSources(profiles, query, site), posts, sort, reversed)
+  const sorted = sortWatchSources(filterWatchSources(profiles, query, site), newestPostAt, sort, reversed)
   const filtered = Boolean(query.trim() || site)
 
   // Back in the opened tab comes back to the feed.
@@ -87,8 +89,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
   }
 
   const details = (profile: WatchedProfile) => {
-    const list = posts[profile.key]
-    const newest = list?.length ? Math.max(...list.map((post) => post.createdAtMs)) : undefined
+    const newest = newestPostAt[profile.key]
     return [
       watchSiteLabels[profile.site],
       newest ? t('feed.lastPost', { age: formatPostAge(newest, now) }) : t('feed.noPostsYet'),

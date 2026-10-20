@@ -25,6 +25,7 @@ export interface WatchBackup {
   checkIntervalMinutes?: number
   mediaWifiOnly?: boolean
   mediaLimitMB?: number
+  postsPerSource?: number
   profiles: WatchSourceBackup[]
   timelines: WatchTimelineBackup[]
 }
@@ -52,6 +53,7 @@ export const createWatchBackup = (): WatchBackup => ({
   checkIntervalMinutes: watch$.checkIntervalMinutes.get(),
   mediaWifiOnly: watch$.mediaWifiOnly.get(),
   mediaLimitMB: watch$.mediaLimitMB.get(),
+  postsPerSource: watch$.postsPerSource.get(),
   profiles: watch$.profiles.get().map((profile) => ({
     site: profile.site,
     handle: profile.handle,
@@ -119,10 +121,12 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
 
   const checkIntervalMinutes = positiveNumber(value.checkIntervalMinutes)
   const mediaLimitMB = positiveNumber(value.mediaLimitMB)
+  const postsPerSource = positiveNumber(value.postsPerSource)
   return {
     ...(checkIntervalMinutes ? { checkIntervalMinutes } : {}),
     ...(typeof value.mediaWifiOnly === 'boolean' ? { mediaWifiOnly: value.mediaWifiOnly } : {}),
     ...(mediaLimitMB ? { mediaLimitMB } : {}),
+    ...(postsPerSource ? { postsPerSource: Math.round(postsPerSource) } : {}),
     profiles: [...profiles.values()],
     timelines: [...timelines.values()],
   }
@@ -140,6 +144,7 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
     if (backup.checkIntervalMinutes) watch$.checkIntervalMinutes.set(backup.checkIntervalMinutes)
     if (typeof backup.mediaWifiOnly === 'boolean') watch$.mediaWifiOnly.set(backup.mediaWifiOnly)
     if (backup.mediaLimitMB) watch$.mediaLimitMB.set(backup.mediaLimitMB)
+    if (backup.postsPerSource) watch$.postsPerSource.set(backup.postsPerSource)
 
     const current = new Map(watch$.profiles.peek().map((profile) => [profile.key, profile]))
     for (const source of backup.profiles) {

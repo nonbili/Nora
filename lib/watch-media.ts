@@ -6,12 +6,12 @@ import { Directory, File, Paths } from 'expo-file-system'
 import NoraViewModule from '@/modules/nora-view'
 import { SharedRequests } from '@/lib/shared-request'
 import { watch$ } from '@/states/watch'
+import { findWatchPost, getPostsNewestFirst, getWatchPostKeys, updateWatchPost } from '@/lib/watch-db'
 import {
   instagramEmbedUrl,
   mediaFileName,
   mediaKey,
   mediaMimeType,
-  findWatchPost,
   mediaExpired,
   mediaToEvict,
   parseInstagramEmbed,
@@ -91,16 +91,9 @@ export const watchMediaUsageBytes = () =>
   Object.values(watchMedia$.files.peek()).reduce((sum, kept) => sum + (kept?.bytes || 0), 0)
 
 // The post as it is now, in the list of the profile it was shown for.
-const currentPost = (post: WatchPost) => findWatchPost(watch$.posts.peek(), watchKey(post), post.key) || post
+const currentPost = (post: WatchPost) => findWatchPost(watchKey(post), post.key) || post
 
-const updatePost = (post: WatchPost, patch: Partial<WatchPost>) => {
-  const profileKey = watchKey(post)
-  const posts = watch$.posts[profileKey].peek()
-  const index = posts?.findIndex((candidate) => candidate.key === post.key) ?? -1
-  if (index !== -1) {
-    watch$.posts[profileKey][index].assign(patch)
-  }
-}
+const updatePost = (post: WatchPost, patch: Partial<WatchPost>) => updateWatchPost(watchKey(post), post.key, patch)
 
 // An embed page, or a photo or video, asked for by the gallery and a prefetch run at once is
 // fetched once; each has a time limit of its own, whoever asked for it.
@@ -267,7 +260,7 @@ export const holdMedia = (key: string) => {
 /** Deletes the kept media of posts no longer kept, and of the oldest posts while over the limit. */
 export const pruneWatchMedia = () => {
   const files = watchMedia$.files.peek()
-  const live = new Set(Object.values(watch$.posts.peek()).flatMap((posts) => (posts || []).map((post) => post.key)))
+  const live = getWatchPostKeys()
   const entries: KeptMediaEntry[] = Object.entries(files).map(([key, kept]) => ({ key, ...kept }))
   const evict = mediaToEvict(entries, watch$.mediaLimitMB.peek() * 1024 * 1024, live, new Set(inUse.keys()))
   for (const key of evict) {
@@ -343,13 +336,20 @@ const runSync = async (source: keyof typeof RUN_BUDGET_MS) => {
   pruneWatchMedia()
 }
 
+// Read a page at a time: a run seldom gets far past the newest.
+function* postsNewestFirst() {
+  const pageSize = 100
+  for (let offset = 0; ; offset += pageSize) {
+    const page = getPostsNewestFirst(pageSize, offset)
+    yield* page
+    if (page.length < pageSize) return
+  }
+}
+
 const syncPosts = async (start: number, budget: number, signal: AbortSignal) => {
   const limitBytes = watch$.mediaLimitMB.peek() * 1024 * 1024
-  const posts = Object.values(watch$.posts.peek())
-    .flatMap((list) => list || [])
-    .sort((a, b) => b.createdAtMs - a.createdAtMs)
   let embedPages = 0
-  for (const post of posts) {
+  for (const post of postsNewestFirst()) {
     if (signal.aborted || Date.now() - start > budget) break
     // When nearly full, a post older than the oldest kept would be the next to go: everything
     // newer is kept already, so the run is done. The oldest kept itself is gone through again, as a
@@ -420,5 +420,6 @@ if (Platform.OS !== 'web') {
     if ((getPrevious()?.length || 0) > value.length) setTimeout(pruneWatchMedia, 0)
   })
   watch$.mediaLimitMB.onChange(() => pruneWatchMedia())
+  watch$.postsPerSource.onChange(() => pruneWatchMedia())
 }
 

@@ -10,8 +10,9 @@ import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
-import { watch$ } from '@/states/watch'
-import { findWatchPost, mediaKey, refreshesMedia, watchSiteLabels, type WatchMedia, type WatchPost } from '@/lib/watch'
+import { mediaKey, refreshesMedia, watchSiteLabels, type WatchMedia, type WatchPost } from '@/lib/watch'
+import { findWatchPost } from '@/lib/watch-db'
+import { useWatchPosts } from '@/lib/use-watch-posts'
 import { ensurePostMedia, holdMedia, keepPostMediaItem, keptMediaUri, saveWatchPostMedia, savesToDownloads, touchMedia, watchMedia$ } from '@/lib/watch-media'
 import { showToast } from '@/lib/toast'
 import { share } from '@/lib/share'
@@ -100,7 +101,6 @@ const GalleryItem: React.FC<{
 
 export const FeedGalleryModal = () => {
   const gallery = useValue(ui$.feedGallery)
-  const postsByProfile = useValue(watch$.posts)
   const window = useWindowDimensions()
   // The room the gallery has, which the safe area can make smaller than the window: a video given
   // the window's height would have its controls cut off at the bottom.
@@ -113,7 +113,7 @@ export const FeedGalleryModal = () => {
   const [captionOpen, setCaptionOpen] = useState(false)
   const listRef = useRef<FlatList<WatchMedia>>(null)
 
-  const post = gallery ? findWatchPost(postsByProfile, gallery.profileKey, gallery.postKey) : undefined
+  const post = useWatchPosts(() => (gallery ? findWatchPost(gallery.profileKey, gallery.postKey) : undefined), gallery)
   const media = post?.media || []
 
   const onClose = () => ui$.feedGallery.set(null)
@@ -123,7 +123,7 @@ export const FeedGalleryModal = () => {
     setIndex(gallery.index)
     setError(false)
     setCaptionOpen(false)
-    const current = findWatchPost(watch$.posts.peek(), gallery.profileKey, gallery.postKey)
+    const current = findWatchPost(gallery.profileKey, gallery.postKey)
     if (current?.mediaComplete === false) {
       setLoading(true)
       ensurePostMedia(current)

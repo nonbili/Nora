@@ -197,3 +197,22 @@ class MMKVStub {
 }
 
 mock.module('react-native-mmkv', () => ({ MMKV: MMKVStub, createMMKV: () => new MMKVStub() }))
+
+// expo-sqlite runs on bun's own SQLite, in memory, so the queries are tested as they are.
+mock.module('expo-sqlite', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Database } = require('bun:sqlite') as typeof import('bun:sqlite')
+  return {
+    openDatabaseSync: () => {
+      const db = new Database(':memory:')
+      return {
+        execSync: (source: string) => db.exec(source),
+        getAllSync: (source: string, params: unknown[] = []) => db.query(source).all(...(params as [])),
+        getFirstSync: (source: string, params: unknown[] = []) => db.query(source).get(...(params as [])) ?? null,
+        runSync: (source: string, params: unknown[] = []) => db.query(source).run(...(params as [])),
+        withTransactionSync: (task: () => void) => db.transaction(task)(),
+        closeSync: () => db.close(),
+      }
+    },
+  }
+})

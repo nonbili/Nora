@@ -16,7 +16,6 @@ import {
   formatPostAge,
   mediaKey,
   refreshesMedia,
-  uniquePostsNewestFirst,
   splitInterval,
   watchKey,
   watchProfileUrl,
@@ -33,6 +32,8 @@ import {
   enableWatchNotifications,
   refreshWatched,
 } from '@/lib/watch-feed'
+import { getFeedPosts, getNewestPostTimes, getProfilesWithPosts } from '@/lib/watch-db'
+import { useWatchPosts } from '@/lib/use-watch-posts'
 import { clsx } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
@@ -44,6 +45,8 @@ import { openFeedTab } from '@/lib/page'
 
 // Enough chips to reach the sources most likely wanted; the rest are found in the list of them all.
 const CHIP_LIMIT = 12
+// Posts read at a time, and more each time the list is scrolled to its end.
+const FEED_PAGE_SIZE = 100
 
 const intervalKeys = { minutes: 'feed.intervalMinutes', hours: 'feed.intervalHours', days: 'feed.intervalDays' } as const
 
@@ -249,7 +252,6 @@ export const FeedView: React.FC<{
   const timelines = useValue(watch$.timelines)
   const timeline = useValue(() => getTimeline(timelineId))
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
-  const postsByProfile = useValue(watch$.posts)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   // What was unread when the tab was switched to stays marked while it is shown, as does what comes in since.
@@ -353,9 +355,15 @@ export const FeedView: React.FC<{
   const isUnread = (post: WatchPost) =>
     unreadOnShow.keys.has(post.key) || (unreadOnShow.at > 0 && post.firstSeenAt > unreadOnShow.at)
 
-  const posts = uniquePostsNewestFirst(
-    (selected ? [selected.key] : profiles.map((profile) => profile.key)).map((key) => postsByProfile[key]),
-  )
+  // How many posts the view has scrolled through; a view shown again starts at the first page.
+  const postProfileKeys = selected ? [selected.key] : profiles.map((profile) => profile.key)
+  const view = postProfileKeys.join('\n')
+  const [page, setPage] = useState({ view, limit: FEED_PAGE_SIZE })
+  const limit = page.view === view ? page.limit : FEED_PAGE_SIZE
+  const posts = useWatchPosts(() => getFeedPosts(postProfileKeys, limit), `${limit}\n${view}`)
+  const showMore = () => {
+    if (posts.length >= limit) setPage({ view, limit: limit + FEED_PAGE_SIZE })
+  }
 
   // Sites that some profile is checked on without an account, and so less reliably.
   const loggedOutSites = Array.from(
@@ -460,7 +468,9 @@ export const FeedView: React.FC<{
 
   const selectedStatus = selected ? profileStatus(selected) : null
 
-  const chips = feedChipSources(profiles, postsByProfile, isUnread, CHIP_LIMIT, selected?.key)
+  const newestPostAt = useWatchPosts(getNewestPostTimes)
+  const unreadSourceKeys = useWatchPosts(() => getProfilesWithPosts(unreadOnShow.keys, unreadOnShow.at), unreadOnShow)
+  const chips = feedChipSources(profiles, newestPostAt, unreadSourceKeys, CHIP_LIMIT, selected?.key)
 
   // Handles that are on more than one site, whose chips also tell the site.
   const handleCounts = new Map<string, number>()
@@ -664,6 +674,7 @@ export const FeedView: React.FC<{
             onOpenOriginal={() => openUrl(item.url)}
           />
         )}
+        onEndReached={showMore}
         ListFooterComponent={<View className="h-16" />}
       />
     </View>

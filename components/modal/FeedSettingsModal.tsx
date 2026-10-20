@@ -8,7 +8,7 @@ import { NouSwitch } from '../switch/NouSwitch'
 import { ChoicePicker, formatInterval } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
 import { watch$ } from '@/states/watch'
-import { WATCH_INTERVAL_OPTIONS } from '@/lib/watch'
+import { POSTS_PER_SOURCE_OPTIONS, WATCH_INTERVAL_OPTIONS } from '@/lib/watch'
 import { clearWatchMedia, watchMedia$ } from '@/lib/watch-media'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
@@ -24,7 +24,7 @@ const Hint: React.FC<{ children: string }> = ({ children }) => (
   <NouText className="mt-1 text-sm leading-5 text-zinc-500 dark:text-zinc-400">{children}</NouText>
 )
 
-/** How often the feed is checked and how much of its media is kept, for every source. */
+/** How often the feed is checked and how many of its posts and how much of its media are kept, for every source. */
 export const FeedSettingsModal = () => {
   const tw = useTwColor()
   const isDark = useColorScheme() === 'dark'
@@ -32,6 +32,7 @@ export const FeedSettingsModal = () => {
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
   const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
   const mediaLimitMB = useValue(watch$.mediaLimitMB)
+  const postsPerSource = useValue(watch$.postsPerSource)
   const mediaUsedBytes = useValue(() =>
     Object.values(watchMedia$.files.get()).reduce((sum, kept) => sum + (kept?.bytes || 0), 0),
   )
@@ -63,6 +64,17 @@ export const FeedSettingsModal = () => {
               iconColor={iconColor}
             />
             <Hint>{t('feed.intervalHint')}</Hint>
+          </View>
+          <Divider />
+          <View className="py-3">
+            <ChoicePicker
+              label={t('feed.postsPerSource')}
+              value={String(postsPerSource)}
+              options={POSTS_PER_SOURCE_OPTIONS.map((count) => ({ label: String(count), minutes: count }))}
+              onSelect={(count) => count && watch$.postsPerSource.set(count)}
+              iconColor={iconColor}
+            />
+            <Hint>{t('feed.postsPerSourceHint')}</Hint>
           </View>
           <Divider />
           <NouSwitch

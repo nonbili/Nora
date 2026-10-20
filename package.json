@@ -50,6 +50,7 @@
     "expo-router": "~58.0.23",
     "expo-sharing": "~58.0.19",
     "expo-splash-screen": "~58.0.10",
+    "expo-sqlite": "~58.0.13",
     "expo-status-bar": "~58.0.3",
     "expo-symbols": "~58.0.4",
     "expo-system-ui": "~58.0.6",

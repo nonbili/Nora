@@ -2,9 +2,10 @@ import { batch, observable, type Observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
 import { genId } from '@/lib/utils'
+import { deleteProfilePosts, getUnreadPostKeys, importWatchPosts, trimWatchPosts, watchPostsVersion$ } from '@/lib/watch-db'
 import {
+  DEFAULT_POSTS_PER_SOURCE,
   DEFAULT_WATCH_INTERVAL_MINUTES,
-  unreadPostKeys,
   watchKey,
   type WatchPost,
   type WatchSite,
@@ -38,7 +39,6 @@ export interface WatchedProfile {
 
 interface Store {
   profiles: WatchedProfile[]
-  posts: Record<string, WatchPost[]>
   // When a tab showed the whole feed, before each profile had a time of its own.
   feedSeenAt: number
   timelines: WatchTimeline[]
@@ -48,6 +48,8 @@ interface Store {
   mediaWifiOnly: boolean
   // How much kept media may take, in MB; the media of the oldest posts goes first.
   mediaLimitMB: number
+  // How many of each source's latest posts are kept; older ones go.
+  postsPerSource: number
   // How the list of sources to manage is ordered.
   sourcesSort: WatchSourceSort
   sourcesSortReversed: boolean
@@ -74,12 +76,12 @@ const findTimelineIndex = (id: string) => watch$.timelines.peek().findIndex((tim
 
 export const watch$: Observable<Store> = observable<Store>({
   profiles: [],
-  posts: {},
   feedSeenAt: 0,
   timelines: [],
   checkIntervalMinutes: DEFAULT_WATCH_INTERVAL_MINUTES,
   mediaWifiOnly: true,
   mediaLimitMB: 1024,
+  postsPerSource: DEFAULT_POSTS_PER_SOURCE,
   sourcesSort: 'name',
   sourcesSortReversed: false,
 
@@ -98,7 +100,7 @@ export const watch$: Observable<Store> = observable<Store>({
     if (index !== -1) {
       watch$.profiles.splice(index, 1)
     }
-    watch$.posts[key].delete()
+    deleteProfilePosts(key)
     watch$.timelines.peek().forEach((timeline, index) => {
       if (timeline.profileKeys.includes(key)) {
         watch$.timelines[index].profileKeys.set(timeline.profileKeys.filter((profileKey) => profileKey !== key))
@@ -169,9 +171,11 @@ export const timelineProfileKeys = (timelineId?: string) => {
 }
 
 export const unreadKeys = (timelineId?: string) => {
+  // Counted again when the posts change, not only the profiles.
+  watchPostsVersion$.get()
   const feedSeenAt = watch$.feedSeenAt.get()
-  const seenAt = new Map(watch$.profiles.get().map((profile) => [profile.key, profile.seenAt ?? feedSeenAt]))
-  return unreadPostKeys(watch$.posts.get(), timelineProfileKeys(timelineId), (key) => seenAt.get(key) ?? feedSeenAt)
+  const seenAt = Object.fromEntries(watch$.profiles.get().map((profile) => [profile.key, profile.seenAt ?? feedSeenAt]))
+  return getUnreadPostKeys(timelineProfileKeys(timelineId), seenAt, feedSeenAt)
 }
 
 syncObservable(watch$, {
@@ -180,3 +184,13 @@ syncObservable(watch$, {
     plugin: ObservablePersistMMKV,
   },
 })
+
+// The posts were kept here, with the profiles, before they had a database of their own.
+const legacyPosts = (watch$ as unknown as Observable<{ posts?: Record<string, WatchPost[] | undefined> }>).posts
+if (legacyPosts.peek()) {
+  importWatchPosts(legacyPosts.peek()!)
+  legacyPosts.delete()
+}
+
+// Fewer kept takes the oldest away now, not only when each source is checked again.
+watch$.postsPerSource.onChange(({ value }) => trimWatchPosts(value))

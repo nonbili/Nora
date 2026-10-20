@@ -507,6 +507,8 @@
     "mediaSaved_other": "Saved {{count}} files to Downloads",
     "mediaSaveFailed": "Could not save the media",
     "mediaFailed": "Could not load this media",
+    "postsPerSource": "Posts kept per source",
+    "postsPerSourceHint": "Older posts are removed once a source has more.",
     "mediaWifiOnly": "Download media only on Wi-Fi",
     "mediaLimit": "Media storage",
     "mediaUsage": "{{used}} of {{limit}} used. Media of the oldest posts is removed first.",

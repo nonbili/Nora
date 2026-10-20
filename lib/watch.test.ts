@@ -2,7 +2,6 @@ import { describe, expect, it } from 'bun:test'
 import {
   backgroundIntervalMinutes,
   dueWatchProfiles,
-  findWatchPost,
   formatPostAge,
   instagramUrlExpiresAt,
   mediaExpired,
@@ -34,11 +33,9 @@ import {
   parseXTimeline,
   postKey,
   splitInterval,
-  uniquePostsNewestFirst,
   sortWatchSources,
   feedChipSources,
   filterWatchSources,
-  unreadPostKeys,
   watchIntervalMinutes,
   watchKey,
   watchProfileUrl,
@@ -895,28 +892,6 @@ describe('splitInterval', () => {
   })
 })
 
-describe('findWatchPost', () => {
-  it('takes the copy of the given profile, or else any', () => {
-    const shared = kept('2', 20)
-    const posts = { 'x:a': [{ ...shared, handle: 'a' }], 'x:b': [{ ...shared, handle: 'b' }] }
-    expect(findWatchPost(posts, 'x:b', shared.key)?.handle).toBe('b')
-    expect(findWatchPost(posts, 'x:c', shared.key)?.handle).toBe('a')
-    expect(findWatchPost(posts, 'x:a', 'x:9')).toBeUndefined()
-  })
-})
-
-describe('uniquePostsNewestFirst', () => {
-  it('shows a post two profiles share once, as the first list has it', () => {
-    const shared = kept('2', 20)
-    const lists = [[kept('3', 30), { ...shared, handle: 'first' }], [{ ...shared, handle: 'second' }, kept('1', 10)], undefined]
-    expect(uniquePostsNewestFirst(lists).map((post) => [post.id, post.handle])).toEqual([
-      ['3', 'nasa'],
-      ['2', 'first'],
-      ['1', 'nasa'],
-    ])
-  })
-})
-
 describe('sortWatchSources', () => {
   const source = (handle: string, addedAt: number, lastSuccessAt?: number, name?: string) => ({
     key: `x:${handle}`,
@@ -927,9 +902,9 @@ describe('sortWatchSources', () => {
     lastSuccessAt,
   })
   const sources = [source('bob', 2, 20), source('amy', 3), source('carl', 1, 30, 'Zed')]
-  const posts = { 'x:bob': [kept('1', 10), kept('2', 50)], 'x:carl': [kept('3', 40)] }
+  const newestPostAt = { 'x:bob': 50, 'x:carl': 40 }
   const order = (sort: WatchSourceSort, reversed?: boolean) =>
-    sortWatchSources(sources, posts, sort, reversed).map((current) => current.handle)
+    sortWatchSources(sources, newestPostAt, sort, reversed).map((current) => current.handle)
 
   it('orders by name, the shown one before the handle', () => {
     expect(order('name')).toEqual(['amy', 'bob', 'carl'])
@@ -948,19 +923,19 @@ describe('sortWatchSources', () => {
 describe('feedChipSources', () => {
   const source = (handle: string) => ({ key: `x:${handle}`, site: 'x' as const, handle, addedAt: 0 })
   const sources = [source('old'), source('quiet'), source('new'), source('unread')]
-  const posts = { 'x:old': [kept('1', 10)], 'x:new': [kept('2', 30)], 'x:unread': [kept('3', 20)] }
-  const unread = (post: WatchPost) => post.key === postKey({ site: 'x', id: '3' })
+  const newestPostAt = { 'x:old': 10, 'x:new': 30, 'x:unread': 20 }
+  const unread = new Set(['x:unread'])
   const handles = (list: { handle: string }[]) => list.map((current) => current.handle)
 
   it('puts those with unread posts first, then the latest to post', () => {
-    const { shown, hidden } = feedChipSources(sources, posts, unread, 10)
+    const { shown, hidden } = feedChipSources(sources, newestPostAt, unread, 10)
     expect(handles(shown)).toEqual(['unread', 'new', 'old', 'quiet'])
     expect(hidden).toBe(0)
   })
 
   it('stops at the limit, and keeps the one shown past it', () => {
-    expect(feedChipSources(sources, posts, unread, 2)).toMatchObject({ hidden: 2 })
-    const { shown, hidden } = feedChipSources(sources, posts, unread, 2, 'x:quiet')
+    expect(feedChipSources(sources, newestPostAt, unread, 2)).toMatchObject({ hidden: 2 })
+    const { shown, hidden } = feedChipSources(sources, newestPostAt, unread, 2, 'x:quiet')
     expect(handles(shown)).toEqual(['unread', 'new', 'quiet'])
     expect(hidden).toBe(1)
   })
@@ -1033,28 +1008,10 @@ describe('mergeWatchPosts', () => {
   })
 
   it('keeps no more than the latest posts of a profile', () => {
-    const many = Array.from({ length: 60 }, (_, i) => fetched(String(i), i))
+    const many = Array.from({ length: 120 }, (_, i) => fetched(String(i), i))
     const { posts } = mergeWatchPosts([], many, { now: 99, initial: true })
-    expect(posts).toHaveLength(50)
-    expect(posts[0].id).toBe('59')
-  })
-})
-
-describe('unreadPostKeys', () => {
-  const posts = {
-    'x:a': [kept('1', 1, 0), kept('2', 2, 200), kept('shared', 3, 300)],
-    'x:b': [kept('3', 4, 300), kept('shared', 3, 300)],
-  }
-  const seenAt = (times: Record<string, number>) => (key: string) => times[key] ?? 100
-
-  it('counts the posts first seen after their profile was last shown', () => {
-    expect([...unreadPostKeys(posts, ['x:a', 'x:b'], seenAt({}))].sort()).toEqual(['x:2', 'x:3', 'x:shared'])
-    expect([...unreadPostKeys(posts, ['x:a'], seenAt({}))].sort()).toEqual(['x:2', 'x:shared'])
-    expect([...unreadPostKeys(posts, ['x:a', 'x:b'], seenAt({ 'x:a': 250 }))].sort()).toEqual(['x:3', 'x:shared'])
-  })
-
-  it('takes a post two profiles share as read once either was shown', () => {
-    expect([...unreadPostKeys(posts, ['x:a', 'x:b'], seenAt({ 'x:b': 300 }))]).toEqual(['x:2'])
-    expect([...unreadPostKeys(posts, ['x:a'], seenAt({ 'x:b': 300 }))]).toEqual(['x:2'])
+    expect(posts).toHaveLength(100)
+    expect(posts[0].id).toBe('119')
+    expect(mergeWatchPosts([], many, { now: 99, initial: true, max: 50 }).posts).toHaveLength(50)
   })
 })
