@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, View } from 'react-native'
-import { clsx, isWeb, isIos } from '@/lib/utils'
+import { clsx, isWeb, isIos, isAndroid, androidHitSlop } from '@/lib/utils'
 import { confirmAction, confirmDestructiveAction } from '@/lib/confirm'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
@@ -198,6 +198,11 @@ export const ProfileManager = () => {
       <View className="flex-row items-center justify-between mb-3">
         <NouText>{t('profiles.label')}</NouText>
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('profiles.add')}
+          style={isAndroid ? { width: 40, height: 40 } : undefined}
+          hitSlop={androidHitSlop}
+          className="items-center justify-center"
           onPress={() =>
             ui$.assign({
               profileModalOpen: true,

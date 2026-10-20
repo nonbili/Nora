@@ -20,7 +20,7 @@ export interface NouMenuHandle {
   openAt: (x: number, y: number, items?: Item[]) => void
 }
 
-export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, items, triggerSize, hideTrigger }, ref) {
+export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerLabel?: string; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, items, triggerSize, hideTrigger }, ref) {
   useImperativeHandle(ref, () => ({ openAt: () => {} }), [])
   const menuItems = items.map((item, index) => {
     if (item.kind === 'separator') {

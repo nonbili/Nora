@@ -4,7 +4,7 @@ import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
 import { ServiceIcon } from '../service/Services'
 import { View, Text, ScrollView, TouchableOpacity, Pressable, Modal, useColorScheme, useWindowDimensions } from 'react-native'
-import { clsx, isIos, isWeb, nIf } from '@/lib/utils'
+import { androidHitSlop, clsx, isIos, isWeb, iosTouchTarget, nIf } from '@/lib/utils'
 import { settings$ } from '@/states/settings'
 import { Tab, tabs$ } from '@/states/tabs'
 import { NouMenu } from '../menu/NouMenu'
@@ -115,6 +115,7 @@ export const TabModal = () => {
   const controls = (
     <View className={clsx('flex-row items-center justify-between', isIos ? 'px-4 pt-4 pb-3' : 'mb-4 pr-4')}>
       <NouButton
+        accessibilityLabel={t('tabs.new')}
         className="bg-indigo-500 dark:bg-indigo-600"
         onPress={() => {
           tabs$.openTab('')
@@ -149,6 +150,7 @@ export const TabModal = () => {
           </View>
         ) : (
           <NouMenu
+            triggerLabel={t('menus.more')}
             trigger={
               <View className="h-10 w-10 items-center justify-center rounded-full">
                 <MaterialIcons name="more-vert" size={20} color={iconColor} />
@@ -182,7 +184,7 @@ export const TabModal = () => {
                     ? 'bg-indigo-200 border-indigo-300 dark:bg-indigo-500/30 dark:border-indigo-400/40'
                     : 'bg-white border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
                 )}
-                style={{ borderLeftWidth: 5, borderLeftColor: getProfileColor(tab.profile), ...(isIos ? { minHeight: 44 } : {}) }}
+                style={{ borderLeftWidth: 5, borderLeftColor: getProfileColor(tab.profile), ...iosTouchTarget }}
               >
                 <ServiceIcon url={tab.url} icon={tab.icon} />
                 <View className="min-w-0 flex-1">
@@ -196,7 +198,8 @@ export const TabModal = () => {
               className="items-center justify-center p-2 rounded-full"
               accessibilityRole="button"
               accessibilityLabel={t('menus.close')}
-              style={isIos ? { minWidth: 44, minHeight: 44 } : undefined}
+              style={iosTouchTarget}
+              hitSlop={androidHitSlop}
               onPress={() => tabs$.closeTab(index)}
             >
               <MaterialIcons name="close" size={20} color={iconColor} />

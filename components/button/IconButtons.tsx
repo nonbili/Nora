@@ -5,17 +5,19 @@ import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { type ComponentProps, type ElementType } from 'react'
 import { Pressable, useColorScheme } from 'react-native'
 import { useTwColor } from '@/lib/theme'
+import { isAndroid } from '@/lib/utils'
 
 type IconButtonProps<T extends ElementType> = Omit<ComponentProps<T>, 'style' | 'onPress'> & Omit<ComponentProps<typeof Pressable>, 'children'>
 
 const buttonStyle = { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' } as const
+const androidMinimum = isAndroid ? { minWidth: 48, minHeight: 48 } : undefined
 
 export const AntButton = ({ color, name, size = 24, style, ...props }: IconButtonProps<typeof AntDesign>) => {
   const tw = useTwColor()
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
-    <Pressable {...props} style={(state) => [buttonStyle, typeof style === 'function' ? style(state) : style]}>
+    <Pressable accessibilityRole="button" {...props} style={isAndroid && typeof style !== 'function' ? [buttonStyle, style, androidMinimum] : (state) => [buttonStyle, typeof style === 'function' ? style(state) : style, androidMinimum]}>
       <AntDesign name={name} size={size} color={color ?? (isDark ? tw(colors.icon) : tw(colors.iconLightStrong))} />
     </Pressable>
   )
@@ -26,7 +28,7 @@ export const MaterialButton = ({ color, name, size = 24, style, ...props }: Icon
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
-    <Pressable {...props} style={(state) => [buttonStyle, typeof style === 'function' ? style(state) : style]}>
+    <Pressable accessibilityRole="button" {...props} style={isAndroid && typeof style !== 'function' ? [buttonStyle, style, androidMinimum] : (state) => [buttonStyle, typeof style === 'function' ? style(state) : style, androidMinimum]}>
       <MaterialIcons name={name} size={size} color={color ?? (isDark ? tw(colors.icon) : tw(colors.iconLightStrong))} />
     </Pressable>
   )
@@ -37,7 +39,7 @@ export const MaterialCommunityButton = ({ color, name, size = 24, style, ...prop
   const colorScheme = useColorScheme()
   const isDark = colorScheme !== 'light'
   return (
-    <Pressable {...props} style={(state) => [buttonStyle, typeof style === 'function' ? style(state) : style]}>
+    <Pressable accessibilityRole="button" {...props} style={isAndroid && typeof style !== 'function' ? [buttonStyle, style, androidMinimum] : (state) => [buttonStyle, typeof style === 'function' ? style(state) : style, androidMinimum]}>
       <MaterialCommunityIcons name={name} size={size} color={color ?? (isDark ? tw(colors.icon) : tw(colors.iconLightStrong))} />
     </Pressable>
   )

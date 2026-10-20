@@ -7,6 +7,9 @@ import { Platform } from 'react-native'
 export const isWeb = typeof document != 'undefined'
 export const isIos = Platform.OS === 'ios'
 export const isAndroid = Platform.OS === 'android'
+export const iosTouchTarget = isIos ? { minHeight: 44, minWidth: 44 } : undefined
+// Enlarge compact Android controls without inflating their visible backgrounds.
+export const androidHitSlop = isAndroid ? 10 : undefined
 
 export const clsx = (...classes: Array<any>) => classes.filter(Boolean).join(' ')
 

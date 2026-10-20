@@ -14,7 +14,7 @@ import { feedTabUrl } from '@/lib/feed-tab'
 import { watchSiteLabels, watchSourceLabel } from '@/lib/watch'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
-import { isIos } from '@/lib/utils'
+import { androidHitSlop, iosTouchTarget } from '@/lib/utils'
 
 /** Shows a timeline in the feed tab it was asked for from, or the whole feed when it is gone. */
 const showInTab = (tabId: string | undefined, timelineId?: string) => {
@@ -93,7 +93,7 @@ export const TimelineModal = () => {
         onChangeText={setName}
         placeholder={t('feed.timelineNamePlaceholder')}
         placeholderTextColor={tw('#9ca3af')}
-        style={isIos ? { minHeight: 44 } : undefined}
+        style={iosTouchTarget}
         autoFocus={!editing}
       />
       <NouSwitch className="mb-3" label={t('feed.mediaOnly')} value={mediaOnly} onPress={() => setMediaOnly((value) => !value)} />
@@ -105,10 +105,11 @@ export const TimelineModal = () => {
               <Pressable
                 key={profile.key}
                 onPress={() => toggle(profile.key)}
+                hitSlop={androidHitSlop}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked }}
                 className="flex-row items-center gap-3 py-2"
-                style={isIos ? { minHeight: 44 } : undefined}
+                style={iosTouchTarget}
               >
                 <MaterialIcons
                   name={checked ? 'check-box' : 'check-box-outline-blank'}

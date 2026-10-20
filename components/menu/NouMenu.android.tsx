@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NouText } from '../NouText'
 import { MaterialButton } from '../button/IconButtons'
 import { useTwColor } from '@/lib/theme'
+import { t } from 'i18next'
+import { androidHitSlop } from '@/lib/utils'
 
 type Anchor = {
   x: number
@@ -18,8 +20,8 @@ type Anchor = {
 
 export const NouMenu = forwardRef<
   NouMenuHandle,
-  { trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }
->(function NouMenu({ items, trigger, triggerColor, triggerSize, hideTrigger }, ref) {
+  { trigger?: ReactNode; triggerLabel?: string; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }
+>(function NouMenu({ items, trigger, triggerLabel, triggerColor, triggerSize, hideTrigger }, ref) {
   const tw = useTwColor()
   const [open, setOpen] = useState(false)
   const [anchor, setAnchor] = useState<Anchor | null>(null)
@@ -46,7 +48,7 @@ export const NouMenu = forwardRef<
   const getRowHeight = (item: Item) => {
     if (item.kind === 'separator') return 9
     if (item.kind === 'label') return 32
-    return item.description ? 56 : 44
+    return item.description ? 56 : 48
   }
   const menuHeight = visibleItems.reduce((total, item) => total + getRowHeight(item), 16)
 
@@ -120,6 +122,7 @@ export const NouMenu = forwardRef<
           {typeof trigger === 'string' ? (
             <MaterialButton
               name="more-vert"
+              accessibilityLabel={t('menus.more')}
               color={triggerColor}
               onPress={openMenu}
               style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined}
@@ -127,6 +130,9 @@ export const NouMenu = forwardRef<
           ) : trigger ? (
             <Pressable
               onPress={openMenu}
+              accessibilityRole="button"
+              accessibilityLabel={triggerLabel}
+              hitSlop={androidHitSlop}
               style={
                 triggerSize
                   ? { width: triggerSize, height: triggerSize, alignItems: 'center', justifyContent: 'center' }
@@ -138,6 +144,7 @@ export const NouMenu = forwardRef<
           ) : (
             <MaterialButton
               name="more-vert"
+              accessibilityLabel={t('menus.more')}
               color={triggerColor}
               onPress={openMenu}
               style={triggerSize ? { width: triggerSize, height: triggerSize } : undefined}

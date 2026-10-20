@@ -1,4 +1,4 @@
-import { clsx } from '@/lib/utils'
+import { clsx, isAndroid } from '@/lib/utils'
 import { PropsWithChildren } from 'react'
 import { View } from 'react-native'
 import { NouText } from '../NouText'
@@ -7,7 +7,7 @@ export const settingsUi = {
   surfaceCls: 'overflow-hidden rounded-[24px] bg-white dark:bg-zinc-900',
   sectionLabelCls: 'mb-2 px-1 text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-500',
   subheaderCls: 'mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500',
-  rowCls: 'px-4 py-4',
+  rowCls: isAndroid ? 'px-4 py-2' : 'px-4 py-4',
   rowBorderCls: 'border-b-2 border-zinc-100 dark:border-zinc-950',
   iconWrapCls:
     'h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-950',
@@ -26,5 +26,5 @@ export const SettingsSurface = ({ className, children }: PropsWithChildren<{ cla
 )
 
 export const SettingsRow = ({ isLast = false, className, children }: PropsWithChildren<{ isLast?: boolean; className?: string }>) => (
-  <View className={clsx(settingsUi.rowCls, !isLast && settingsUi.rowBorderCls, className)}>{children}</View>
+  <View style={isAndroid ? { minHeight: 56 } : undefined} className={clsx(settingsUi.rowCls, !isLast && settingsUi.rowBorderCls, className)}>{children}</View>
 )

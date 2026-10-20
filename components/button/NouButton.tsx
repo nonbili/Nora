@@ -1,4 +1,4 @@
-import { clsx, isIos, nIf } from '@/lib/utils'
+import { androidHitSlop, clsx, iosTouchTarget, nIf } from '@/lib/utils'
 import { NouText, textColorsIn } from '../NouText'
 import { ActivityIndicator, TouchableOpacity } from 'react-native'
 import { useTwColor } from '@/lib/theme'
@@ -12,6 +12,7 @@ export const NouButton = ({
   children,
   onPress,
   disabled,
+  accessibilityLabel,
 }: React.PropsWithChildren<{
   className?: string
   textClassName?: string
@@ -19,6 +20,7 @@ export const NouButton = ({
   size?: '1' | '2'
   loading?: boolean
   disabled?: boolean
+  accessibilityLabel?: string
   onPress: () => void
 }>) => {
   const tw = useTwColor()
@@ -44,8 +46,10 @@ export const NouButton = ({
         variant === 'outline' && isDisabled && 'border border-zinc-200 dark:border-zinc-800 bg-transparent',
         className,
       )}
-      style={isIos ? { minHeight: 44, minWidth: 44 } : undefined}
+      style={iosTouchTarget}
+      hitSlop={androidHitSlop}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={() => (isDisabled ? {} : onPress())}

@@ -1,6 +1,6 @@
 import { Platform, Pressable, Switch, View } from 'react-native'
 import { NouText } from '../NouText'
-import { clsx } from '@/lib/utils'
+import { androidHitSlop, clsx, iosTouchTarget } from '@/lib/utils'
 import { ReactNode } from 'react'
 import { useTwColor } from '@/lib/theme'
 
@@ -19,7 +19,8 @@ export const NouSwitch: React.FC<{
       disabled={disabled}
       onValueChange={onPress}
       trackColor={{ false: tw('#a1a1aa'), true: tw('#6366f1') }}
-      accessible={Platform.OS === 'ios' ? false : undefined}
+      accessible={Platform.OS !== 'web' ? false : undefined}
+      importantForAccessibility={Platform.OS === 'android' ? 'no' : undefined}
       {...Platform.select({
         web: { activeThumbColor: '#ffffff' },
         android: { thumbColor: '#ffffff' },
@@ -28,11 +29,13 @@ export const NouSwitch: React.FC<{
   )
   const rowClassName = clsx('items-center flex-row justify-between', disabled && 'opacity-50', className)
 
-  if (Platform.OS === 'ios') {
+  if (Platform.OS !== 'web') {
     return (
       <Pressable
         className={rowClassName}
-        style={{ minHeight: 44 }}
+        style={Platform.OS === 'android' ? { minHeight: 40 } : iosTouchTarget}
+        hitSlop={androidHitSlop}
+        accessible
         disabled={disabled}
         onPress={onPress}
         accessibilityRole="switch"
@@ -40,7 +43,9 @@ export const NouSwitch: React.FC<{
         accessibilityLabel={typeof label === 'string' ? label : undefined}
       >
         <View className="flex-1 pr-3">{labelView}</View>
-        {control}
+        <View collapsable={false} importantForAccessibility="no-hide-descendants">
+          {control}
+        </View>
       </Pressable>
     )
   }

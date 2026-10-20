@@ -4,7 +4,7 @@ import type { Item, NouMenuHandle } from './NouMenu'
 import { forwardRef, Fragment, ReactNode, useImperativeHandle } from 'react'
 import { View } from 'react-native'
 
-export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, items, triggerColor, triggerSize = 44, hideTrigger }, ref) {
+export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerLabel?: string; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, items, triggerColor, triggerSize = 44, hideTrigger }, ref) {
   useImperativeHandle(ref, () => ({ openAt: () => {} }), [])
   const groups = items.reduce<Item[][]>((acc, item) => {
     if (item.kind === 'separator') {

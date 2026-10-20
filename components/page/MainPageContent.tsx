@@ -4,7 +4,8 @@ import { createLogger } from '@/lib/log'
 import { settings$ } from '@/states/settings'
 import { NouHeader } from '../header/NouHeader'
 import { AppState, View } from 'react-native'
-import { clsx, isWeb } from '@/lib/utils'
+import { clsx, isAndroid, isWeb } from '@/lib/utils'
+import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
 import { NativeTabHost } from '../tab/NativeTabHost'
 import { NavModalContent } from '../modal/NavModal'
@@ -23,6 +24,7 @@ const returnSyncThrottleMs = 30 * 1000
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
+  const settingsModalOpen = useValue(ui$.settingsModalOpen)
   const tabs = useValue(tabs$.tabs)
   const desktopLayout = useDesktopLayout()
   // Android desktop mode gets the same workspace as the desktop app, laid out with
@@ -66,6 +68,8 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
 
   return (
     <View
+      collapsable={false}
+      importantForAccessibility={isAndroid && settingsModalOpen ? 'no-hide-descendants' : 'auto'}
       className={clsx(
         'flex-1 h-full overflow-hidden bg-zinc-100 dark:bg-zinc-950',
         !nativeDesktop && headerPosition === 'bottom' && 'flex-col-reverse',

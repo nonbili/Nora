@@ -5,7 +5,7 @@ import { version } from '../../package.json'
 import { version as desktopVersion } from '../../desktop/package.json'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { RootSiblingParent } from 'react-native-root-siblings'
-import { clsx, isIos, isWeb } from '@/lib/utils'
+import { clsx, isAndroid, isIos, isWeb, iosTouchTarget } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { ui$ } from '@/states/ui'
@@ -481,13 +481,13 @@ export const SettingsModal = ({ children }: { children?: ReactNode }) => {
 
   const content = (
     <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
-      <View className="px-3 py-3">
+      <View className={clsx('px-3', isAndroid ? 'py-1' : 'py-3')}>
         <View className="flex-row items-center gap-2">
-          <Pressable onPress={handleBack} className="h-11 w-11 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-900">
-            <MaterialIcons name={canGoBack ? 'arrow-back' : 'close'} color={isDark ? tw('#f8fafc') : tw('#334155')} size={22} />
+          <Pressable onPress={handleBack} accessibilityRole="button" accessibilityLabel={t(canGoBack || isAndroid ? 'menus.back' : 'menus.close')} style={iosTouchTarget} className="h-11 w-11 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-900">
+            <MaterialIcons name={canGoBack || isAndroid ? 'arrow-back' : 'close'} color={isDark ? tw('#f8fafc') : tw('#334155')} size={22} />
           </Pressable>
           <View className="flex-1">
-            <NouText className="text-lg font-semibold">{pageMeta[currentPage]}</NouText>
+            <NouText accessibilityRole="header" className="text-lg font-semibold">{pageMeta[currentPage]}</NouText>
           </View>
         </View>
       </View>
@@ -503,7 +503,7 @@ export const SettingsModal = ({ children }: { children?: ReactNode }) => {
           scrollPositionsRef.current[currentPage] = e.nativeEvent.contentOffset.y
         }}
       >
-        <View className="px-4 py-5">
+        <View className={clsx('px-4', isAndroid ? 'py-3' : 'py-5')}>
           {renderPage()}
           <View className="h-16" />
         </View>

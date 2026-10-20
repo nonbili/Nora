@@ -83,6 +83,8 @@
     "toggleSidebar": "Toggle sidebar"
   },
   "menus": {
+    "back": "Back",
+    "forward": "Forward",
     "blockAds": "Block ads on this site",
     "hideSignInPrompts": "Hide sign-in prompts on this site",
     "clearSiteData": "Clear site data",
@@ -450,6 +452,7 @@
     "backupUserStyles": "styles and scripts"
   },
   "tabs": {
+    "open": "Open tabs ({{count}})",
     "new": "New tab",
     "recentlyClosed": "Recently closed",
     "noRecentlyClosed": "No recently closed tabs",
@@ -570,6 +573,7 @@
     "sourcesCount_other": "{{count}} sources",
     "sourcesShown_one": "{{shown}} of {{count}} source",
     "sourcesShown_other": "{{shown}} of {{count}} sources",
+    "clearFilter": "Clear filter",
     "sourcesFilterPlaceholder": "Filter by name, handle or site",
     "sourcesNoMatch": "No sources match",
     "chooseSource": "Choose a source",

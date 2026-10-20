@@ -35,7 +35,7 @@ import {
 } from '@/lib/watch-feed'
 import { getFeedPosts, getNewestPostTimes, getProfilesWithPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
-import { clsx, isIos } from '@/lib/utils'
+import { androidHitSlop, clsx, iosTouchTarget } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
@@ -48,7 +48,6 @@ import { openFeedTab } from '@/lib/page'
 const CHIP_LIMIT = 12
 // Posts read at a time, and more each time the list is scrolled to its end.
 const FEED_PAGE_SIZE = 100
-const iosTouchTarget = isIos ? { minHeight: 44, minWidth: 44 } : undefined
 
 const intervalKeys = { minutes: 'feed.intervalMinutes', hours: 'feed.intervalHours', days: 'feed.intervalDays' } as const
 
@@ -235,10 +234,10 @@ const PostRow: React.FC<{
   }
 
   return (
-    <View className="flex-row gap-3 py-3 pl-4 pr-1">
+    <View className="flex-row items-start gap-3 py-3 pl-4 pr-1">
       <Avatar uri={profile?.avatar} size={36} site={post.site} />
       <View className="flex-1">
-        <View className="flex-row items-center gap-1.5">
+        <View className="min-h-6 flex-row items-center gap-1.5 pr-10">
           <NouText className="shrink font-semibold" numberOfLines={1}>
             {name}
           </NouText>
@@ -247,26 +246,12 @@ const PostRow: React.FC<{
             {formatPostAge(post.createdAtMs, now)}
           </NouText>
           {unread ? <View className="h-2 w-2 rounded-full bg-indigo-500" /> : null}
-          <View className="ml-auto">
-            <NouMenu
-              trigger={
-                <View className="h-8 w-8 items-center justify-center" style={iosTouchTarget}>
-                  <MaterialIcons name="more-vert" size={18} color={iconColor} />
-                </View>
-              }
-              items={[
-                ...(post.media?.length ? [{ label: t('feed.saveMedia'), handler: () => void save() }] : []),
-                { label: t('menus.share'), handler: () => share(post.url) },
-                { label: t('feed.openOn', { site: watchSiteLabels[post.site] }), handler: onOpenOriginal },
-              ]}
-            />
-          </View>
         </View>
         {post.repostOf ? (
           <NouText className="text-xs text-zinc-600 dark:text-zinc-400">{t('feed.repostOf', { handle: post.repostOf })}</NouText>
         ) : null}
         {post.text ? (
-          <Pressable onPress={() => setExpanded((value) => !value)} style={iosTouchTarget} className="justify-center pr-3">
+          <Pressable onPress={() => setExpanded((value) => !value)} style={iosTouchTarget} className="pr-3">
             <NouText className="mt-1 leading-5" numberOfLines={expanded ? undefined : 8}>
               {post.text}
             </NouText>
@@ -284,6 +269,21 @@ const PostRow: React.FC<{
             }
           />
         </View>
+      </View>
+      <View className="absolute right-0 top-0">
+        <NouMenu
+          triggerLabel={t('menus.more')}
+          trigger={(
+            <View className="h-12 w-12 items-center justify-center" style={iosTouchTarget}>
+              <MaterialIcons name="more-vert" size={18} color={iconColor} />
+            </View>
+          )}
+          items={[
+            ...(post.media?.length ? [{ label: t('feed.saveMedia'), handler: () => void save() }] : []),
+            { label: t('menus.share'), handler: () => share(post.url) },
+            { label: t('feed.openOn', { site: watchSiteLabels[post.site] }), handler: onOpenOriginal },
+          ]}
+        />
       </View>
     </View>
   )
@@ -572,6 +572,7 @@ export const FeedView: React.FC<{
             return (
               <Pressable
                 key={profile?.key ?? 'all'}
+                hitSlop={androidHitSlop}
                 style={iosTouchTarget}
                 onPress={() => setSelectedKey(profile?.key ?? null)}
                 onLayout={(e) => {
@@ -600,6 +601,7 @@ export const FeedView: React.FC<{
               onPress={() => ui$.sourcesModal.set({ tabId, timelineId: timeline?.id, pick: true })}
               accessibilityRole="button"
               accessibilityLabel={t('feed.chooseSource')}
+              hitSlop={androidHitSlop}
               style={iosTouchTarget}
               className="h-9 flex-row items-center gap-1 rounded-full border border-dashed border-zinc-300 pl-3 pr-2 dark:border-zinc-700"
             >
@@ -650,6 +652,7 @@ export const FeedView: React.FC<{
                     key={current.id}
                     onPress={() => watch$.setInTimeline(current.id, selected.key, !included)}
                     accessibilityRole="checkbox"
+                    hitSlop={androidHitSlop}
                     accessibilityState={{ checked: included }}
                     style={iosTouchTarget}
                     className={clsx(
@@ -666,6 +669,7 @@ export const FeedView: React.FC<{
               })}
               <Pressable
                 onPress={() => ui$.timelineModal.set({ profileKey: selected.key })}
+                hitSlop={androidHitSlop}
                 style={iosTouchTarget}
                 className="h-8 flex-row items-center gap-1 rounded-full border border-dashed border-zinc-300 px-3 dark:border-zinc-700"
               >

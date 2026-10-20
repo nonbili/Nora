@@ -26,7 +26,7 @@ import { getNewestPostTimes } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
-import { clsx } from '@/lib/utils'
+import { androidHitSlop, clsx } from '@/lib/utils'
 
 const sortLabelKeys = {
   name: 'feed.sortName',
@@ -130,6 +130,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
               ]}
             />
             <Pressable
+              hitSlop={androidHitSlop}
               onPress={() => watch$.sourcesSortReversed.set(!reversed)}
               accessibilityRole="switch"
               accessibilityLabel={t('feed.sortReversed')}
@@ -161,8 +162,9 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
             <Pressable
               onPress={() => setQuery('')}
               accessibilityRole="button"
-              accessibilityLabel={t('menus.close')}
-              hitSlop={8}
+              accessibilityLabel={t('feed.clearFilter')}
+              hitSlop={androidHitSlop ?? 8}
+              className="items-center justify-center"
             >
               <MaterialIcons name="close" size={18} color={iconColor} />
             </Pressable>
@@ -180,6 +182,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
               const active = current === site
               return (
                 <Pressable
+                  hitSlop={androidHitSlop}
                   key={current}
                   onPress={() => setSite(active ? undefined : current)}
                   accessibilityRole="checkbox"
@@ -208,7 +211,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
               const status = profileStatus(profile)
               return (
                 <View className="flex-row items-center gap-3 py-2">
-                  <Pressable onPress={() => open(profile)} className="min-w-0 flex-1 flex-row items-center gap-3">
+                  <Pressable hitSlop={androidHitSlop} onPress={() => open(profile)} className="min-w-0 flex-1 flex-row items-center gap-3">
                     <Avatar uri={profile.avatar} size={32} site={profile.site} />
                     <View className="min-w-0 flex-1">
                       <View className="flex-row items-center gap-1.5">
@@ -226,6 +229,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
                   {/* Picking is to show a source, not to stop watching it. */}
                   {pick ? null : (
                     <Pressable
+                      hitSlop={androidHitSlop}
                       onPress={() => unwatch(profile)}
                       accessibilityRole="button"
                       accessibilityLabel={t('feed.unwatch')}

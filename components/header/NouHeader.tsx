@@ -47,10 +47,7 @@ import { refreshWatched } from '@/lib/watch-feed'
 // unprefixed instead -- Tailwind only generates what it can see in the source.
 const rc = (web: string, native: string) => (isWeb ? web : native)
 
-// Header controls sit in a thin bar that is easy to miss with a thumb, so every icon in
-// it gets a wider press target than the glyph needs. The height stays at the default 44
-// so the bar itself does not get any taller; the extra room is taken horizontally.
-const headerButtonStyle = { width: 52, height: 44 } as const
+const headerButtonStyle = { width: isAndroid ? 48 : 52, height: isAndroid ? 48 : 44 } as const
 const headerIconSize = 26
 
 function prevTab() {
@@ -327,12 +324,12 @@ export const NouHeader: React.FC<{}> = ({}) => {
     >
       {nIf(
         !desktopLayout,
-        <View className="flex-row items-center gap-3">
+        <View className={clsx('flex-row items-center', isAndroid ? 'gap-0' : 'gap-3')}>
           {nIf(showNewTabButtonInHeader, <MaterialButton name="add" size={headerIconSize} color={headerControlColor} accessibilityRole="button" accessibilityLabel={t('tabs.new')} onPress={() => tabs$.openTab('')} style={isWeb ? headerButtonStyle : { ...headerButtonStyle, height: 52 }} />)}
-          {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" size={22} color={headerControlColor} onPress={handleBack} style={headerButtonStyle} />)}
-          {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" size={22} color={headerControlColor} onPress={goForward} style={headerButtonStyle} />)}
-          {nIf(showReloadButtonInHeader, <MaterialButton name="refresh" size={22} color={headerControlColor} onPress={reloadPage} style={headerButtonStyle} />)}
-          {nIf(showScrollButtonInHeader, <MaterialButton name="arrow-upward" color={headerControlColor} onPress={scrollToTop} style={headerButtonStyle} />)}
+          {nIf(showBackButtonInHeader, <MaterialButton name="arrow-back" accessibilityLabel={t('menus.back')} size={22} color={headerControlColor} onPress={handleBack} style={headerButtonStyle} />)}
+          {nIf(showForwardButtonInHeader, <MaterialButton name="arrow-forward" accessibilityLabel={t('menus.forward')} size={22} color={headerControlColor} onPress={goForward} style={headerButtonStyle} />)}
+          {nIf(showReloadButtonInHeader, <MaterialButton name="refresh" accessibilityLabel={t('menus.reload')} size={22} color={headerControlColor} onPress={reloadPage} style={headerButtonStyle} />)}
+          {nIf(showScrollButtonInHeader, <MaterialButton name="arrow-upward" accessibilityLabel={t('menus.scroll')} color={headerControlColor} onPress={scrollToTop} style={headerButtonStyle} />)}
         </View>,
       )}
       {nIf(
@@ -418,7 +415,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
         )}
         {nIf(
           !desktopLayout,
-          <TouchableOpacity className="flex-row items-center p-3" onPress={() => ui$.tabModalOpen.set(true)}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('tabs.open', { count: tabsCount })} className="flex-row items-center p-3" onPress={() => ui$.tabModalOpen.set(true)}>
             {/* The size of the icons beside it, with a line as heavy as theirs. */}
             <View
               className="h-[22px] min-w-[22px] items-center justify-center rounded-[6px] px-1"
@@ -471,7 +468,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
             trigger={
               isIos
                 ? 'ellipsis'
-                : <MaterialButton name="more-vert" size={headerIconSize} color={headerControlColor} style={headerButtonStyle} />
+                : <MaterialButton name="more-vert" accessibilityLabel={t('menus.more')} size={headerIconSize} color={headerControlColor} style={headerButtonStyle} />
             }
             items={[
               ...(isWeb
