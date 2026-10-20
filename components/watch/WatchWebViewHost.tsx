@@ -70,7 +70,11 @@ export const WatchWebViewHost = () => {
       return
     }
     if (message?.type === 'watch-page' && typeof message.data?.id === 'number') {
-      onWatchWebViewMessage(message.data.id, typeof message.data.html === 'string' ? message.data.html : '')
+      onWatchWebViewMessage(
+        message.data.id,
+        typeof message.data.html === 'string' ? message.data.html : '',
+        message.data.rateLimited === true,
+      )
     }
   }
 
@@ -81,10 +85,10 @@ export const WatchWebViewHost = () => {
         key={job.id}
         ref={nativeRef}
         style={{ flex: 1 }}
-        profile={WATCH_WEBVIEW_PROFILE}
+        profile={job.profile || WATCH_WEBVIEW_PROFILE}
         // The desktop site, as Anonymous mode uses for Instagram: its profile page comes with its posts.
         useragent={getUserAgent('win32', true)}
-        scriptOnStart={buildWatchPageScript(job.id, job.marker)}
+        scriptOnStart={buildWatchPageScript(job.id, job.marker, job.more, job.until)}
         onMessage={onMessage}
         active
         visible

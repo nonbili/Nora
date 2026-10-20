@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { buildWatchPageScript, loadInWatchWebView, onWatchWebViewError, onWatchWebViewMessage, watchWebView$ } from './watch-webview'
+import {
+  WATCH_WEBVIEW_RATE_LIMITED,
+  buildWatchPageScript,
+  loadInWatchWebView,
+  onWatchWebViewError,
+  onWatchWebViewMessage,
+  watchWebView$,
+} from './watch-webview'
 
 afterEach(() => {
   watchWebView$.hostMounted.set(false)
@@ -28,6 +35,136 @@ describe('buildWatchPageScript', () => {
     expect(message.data.id).toBe(7)
     expect(message.data.html).toContain('<meta property="og:title" content="x">')
     expect(message.data.html).toContain('<script type="application/json">{"polaris_ordered_timeline_connection":{"edges":[]}}</script>')
+  })
+})
+
+describe('buildWatchPageScript with more', () => {
+  it('keeps the answers the page loads as it is scrolled, and sends them all once no more come', () => {
+    const sent: string[] = []
+    const timers: (() => void)[] = []
+    let scrolled = 0
+    class FakeXHR {
+      responseType = ''
+      responseText = ''
+      listeners: (() => void)[] = []
+      addEventListener(_: string, listener: () => void) {
+        this.listeners.push(listener)
+      }
+      send() {}
+    }
+    const document = {
+      readyState: 'complete',
+      scrollingElement: { scrollHeight: 5000 },
+      querySelectorAll: (selector: string) => (selector.startsWith('meta') ? [] : [{ textContent: '{"post_id":"1"}' }]),
+    }
+    const window = {
+      XMLHttpRequest: FakeXHR,
+      NoraI: { onMessage: (payload: string) => sent.push(payload) },
+      scrollTo: () => scrolled++,
+    } as any
+    new Function('window', 'document', 'XMLHttpRequest', 'setTimeout', buildWatchPageScript(3, '"post_id"', 10))(
+      window,
+      document,
+      FakeXHR,
+      (callback: () => void) => timers.push(callback),
+    )
+    // An answer of two documents, one of them with posts.
+    const xhr = new FakeXHR()
+    xhr.send()
+    xhr.responseText = '{"data":{"other":1}}\n{"post_id":"2"}'
+    xhr.listeners.forEach((listener) => listener.call(xhr))
+    while (timers.length && !sent.length) timers.shift()!()
+    expect(scrolled).toBeGreaterThan(0)
+    expect(sent).toHaveLength(1)
+    const { html } = JSON.parse(sent[0]).data
+    expect(html).toContain('<script type="application/json">{"post_id":"1"}</script>')
+    expect(html).toContain('<script type="application/json">{"post_id":"2"}</script>')
+    expect(html).not.toContain('other')
+  })
+})
+
+describe('buildWatchPageScript with until', () => {
+  it('scrolls until a post as old as the time asked for has loaded, past a pinned one in the page', () => {
+    const sent: string[] = []
+    const timers: (() => void)[] = []
+    class FakeXHR {
+      responseType = ''
+      responseText = ''
+      listeners: (() => void)[] = []
+      addEventListener(_: string, listener: () => void) {
+        this.listeners.push(listener)
+      }
+      send() {}
+    }
+    const document = {
+      readyState: 'complete',
+      scrollingElement: { scrollHeight: 900 },
+      // The page's own posts, an old pinned one among them.
+      querySelectorAll: (selector: string) =>
+        selector.startsWith('meta') ? [] : [{ textContent: '{"__typename":"Story","post_id":"1","creation_time":100}' }],
+    }
+    const window = { XMLHttpRequest: FakeXHR, NoraI: { onMessage: (payload: string) => sent.push(payload) }, scrollTo: () => {} } as any
+    new Function('window', 'document', 'XMLHttpRequest', 'setTimeout', buildWatchPageScript(5, '"post_id"', 2, 300))(
+      window,
+      document,
+      FakeXHR,
+      (callback: () => void) => timers.push(callback),
+    )
+    const load = (text: string) => {
+      const xhr = new FakeXHR()
+      xhr.send()
+      xhr.responseText = text
+      xhr.listeners.forEach((listener) => listener.call(xhr))
+    }
+    const story = (id: string, time: number, more = {}) => JSON.stringify({ node: { __typename: 'Story', post_id: id, creation_time: time, ...more } })
+    // More parts than asked for, but none as old yet: not the post one of them shares, written first.
+    load(`${story('2', 500)}\n${JSON.stringify({ node: { attached_story: { __typename: 'Story', post_id: '9', creation_time: 10 }, __typename: 'Story', post_id: '3', creation_time: 400 } })}`)
+    timers.shift()!()
+    expect(sent).toHaveLength(0)
+    // Nor one pinned to the top, brought later, nor an ad.
+    load(JSON.stringify({ profile_pinned_post: JSON.parse(story('8', 50)) }))
+    load(story('7', 60, { sponsored_data: { ad_id: '1' } }))
+    timers.shift()!()
+    expect(sent).toHaveLength(0)
+    // A post that tells its time deeper in it, as a reel does.
+    load(JSON.stringify({ node: { __typename: 'Story', post_id: '4', comet_sections: { context_layout: { story: { creation_time: 290 } } } } }))
+    timers.shift()!()
+    expect(sent).toHaveLength(1)
+  })
+})
+
+describe('buildWatchPageScript told to slow down', () => {
+  it('sends at once when an answer the page loaded said to slow down', () => {
+    const sent: string[] = []
+    const timers: (() => void)[] = []
+    class FakeXHR {
+      responseType = ''
+      responseText = ''
+      listeners: (() => void)[] = []
+      addEventListener(_: string, listener: () => void) {
+        this.listeners.push(listener)
+      }
+      send() {}
+    }
+    const document = {
+      readyState: 'complete',
+      scrollingElement: { scrollHeight: 900 },
+      querySelectorAll: (selector: string) => (selector.startsWith('meta') ? [] : [{ textContent: '{"post_id":"1"}' }]),
+    }
+    const window = { XMLHttpRequest: FakeXHR, NoraI: { onMessage: (payload: string) => sent.push(payload) }, scrollTo: () => {} } as any
+    new Function('window', 'document', 'XMLHttpRequest', 'setTimeout', buildWatchPageScript(4, '"post_id"', 10))(
+      window,
+      document,
+      FakeXHR,
+      (callback: () => void) => timers.push(callback),
+    )
+    const xhr = new FakeXHR()
+    xhr.send()
+    xhr.responseText = '{"errors":[{"message":"Rate limit exceeded","severity":"CRITICAL","code":1675004}]}'
+    xhr.listeners.forEach((listener) => listener.call(xhr))
+    timers.shift()!()
+    expect(sent).toHaveLength(1)
+    expect(JSON.parse(sent[0]).data).toMatchObject({ id: 4, rateLimited: true })
   })
 })
 
@@ -63,5 +200,13 @@ describe('loadInWatchWebView', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
     onWatchWebViewMessage(watchWebView$.job.peek()!.id, '')
     await expect(result).rejects.toThrow('no posts in the page')
+  })
+
+  it('tells a page the site said to slow down on, even with its first posts', async () => {
+    watchWebView$.hostMounted.set(true)
+    const result = loadInWatchWebView('https://www.facebook.com/NASA/')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    onWatchWebViewMessage(watchWebView$.job.peek()!.id, '<script type="application/json">{"post_id":"1"}</script>', true)
+    await expect(result).rejects.toThrow(WATCH_WEBVIEW_RATE_LIMITED)
   })
 })

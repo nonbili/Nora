@@ -1,12 +1,11 @@
 import { AppState, Platform } from 'react-native'
 import { t } from 'i18next'
-import NoraViewModule from '@/modules/nora-view'
 import { settings$ } from '@/states/settings'
 import { watch$, type WatchedProfile } from '@/states/watch'
-import { isAnonymousProfile } from '@/lib/anonymous'
 import {
   INSTAGRAM_APP_ID,
   instagramProfileInfoUrl,
+  isFacebookErrorPage,
   mergeWatchPosts,
   INSTAGRAM_PAGE_HEADERS,
   backgroundIntervalMinutes,
@@ -15,6 +14,8 @@ import {
   didDocumentUrl,
   parseDidDocumentPds,
   dueWatchProfiles,
+  parseFacebookPage,
+  reachesBackTo,
   mastodonLookupUrl,
   mastodonStatusesUrl,
   parseBlueskyFeed,
@@ -32,6 +33,7 @@ import {
   redditListingUrl,
   redditPostsUrl,
   splitMastodonHandle,
+  watchKey,
   watchProfileUrl,
   watchSourceLabel,
   xTimelineUrl,
@@ -39,8 +41,15 @@ import {
   type WatchPost,
   type WatchSite,
 } from '@/lib/watch'
-import { THREADS_POSTS_MARKER, isWatchWebViewAvailable, loadInWatchWebView } from '@/lib/watch-webview'
+import {
+  FACEBOOK_POSTS_MARKER,
+  THREADS_POSTS_MARKER,
+  WATCH_WEBVIEW_RATE_LIMITED,
+  isWatchWebViewAvailable,
+  loadInWatchWebView,
+} from '@/lib/watch-webview'
 import { syncWatchMedia } from '@/lib/watch-media'
+import { accountChoice, findSignedInCookies, parseCookieHeader, siteCookieOrigin, type SiteAccount } from '@/lib/watch-account'
 import { getProfilePosts, setProfilePosts } from '@/lib/watch-db'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
 
@@ -97,81 +106,6 @@ class WatchFetchError extends Error {
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const parseCookieHeader = (raw: string): Record<string, string> => {
-  const out: Record<string, string> = {}
-  for (const part of raw.split(';')) {
-    const eq = part.indexOf('=')
-    if (eq === -1) continue
-    const k = part.slice(0, eq).trim()
-    if (k) out[k] = part.slice(eq + 1).trim()
-  }
-  return out
-}
-
-// The sites an account helps with; the others are read the same without one.
-const siteCookieOrigin: Partial<Record<WatchSite, string>> = {
-  x: 'https://x.com',
-  instagram: 'https://www.instagram.com',
-  reddit: 'https://www.reddit.com',
-}
-
-const isSignedIn: Partial<Record<WatchSite, (cookies: Record<string, string>) => boolean>> = {
-  x: (cookies) => Boolean(cookies.auth_token && cookies.ct0),
-  instagram: (cookies) => Boolean(cookies.sessionid),
-  reddit: (cookies) => Boolean(cookies.reddit_session),
-}
-
-interface SiteAccount {
-  cookie: string
-  // The Nora profile the cookies are of, told in the source's status.
-  profileId: string
-}
-
-// The Nora profiles an account can be taken from.
-const accountProfileIds = () =>
-  Array.from(
-    new Set(
-      settings$.profiles
-        .peek()
-        .map((profile) => profile?.id)
-        .filter((id): id is string => Boolean(id) && !isAnonymousProfile(id)),
-    ),
-  )
-
-/** The Nora profile to take the site's account from: the one chosen while it is still there, else any. */
-const chosenAccountProfile = (site: WatchSite, profileIds: string[]): string | undefined => {
-  const chosen = watch$.accountProfiles[site].peek()
-  return chosen && profileIds.includes(chosen) ? chosen : undefined
-}
-
-/** What decides which account a site is checked with; a run looks again when it changes. */
-const accountChoice = (site: WatchSite) =>
-  watch$.useAccounts.peek() ? (chosenAccountProfile(site, accountProfileIds()) ?? '') : null
-
-/**
- * The cookies of the Nora profile chosen for the site, or else of the first one signed in to it;
- * null when there is none, the site needs none, or the user turned accounts off.
- */
-const findSignedInCookies = async (site: WatchSite): Promise<SiteAccount | null> => {
-  const origin = siteCookieOrigin[site]
-  const signedIn = isSignedIn[site]
-  if (!origin || !signedIn || !watch$.useAccounts.peek()) return null
-  const all = accountProfileIds()
-  const chosen = chosenAccountProfile(site, all)
-  const profileIds = chosen ? [chosen] : all
-  for (const profileId of profileIds) {
-    try {
-      const header = await NoraViewModule.getCookies(origin, profileId)
-      if (header && signedIn(parseCookieHeader(header))) {
-        return { cookie: header, profileId }
-      }
-    } catch (e) {
-      console.warn('watch getCookies failed', site, e)
-    }
-  }
-  return null
-}
 
 const checkStatus = (res: Response, signedIn: boolean) => {
   if (res.status === 429) {
@@ -321,7 +255,7 @@ const fetchThreads = async (handle: string, _cookie: string, source: WatchRunSou
     if (isRateLimited(e) || !canUseWebView(source) || !timeLeft(deadline)) throw e
     console.warn('watch threads page failed, trying the webview', handle, e)
   }
-  return parseThreadsProfilePage(await loadInWatchWebView(url, timeLeft(deadline), THREADS_POSTS_MARKER), handle)
+  return parseThreadsProfilePage(await loadInWatchWebView(url, timeLeft(deadline), { marker: THREADS_POSTS_MARKER }), handle)
 }
 
 // The server each Bluesky account with a video is on, where its videos are kept.
@@ -415,9 +349,102 @@ const fetchReddit = async (handle: string, cookie: string, _source: WatchRunSour
   }
 }
 
+// How many of the parts a Facebook page brings its posts in to wait for, scrolled in the webview
+// before the first check, when there is no post kept to read back to.
+const FACEBOOK_WEBVIEW_PARTS = 20
+
+// Until when the webview is not used for Facebook, after it was told to slow down there.
+let facebookWebViewPausedUntil = 0
+
+/**
+ * The page, profile or group's own page, by a plain request: it comes with its newest post or
+ * two. With an account, when those do not reach back to the newest post kept, or to where an
+ * earlier check could not read back to, posts may have been missed, and the page is loaded in the
+ * hidden webview with the cookies of the Nora profile the account is from, and scrolled back to
+ * there, or for more before the first check, while Nora is open. What a check could not read back
+ * to as it could not scroll is read back to by a later one; what one scroll does not reach back to
+ * is given up, as every scroll starts from the newest post again. Without an account Facebook
+ * shows no more than a few posts before it asks to log in, and soon stops answering the page at
+ * all, so it is not scrolled. Most profiles and all groups show their posts only to an account.
+ */
+const fetchFacebook = async (
+  handle: string,
+  cookie: string,
+  source: WatchRunSource,
+  deadline: number,
+  account: SiteAccount | null,
+): Promise<WatchFetchResult> => {
+  // A group shows the posts it thinks most relevant first, unless asked for the newest.
+  const url = watchProfileUrl({ site: 'facebook', handle }) + (handle.startsWith('groups/') ? '?sorting_setting=CHRONOLOGICAL' : '')
+  const key = watchKey({ site: 'facebook', handle })
+  const kept = getProfilePosts(key)
+  const newestKept = kept.reduce<number | undefined>((newest, post) => Math.max(newest ?? 0, post.createdAtMs), undefined)
+  const target = watch$.profiles.peek().find((profile) => profile.key === key)?.reachBackTo ?? newestKept
+  const reaches = (read: WatchFetchResult) => reachesBackTo(read.posts, target, read.pinnedIds)
+  // Scrolling the page in the webview, for more than the plain request brings.
+  const canScroll = () =>
+    Boolean(cookie && account) && canUseWebView(source) && Date.now() >= facebookWebViewPausedUntil && Boolean(timeLeft(deadline))
+  let result: WatchFetchResult | undefined
+  try {
+    const html = await withDeadline(deadline, async (signal) => {
+      const res = await fetch(url, {
+        signal,
+        headers: { 'user-agent': DESKTOP_USER_AGENT, ...INSTAGRAM_PAGE_HEADERS, ...(cookie ? { cookie } : {}) },
+        credentials: 'omit',
+      })
+      checkStatus(res, Boolean(cookie))
+      return res.text()
+    })
+    if (isFacebookErrorPage(html)) {
+      throw new WatchFetchError(cookie ? 'not found' : WATCH_ERROR_NEEDS_LOGIN, !cookie)
+    }
+    result = parseFacebookPage(html, handle)
+  } catch (e) {
+    if (isRateLimited(e) || !canScroll()) throw e
+    console.warn('watch facebook page failed, trying the webview', handle, e)
+  }
+  if (result && (reaches(result) || !canScroll())) {
+    // Nothing to read back to before the first check.
+    return { ...result, reachBackTo: target === undefined || reaches(result) ? null : target }
+  }
+  try {
+    // Scrolling takes longer than any one request is given: the webview keeps to its own limit.
+    const html = await loadInWatchWebView(url, Math.max(0, deadline - Date.now()), {
+      marker: FACEBOOK_POSTS_MARKER,
+      more: FACEBOOK_WEBVIEW_PARTS,
+      until: target === undefined ? undefined : Math.floor(target / 1000),
+      profile: account?.profileId,
+    })
+    const more = parseFacebookPage(html, handle)
+    // The webview sends only the data of the posts, not that of the page's header.
+    return {
+      info: { name: result?.info.name || more.info.name, avatar: result?.info.avatar || more.info.avatar },
+      posts: more.posts,
+      pinnedIds: more.pinnedIds,
+      reachBackTo: null,
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message === WATCH_WEBVIEW_RATE_LIMITED) {
+      facebookWebViewPausedUntil = Date.now() + RETRY_AFTER_MS
+      if (!result) throw new WatchFetchError(WATCH_ERROR_RATE_LIMITED, true)
+    }
+    if (result) {
+      console.warn('watch facebook webview failed', handle, e)
+      return { ...result, reachBackTo: target ?? null }
+    }
+    throw e
+  }
+}
+
 const fetchers: Record<
   WatchSite,
-  (handle: string, cookie: string, source: WatchRunSource, deadline: number) => Promise<WatchFetchResult>
+  (
+    handle: string,
+    cookie: string,
+    source: WatchRunSource,
+    deadline: number,
+    account: SiteAccount | null,
+  ) => Promise<WatchFetchResult>
 > = {
   x: fetchX,
   instagram: fetchInstagram,
@@ -425,6 +452,7 @@ const fetchers: Record<
   bluesky: fetchBluesky,
   mastodon: fetchMastodon,
   reddit: fetchReddit,
+  facebook: fetchFacebook,
 }
 
 const isStillWatched = (key: string) => watch$.profiles.peek().some((profile) => profile.key === key)
@@ -441,7 +469,7 @@ const checkProfile = async (
   // the feed tells to log in only where that would help.
   const mode = cookie ? 'loggedIn' : siteCookieOrigin[profile.site] ? 'loggedOut' : undefined
   try {
-    const result = await fetchers[profile.site](profile.handle, cookie, source, deadline)
+    const result = await fetchers[profile.site](profile.handle, cookie, source, deadline, account)
     // It can be unwatched while the request is out.
     if (!isStillWatched(profile.key)) {
       return []
@@ -457,6 +485,7 @@ const checkProfile = async (
       ...(result.info.name ? { name: result.info.name } : {}),
       ...(result.info.avatar ? { avatar: result.info.avatar } : {}),
       ...(result.info.url ? { url: result.info.url } : {}),
+      ...(result.reachBackTo !== undefined ? { reachBackTo: result.reachBackTo ?? undefined } : {}),
       mode,
       accountProfileId: account?.profileId,
       lastCheckedAt: now,

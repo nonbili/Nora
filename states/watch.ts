@@ -36,6 +36,9 @@ export interface WatchedProfile {
   lastSuccessAt?: number
   // Not checked again before this, after the site said to slow down or to log in.
   retryAfter?: number
+  // The time of the newest post kept before a check that could not read back that far, as one
+  // that cannot scroll: later checks read back to it, to find the posts made in between.
+  reachBackTo?: number
   error?: string
 }
 

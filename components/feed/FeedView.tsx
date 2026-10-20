@@ -132,9 +132,10 @@ const usePostCover = (post: WatchPost) => {
   const kept = useValue(watchMedia$.files[mediaKey(post.key, 0)])
   const keptUri = first?.type === 'image' ? keptMediaUri(kept) : undefined
   // The cover each check of the profile brings anew comes before the media's own addresses, which
-  // are kept from when the post was read and can have expired since.
+  // are kept from when the post was read and can have expired since. A post without media has only
+  // its cover, which reading it again renews.
   const [coverFailed, setCoverFailed] = useState(false)
-  const remote = coverFailed ? first?.thumb || first?.url : post.image || first?.thumb || first?.url
+  const remote = coverFailed ? (first ? first.thumb || first.url : post.image) : post.image || first?.thumb || first?.url
   const source = keptUri || remote
   const onError = () => {
     if (coverFailed) return

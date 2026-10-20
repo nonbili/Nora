@@ -7,6 +7,7 @@ import NoraViewModule from '@/modules/nora-view'
 import { SharedRequests } from '@/lib/shared-request'
 import { watch$ } from '@/states/watch'
 import { findWatchPost, getPostsNewestFirst, getWatchPostKeys, updateWatchPost } from '@/lib/watch-db'
+import { findSignedInCookies } from '@/lib/watch-account'
 import {
   instagramEmbedUrl,
   mediaFileName,
@@ -14,6 +15,7 @@ import {
   mediaMimeType,
   mediaExpired,
   mediaToEvict,
+  parseFacebookPostPage,
   parseInstagramEmbed,
   parseThreadsPostPage,
   refreshesMedia,
@@ -97,24 +99,28 @@ const updatePost = (post: WatchPost, patch: Partial<WatchPost>) => updateWatchPo
 
 // An embed page, or a photo or video, asked for by the gallery and a prefetch run at once is
 // fetched once; each has a time limit of its own, whoever asked for it.
-const detailRequests = new SharedRequests<WatchMedia[]>(30 * 1000)
+const detailRequests = new SharedRequests<{ media: WatchMedia[]; cover?: string }>(30 * 1000)
 const downloadRequests = new SharedRequests<string | undefined>(5 * 60 * 1000)
 
 /**
- * Whether an Instagram or Threads post has to be read again from its own page: only its cover is
- * known, or an address of a photo or video that is not kept has expired.
+ * Whether an Instagram, Threads or Facebook post has to be read again from its own page: only its
+ * cover is known, or an address of a photo or video that is not kept has expired.
  */
 const needsDetails = (post: WatchPost) => {
   if (!refreshesMedia(post.site)) return false
   if (post.mediaComplete === false) return true
-  const notKept = (post.media || []).filter((_, index) => !watchMedia$.files[mediaKey(post.key, index)].peek())
-  return mediaExpired(notKept, Date.now())
+  return mediaExpired(notKeptMedia(post), Date.now())
 }
+
+/** The photos and videos of a post that are not kept on the phone, which are read from the site. */
+const notKeptMedia = (post: WatchPost) => (post.media || []).filter((_, index) => !watchMedia$.files[mediaKey(post.key, index)].peek())
 
 /**
  * All the media of a post. An Instagram post read from a profile page only has its cover, and
- * the rest is read from its embed page, which needs no account; a Threads post whose addresses
- * have expired is read from its own page.
+ * the rest is read from its embed page, which needs no account; a Threads or Facebook post whose
+ * addresses have expired is read from its own page, a Facebook one with the account the feed
+ * uses, as most profiles and all groups show their posts only to one, along with its cover. When
+ * that fails, the addresses there are do while they have not expired yet.
  */
 export const ensurePostMedia = async (
   post: WatchPost,
@@ -123,27 +129,42 @@ export const ensurePostMedia = async (
   if (!refreshesMedia(post.site) || (!force && !needsDetails(post))) {
     return post.media || []
   }
-  const threads = post.site === 'threads'
-  const media = await detailRequests.run(post.key, async (requestSignal) => {
-    const res = await fetch(threads ? threadsPostUrl(post) : instagramEmbedUrl(post.id), {
+  // A post's own page, but for an Instagram post, its embed page.
+  const ownPage = post.site !== 'instagram'
+  const read = detailRequests.run(post.key, async (requestSignal) => {
+    const account = post.site === 'facebook' ? await findSignedInCookies('facebook') : null
+    const res = await fetch(ownPage ? threadsPostUrl(post) : instagramEmbedUrl(post.id), {
       signal: requestSignal,
       headers: {
         'user-agent': DESKTOP_USER_AGENT,
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'accept-language': 'en-US,en;q=0.9',
         // The embed page is in a frame of another site; a post's own page is a page of its own.
-        'sec-fetch-dest': threads ? 'document' : 'iframe',
+        'sec-fetch-dest': ownPage ? 'document' : 'iframe',
         'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': threads ? 'none' : 'cross-site',
+        'sec-fetch-site': ownPage ? 'none' : 'cross-site',
+        ...(account ? { cookie: account.cookie } : {}),
       },
       credentials: 'omit',
     })
-    if (!res.ok) throw new Error(`${threads ? 'post page' : 'embed'} HTTP ${res.status}`)
+    if (!res.ok) throw new Error(`${ownPage ? 'post page' : 'embed'} HTTP ${res.status}`)
     const html = await res.text()
-    return threads ? parseThreadsPostPage(html, post.id) : parseInstagramEmbed(html)
+    if (post.site === 'threads') return { media: parseThreadsPostPage(html, post.id) }
+    return ownPage ? parseFacebookPostPage(html, post) : { media: parseInstagramEmbed(html) }
   }, signal)
+  let media: WatchMedia[]
+  let cover: string | undefined
+  try {
+    ;({ media, cover } = await read)
+  } catch (e) {
+    // Addresses are read again a little before they expire: up to then they still work.
+    if (force || signal?.aborted || post.mediaComplete === false || !post.media?.length) throw e
+    if (mediaExpired(notKeptMedia(post), Date.now(), 0)) throw e
+    return post.media
+  }
   // Each caller's own copy: a post two profiles share is in both their lists.
-  updatePost(post, { media, mediaComplete: true })
+  // A video Facebook only streams has no media, but a cover at a new address.
+  updatePost(post, { media, mediaComplete: true, ...(cover && !media.length ? { image: cover } : {}) })
   return media
 }
 
