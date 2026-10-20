@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { createLogger } from '@/lib/log'
 import { settings$ } from '@/states/settings'
 import { NouHeader } from '../header/NouHeader'
-import { View } from 'react-native'
+import { AppState, View } from 'react-native'
 import { clsx, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
 import { NativeTabHost } from '../tab/NativeTabHost'
@@ -18,6 +18,8 @@ import { UsageLockout } from '../lockout/UsageLockout'
 import { SettingsModal } from '../modal/SettingsModal'
 import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
 const logger = createLogger('sync')
+// Coming back to the app syncs at most this often.
+const returnSyncThrottleMs = 30 * 1000
 
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
@@ -31,10 +33,16 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
   useAccountChoicePrompt()
 
   useEffect(() => {
+    let lastRunAt = 0
     const runSync = () => {
+      lastRunAt = Date.now()
       void syncSupabase().catch((error) => {
         logger.error('syncSupabase failed', error)
       })
+    }
+    // Coming back to the app is when another device's changes are most likely waiting.
+    const runSyncOnReturn = () => {
+      if (Date.now() - lastRunAt >= returnSyncThrottleMs) runSync()
     }
 
     auth$.plan.set(me?.plan)
@@ -44,7 +52,15 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
         () => runSync(),
         10 * 60 * 1000, // 10 minutes
       )
-      return () => clearInterval(timer)
+      const appState = AppState.addEventListener('change', (state) => {
+        if (state === 'active') runSyncOnReturn()
+      })
+      if (isWeb) window.addEventListener('focus', runSyncOnReturn)
+      return () => {
+        clearInterval(timer)
+        appState.remove()
+        if (isWeb) window.removeEventListener('focus', runSyncOnReturn)
+      }
     }
   }, [me?.plan, userId])
 
