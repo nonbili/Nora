@@ -21,6 +21,15 @@ local('sync against local Supabase', () => {
     return instance
   }
 
+  // Writes need a plan: the latest App Store subscription decides, as in getNoraEntitlement.
+  async function setPlan(userId: string, status: 'active' | 'expired') {
+    const { error } = await admin.schema('nora').from('app_store_subscriptions').insert({
+      original_transaction_id: crypto.randomUUID(), user_id: userId, product_id: 'nora_sync', status,
+      expires_at: null, latest_transaction_jws: 'test',
+    })
+    if (error) throw error
+  }
+
   beforeEach(async () => {
     const { url, anonKey, serviceKey } = localConfig()
     admin = createClient(url, serviceKey, options)
@@ -33,6 +42,7 @@ local('sync against local Supabase', () => {
       users.push(user)
       const login = await user.client.auth.signInWithPassword({ email, password })
       if (login.error) throw login.error
+      await setPlan(data.user.id, 'active')
     }
     // Fail clearly if the Nora schema was not applied or exposed in PostgREST.
     for (const table of tables) {
@@ -162,8 +172,13 @@ local('sync against local Supabase', () => {
       expect(update.error).toBeNull()
       expect(update.data).toEqual([])
       const deletion = await own.from(table).delete().eq('user_id', users[1].id).select()
-      expect(deletion.error).toBeNull()
-      expect(deletion.data).toEqual([])
+      // Feed rows are taken away with deleted_at only.
+      if (table.startsWith('feed_')) {
+        expect(deletion.error).not.toBeNull()
+      } else {
+        expect(deletion.error).toBeNull()
+        expect(deletion.data).toEqual([])
+      }
       const preserved = await other.from(table).select('json').single()
       expect(preserved.error).toBeNull()
       expect(preserved.data!.json).toEqual({ marker: 'private' })
@@ -482,6 +497,43 @@ local('sync against local Supabase', () => {
     expect(restored.settings.theme).toBe('dark')
     expect(restored.meta.settings.backup).toBeUndefined()
     expect((await remoteDoc('settings')).theme).toBe('dark')
+  })
+
+  it('refuses sync writes from an account without a plan, and from one whose plan lapsed', async () => {
+    const api = users[0].client.schema('nora')
+    expect((await api.rpc('put_doc', { p_user: users[0].id, p_table: 'settings', p_json: { theme: 'dark' }, p_base: null })).data.ok).toBe(true)
+    await setPlan(users[0].id, 'expired')
+    for (const table of feedTables) {
+      expect((await api.from(table).insert({ user_id: users[0].id, id: 'x', json: {} })).error).not.toBeNull()
+    }
+    expect((await api.rpc('put_doc', { p_user: users[0].id, p_table: 'bookmarks', p_json: { bookmarks: [] }, p_base: null })).error).not.toBeNull()
+    const settings = await api.from('settings').select('updated_at').single()
+    // An error, not a refused write, which the device would take for a conflict and retry.
+    const refused = await api.rpc('put_doc', { p_user: users[0].id, p_table: 'settings', p_json: { theme: 'light' }, p_base: settings.data!.updated_at })
+    expect(refused.error?.code).toBe('42501')
+    // What it synced stays readable.
+    expect((await remoteDoc('settings')).theme).toBe('dark')
+
+    // Nor can it give itself one: billing rows are the server's.
+    expect((await api.from('app_store_subscriptions').insert({
+      original_transaction_id: 'forged', user_id: users[0].id, product_id: 'nora_sync', status: 'active',
+      latest_transaction_jws: 'forged',
+    })).error).not.toBeNull()
+    expect((await api.from('billing_accounts').select('user_id')).error).not.toBeNull()
+    expect((await api.from('feed_sources').insert({ user_id: users[0].id, id: 'x', json: {} })).error).not.toBeNull()
+
+    // A Stripe Nora Sync subscription is a plan too.
+    expect((await admin.from('customers').insert({
+      user_id: users[0].id, customer: 'cus_test', subscription: 'sub_test', plan: 'price_1SrU6bHiU2avyi3sNvj80Azi',
+    })).error).toBeNull()
+    expect((await api.from('feed_sources').insert({ user_id: users[0].id, id: 'x', json: {} })).error).toBeNull()
+  })
+
+  it('refuses deleting feed rows outright, so a removal always reaches the other devices', async () => {
+    const api = users[0].client.schema('nora')
+    expect((await api.from('feed_sources').insert({ user_id: users[0].id, id: 'x', json: {} })).error).toBeNull()
+    expect((await api.from('feed_sources').delete().eq('id', 'x')).error).not.toBeNull()
+    expect(await remoteRows(0, 'feed_sources')).toHaveLength(1)
   })
 
   it('merges again from what this device changed when its merged write is refused', async () => {
