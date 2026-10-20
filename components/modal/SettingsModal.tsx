@@ -3,7 +3,8 @@ import { BackHandler, Keyboard, KeyboardAvoidingView, Linking, Modal, Pressable,
 import { NouText } from '../NouText'
 import { version } from '../../package.json'
 import { version as desktopVersion } from '../../desktop/package.json'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { RootSiblingParent } from 'react-native-root-siblings'
 import { clsx, isIos, isWeb } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
@@ -140,7 +141,7 @@ function formatPlanLabel(plan?: string) {
   return plan ? capitalize(plan) : 'Free'
 }
 
-export const SettingsModal = () => {
+export const SettingsModal = ({ children }: { children?: ReactNode }) => {
   const tw = useTwColor()
   const { checking, checkForUpgrade, supported: supportsUpdateChecks } = useCheckForUpgrade()
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
@@ -517,13 +518,27 @@ export const SettingsModal = () => {
   if (isIos) {
     return (
       <Modal visible animationType="slide" presentationStyle="pageSheet" allowSwipeDismissal onRequestClose={closeSettingsTree}>
-        <SettingsNavigation
-          pageStack={pageStack}
-          titles={pageMeta}
-          onPathChange={(path) => setPageStack(['home', ...path])}
-          onClose={closeSettingsTree}
-          renderPage={renderPage}
-        />
+        <RootSiblingParent>
+          <SettingsNavigation
+            pageStack={pageStack}
+            titles={pageMeta}
+            onPathChange={(path) => {
+              if (!path.includes('styles')) {
+                ui$.assign({
+                  userStyleModalOpen: false,
+                  editingUserStyleId: null,
+                  previewBuiltinId: null,
+                  userScriptModalOpen: false,
+                  editingUserScriptId: null,
+                })
+              }
+              setPageStack(['home', ...path])
+            }}
+            onClose={closeSettingsTree}
+            renderPage={renderPage}
+          />
+          {children}
+        </RootSiblingParent>
       </Modal>
     )
   }

@@ -215,7 +215,7 @@ const PostRow: React.FC<{
           <View className="ml-auto">
             <NouMenu
               trigger={
-                <View className="items-center justify-center" style={{ width: 44, height: 44 }}>
+                <View className="h-8 w-8 items-center justify-center" style={iosTouchTarget}>
                   <MaterialIcons name="more-vert" size={18} color={iconColor} />
                 </View>
               }

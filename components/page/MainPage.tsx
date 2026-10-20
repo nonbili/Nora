@@ -5,7 +5,7 @@ import { MainPageContent } from './MainPageContent'
 import { NavModal } from '../modal/NavModal'
 import { CookieModal } from '../modal/CookieModal'
 import { SettingsModal } from '../modal/SettingsModal'
-import { isWeb, nIf } from '@/lib/utils'
+import { isIos, isWeb, nIf } from '@/lib/utils'
 import { TabModal } from '../modal/TabModal'
 import { BookmarkModal } from '../modal/BookmarkModal'
 import { DownloadVideoModal } from '../modal/DownloadVideoModal'
@@ -32,12 +32,21 @@ import { listenIosTransactions, reconcileIosTransactions } from '@/lib/ios-billi
 import { auth$ } from '@/states/auth'
 import { resolveI18nLanguageFromExpoLocale } from '@/lib/i18n'
 import { TranslationCard } from '@/components/translation/TranslationCard'
+import { ui$ } from '@/states/ui'
 
 export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const locales = useLocales()
   const selectedLanguage = useValue(settings$.language)
   const [, setLanguageRevision] = useState(0)
   const userId = useValue(auth$.userId)
+  const settingsModalOpen = useValue(ui$.settingsModalOpen)
+  const settingsDialogs = (
+    <>
+      <CookieModal />
+      <UrlModal />
+      <ProfileEditModal />
+    </>
+  )
 
   useEffect(() => listenIosTransactions(), [])
 
@@ -79,12 +88,10 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
       <QueryClientProvider client={queryClient}>
         <MainPageContent contentJs={contentJs} />
         <NavModal />
-        {nIf(!isWeb, <SettingsModal />)}
+        {nIf(!isWeb, <SettingsModal>{isIos ? settingsDialogs : null}</SettingsModal>)}
         <BookmarkModal />
-        <CookieModal />
-        <UrlModal />
+        {(!isIos || !settingsModalOpen) ? settingsDialogs : null}
         <ToolsModal />
-        <ProfileEditModal />
         <ProfileLinkModal />
         <RenameGroupModal />
         <RenameViewModal />
