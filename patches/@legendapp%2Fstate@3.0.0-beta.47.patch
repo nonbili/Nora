@@ -1,0 +1,84 @@
+diff --git a/persist-plugins/expo-sqlite.js b/persist-plugins/expo-sqlite.js
+index 53d49941c8162788afef707e2aa99abe7cfb33bb..f7d31a605c9084e2d812af83c0811fe274f25a1f 100644
+--- a/persist-plugins/expo-sqlite.js
++++ b/persist-plugins/expo-sqlite.js
+@@ -21,7 +21,8 @@ var ObservablePersistSqlite = class {
+     if (this.data[table] === void 0) {
+       try {
+         const value = this.storage.getItemSync(table);
+-        this.data[table] = value ? safeParse(value) : init;
++        // A copy of init: the observable keeps init as its own value, and set() writes into this one in place.
++        this.data[table] = value ? safeParse(value) : init === void 0 ? void 0 : safeParse(safeStringify(init));
+       } catch (e) {
+         console.error("[legend-state] ObservablePersistSqlite failed to parse", table);
+       }
+diff --git a/persist-plugins/expo-sqlite.mjs b/persist-plugins/expo-sqlite.mjs
+index 9e94c17f2de65b45cf9ccd19bab70c4636400236..5b5b45d780bc8c73fc308b8ee7f030d64f655c47 100644
+--- a/persist-plugins/expo-sqlite.mjs
++++ b/persist-plugins/expo-sqlite.mjs
+@@ -19,7 +19,8 @@ var ObservablePersistSqlite = class {
+     if (this.data[table] === void 0) {
+       try {
+         const value = this.storage.getItemSync(table);
+-        this.data[table] = value ? safeParse(value) : init;
++        // A copy of init: the observable keeps init as its own value, and set() writes into this one in place.
++        this.data[table] = value ? safeParse(value) : init === void 0 ? void 0 : safeParse(safeStringify(init));
+       } catch (e) {
+         console.error("[legend-state] ObservablePersistSqlite failed to parse", table);
+       }
+diff --git a/persist-plugins/local-storage.js b/persist-plugins/local-storage.js
+index 8dc056c383f5b7ad432f4ae07891b61f3ad3fd20..89316bb09dbfa56212e8b18758cf0a68fc2edb6f 100644
+--- a/persist-plugins/local-storage.js
++++ b/persist-plugins/local-storage.js
+@@ -16,7 +16,8 @@ var ObservablePersistLocalStorageBase = class {
+     if (this.data[table] === void 0) {
+       try {
+         const value = this.storage.getItem(table);
+-        this.data[table] = value ? safeParse(value) : init;
++        // A copy of init: the observable keeps init as its own value, and set() writes into this one in place.
++        this.data[table] = value ? safeParse(value) : init === void 0 ? void 0 : safeParse(safeStringify(init));
+       } catch (e) {
+         console.error("[legend-state] ObservablePersistLocalStorageBase failed to parse", table);
+       }
+diff --git a/persist-plugins/local-storage.mjs b/persist-plugins/local-storage.mjs
+index f9d1b5a89525c44a5441a199e5ae5d76c4bf21a7..ebaf0abefd3c351b0a19b8d70cbdb30b6d981d47 100644
+--- a/persist-plugins/local-storage.mjs
++++ b/persist-plugins/local-storage.mjs
+@@ -14,7 +14,8 @@ var ObservablePersistLocalStorageBase = class {
+     if (this.data[table] === void 0) {
+       try {
+         const value = this.storage.getItem(table);
+-        this.data[table] = value ? safeParse(value) : init;
++        // A copy of init: the observable keeps init as its own value, and set() writes into this one in place.
++        this.data[table] = value ? safeParse(value) : init === void 0 ? void 0 : safeParse(safeStringify(init));
+       } catch (e) {
+         console.error("[legend-state] ObservablePersistLocalStorageBase failed to parse", table);
+       }
+diff --git a/persist-plugins/mmkv.js b/persist-plugins/mmkv.js
+index 5b096d548729da6bc3d01c999dda112a1083a985..6f9da20331f469275dae697e34717dae55b0b1e9 100644
+--- a/persist-plugins/mmkv.js
++++ b/persist-plugins/mmkv.js
+@@ -62,7 +62,8 @@ var ObservablePersistMMKV = class {
+     if (this.data[table] === void 0) {
+       try {
+         const value = storage.getString(table);
+-        this.data[table] = value ? safeParse(value) : init;
++        // A copy of init: the observable keeps init as its own value, and set() writes into this one in place.
++        this.data[table] = value ? safeParse(value) : init === void 0 ? void 0 : safeParse(safeStringify(init));
+       } catch (e) {
+         console.error("[legend-state] MMKV failed to parse", table);
+       }
+diff --git a/persist-plugins/mmkv.mjs b/persist-plugins/mmkv.mjs
+index aa1a0852ac085319b0611aef0a6c02501dac52ad..9c266f1ad7e7074b07d4e6e5933100683e8442f1 100644
+--- a/persist-plugins/mmkv.mjs
++++ b/persist-plugins/mmkv.mjs
+@@ -40,7 +40,8 @@ var ObservablePersistMMKV = class {
+     if (this.data[table] === void 0) {
+       try {
+         const value = storage.getString(table);
+-        this.data[table] = value ? safeParse(value) : init;
++        // A copy of init: the observable keeps init as its own value, and set() writes into this one in place.
++        this.data[table] = value ? safeParse(value) : init === void 0 ? void 0 : safeParse(safeStringify(init));
+       } catch (e) {
+         console.error("[legend-state] MMKV failed to parse", table);
+       }

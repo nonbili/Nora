@@ -70,7 +70,7 @@ export const createWatchBackup = (): WatchBackup => ({
 })
 
 /** A source of a backup, when it is one Nora could have watched: its page has to read back as the same source. */
-const validTarget = (site: unknown, handle: unknown): WatchTarget | null => {
+export const validTarget = (site: unknown, handle: unknown): WatchTarget | null => {
   const cleanHandle = text(handle)
   if (typeof site !== 'string' || !Object.hasOwn(watchSiteLabels, site) || !cleanHandle) return null
   const target = { site: site as WatchSite, handle: cleanHandle }

@@ -3,7 +3,9 @@ import { bookmarks$ } from '@/states/bookmarks'
 import { createLogger } from '@/lib/log'
 import { settings$ } from '@/states/settings'
 import { getUserStylesSnapshot, userStyles$ } from '@/states/user-styles'
+import { watch$ } from '@/states/watch'
 import { bookmarksSyncer } from './sync/bookmarks'
+import { feedsSyncer } from './sync/feeds'
 import { settingsSyncer } from './sync/settings'
 import { userStylesSyncer } from './sync/user-styles'
 
@@ -32,7 +34,12 @@ export async function syncSupabase() {
   }
 
   logger.log('starting syncSupabase')
-  await Promise.all([settingsSyncer.syncNow(), bookmarksSyncer.syncNow(), userStylesSyncer.syncNow()])
+  await Promise.all([
+    settingsSyncer.syncNow(),
+    bookmarksSyncer.syncNow(),
+    userStylesSyncer.syncNow(),
+    feedsSyncer.syncNow(),
+  ])
   logger.log('completed syncSupabase')
 }
 
@@ -89,6 +96,20 @@ bookmarks$.onChange(({ value, getPrevious }) => {
     bookmarksSyncer.markDirty()
     if (canSync()) {
       bookmarksSyncer.scheduleSync()
+    }
+  }
+})
+
+watch$.onChange(() => {
+  if (feedsSyncer.isApplyingRemote()) {
+    return
+  }
+
+  // Checks and reads change the profiles often; only the sources and timelines are synced.
+  if (feedsSyncer.trackLocalChange()) {
+    logger.log('detected local feeds change')
+    if (canSync()) {
+      feedsSyncer.scheduleSync()
     }
   }
 })

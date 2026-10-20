@@ -109,6 +109,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "@legendapp/state@3.0.0-beta.47": "patches/@legendapp%2Fstate@3.0.0-beta.47.patch",
+  },
   "packages": {
     "2g": ["2g@1.0.1", "", { "peerDependencies": { "typescript": ">=5.8.0" }, "optionalPeers": ["typescript"], "bin": { "2g": "bin/cli.js" } }, "sha512-+uViadKOS/wwR4pFu5g8TPn3QHpKqoX19JHCnp8k/3cLpImdcXozwvZA6Q/5PeW3AcU8neL8faaMidBcv7o8CA=="],
 
