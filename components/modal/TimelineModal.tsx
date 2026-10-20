@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Pressable, ScrollView, TextInput, View } from 'react-native'
+import { Pressable, ScrollView, TextInput } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { t } from 'i18next'
-import { BaseCenterModal } from './BaseCenterModal'
+import { FormModal } from './FormModal'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import { ui$ } from '@/states/ui'
@@ -13,7 +13,6 @@ import { feedTabUrl } from '@/lib/feed-tab'
 import { watchSiteLabels, watchSourceLabel } from '@/lib/watch'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
-import { clsx } from '@/lib/utils'
 
 /** Shows a timeline in the feed tab it was asked for from, or the whole feed when it is gone. */
 const showInTab = (tabId: string | undefined, timelineId?: string) => {
@@ -71,62 +70,57 @@ export const TimelineModal = () => {
   }
 
   return (
-    <BaseCenterModal onClose={onClose}>
-      <View className="w-full p-4">
-        <NouText className="mb-4 text-lg font-bold">{editing ? t('feed.editTimeline') : t('feed.newTimeline')}</NouText>
-        <TextInput
-          className="mb-3 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-          value={name}
-          onChangeText={setName}
-          placeholder={t('feed.timelineNamePlaceholder')}
-          placeholderTextColor={tw('#9ca3af')}
-          autoFocus={!editing}
-        />
-        {profiles.length ? (
-          <ScrollView style={{ maxHeight: 320 }} keyboardShouldPersistTaps="handled">
-            {profiles.map((profile) => {
-              const checked = selectedKeys.includes(profile.key)
-              return (
-                <Pressable
-                  key={profile.key}
-                  onPress={() => toggle(profile.key)}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked }}
-                  className="flex-row items-center gap-3 py-2"
-                >
-                  <MaterialIcons
-                    name={checked ? 'check-box' : 'check-box-outline-blank'}
-                    size={22}
-                    color={checked ? tw('#6366f1') : tw('#a1a1aa')}
-                  />
-                  <NouText className="flex-1" numberOfLines={1}>
-                    {profile.name ? `${profile.name} ` : ''}
-                    <NouText className="text-zinc-600 dark:text-zinc-400">{watchSourceLabel(profile)}</NouText>
-                  </NouText>
-                  <NouText className="text-xs text-zinc-500">{watchSiteLabels[profile.site]}</NouText>
-                </Pressable>
-              )
-            })}
-          </ScrollView>
-        ) : (
-          <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.empty')}</NouText>
-        )}
-        <View className={clsx('mt-6 flex-row items-center gap-3', editing ? 'justify-between' : 'justify-end')}>
-          {editing ? (
-            <NouButton size="1" variant="outline" textClassName="text-red-600 dark:text-red-400" onPress={remove}>
-              {t('feed.deleteTimeline')}
-            </NouButton>
-          ) : null}
-          <View className="flex-row gap-3">
-            <NouButton size="1" variant="outline" onPress={onClose}>
-              {t('buttons.cancel')}
-            </NouButton>
-            <NouButton size="1" disabled={!name.trim()} onPress={save}>
-              {t('buttons.save')}
-            </NouButton>
-          </View>
-        </View>
-      </View>
-    </BaseCenterModal>
+    <FormModal
+      title={editing ? t('feed.editTimeline') : t('feed.newTimeline')}
+      onClose={onClose}
+      onSubmit={save}
+      submitLabel={t('buttons.save')}
+      submitDisabled={!name.trim()}
+    >
+      <TextInput
+        className="mb-3 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+        value={name}
+        onChangeText={setName}
+        placeholder={t('feed.timelineNamePlaceholder')}
+        placeholderTextColor={tw('#9ca3af')}
+        style={{ minHeight: 44 }}
+        autoFocus={!editing}
+      />
+      {profiles.length ? (
+        <ScrollView style={{ maxHeight: 320 }} keyboardShouldPersistTaps="handled">
+          {profiles.map((profile) => {
+            const checked = selectedKeys.includes(profile.key)
+            return (
+              <Pressable
+                key={profile.key}
+                onPress={() => toggle(profile.key)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked }}
+                className="min-h-11 flex-row items-center gap-3 py-2"
+                style={{ minHeight: 44 }}
+              >
+                <MaterialIcons
+                  name={checked ? 'check-box' : 'check-box-outline-blank'}
+                  size={22}
+                  color={checked ? tw('#6366f1') : tw('#a1a1aa')}
+                />
+                <NouText className="flex-1" numberOfLines={1}>
+                  {profile.name ? `${profile.name} ` : ''}
+                  <NouText className="text-zinc-600 dark:text-zinc-400">{watchSourceLabel(profile)}</NouText>
+                </NouText>
+                <NouText className="text-xs text-zinc-500">{watchSiteLabels[profile.site]}</NouText>
+              </Pressable>
+            )
+          })}
+        </ScrollView>
+      ) : (
+        <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.empty')}</NouText>
+      )}
+      {editing ? (
+        <NouButton className="mt-6 self-start" size="1" variant="outline" textClassName="text-red-600 dark:text-red-400" onPress={remove}>
+          {t('feed.deleteTimeline')}
+        </NouButton>
+      ) : null}
+    </FormModal>
   )
 }

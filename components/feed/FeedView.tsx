@@ -35,7 +35,7 @@ import {
 } from '@/lib/watch-feed'
 import { getFeedPosts, getNewestPostTimes, getProfilesWithPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
-import { clsx } from '@/lib/utils'
+import { clsx, isIos } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
@@ -48,6 +48,7 @@ import { openFeedTab } from '@/lib/page'
 const CHIP_LIMIT = 12
 // Posts read at a time, and more each time the list is scrolled to its end.
 const FEED_PAGE_SIZE = 100
+const iosTouchTarget = isIos ? { minHeight: 44, minWidth: 44 } : undefined
 
 const intervalKeys = { minutes: 'feed.intervalMinutes', hours: 'feed.intervalHours', days: 'feed.intervalDays' } as const
 
@@ -68,7 +69,7 @@ export const ChoicePicker: React.FC<{
     <NouText className="font-medium">{label}</NouText>
     <NouMenu
       trigger={
-        <View className="h-9 flex-row items-center gap-1 rounded-full border border-zinc-300 pl-3 pr-2 dark:border-zinc-700">
+        <View style={iosTouchTarget} className="h-9 flex-row items-center gap-1 rounded-full border border-zinc-300 pl-3 pr-2 dark:border-zinc-700">
           <NouText className="text-sm">{value}</NouText>
           <MaterialIcons name="arrow-drop-down" size={18} color={iconColor} />
         </View>
@@ -214,7 +215,7 @@ const PostRow: React.FC<{
           <View className="ml-auto">
             <NouMenu
               trigger={
-                <View className="h-8 w-8 items-center justify-center">
+                <View className="items-center justify-center" style={{ width: 44, height: 44 }}>
                   <MaterialIcons name="more-vert" size={18} color={iconColor} />
                 </View>
               }
@@ -230,7 +231,7 @@ const PostRow: React.FC<{
           <NouText className="text-xs text-zinc-600 dark:text-zinc-400">{t('feed.repostOf', { handle: post.repostOf })}</NouText>
         ) : null}
         {post.text ? (
-          <Pressable onPress={() => setExpanded((value) => !value)} className="pr-3">
+          <Pressable onPress={() => setExpanded((value) => !value)} style={iosTouchTarget} className="justify-center pr-3">
             <NouText className="mt-1 leading-5" numberOfLines={expanded ? undefined : 8}>
               {post.text}
             </NouText>
@@ -517,6 +518,7 @@ export const FeedView: React.FC<{
             return (
               <Pressable
                 key={profile?.key ?? 'all'}
+                style={iosTouchTarget}
                 onPress={() => setSelectedKey(profile?.key ?? null)}
                 onLayout={(e) => {
                   if (!profile) return
@@ -544,6 +546,7 @@ export const FeedView: React.FC<{
               onPress={() => ui$.sourcesModal.set({ tabId, timelineId: timeline?.id, pick: true })}
               accessibilityRole="button"
               accessibilityLabel={t('feed.chooseSource')}
+              style={iosTouchTarget}
               className="h-9 flex-row items-center gap-1 rounded-full border border-dashed border-zinc-300 pl-3 pr-2 dark:border-zinc-700"
             >
               <NouText className="text-sm">{t('feed.moreSources', { count: chips.hidden })}</NouText>
@@ -594,6 +597,7 @@ export const FeedView: React.FC<{
                     onPress={() => watch$.setInTimeline(current.id, selected.key, !included)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: included }}
+                    style={iosTouchTarget}
                     className={clsx(
                       'h-8 flex-row items-center gap-1 rounded-full border px-3',
                       included
@@ -608,6 +612,7 @@ export const FeedView: React.FC<{
               })}
               <Pressable
                 onPress={() => ui$.timelineModal.set({ profileKey: selected.key })}
+                style={iosTouchTarget}
                 className="h-8 flex-row items-center gap-1 rounded-full border border-dashed border-zinc-300 px-3 dark:border-zinc-700"
               >
                 <MaterialIcons name="add" size={14} color={iconColor} />
@@ -644,7 +649,7 @@ export const FeedView: React.FC<{
         <View className="min-w-0 flex-1 flex-row">
           <NouMenu
             trigger={
-              <View className="h-11 min-w-0 flex-row items-center gap-1">
+              <View style={iosTouchTarget} className="h-11 min-w-0 flex-row items-center gap-1">
                 <NouText className="shrink text-lg font-semibold" numberOfLines={1}>
                   {timeline?.name || t('feed.label')}
                 </NouText>
@@ -659,6 +664,7 @@ export const FeedView: React.FC<{
             onPress={() => ui$.feedSettingsModalOpen.set(true)}
             accessibilityRole="button"
             accessibilityLabel={t('feed.settings')}
+            style={iosTouchTarget}
             className="h-11 w-11 items-center justify-center rounded-full"
           >
             <MaterialIcons name="tune" color={iconColor} size={22} />
@@ -670,6 +676,7 @@ export const FeedView: React.FC<{
             disabled={refreshing}
             accessibilityRole="button"
             accessibilityLabel={t('feed.refresh')}
+            style={iosTouchTarget}
             className="h-11 w-11 items-center justify-center rounded-full"
           >
             {refreshing ? <ActivityIndicator color={iconColor} /> : <MaterialIcons name="refresh" color={iconColor} size={22} />}

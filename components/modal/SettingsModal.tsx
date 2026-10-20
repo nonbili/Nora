@@ -1,5 +1,5 @@
 import type { ScrollViewInstance } from 'react-native'
-import { BackHandler, Keyboard, KeyboardAvoidingView, Linking, Pressable, ScrollView, View, useColorScheme, useWindowDimensions } from 'react-native'
+import { BackHandler, Keyboard, KeyboardAvoidingView, Linking, Modal, Pressable, ScrollView, View, useColorScheme, useWindowDimensions } from 'react-native'
 import { NouText } from '../NouText'
 import { version } from '../../package.json'
 import { version as desktopVersion } from '../../desktop/package.json'
@@ -9,6 +9,7 @@ import { useValue } from '@legendapp/state/react'
 import { settings$ } from '@/states/settings'
 import { ui$ } from '@/states/ui'
 import { BaseModal } from './BaseModal'
+import { SettingsNavigation, type SettingsPage } from './SettingsNavigation'
 import {
   SettingsBrowsingContent,
   SettingsAppearanceContent,
@@ -22,6 +23,7 @@ import { SettingsBackupContent } from './SettingsBackupContent'
 import { t } from 'i18next'
 import { SettingsModalTabSync } from './SettingsModalTabSync'
 import MaterialIcons, { type MaterialIconsIconName } from '@react-native-vector-icons/material-icons'
+import { SymbolView } from 'expo-symbols'
 import { auth$ } from '@/states/auth'
 import { capitalize } from 'es-toolkit'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -42,7 +44,31 @@ const donateLinks = [
   { label: 'Liberapay', detail: 'liberapay.com/rnons', url: 'https://liberapay.com/rnons' },
   { label: 'PayPal', detail: 'paypal.me/rnons', url: 'https://paypal.me/rnons' },
 ]
-type SettingsPage = 'home' | 'browsing' | 'styles' | 'appearance' | 'services' | 'profiles' | 'bookmarks' | 'search' | 'sync' | 'backup' | 'about' | 'changelog' | 'usageLimits'
+
+const settingsSymbols = {
+  tune: 'slider.horizontal.3',
+  palette: 'paintpalette',
+  apps: 'square.grid.2x2',
+  brush: 'paintbrush',
+  'hourglass-empty': 'hourglass',
+  people: 'person.2',
+  bookmark: 'bookmark',
+  'manage-search': 'magnifyingglass',
+  sync: 'arrow.triangle.2.circlepath',
+  'settings-backup-restore': 'externaldrive',
+  'info-outline': 'info.circle',
+  history: 'clock.arrow.circlepath',
+  code: 'chevron.left.forwardslash.chevron.right',
+  'open-in-new': 'arrow.up.right.square',
+  'chevron-right': 'chevron.right',
+} as const
+
+const SettingsIcon = ({ name, color, size = 18 }: { name: MaterialIconsIconName; color: string; size?: number }) => {
+  const symbol = settingsSymbols[name as keyof typeof settingsSymbols]
+  return isIos && symbol
+    ? <SymbolView name={symbol} size={size} tintColor={color} />
+    : <MaterialIcons name={name} size={size} color={color} />
+}
 
 const SettingsNavRow: React.FC<{
   title: string
@@ -64,7 +90,7 @@ const SettingsNavRow: React.FC<{
       )}
     >
       <View className={settingsUi.iconWrapCls}>
-        <MaterialIcons name={icon} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} size={18} />
+        <SettingsIcon name={icon} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} />
       </View>
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
@@ -73,7 +99,7 @@ const SettingsNavRow: React.FC<{
         </View>
         <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{description}</NouText>
       </View>
-      <MaterialIcons name="chevron-right" color={isDark ? tw('#71717a') : tw('#52525b')} size={20} />
+      <SettingsIcon name="chevron-right" color={isDark ? tw('#71717a') : tw('#52525b')} size={16} />
     </Pressable>
   )
 }
@@ -99,13 +125,13 @@ const SettingsExternalRow: React.FC<{
       )}
     >
       <View className={settingsUi.iconWrapCls}>
-        <MaterialIcons name={icon} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} size={18} />
+        <SettingsIcon name={icon} color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)} />
       </View>
       <View className="flex-1">
         <NouText>{title}</NouText>
         <NouText className="mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{detail}</NouText>
       </View>
-      <MaterialIcons name="chevron-right" color={isDark ? tw('#71717a') : tw('#52525b')} size={20} />
+      <SettingsIcon name="chevron-right" color={isDark ? tw('#71717a') : tw('#52525b')} size={16} />
     </Pressable>
   )
 }
@@ -298,8 +324,8 @@ export const SettingsModal = () => {
     usageLimits: t('usageLimits.label'),
   }
 
-  const renderPage = () => {
-    if (currentPage === 'home') {
+  const renderPage = (page: SettingsPage = currentPage) => {
+    if (page === 'home') {
       return (
         <View className="gap-8">
           <SettingsSection label={t('settings.sections.general')}>
@@ -402,18 +428,18 @@ export const SettingsModal = () => {
       )
     }
 
-    if (currentPage === 'browsing') return <SettingsBrowsingContent onFocusInput={scrollToEnd} />
-    if (currentPage === 'styles') return <SettingsUserStylesContent />
-    if (currentPage === 'appearance') return <SettingsAppearanceContent />
-    if (currentPage === 'services') return <SettingsServicesContent />
-    if (currentPage === 'profiles') return <SettingsProfilesContent />
-    if (currentPage === 'bookmarks') return <SettingsBookmarksContent />
-    if (currentPage === 'search') return <SettingsSearchContent />
-    if (currentPage === 'backup') return <SettingsBackupContent />
-    if (currentPage === 'changelog') return <SettingsChangelogContent />
-    if (currentPage === 'usageLimits') return <SettingsUsageLimitsContent />
+    if (page === 'browsing') return <SettingsBrowsingContent onFocusInput={scrollToEnd} />
+    if (page === 'styles') return <SettingsUserStylesContent />
+    if (page === 'appearance') return <SettingsAppearanceContent />
+    if (page === 'services') return <SettingsServicesContent />
+    if (page === 'profiles') return <SettingsProfilesContent />
+    if (page === 'bookmarks') return <SettingsBookmarksContent />
+    if (page === 'search') return <SettingsSearchContent />
+    if (page === 'backup') return <SettingsBackupContent />
+    if (page === 'changelog') return <SettingsChangelogContent />
+    if (page === 'usageLimits') return <SettingsUsageLimitsContent />
 
-    if (currentPage === 'sync' && showSync) {
+    if (page === 'sync' && showSync) {
       return <SettingsModalTabSync />
     }
 
@@ -486,6 +512,20 @@ export const SettingsModal = () => {
 
   if (!settingsModalOpen) {
     return null
+  }
+
+  if (isIos) {
+    return (
+      <Modal visible animationType="slide" presentationStyle="pageSheet" allowSwipeDismissal onRequestClose={closeSettingsTree}>
+        <SettingsNavigation
+          pageStack={pageStack}
+          titles={pageMeta}
+          onPathChange={(path) => setPageStack(['home', ...path])}
+          onClose={closeSettingsTree}
+          renderPage={renderPage}
+        />
+      </Modal>
+    )
   }
 
   if (isWeb) {

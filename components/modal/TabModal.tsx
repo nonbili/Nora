@@ -24,7 +24,8 @@ type Anchor = { x: number; y: number; width: number; height: number }
 export const TabModal = () => {
   const tw = useTwColor()
   const tabModalOpen = useValue(ui$.tabModalOpen)
-  const oneHandMode = !isWeb && useValue(settings$.oneHandMode)
+  const oneHandModeSetting = useValue(settings$.oneHandMode)
+  const oneHandMode = !isWeb && oneHandModeSetting
   const tabs = useValue(tabs$.tabs)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
   const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
@@ -111,55 +112,63 @@ export const TabModal = () => {
         ]),
   ]
 
-  return (
-    <BaseModal onClose={closeModal}>
-      <ScrollView
-        className="my-4 pl-4 min-h-full"
-        contentContainerClassName={clsx('min-h-full pb-20', oneHandMode && 'justify-end pt-[35vh]')}
+  const controls = (
+    <View className={clsx('flex-row items-center justify-between', isIos ? 'px-4 pt-4 pb-3' : 'mb-4 pr-4')}>
+      <NouButton
+        className="bg-indigo-500 dark:bg-indigo-600"
+        onPress={() => {
+          tabs$.openTab('')
+          closeModal()
+        }}
       >
-        <View className="flex-row items-center justify-between mb-4 pr-4">
+        <MaterialIcons name="add" size={20} color={tw('#eef2ff')} />
+      </NouButton>
+      <View className="flex-row items-center gap-2">
+        {isIos ? (
+          <NouButton size="1" variant="outline" onPress={closeModal}>{t('menus.close')}</NouButton>
+        ) : null}
+        {nIf(
+          tabs.length,
           <NouButton
-            className="bg-indigo-500 dark:bg-indigo-600"
+            variant="outline"
+            className="mr-1"
+            size="1"
             onPress={() => {
-              tabs$.openTab('')
+              tabs$.closeAll()
               closeModal()
             }}
           >
-            <MaterialIcons name="add" size={20} color={tw('#eef2ff')} />
-          </NouButton>
-          <View className="flex-row items-center gap-2">
-            {nIf(
-              tabs.length,
-              <NouButton
-                variant="outline"
-                className="mr-1"
-                size="1"
-                onPress={() => {
-                  tabs$.closeAll()
-                  closeModal()
-                }}
-              >
-                {t('buttons.closeAll')}
-              </NouButton>,
-            )}
-            {isIos ? (
-              <View ref={iosMenuTriggerRef} collapsable={false}>
-                <Pressable onPress={openIosMenu} className="h-10 w-10 items-center justify-center rounded-full">
-                  <MaterialIcons name="more-horiz" size={20} color={iconColor} />
-                </Pressable>
-              </View>
-            ) : (
-              <NouMenu
-                trigger={
-                  <View className="h-10 w-10 items-center justify-center rounded-full">
-                    <MaterialIcons name="more-vert" size={20} color={iconColor} />
-                  </View>
-                }
-                items={menuItems}
-              />
-            )}
+            {t('buttons.closeAll')}
+          </NouButton>,
+        )}
+        {isIos ? (
+          <View ref={iosMenuTriggerRef} collapsable={false}>
+            <Pressable onPress={openIosMenu} accessibilityRole="button" accessibilityLabel={t('menus.more')} style={{ width: 44, height: 44 }} className="items-center justify-center rounded-full">
+              <MaterialIcons name="more-horiz" size={20} color={iconColor} />
+            </Pressable>
           </View>
-        </View>
+        ) : (
+          <NouMenu
+            trigger={
+              <View className="h-10 w-10 items-center justify-center rounded-full">
+                <MaterialIcons name="more-vert" size={20} color={iconColor} />
+              </View>
+            }
+            items={menuItems}
+          />
+        )}
+      </View>
+    </View>
+  )
+
+  return (
+    <BaseModal onClose={closeModal} sheetOnPhone>
+      {isIos ? controls : null}
+      <ScrollView
+        className={clsx('pl-4', isIos ? 'flex-1' : 'my-4 min-h-full')}
+        contentContainerClassName={clsx('min-h-full pb-20', oneHandMode && 'justify-end pt-[35vh]')}
+      >
+        {!isIos ? controls : null}
         {tabs.map((tab, index) => (
           <View
             className={clsx('flex-row items-center justify-between gap-2 pr-4', index !== tabs.length - 1 && 'mb-3')}
@@ -168,12 +177,12 @@ export const TabModal = () => {
             <TouchableOpacity className="flex-1 min-w-0" onPress={() => onPress(index)}>
               <View
                 className={clsx(
-                  'flex-1 flex-row items-center gap-3 rounded-md border py-2 px-2',
+                  'min-h-11 flex-1 flex-row items-center gap-3 rounded-md border py-2 px-2',
                   index === activeTabIndex
                     ? 'bg-indigo-200 border-indigo-300 dark:bg-indigo-500/30 dark:border-indigo-400/40'
                     : 'bg-white border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
                 )}
-                style={{ borderLeftWidth: 5, borderLeftColor: getProfileColor(tab.profile) }}
+                style={{ borderLeftWidth: 5, borderLeftColor: getProfileColor(tab.profile), ...(isIos ? { minHeight: 44 } : {}) }}
               >
                 <ServiceIcon url={tab.url} icon={tab.icon} />
                 <View className="min-w-0 flex-1">
@@ -184,9 +193,10 @@ export const TabModal = () => {
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              className="p-2 rounded-full"
+              className="min-h-11 min-w-11 items-center justify-center p-2 rounded-full"
               accessibilityRole="button"
               accessibilityLabel={t('menus.close')}
+              style={{ minWidth: 44, minHeight: 44 }}
               onPress={() => tabs$.closeTab(index)}
             >
               <MaterialIcons name="close" size={20} color={iconColor} />

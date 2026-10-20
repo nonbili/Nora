@@ -28,9 +28,11 @@ export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: I
             onPress={item.handler}
             modifiers={item.disabled ? [disabled(true)] : undefined}
           >
-            <Text>{item.label}</Text>
-            <Text>{item.metaLabel}</Text>
-            {item.systemImage ? <Image systemName={item.systemImage as any} /> : null}
+            {[
+              <Text key="title">{item.label}</Text>,
+              <Text key="state">{item.metaLabel}</Text>,
+              ...(item.systemImage ? [<Image key="icon" systemName={item.systemImage as any} />] : []),
+            ]}
           </Button>
         ) : (
           <Button

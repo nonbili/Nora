@@ -1,6 +1,6 @@
 import { clsx, isIos, isWeb } from '@/lib/utils'
 import { ReactNode } from 'react'
-import { KeyboardAvoidingView, Modal, Pressable, View } from 'react-native'
+import { KeyboardAvoidingView, Modal, Pressable, View, useWindowDimensions } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context'
 
 export const BaseModal: React.FC<{
@@ -10,6 +10,7 @@ export const BaseModal: React.FC<{
   onRequestClose?: () => void
   useNativeModal?: boolean
   safeAreaEdges?: Edge[]
+  sheetOnPhone?: boolean
 }> = ({
   className,
   children,
@@ -17,9 +18,21 @@ export const BaseModal: React.FC<{
   onRequestClose,
   useNativeModal = !isWeb,
   safeAreaEdges,
+  sheetOnPhone = false,
 }) => {
   const insets = useSafeAreaInsets()
+  const { width } = useWindowDimensions()
   const inner = isWeb ? children : <SafeAreaView className="flex-1 max-h-full" edges={safeAreaEdges}>{children}</SafeAreaView>
+
+  if (isIos && sheetOnPhone && width < 768) {
+    return (
+      <Modal visible animationType="slide" presentationStyle="pageSheet" allowSwipeDismissal onRequestClose={onRequestClose || onClose}>
+        <SafeAreaView className="flex-1 bg-zinc-100 dark:bg-gray-950" edges={['bottom', 'left', 'right']}>
+          {children}
+        </SafeAreaView>
+      </Modal>
+    )
+  }
 
   if (!isWeb && useNativeModal) {
     return (

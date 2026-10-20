@@ -1,4 +1,4 @@
-import { clsx, nIf } from '@/lib/utils'
+import { clsx, isIos, nIf } from '@/lib/utils'
 import { NouText, textColorsIn } from '../NouText'
 import { ActivityIndicator, TouchableOpacity } from 'react-native'
 import { useTwColor } from '@/lib/theme'
@@ -30,7 +30,7 @@ export const NouButton = ({
   return (
     <TouchableOpacity
       className={clsx(
-        'flex-row gap-2 justify-center rounded-full',
+        'flex-row items-center gap-2 justify-center rounded-full',
         size === '1' && 'py-1 px-3',
         size === '2' && 'py-2 px-6',
         // A border on every variant, so buttons side by side are of the same height.
@@ -44,6 +44,9 @@ export const NouButton = ({
         variant === 'outline' && isDisabled && 'border border-zinc-200 dark:border-zinc-800 bg-transparent',
         className,
       )}
+      style={isIos ? { minHeight: 44, minWidth: 44 } : undefined}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={() => (isDisabled ? {} : onPress())}
     >

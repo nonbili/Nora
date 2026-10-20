@@ -5,8 +5,7 @@ import MaterialIcons from '@react-native-vector-icons/material-icons'
 import * as Clipboard from 'expo-clipboard'
 import * as DocumentPicker from 'expo-document-picker'
 import { t } from 'i18next'
-import { BaseCenterModal } from './BaseCenterModal'
-import { NouButton } from '../button/NouButton'
+import { FormModal } from './FormModal'
 import { NouText } from '../NouText'
 import { ui$ } from '@/states/ui'
 import { getTimeline, watch$ } from '@/states/watch'
@@ -105,76 +104,66 @@ export const AddSourcesModal = () => {
   }
 
   return (
-    <BaseCenterModal onClose={onClose}>
-      <View className="w-full p-4">
-        <NouText className="mb-4 text-lg font-bold">{t('feed.addSources')}</NouText>
-        <TextInput
-          // A few lines tall, as it takes a link on each.
-          className="mb-3 max-h-40 rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-          style={{ minHeight: 96, textAlignVertical: 'top' }}
-          value={text}
-          onChangeText={setText}
-          placeholder={t('feed.addSourcesPlaceholder')}
-          placeholderTextColor={tw('#9ca3af')}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          multiline
-          autoFocus
-        />
-        {links.length ? (
-          <ScrollView style={{ maxHeight: 240 }} keyboardShouldPersistTaps="handled">
-            {links.map(({ link, target: source }, index) => {
-              const already = source ? added.has(watchKey(source)) : false
-              return (
-                <View key={`${index}:${link}`} className="flex-row items-center gap-3 py-1.5">
-                  <MaterialIcons
-                    name={source ? (already ? 'check-circle-outline' : 'add-circle-outline') : 'error-outline'}
-                    size={20}
-                    color={source ? (already ? tw('#a1a1aa') : tw('#6366f1')) : tw('#f59e0b')}
-                  />
-                  {source ? (
-                    <>
-                      <NouText className="flex-1" numberOfLines={1}>
-                        {watchSourceLabel(source)}
-                      </NouText>
-                      <NouText className="text-xs text-zinc-500">
-                        {already ? t('feed.addSourcesAlready') : watchSiteLabels[source.site]}
-                      </NouText>
-                    </>
-                  ) : (
-                    <View className="flex-1">
-                      <NouText className="text-sm" numberOfLines={1}>
-                        {link}
-                      </NouText>
-                      <NouText className="text-xs text-zinc-500">{t('feed.addSourcesUnrecognized')}</NouText>
-                    </View>
-                  )}
-                </View>
-              )
-            })}
-          </ScrollView>
-        ) : (
-          <NouText className="text-sm leading-5 text-zinc-500 dark:text-zinc-400">{t('feed.addSourcesHint')}</NouText>
-        )}
-        {/* Importing is the lesser way in, so it is a link rather than a button beside Add. */}
-        <View className="mt-6 flex-row flex-wrap items-center justify-end gap-3">
-          <View className="grow items-start">
-            <Pressable onPress={() => void importFile()} accessibilityRole="button" className="h-9 flex-row items-center gap-1.5">
-              <MaterialIcons name="upload-file" size={18} color={tw(isDark ? '#818cf8' : '#4f46e5')} />
-              <NouText className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{t('feed.importSources')}</NouText>
-            </Pressable>
-          </View>
-          <View className="flex-row gap-3">
-            <NouButton size="1" variant="outline" onPress={onClose}>
-              {t('buttons.cancel')}
-            </NouButton>
-            <NouButton size="1" disabled={!toAdd.length} onPress={save}>
-              {toAdd.length ? t('feed.addSourcesSubmit', { count: toAdd.length }) : t('feed.add')}
-            </NouButton>
-          </View>
-        </View>
-      </View>
-    </BaseCenterModal>
+    <FormModal
+      title={t('feed.addSources')}
+      onClose={onClose}
+      onSubmit={save}
+      submitLabel={toAdd.length ? t('feed.addSourcesSubmit', { count: toAdd.length }) : t('feed.add')}
+      submitDisabled={!toAdd.length}
+    >
+      <TextInput
+        // A few lines tall, as it takes a link on each.
+        className="mb-3 max-h-40 rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+        style={{ minHeight: 96, textAlignVertical: 'top' }}
+        value={text}
+        onChangeText={setText}
+        placeholder={t('feed.addSourcesPlaceholder')}
+        placeholderTextColor={tw('#9ca3af')}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="url"
+        multiline
+        autoFocus
+      />
+      {links.length ? (
+        <ScrollView style={{ maxHeight: 240 }} keyboardShouldPersistTaps="handled">
+          {links.map(({ link, target: source }, index) => {
+            const already = source ? added.has(watchKey(source)) : false
+            return (
+              <View key={`${index}:${link}`} className="flex-row items-center gap-3 py-1.5">
+                <MaterialIcons
+                  name={source ? (already ? 'check-circle-outline' : 'add-circle-outline') : 'error-outline'}
+                  size={20}
+                  color={source ? (already ? tw('#a1a1aa') : tw('#6366f1')) : tw('#f59e0b')}
+                />
+                {source ? (
+                  <>
+                    <NouText className="flex-1" numberOfLines={1}>
+                      {watchSourceLabel(source)}
+                    </NouText>
+                    <NouText className="text-xs text-zinc-500">
+                      {already ? t('feed.addSourcesAlready') : watchSiteLabels[source.site]}
+                    </NouText>
+                  </>
+                ) : (
+                  <View className="flex-1">
+                    <NouText className="text-sm" numberOfLines={1}>
+                      {link}
+                    </NouText>
+                    <NouText className="text-xs text-zinc-500">{t('feed.addSourcesUnrecognized')}</NouText>
+                  </View>
+                )}
+              </View>
+            )
+          })}
+        </ScrollView>
+      ) : (
+        <NouText className="text-sm leading-5 text-zinc-500 dark:text-zinc-400">{t('feed.addSourcesHint')}</NouText>
+      )}
+      <Pressable onPress={() => void importFile()} accessibilityRole="button" style={{ minHeight: 44 }} className="mt-6 flex-row items-center gap-1.5 self-start">
+        <MaterialIcons name="upload-file" size={18} color={tw(isDark ? '#818cf8' : '#4f46e5')} />
+        <NouText className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{t('feed.importSources')}</NouText>
+      </Pressable>
+    </FormModal>
   )
 }
