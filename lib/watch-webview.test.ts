@@ -39,6 +39,17 @@ describe('buildWatchPageScript', () => {
   })
 })
 
+describe('buildWatchPageScript in a frame', () => {
+  it('does nothing in a frame of the page, as it runs at the start of every document', () => {
+    const sent: string[] = []
+    const document = { readyState: 'complete', querySelectorAll: () => [] }
+    const window = { top: {}, NoraI: { onMessage: (payload: string) => sent.push(payload) } } as any
+    new Function('window', 'document', 'setTimeout', buildWatchPageScript(8))(window, document, () => {})
+    expect(sent).toHaveLength(0)
+    expect(window.__noraWatchStarted).toBeUndefined()
+  })
+})
+
 describe('buildWatchPageScript with more', () => {
   it('keeps the answers the page loads as it is scrolled, and sends them all once no more come', () => {
     const sent: string[] = []

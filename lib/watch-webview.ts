@@ -64,7 +64,8 @@ export const WATCH_WEBVIEW_RATE_LIMITED = 'rate limited in the page'
  * nor an ad. It tells when one of those answers said to slow down, as Facebook's do.
  */
 export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER, more = 0, until = 0) => `(function () {
-  if (window.__noraWatchStarted) return;
+  // Run at the start of every document of the page: only the page itself answers.
+  if (window.__noraWatchStarted || (window.top && window.top !== window)) return;
   window.__noraWatchStarted = true;
   var marker = ${JSON.stringify(marker)};
   var tries = 0;
