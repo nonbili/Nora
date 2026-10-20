@@ -23,10 +23,14 @@ import {
   mastodonWebFingerUrl,
   parseMastodonStatuses,
   parseMastodonWebFinger,
-  parseRedditFeed,
+  parseRedditCommunityCard,
+  parseRedditListing,
+  parseRedditPosts,
   parseThreadsProfilePage,
   parseXTimeline,
-  redditFeedUrl,
+  redditCommunityCardUrl,
+  redditListingUrl,
+  redditPostsUrl,
   splitMastodonHandle,
   watchProfileUrl,
   watchSourceLabel,
@@ -109,11 +113,13 @@ const parseCookieHeader = (raw: string): Record<string, string> => {
 const siteCookieOrigin: Partial<Record<WatchSite, string>> = {
   x: 'https://x.com',
   instagram: 'https://www.instagram.com',
+  reddit: 'https://www.reddit.com',
 }
 
 const isSignedIn: Partial<Record<WatchSite, (cookies: Record<string, string>) => boolean>> = {
   x: (cookies) => Boolean(cookies.auth_token && cookies.ct0),
   instagram: (cookies) => Boolean(cookies.sessionid),
+  reddit: (cookies) => Boolean(cookies.reddit_session),
 }
 
 interface SiteAccount {
@@ -364,9 +370,50 @@ const fetchMastodon = async (handle: string, _cookie: string, _source: WatchRunS
   return parseMastodonStatuses(account, await fetchJson(mastodonStatusesUrl(server, account.id), deadline), handle, server)
 }
 
-// The feed Reddit has for a subreddit or a user still answers without an account, unlike its JSON.
-const fetchReddit = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number) =>
-  parseRedditFeed(await fetchText(redditFeedUrl(handle), { accept: 'application/atom+xml, application/xml;q=0.9, */*;q=0.8' }, deadline), handle)
+const fetchRedditListing = (handle: string, cookie: string, deadline: number): Promise<WatchFetchResult> =>
+  withDeadline(deadline, async (signal) => {
+    const res = await fetch(redditListingUrl(handle), {
+      signal,
+      headers: { 'user-agent': DESKTOP_USER_AGENT, accept: 'application/json', cookie },
+      credentials: 'omit',
+    })
+    checkStatus(res, true)
+    let json: any
+    try {
+      json = await res.json()
+    } catch (e) {
+      if (signal.aborted) throw e
+      throw new WatchFetchError('not JSON')
+    }
+    return parseRedditListing(json, handle)
+  })
+
+const hasAvatar = (site: WatchSite, handle: string) =>
+  watch$.profiles.peek().some((profile) => profile.site === site && profile.handle === handle && profile.avatar)
+
+/**
+ * With an account, Reddit's data for the subreddit or user; without one, or when that fails, the
+ * posts as Reddit's own page loads them. A subreddit's picture is not among those, and is read
+ * from its card, once.
+ */
+const fetchReddit = async (handle: string, cookie: string, _source: WatchRunSource, deadline: number): Promise<WatchFetchResult> => {
+  if (cookie) {
+    try {
+      return await fetchRedditListing(handle, cookie, deadline)
+    } catch (e) {
+      console.warn('watch reddit listing failed', handle, e)
+    }
+  }
+  const result = parseRedditPosts(await fetchText(redditPostsUrl(handle), { accept: 'text/html' }, deadline), handle)
+  if (result.info.avatar || !handle.startsWith('r/') || hasAvatar('reddit', handle) || !timeLeft(deadline)) return result
+  try {
+    await sleep(REQUEST_GAP_MS)
+    return { ...result, info: { ...result.info, avatar: parseRedditCommunityCard(await fetchText(redditCommunityCardUrl(handle), { accept: 'text/html' }, deadline)) } }
+  } catch (e) {
+    console.warn('watch reddit community card failed', handle, e)
+    return result
+  }
+}
 
 const fetchers: Record<
   WatchSite,
