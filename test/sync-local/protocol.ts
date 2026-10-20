@@ -16,6 +16,10 @@ export type Command =
   | { op: 'sync'; scope?: 'feeds' | 'settings' | 'bookmarks' | 'userStyles' }
   | { op: 'failNextPush'; table: string }
   | { op: 'takeFeedRequests' }
+  | { op: 'signIn'; email: string; password: string }
+  | { op: 'accountChoice'; choice: 'useAccount' | 'mergeDevice' }
+  | { op: 'holdNextFetch'; table: string }
+  | { op: 'releaseFetch' }
 
 export interface Snapshot {
   watch: Pick<ReturnType<(typeof import('@/states/watch'))['watch$']['peek']>, 'profiles' | 'timelines'>
@@ -23,6 +27,9 @@ export interface Snapshot {
   bookmarks: import('@/states/bookmarks').Bookmarks
   styles: import('@/lib/user-styles').UserStylesSnapshot
   meta: ReturnType<(typeof import('@/states/sync-meta'))['syncMeta$']['peek']>
+  owner: ReturnType<(typeof import('@/states/sync-owner'))['syncOwner$']['peek']>
+  userId?: string
+  needsAccountChoice: boolean
 }
 
 export function localConfig() {

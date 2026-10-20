@@ -432,7 +432,17 @@
     "legalNotice": "Subscriptions renew automatically unless canceled. By subscribing, you agree to the Terms of Use (EULA) and Privacy Policy.",
     "termsOfUse": "Terms of Use (EULA)",
     "privacyPolicy": "Privacy Policy",
-    "signInRequired": "Sign in to continue."
+    "signInRequired": "Sign in to continue.",
+    "accountChoiceTitle": "Data from another account",
+    "accountChoiceMessage": "The bookmarks, settings, styles and feed on this device were synced with another Nora account. Sync is paused until you choose what to do with them.",
+    "accountChoiceUseAccount": "Use this account's data",
+    "accountChoiceMerge": "Merge this device into account",
+    "accountChoiceLater": "Later",
+    "accountChoiceHint": "Using this account's data replaces what is on this device. Merging adds what only this device has to this account. Either way, a backup of this device is kept first.",
+    "accountChoiceToast": "Sync is paused: this device has data from another account. Choose what to do in Settings › Sync.",
+    "accountChoiceFailed": "Could not switch the data to this account: {{message}}",
+    "exportSwitchBackup": "Export data from before the switch",
+    "exportSwitchBackupHint": "Saved {{date}}. Import it in Settings › Backup to bring it back."
   },
   "tabs": {
     "new": "New tab",

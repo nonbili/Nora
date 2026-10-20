@@ -7,6 +7,10 @@ import { localConfig, type Command } from './protocol'
 
 const { url, anonKey } = localConfig()
 let failTable: string | undefined
+// A read of this table waits until released, to change the account while it is in flight.
+let holdTable: string | undefined
+let releaseHeld: (() => void) | undefined
+let heldStarted: (() => void) | undefined
 const feedRequests: string[] = []
 const client = createClient(url, anonKey, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
@@ -15,6 +19,11 @@ const client = createClient(url, anonKey, {
       const requestUrl = new URL(input instanceof Request ? input.url : String(input))
       if ((!init?.method || init.method === 'GET') && requestUrl.pathname === '/rest/v1/feed_sources') {
         feedRequests.push(requestUrl.href)
+      }
+      if (holdTable && (!init?.method || init.method === 'GET') && requestUrl.pathname === `/rest/v1/${holdTable}`) {
+        holdTable = undefined
+        heldStarted?.()
+        return new Promise<void>((resolve) => { releaseHeld = resolve }).then(() => fetch(input, init))
       }
       if (failTable && init?.method === 'POST' && requestUrl.pathname === `/rest/v1/${failTable}`) {
         failTable = undefined
@@ -34,6 +43,9 @@ const { settings$ } = await import('@/states/settings')
 const { bookmarks$ } = await import('@/states/bookmarks')
 const { userStyles$, getUserStylesSnapshot } = await import('@/states/user-styles')
 const { syncMeta$ } = await import('@/states/sync-meta')
+const { syncOwner$ } = await import('@/states/sync-owner')
+const { needsAccountChoice } = await import('@/lib/supabase/sync/session')
+const { resolveAccountChoice } = await import('@/lib/supabase/sync/account')
 const { syncSupabase } = await import('@/lib/supabase/sync')
 const { feedsSyncer } = await import('@/lib/supabase/sync/feeds')
 const { settingsSyncer } = await import('@/lib/supabase/sync/settings')
@@ -52,6 +64,7 @@ async function execute(command: Command) {
     case 'snapshot': return JSON.parse(JSON.stringify({
       watch: { profiles: watch$.profiles.peek(), timelines: watch$.timelines.peek() },
       settings: settings$.peek(), bookmarks: bookmarks$.peek(), styles: getUserStylesSnapshot(), meta: syncMeta$.peek(),
+      owner: syncOwner$.peek(), userId: auth$.userId.peek(), needsAccountChoice: needsAccountChoice(),
     }))
     case 'watch': watch$.watch({ site: command.site, handle: command.handle }); break
     case 'unwatch': watch$.unwatch(command.key); break
@@ -64,6 +77,20 @@ async function execute(command: Command) {
     case 'style': userStyles$.setBuiltinEnabled('hide-x-home-tabs', command.enabled); break
     case 'failNextPush': failTable = command.table; break
     case 'takeFeedRequests': return feedRequests.splice(0)
+    case 'signIn': {
+      const { error } = await client.auth.signInWithPassword({ email: command.email, password: command.password })
+      if (error) throw error
+      // onAuthStateChange is told on a later turn.
+      while (auth$.userId.peek() === undefined || auth$.userEmail.peek() !== command.email) await Bun.sleep(5)
+      break
+    }
+    case 'accountChoice': await resolveAccountChoice(command.choice); break
+    case 'holdNextFetch': {
+      holdTable = command.table
+      // Answers once the read is in flight, not when it is released.
+      return new Promise<null>((resolve) => { heldStarted = () => resolve(null) })
+    }
+    case 'releaseFetch': releaseHeld?.(); releaseHeld = undefined; break
     case 'sync':
       if (command.scope) await syncers[command.scope].syncNow()
       else await syncSupabase()

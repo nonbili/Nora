@@ -1,5 +1,4 @@
 import { syncState, when } from '@legendapp/state'
-import { auth$ } from '@/states/auth'
 import { createLogger } from '@/lib/log'
 import { syncMeta$, type FeedSyncMeta } from '@/states/sync-meta'
 import { watch$ } from '@/states/watch'
@@ -14,8 +13,9 @@ import {
   type WatchSyncRows,
 } from '@/lib/watch-sync'
 import { supabase } from '../client'
+import { beginSync, canSync, isCurrentSession, type SyncSession } from './session'
 
-type Table = 'feed_sources' | 'feed_timelines'
+export type FeedTable = 'feed_sources' | 'feed_timelines'
 
 const syncDelayMs = 5 * 1000
 // PostgREST answers with at most 1000 rows, so reads and writes go a page at a time.
@@ -30,15 +30,10 @@ const errorLogger = createLogger('sync').child('feeds')
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
-const canSync = () => {
-  const { userId, plan } = auth$.get()
-  return Boolean(userId && plan && plan !== 'free')
-}
-
 const quote = (value: string) => `"${value.replace(/"/g, '')}"`
 
 /** Every row changed after the cursor, every row without one, ordered so a row written meanwhile is not skipped. */
-const fetchRows = async (table: Table, cursor?: string) => {
+export const fetchRows = async (table: FeedTable, cursor?: string) => {
   const rows: RemoteWatchRow[] = []
   for (;;) {
     let query = supabase
@@ -88,7 +83,7 @@ const moveFeedTabs = (folded: Map<string, string>) => {
 
 const pendingKey = { feed_sources: 'pendingSources', feed_timelines: 'pendingTimelines' } as const
 
-const localRow = (table: Table, rows: WatchSyncRows, id: string) =>
+const localRow = (table: FeedTable, rows: WatchSyncRows, id: string) =>
   table === 'feed_sources' ? rows.sources[id] : rows.timelines[id]
 
 class FeedsSyncer {
@@ -102,6 +97,17 @@ class FeedsSyncer {
 
   isApplyingRemote() {
     return this.applyingRemote
+  }
+
+  /** Changes the feed with what was pulled, without taking it for a change made here. */
+  applyRemote(apply: () => void) {
+    this.applyingRemote = true
+    try {
+      apply()
+    } finally {
+      this.applyingRemote = false
+      this.lastRows = getWatchSyncRows()
+    }
   }
 
   /** Queues the rows changed here since last seen to be pushed; true when there was any. */
@@ -154,20 +160,21 @@ class FeedsSyncer {
   private async runLoop() {
     do {
       this.rerunRequested = false
+      let session: SyncSession | null = null
       try {
-        await this.performSync()
+        await when(() => syncState(watch$).isPersistLoaded.get())
+        session = await beginSync()
+        if (session) await this.performSync(session)
       } catch (error) {
-        this.setMeta({ lastError: getErrorMessage(error) })
+        if (!session || isCurrentSession(session)) this.setMeta({ lastError: getErrorMessage(error) })
         throw error
       }
     } while (this.rerunRequested)
   }
 
-  private async performSync() {
-    await when(() => syncState(watch$).isPersistLoaded.get() && syncState(syncMeta$).isPersistLoaded.get())
-    const userId = auth$.userId.peek()
-    if (!userId) return
-    const isCurrent = () => auth$.userId.peek() === userId && canSync()
+  private async performSync(session: SyncSession) {
+    const { userId } = session
+    const isCurrent = () => isCurrentSession(session)
 
     const meta = syncMeta$.feeds.peek()
     const sameAccount = meta.userId === userId
@@ -226,7 +233,7 @@ class FeedsSyncer {
   }
 
   /** Pushes the rows changed here; false when the account changed meanwhile. */
-  private async push(table: Table, userId: string, isCurrent: () => boolean) {
+  private async push(table: FeedTable, userId: string, isCurrent: () => boolean) {
     const key = pendingKey[table]
     const ids = syncMeta$.feeds[key].peek()
     if (!ids.length) return true

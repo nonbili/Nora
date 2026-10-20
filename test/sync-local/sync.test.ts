@@ -253,4 +253,145 @@ local('sync against local Supabase', () => {
     await b.sync('settings')
     expect((await b.snapshot()).settings.theme).toBe('dark')
   })
+
+  const signIn = (instance: Device, userIndex: number) =>
+    instance.command({ op: 'signIn', email: users[userIndex].email, password: users[userIndex].password })
+
+  const remoteRows = async (userIndex: number, table: string) => {
+    const { data, error } = await users[userIndex].client.schema('nora').from(table).select('*')
+    expect(error).toBeNull()
+    return data!
+  }
+
+  // Device A synced with account 0, then signs in to account 1, which device B synced already.
+  async function switchedDevice() {
+    const b = await device(1)
+    await b.command({ op: 'watch', site: 'reddit', handle: 'r/rust' })
+    await b.command({ op: 'settings', value: { theme: 'light' } })
+    await b.command({ op: 'bookmark', url: 'https://b.example' })
+    await b.sync()
+    const a = await device(0)
+    await a.command({ op: 'watch', site: 'x', handle: 'jack' })
+    await a.command({ op: 'settings', value: { theme: 'dark' } })
+    await a.command({ op: 'bookmark', url: 'https://a.example' })
+    await a.sync()
+    await signIn(a, 1)
+    return { a, b }
+  }
+
+  it('pauses sync on another account until the user chooses, uploading nothing meanwhile', async () => {
+    const { a } = await switchedDevice()
+    const before = await a.snapshot()
+    expect(before.owner.ownerUserId).toBe(users[0].id)
+    expect(before.needsAccountChoice).toBe(true)
+    await a.command({ op: 'watch', site: 'x', handle: 'jill' })
+    await a.sync()
+    expect((await remoteRows(1, 'feed_sources')).map((row) => row.id)).toEqual(['reddit:r/rust'])
+    expect((await remoteRows(1, 'settings'))[0].json.theme).toBe('light')
+    expect((await remoteRows(1, 'bookmarks'))[0].json.bookmarks).toEqual([{ url: 'https://b.example' }])
+    expect((await a.snapshot()).watch.profiles.map((profile) => profile.key).sort()).toEqual(['x:jack', 'x:jill'])
+  })
+
+  it('replaces the device data with the account data, keeping a backup and pushing nothing of the old account', async () => {
+    const { a } = await switchedDevice()
+    await a.command({ op: 'accountChoice', choice: 'useAccount' })
+    const after = await a.snapshot()
+    expect(after.owner.ownerUserId).toBe(users[1].id)
+    expect(after.needsAccountChoice).toBe(false)
+    expect(after.watch.profiles.map((profile) => profile.key)).toEqual(['reddit:r/rust'])
+    expect(after.settings.theme).toBe('light')
+    expect(after.bookmarks.bookmarks).toEqual([{ url: 'https://b.example' }])
+    expect(JSON.parse(after.owner.switchBackup!.json).bookmarks).toEqual([{ url: 'https://a.example' }])
+    expect(after.owner.switchBackup!.fromUserId).toBe(users[0].id)
+    expect((await remoteRows(1, 'feed_sources')).map((row) => row.id)).toEqual(['reddit:r/rust'])
+    expect((await remoteRows(1, 'bookmarks'))[0].json.bookmarks).toEqual([{ url: 'https://b.example' }])
+    // Account 0 keeps what it had.
+    expect((await remoteRows(0, 'feed_sources')).map((row) => row.id)).toEqual(['x:jack'])
+  })
+
+  it('starts from defaults when the account to use has nothing yet', async () => {
+    const a = await device(0)
+    await a.command({ op: 'watch', site: 'x', handle: 'jack' })
+    await a.command({ op: 'settings', value: { theme: 'dark' } })
+    await a.command({ op: 'bookmark', url: 'https://a.example' })
+    await a.sync()
+    await signIn(a, 1)
+    await a.command({ op: 'accountChoice', choice: 'useAccount' })
+    const after = await a.snapshot()
+    expect(after.watch.profiles).toEqual([])
+    expect(after.bookmarks.bookmarks).toEqual([])
+    expect(after.settings.theme).toBeNull()
+    expect(await remoteRows(1, 'feed_sources')).toEqual([])
+    expect(await remoteRows(1, 'bookmarks')).toEqual([])
+  })
+
+  it('merges the device into the account: the account keeps its documents, gains what only the device had', async () => {
+    const { a, b } = await switchedDevice()
+    await a.command({ op: 'accountChoice', choice: 'mergeDevice' })
+    const after = await a.snapshot()
+    expect(after.owner.ownerUserId).toBe(users[1].id)
+    expect(after.settings.theme).toBe('light')
+    expect(after.meta.settings.backup?.value.theme).toBe('dark')
+    expect(after.bookmarks.bookmarks).toEqual([{ url: 'https://b.example' }, { url: 'https://a.example' }])
+    expect((await remoteRows(1, 'feed_sources')).map((row) => row.id).sort()).toEqual(['reddit:r/rust', 'x:jack'])
+    await b.sync()
+    expect((await b.snapshot()).bookmarks.bookmarks).toEqual([{ url: 'https://b.example' }, { url: 'https://a.example' }])
+    expect((await b.snapshot()).watch.profiles.map((profile) => profile.key).sort()).toEqual(['reddit:r/rust', 'x:jack'])
+  })
+
+  it('drops a run whose account changed while its request was in flight', async () => {
+    const a = await device(0)
+    await a.sync()
+    await a.command({ op: 'settings', value: { theme: 'dark' } })
+    await a.command({ op: 'watch', site: 'x', handle: 'jack' })
+    const held = a.command({ op: 'holdNextFetch', table: 'settings' })
+    const run = a.sync()
+    await held
+    await signIn(a, 1)
+    await a.command({ op: 'releaseFetch' })
+    await run
+    expect(await remoteRows(1, 'settings')).toEqual([])
+    expect(await remoteRows(1, 'feed_sources')).toEqual([])
+    expect((await a.snapshot()).needsAccountChoice).toBe(true)
+  })
+
+  it('keeps the owner of a device whose first sync failed, so another account does not inherit its data', async () => {
+    const a = await device(0)
+    await a.command({ op: 'watch', site: 'x', handle: 'jack' })
+    await a.command({ op: 'failNextPush', table: 'feed_sources' })
+    await expect(a.sync('feeds')).rejects.toThrow()
+    await signIn(a, 1)
+    expect((await a.snapshot()).needsAccountChoice).toBe(true)
+    await a.sync()
+    expect(await remoteRows(1, 'feed_sources')).toEqual([])
+  })
+
+  it('drops an account choice whose account changed and came back while it was reading', async () => {
+    const { a } = await switchedDevice()
+    const held = a.command({ op: 'holdNextFetch', table: 'feed_sources' })
+    const choice = a.command({ op: 'accountChoice', choice: 'useAccount' })
+    await held
+    await signIn(a, 0)
+    await signIn(a, 1)
+    await a.command({ op: 'releaseFetch' })
+    await choice
+    const after = await a.snapshot()
+    expect(after.owner.ownerUserId).toBe(users[0].id)
+    expect(after.needsAccountChoice).toBe(true)
+    expect(after.watch.profiles.map((profile) => profile.key)).toEqual(['x:jack'])
+  })
+
+  it('keeps what was changed while an account choice was reading in its backup', async () => {
+    const { a } = await switchedDevice()
+    const held = a.command({ op: 'holdNextFetch', table: 'feed_sources' })
+    const choice = a.command({ op: 'accountChoice', choice: 'useAccount' })
+    await held
+    await a.command({ op: 'bookmark', url: 'https://late.example' })
+    await a.command({ op: 'releaseFetch' })
+    await choice
+    const after = await a.snapshot()
+    expect(after.owner.ownerUserId).toBe(users[1].id)
+    expect(JSON.parse(after.owner.switchBackup!.json).bookmarks.map((bookmark: { url: string }) => bookmark.url))
+      .toContain('https://late.example')
+  })
 })

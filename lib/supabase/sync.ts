@@ -1,4 +1,3 @@
-import { auth$ } from '@/states/auth'
 import { bookmarks$ } from '@/states/bookmarks'
 import { createLogger } from '@/lib/log'
 import { settings$ } from '@/states/settings'
@@ -8,13 +7,10 @@ import { bookmarksSyncer } from './sync/bookmarks'
 import { feedsSyncer } from './sync/feeds'
 import { settingsSyncer } from './sync/settings'
 import { userStylesSyncer } from './sync/user-styles'
+import { canSync } from './sync/session'
 
 const logger = createLogger('sync', { devOnly: true })
 
-const canSync = () => {
-  const { userId, plan } = auth$.get()
-  return Boolean(userId && plan && plan !== 'free')
-}
 
 const getSettingsSnapshot = (value: any = settings$.get()) => {
   // siteZoom is device-local and intentionally excluded from sync.

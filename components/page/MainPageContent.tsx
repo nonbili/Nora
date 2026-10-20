@@ -13,6 +13,7 @@ import { auth$ } from '@/states/auth'
 import { useMe } from '@/lib/hooks/useMe'
 import { syncSupabase } from '@/lib/supabase/sync'
 import { useUsageTracker } from '@/lib/hooks/useUsageTracker'
+import { useAccountChoicePrompt } from '@/lib/hooks/useAccountChoicePrompt'
 import { UsageLockout } from '../lockout/UsageLockout'
 import { SettingsModal } from '../modal/SettingsModal'
 import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
@@ -27,6 +28,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
   const nativeDesktop = desktopLayout && !isWeb
   const { userId, me } = useMe()
   useUsageTracker()
+  useAccountChoicePrompt()
 
   useEffect(() => {
     const runSync = () => {

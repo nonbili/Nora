@@ -1,11 +1,11 @@
 import { PostgrestError } from '@supabase/supabase-js'
-import { auth$ } from '@/states/auth'
 import { createLogger } from '@/lib/log'
 import type { ResourceSyncMeta } from '@/states/sync-meta'
 import { supabase } from '../client'
 import { decideDocumentSync } from './decision'
+import { beginSync, canSync, isCurrentSession, type SyncSession } from './session'
 
-interface RemoteDocument<T> {
+export interface RemoteDocument<T> {
   value: T
   updatedAt: string
 }
@@ -55,7 +55,7 @@ export abstract class BaseSyncer<T> {
   }
 
   scheduleSync() {
-    if (!this.canSync()) {
+    if (!canSync()) {
       return
     }
 
@@ -80,7 +80,7 @@ export abstract class BaseSyncer<T> {
       this.log('cleared scheduled run before immediate sync')
     }
 
-    if (!this.canSync()) {
+    if (!canSync()) {
       this.log('skipped syncNow because sync is disabled')
       return
     }
@@ -101,9 +101,14 @@ export abstract class BaseSyncer<T> {
     return run
   }
 
-  private canSync() {
-    const { userId, plan } = auth$.get()
-    return Boolean(userId && plan && plan !== 'free')
+  /** Puts a value pulled from the server in place, without taking it for a change made here. */
+  applyRemote(value: T) {
+    this.applyingRemote = true
+    try {
+      this.setValue(cloneValue(value))
+    } finally {
+      this.applyingRemote = false
+    }
   }
 
   private async runLoop() {
@@ -114,12 +119,23 @@ export abstract class BaseSyncer<T> {
   }
 
   private async performSync() {
+    let session: SyncSession | null = null
     try {
       await this.isPersistLoaded()
+      session = await beginSync()
+      if (!session) {
+        this.log('skipped performSync because sync is disabled')
+        return
+      }
 
       const localValue = cloneValue(this.getValue())
       const meta = this.getMeta()
       const remote = await this.fetchRemote()
+      // What was read belongs to the account the run started for.
+      if (!isCurrentSession(session)) {
+        this.log('account changed during fetch; stopped')
+        return
+      }
       const decision = decideDocumentSync({
         dirty: meta.dirty,
         hasRemote: Boolean(remote),
@@ -150,12 +166,7 @@ export abstract class BaseSyncer<T> {
           })
         }
 
-        this.applyingRemote = true
-        try {
-          this.setValue(cloneValue(remote.value))
-        } finally {
-          this.applyingRemote = false
-        }
+        this.applyRemote(remote.value)
 
         this.setMeta({
           dirty: false,
@@ -168,7 +179,11 @@ export abstract class BaseSyncer<T> {
       }
 
       if (decision.action === 'push') {
-        const saved = await this.saveRemote(localValue)
+        const saved = await this.saveRemote(session.userId, localValue)
+        if (!isCurrentSession(session)) {
+          this.log('account changed during push; stopped')
+          return
+        }
         this.setMeta({
           dirty: false,
           lastError: undefined,
@@ -189,13 +204,16 @@ export abstract class BaseSyncer<T> {
         lastSyncedRemoteUpdatedAt: remote?.updatedAt ?? meta.lastSyncedRemoteUpdatedAt,
       })
     } catch (error) {
+      if (session && !isCurrentSession(session)) {
+        return
+      }
       this.setMeta({ lastError: getErrorMessage(error) })
       this.log('sync failed', { error: getErrorMessage(error) })
       throw error
     }
   }
 
-  private async fetchRemote(): Promise<RemoteDocument<T> | null> {
+  async fetchRemote(): Promise<RemoteDocument<T> | null> {
     const { data, error } = (await supabase.from(this.TABLE_NAME).select('json,updated_at').single()) as unknown as {
       data: { json: T; updated_at: string }
       error: PostgrestError | null
@@ -216,12 +234,7 @@ export abstract class BaseSyncer<T> {
     }
   }
 
-  private async saveRemote(value: T): Promise<RemoteDocument<T>> {
-    const userId = auth$.userId.get()
-    if (!userId) {
-      throw new Error(`sync ${this.NAME} skipped without authenticated user`)
-    }
-
+  private async saveRemote(userId: string, value: T): Promise<RemoteDocument<T>> {
     const { data, error } = (await supabase
       .from(this.TABLE_NAME)
       .upsert({

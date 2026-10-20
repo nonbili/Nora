@@ -18,6 +18,13 @@ import { deliverIosTransaction, IOS_SYNC_PRODUCT_ID } from '@/lib/ios-billing'
 import { useMe } from '@/lib/hooks/useMe'
 import { settingsUi } from './SettingsPrimitives'
 import { useTwColor } from '@/lib/theme'
+import { accountChoice$ } from '@/lib/supabase/sync/session'
+import { chooseAccountData } from '@/lib/hooks/useAccountChoicePrompt'
+import type { AccountChoice } from '@/lib/supabase/sync/account'
+import { syncOwner$ } from '@/states/sync-owner'
+import { saveFile } from '@/lib/file'
+import { settingsBackupFilename } from '@/lib/settings-transfer'
+import { showToast } from '@/lib/toast'
 
 const surfaceCls = settingsUi.surfaceCls
 const sectionLabelCls = settingsUi.sectionLabelCls
@@ -42,6 +49,27 @@ export const SettingsModalTabSync = () => {
   const [actionError, setActionError] = useState<string>()
   const [notice, setNotice] = useState<string>()
   const [busyAction, setBusyAction] = useState<'buy' | 'restore' | 'manage' | null>(null)
+  const needsAccountChoice = use$(accountChoice$)
+  const switchBackup = use$(syncOwner$.switchBackup)
+  const [choosing, setChoosing] = useState<AccountChoice | null>(null)
+
+  const onAccountChoice = async (choice: AccountChoice) => {
+    setChoosing(choice)
+    try {
+      await chooseAccountData(choice)
+    } finally {
+      setChoosing(null)
+    }
+  }
+
+  const onExportSwitchBackup = async () => {
+    if (!switchBackup) return
+    try {
+      await saveFile(settingsBackupFilename(), switchBackup.json)
+    } catch (error) {
+      showToast(t('settings.backup.exportFailed', { message: (error as Error).message }))
+    }
+  }
 
   useEffect(() => {
     if (!isIos) {
@@ -231,6 +259,26 @@ export const SettingsModalTabSync = () => {
         </View>
       </View>
 
+      {needsAccountChoice ? (
+        <View>
+          <NouText className={sectionLabelCls}>{t('sync.accountChoiceTitle')}</NouText>
+          <View className={surfaceCls}>
+            <View className="px-5 py-5">
+              <NouText className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">{t('sync.accountChoiceMessage')}</NouText>
+              <NouText className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{t('sync.accountChoiceHint')}</NouText>
+              <View className="mt-5 gap-3">
+                <NouButton loading={choosing === 'useAccount'} disabled={Boolean(choosing)} onPress={() => void onAccountChoice('useAccount')}>
+                  {t('sync.accountChoiceUseAccount')}
+                </NouButton>
+                <NouButton variant="outline" loading={choosing === 'mergeDevice'} disabled={Boolean(choosing)} onPress={() => void onAccountChoice('mergeDevice')}>
+                  {t('sync.accountChoiceMerge')}
+                </NouButton>
+              </View>
+            </View>
+          </View>
+        </View>
+      ) : null}
+
       <View>
         <NouText className={sectionLabelCls}>{t('sync.currentPlan')}</NouText>
         <View className={surfaceCls}>
@@ -243,6 +291,16 @@ export const SettingsModalTabSync = () => {
             {iosStatusText ? <NouText className="mt-3 text-xs text-zinc-600 dark:text-zinc-500">{iosStatusText}</NouText> : null}
             {notice ? <NouText className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">{notice}</NouText> : null}
             {actionError ? <NouText className="mt-3 text-sm text-red-400">{actionError}</NouText> : null}
+            {switchBackup && !needsAccountChoice ? (
+              <View className="mt-3 gap-2">
+                <NouButton variant="outline" onPress={() => void onExportSwitchBackup()}>
+                  {t('sync.exportSwitchBackup')}
+                </NouButton>
+                <NouText className="text-xs text-zinc-600 dark:text-zinc-500">
+                  {t('sync.exportSwitchBackupHint', { date: new Date(switchBackup.savedAt).toLocaleString(), interpolation: { escapeValue: false } })}
+                </NouText>
+              </View>
+            ) : null}
             {restoreConflict ? (
               <View className="mt-3">
                 <NouButton variant="outline" onPress={signOut}>
