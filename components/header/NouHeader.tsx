@@ -254,6 +254,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           label: t('menus.blockAds'),
           icon: <MaterialCommunityIcons name="shield-outline" size={18} color={headerControlColor} />,
           systemImage: 'shield',
+          checked: blockingOnThisSite,
           metaLabel: blockingOnThisSite ? t('common.on') : t('common.off'),
           meta: <MenuToggleBadge on={blockingOnThisSite} />,
           handler: toggleSiteBlocking,
@@ -267,6 +268,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           label: t('menus.hideSignInPrompts'),
           icon: <MaterialIcons name="visibility-off" size={18} color={headerControlColor} />,
           systemImage: 'eye.slash',
+          checked: anonymousOnThisSite,
           metaLabel: anonymousOnThisSite ? t('common.on') : t('common.off'),
           meta: <MenuToggleBadge on={anonymousOnThisSite} />,
           // Applied to the open page as it is; Instagram is loaded again, as its site changes with it.
@@ -283,6 +285,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           label: t('menus.watch', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }),
           icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
           systemImage: 'dot.radiowaves.left.and.right',
+          checked: watchingThisProfile,
           metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),
           meta: <MenuToggleBadge on={watchingThisProfile} />,
           handler: () => {
@@ -499,6 +502,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                             label: t('menus.desktop'),
                             icon: <MaterialIcons name="desktop-windows" size={18} color={headerControlColor} />,
                             systemImage: 'desktopcomputer',
+                            checked: !!currentTab?.desktopMode,
                             metaLabel: currentTab?.desktopMode ? t('common.on') : t('common.off'),
                             meta: (
                               <View

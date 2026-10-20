@@ -1,4 +1,4 @@
-import { Button, Divider, Host, Menu, Section } from '@expo/ui/swift-ui'
+import { Button, Divider, Host, Image, Menu, RNHostView, Section, Text } from '@expo/ui/swift-ui'
 import { disabled, frame, tint } from '@expo/ui/swift-ui/modifiers'
 import type { Item, NouMenuHandle } from './NouMenu'
 import { forwardRef, Fragment, ReactNode, useImperativeHandle } from 'react'
@@ -21,15 +21,27 @@ export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: I
     const header = group.find((item) => item.kind === 'label')
     const buttons = group
       .filter((item) => item.kind !== 'label')
-      .map((item, itemIndex) => (
-        <Button
-          key={`${groupIndex}-${itemIndex}`}
-          label={item.metaLabel ? `${item.label} (${item.metaLabel})` : item.label}
-          modifiers={item.disabled ? [disabled(true)] : undefined}
-          onPress={item.handler}
-          systemImage={item.systemImage as any}
-        />
-      ))
+      .map((item, itemIndex) =>
+        typeof item.checked === 'boolean' ? (
+          <Button
+            key={`${groupIndex}-${itemIndex}`}
+            onPress={item.handler}
+            modifiers={item.disabled ? [disabled(true)] : undefined}
+          >
+            <Text>{item.label}</Text>
+            <Text>{item.metaLabel}</Text>
+            {item.systemImage ? <Image systemName={item.systemImage as any} /> : null}
+          </Button>
+        ) : (
+          <Button
+            key={`${groupIndex}-${itemIndex}`}
+            label={item.metaLabel ? `${item.label} (${item.metaLabel})` : item.label}
+            modifiers={item.disabled ? [disabled(true)] : undefined}
+            onPress={item.handler}
+            systemImage={item.systemImage as any}
+          />
+        ),
+      )
 
     const content = header ? (
       <Section key={`section-${groupIndex}`} title={header.label}>
@@ -52,7 +64,11 @@ export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; items: I
   return (
     <Host matchContents>
       <Menu
-        label={typeof trigger === 'string' ? '' : <View pointerEvents="none">{trigger}</View>}
+        label={typeof trigger === 'string' ? '' : (
+          <RNHostView matchContents>
+            <View pointerEvents="none">{trigger}</View>
+          </RNHostView>
+        )}
         systemImage={typeof trigger === 'string' ? (trigger as any) : undefined}
         modifiers={typeof trigger === 'string' ? [frame({ width: triggerSize, height: triggerSize }), ...(triggerColor ? [tint(triggerColor)] : [])] : undefined}
       >

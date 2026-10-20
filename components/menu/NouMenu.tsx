@@ -8,6 +8,7 @@ export interface Item {
   icon?: ReactNode
   systemImage?: string
   disabled?: boolean
+  checked?: boolean
   description?: string
   kind?: 'item' | 'label' | 'separator'
   meta?: ReactNode
