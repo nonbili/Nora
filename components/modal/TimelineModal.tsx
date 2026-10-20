@@ -6,6 +6,7 @@ import { t } from 'i18next'
 import { FormModal } from './FormModal'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
+import { NouSwitch } from '../switch/NouSwitch'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
 import { watch$ } from '@/states/watch'
@@ -28,12 +29,14 @@ export const TimelineModal = () => {
   const profiles = useValue(watch$.profiles)
   const [name, setName] = useState('')
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
+  const [mediaOnly, setMediaOnly] = useState(false)
 
   useEffect(() => {
     if (!target) return
     const timeline = target.timelineId ? watch$.timelines.peek().find((current) => current.id === target.timelineId) : undefined
     setName(timeline?.name || '')
     setSelectedKeys(timeline?.profileKeys || (target.profileKey ? [target.profileKey] : []))
+    setMediaOnly(Boolean(timeline?.mediaOnly))
   }, [target])
 
   const onClose = () => ui$.timelineModal.set(null)
@@ -49,9 +52,10 @@ export const TimelineModal = () => {
 
   const save = () => {
     if (target.timelineId) {
-      watch$.updateTimeline(target.timelineId, { name, profileKeys: selectedKeys })
+      watch$.updateTimeline(target.timelineId, { name, profileKeys: selectedKeys, mediaOnly })
     } else {
       const id = watch$.createTimeline(name, selectedKeys)
+      if (mediaOnly) watch$.updateTimeline(id, { mediaOnly })
       showInTab(target.tabId, id)
     }
     onClose()
@@ -92,6 +96,7 @@ export const TimelineModal = () => {
         style={isIos ? { minHeight: 44 } : undefined}
         autoFocus={!editing}
       />
+      <NouSwitch className="mb-3" label={t('feed.mediaOnly')} value={mediaOnly} onPress={() => setMediaOnly((value) => !value)} />
       {profiles.length ? (
         <ScrollView style={{ maxHeight: 320 }} keyboardShouldPersistTaps="handled">
           {profiles.map((profile) => {

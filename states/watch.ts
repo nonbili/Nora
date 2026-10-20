@@ -71,7 +71,7 @@ interface Store {
   // Marks the profiles a tab shows as read: one when it shows only that one.
   markFeedSeen: (timelineId?: string, profileKey?: string) => void
   createTimeline: (name: string, profileKeys: string[]) => string
-  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys' | 'pinned'>>) => void
+  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys' | 'pinned' | 'mediaOnly'>>) => void
   deleteTimeline: (id: string) => void
   setInTimeline: (id: string, profileKey: string, included: boolean) => void
 }
@@ -183,7 +183,8 @@ export const unreadKeys = (timelineId?: string) => {
   watchPostsVersion$.get()
   const feedSeenAt = watch$.feedSeenAt.get()
   const seenAt = Object.fromEntries(watch$.profiles.get().map((profile) => [profile.key, profile.seenAt ?? feedSeenAt]))
-  return getUnreadPostKeys(timelineProfileKeys(timelineId), seenAt, feedSeenAt)
+  // A timeline of photos and videos counts only the posts it shows.
+  return getUnreadPostKeys(timelineProfileKeys(timelineId), seenAt, feedSeenAt, getTimeline(timelineId)?.mediaOnly)
 }
 
 syncObservable(watch$, {

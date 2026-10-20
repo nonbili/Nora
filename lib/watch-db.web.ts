@@ -12,11 +12,13 @@ export const trimWatchPosts = (_max: number) => {}
 export const importWatchPosts = (_byProfile: Record<string, WatchPost[] | undefined>) => {}
 export const findWatchPost = (_profileKey: string, _key: string): WatchPost | undefined => undefined
 export const updateWatchPost = (_profileKey: string, _key: string, _patch: Partial<WatchPost>) => {}
-export const getFeedPosts = (_profileKeys: string[], _limit: number): WatchPost[] => []
+export const getFeedPosts = (_profileKeys: string[], _limit: number, _mediaOnly?: boolean): WatchPost[] => []
+export const findWatchPosts = (_refs: { profileKey: string; key: string }[]): WatchPost[] => []
 export const getUnreadPostKeys = (
   _profileKeys: string[],
   _seenAtByProfile: Record<string, number>,
   _defaultSeenAt: number,
+  _mediaOnly?: boolean,
 ): Set<string> => new Set()
 export const getProfilesWithPosts = (_keys: Iterable<string>, _seenAfter: number): Set<string> => new Set()
 export const getNewestPostTimes = (): Record<string, number> => ({})

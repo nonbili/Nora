@@ -15,7 +15,8 @@ interface Store {
   cookieModalOpen: boolean
   downloadVideoModalUrl: string
   // The post whose media the feed's gallery shows, and the photo or video it opened at.
-  feedGallery: { postKey: string; profileKey: string; index: number } | null
+  // With posts, the gallery goes on from one post's media to the next one's, in their order.
+  feedGallery: { postKey: string; profileKey: string; index: number; posts?: { postKey: string; profileKey: string }[] } | null
   // The timeline to change, or none to make one: with the profile to start it with, and the feed tab to show it in.
   timelineModal: { timelineId?: string; profileKey?: string; tabId?: string } | null
   // The list of all watched sources, opened from the feed tab whose links it opens beside; or, to pick

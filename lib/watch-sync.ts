@@ -18,6 +18,7 @@ export interface WatchTimelineRow {
   name: string
   profileKeys: string[]
   pinned?: boolean
+  mediaOnly?: boolean
 }
 
 /** Sources by their key, timelines by their id. */
@@ -61,7 +62,12 @@ export const getWatchSyncRows = (
   timelines: Object.fromEntries(
     value.timelines.map((timeline) => [
       timeline.id,
-      { name: timeline.name, profileKeys: [...timeline.profileKeys], ...(timeline.pinned ? { pinned: true } : {}) },
+      {
+        name: timeline.name,
+        profileKeys: [...timeline.profileKeys],
+        ...(timeline.pinned ? { pinned: true } : {}),
+        ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
+      },
     ]),
   ),
 })
@@ -97,7 +103,12 @@ export const parseTimelineRow = (row: RemoteWatchRow): WatchTimelineRow | null =
   const json = row.json
   if (!isObject(json) || typeof json.name !== 'string' || !json.name.trim()) return null
   const keys = (Array.isArray(json.profileKeys) ? json.profileKeys : []).filter((key): key is string => typeof key === 'string')
-  return { name: json.name.trim(), profileKeys: Array.from(new Set(keys)), ...(json.pinned === true ? { pinned: true } : {}) }
+  return {
+    name: json.name.trim(),
+    profileKeys: Array.from(new Set(keys)),
+    ...(json.pinned === true ? { pinned: true } : {}),
+    ...(json.mediaOnly === true ? { mediaOnly: true } : {}),
+  }
 }
 
 /**
@@ -182,6 +193,7 @@ export const foldUnsyncedTimelines = (unsyncedIds: string[], remoteTimelines: Re
               ...timeline,
               profileKeys: Array.from(new Set([...timeline.profileKeys, ...local.profileKeys])),
               ...(local.pinned ? { pinned: true } : {}),
+              ...(local.mediaOnly ? { mediaOnly: true } : {}),
             }
           : timeline,
       )

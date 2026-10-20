@@ -1,5 +1,5 @@
 import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, View, useWindowDimensions } from 'react-native'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useValue } from '@legendapp/state/react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
@@ -10,8 +10,8 @@ import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
-import { mediaKey, refreshesMedia, watchSiteLabels, type WatchMedia, type WatchPost } from '@/lib/watch'
-import { findWatchPost } from '@/lib/watch-db'
+import { mediaKey, refreshesMedia, watchSiteLabels, watchSourceLabel, type WatchMedia, type WatchPost } from '@/lib/watch'
+import { findWatchPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
 import { ensurePostMedia, holdMedia, keepPostMediaItem, keptMediaUri, saveWatchPostMedia, savesToDownloads, touchMedia, watchMedia$ } from '@/lib/watch-media'
 import { showToast } from '@/lib/toast'
@@ -99,6 +99,23 @@ const GalleryItem: React.FC<{
   )
 }
 
+/** A page of the gallery: an item of a post's media, or the cover of a post whose media is still to be read. */
+interface GalleryPage {
+  post: WatchPost
+  // The item's place in the post's media.
+  index: number
+  item?: WatchMedia
+}
+
+const galleryPages = (posts: WatchPost[]): GalleryPage[] =>
+  posts.flatMap((post): GalleryPage[] =>
+    post.media?.length
+      ? post.media.map((item, index) => ({ post, index, item }))
+      : post.mediaComplete === false
+        ? [{ post, index: 0 }]
+        : [],
+  )
+
 export const FeedGalleryModal = () => {
   const gallery = useValue(ui$.feedGallery)
   const window = useWindowDimensions()
@@ -107,30 +124,67 @@ export const FeedGalleryModal = () => {
   const [size, setSize] = useState<{ width: number; height: number } | null>(null)
   const width = size?.width ?? window.width
   const height = size?.height ?? window.height
-  const [index, setIndex] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
+  // The item shown, by its post, as the pages before it can change while it is.
+  const [position, setPosition] = useState<{ gallery: typeof gallery; postKey: string; index: number } | null>(null)
+  // The posts whose media was asked for, and those for which the asking is over.
+  const requested = useRef(new Set<string>())
+  const [settled, setSettled] = useState<ReadonlySet<string>>(() => new Set())
   const [captionOpen, setCaptionOpen] = useState(false)
-  const listRef = useRef<FlatList<WatchMedia>>(null)
+  const listRef = useRef<FlatList<GalleryPage>>(null)
+  // The page the list is scrolled to, once it is shown.
+  const shownPage = useRef<number | null>(null)
 
-  const post = useWatchPosts(() => (gallery ? findWatchPost(gallery.profileKey, gallery.postKey) : undefined), gallery)
-  const media = post?.media || []
+  const posts = useWatchPosts(
+    () =>
+      gallery
+        ? findWatchPosts(
+            (gallery.posts || [{ postKey: gallery.postKey, profileKey: gallery.profileKey }]).map((ref) => ({
+              profileKey: ref.profileKey,
+              key: ref.postKey,
+            })),
+          )
+        : [],
+    gallery,
+  )
+  const pages = useMemo(() => galleryPages(posts), [posts])
+  const at = position && position.gallery === gallery ? position : gallery
+  const found = at ? pages.findIndex((page) => page.post.key === at.postKey && page.index === at.index) : -1
+  // An item gone, as when the post was read again with fewer: the post's first instead.
+  const pageIndex = found !== -1 ? found : Math.max(0, at ? pages.findIndex((page) => page.post.key === at.postKey) : 0)
+  const page = pages[pageIndex] as GalleryPage | undefined
+  const post = page?.post
+  const incompletePost = post?.mediaComplete === false ? post : undefined
 
   const onClose = () => ui$.feedGallery.set(null)
 
   useEffect(() => {
     if (!gallery) return
-    setIndex(gallery.index)
-    setError(false)
+    requested.current = new Set()
+    setSettled(new Set())
     setCaptionOpen(false)
-    const current = findWatchPost(gallery.profileKey, gallery.postKey)
-    if (current?.mediaComplete === false) {
-      setLoading(true)
-      ensurePostMedia(current)
-        .catch(() => setError(true))
-        .finally(() => setLoading(false))
-    }
   }, [gallery])
+
+  // The media of a post the feed has only some of, or only the cover of, is read once it is in sight.
+  useEffect(() => {
+    if (!incompletePost || requested.current.has(incompletePost.key)) return
+    const key = incompletePost.key
+    requested.current.add(key)
+    ensurePostMedia(incompletePost)
+      .catch(() => {})
+      .finally(() => setSettled((keys) => new Set(keys).add(key)))
+  }, [incompletePost])
+
+  // The list stays on the item shown when the pages before it change.
+  useEffect(() => {
+    if (!gallery || !pages.length) {
+      shownPage.current = null
+    } else if (shownPage.current === null) {
+      shownPage.current = pageIndex
+    } else if (shownPage.current !== pageIndex) {
+      shownPage.current = pageIndex
+      listRef.current?.scrollToOffset({ offset: width * pageIndex, animated: false })
+    }
+  })
 
   useEffect(() => {
     if (!gallery) return
@@ -141,13 +195,15 @@ export const FeedGalleryModal = () => {
     return () => subscription.remove()
   }, [gallery])
 
-  if (!gallery || !post) {
+  if (!gallery || !post || !page) {
     return null
   }
 
+  const media = post.media || []
+
   const save = async () => {
     try {
-      const saved = await saveWatchPostMedia(post, index)
+      const saved = await saveWatchPostMedia(post, page.index)
       // The share sheet tells for itself what became of the files.
       if (!saved) showToast(t('feed.mediaSaveFailed'))
       else if (savesToDownloads) showToast(t('feed.mediaSaved', { count: saved }))
@@ -162,6 +218,14 @@ export const FeedGalleryModal = () => {
     ui$.feedGallery.set(null)
   }
 
+  const onScrollEnd = (offset: number) => {
+    const index = Math.round(offset / width)
+    const next = pages[index]
+    if (!next) return
+    shownPage.current = index
+    setPosition({ gallery, postKey: next.post.key, index: next.index })
+  }
+
   return (
     <View
       className="absolute inset-0 z-20 bg-black"
@@ -172,37 +236,59 @@ export const FeedGalleryModal = () => {
     >
       <FlatList
         ref={listRef}
-        data={media}
+        data={pages}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        initialScrollIndex={Math.min(gallery.index, Math.max(0, media.length - 1))}
+        initialScrollIndex={pageIndex}
         getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
-        keyExtractor={(_, i) => String(i)}
-        onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
-        renderItem={({ item, index: i }) => (
-          <GalleryItem post={post} index={i} item={item} active={i === index} width={width} height={height} />
-        )}
+        keyExtractor={(current) => `${current.post.key}\n${current.item ? current.index : 'cover'}`}
+        onMomentumScrollEnd={(e) => onScrollEnd(e.nativeEvent.contentOffset.x)}
+        renderItem={({ item: current, index: i }) =>
+          current.item ? (
+            <GalleryItem post={current.post} index={current.index} item={current.item} active={i === pageIndex} width={width} height={height} />
+          ) : (
+            <View style={{ width, height }} className="items-center justify-center px-8">
+              {current.post.image ? (
+                <Image source={current.post.image} style={{ position: 'absolute', width, height, opacity: 0.4 }} contentFit="contain" />
+              ) : null}
+              {settled.has(current.post.key) ? (
+                <>
+                  <NouText className="mb-4 text-center text-zinc-300">{t('feed.mediaFailed')}</NouText>
+                  <Pressable onPress={openOriginal} className="rounded-full bg-white/15 px-4 py-2">
+                    <NouText className="text-white">{t('feed.openOn', { site: watchSiteLabels[current.post.site] })}</NouText>
+                  </Pressable>
+                </>
+              ) : (
+                <ActivityIndicator color="#fff" size="large" />
+              )}
+            </View>
+          )
+        }
       />
-      {loading ? (
-        <View className="absolute inset-0 items-center justify-center" pointerEvents="none">
-          <ActivityIndicator color="#fff" size="large" />
-        </View>
-      ) : null}
       <SafeAreaView className="absolute left-0 right-0 top-0" edges={['top']} pointerEvents="box-none">
         <View className="flex-row items-center gap-2 px-3 py-2">
           <Pressable onPress={onClose} className="h-11 w-11 items-center justify-center rounded-full bg-black/40">
             <MaterialIcons name="close" color="#fff" size={22} />
           </Pressable>
-          <NouText className="flex-1 text-white">{media.length > 1 ? `${index + 1} / ${media.length}` : ''}</NouText>
-          <Pressable
-            onPress={() => void save()}
-            accessibilityRole="button"
-            accessibilityLabel={t('feed.saveMedia')}
-            className="h-11 w-11 items-center justify-center rounded-full bg-black/40"
-          >
-            <MaterialIcons name="file-download" color="#fff" size={22} />
-          </Pressable>
+          <View className="flex-1">
+            {gallery.posts ? (
+              <NouText className="font-medium text-white" numberOfLines={1}>
+                {watchSourceLabel(post)}
+              </NouText>
+            ) : null}
+            {media.length > 1 ? <NouText className="text-sm text-white">{`${page.index + 1} / ${media.length}`}</NouText> : null}
+          </View>
+          {page.item ? (
+            <Pressable
+              onPress={() => void save()}
+              accessibilityRole="button"
+              accessibilityLabel={t('feed.saveMedia')}
+              className="h-11 w-11 items-center justify-center rounded-full bg-black/40"
+            >
+              <MaterialIcons name="file-download" color="#fff" size={22} />
+            </Pressable>
+          ) : null}
           <NouMenu
             trigger={
               <View className="h-11 w-11 items-center justify-center rounded-full bg-black/40">
@@ -216,21 +302,13 @@ export const FeedGalleryModal = () => {
           />
         </View>
       </SafeAreaView>
-      {error && !media.length ? (
-        <View className="absolute inset-0 items-center justify-center px-8" pointerEvents="box-none">
-          <NouText className="mb-4 text-center text-zinc-300">{t('feed.mediaFailed')}</NouText>
-          <Pressable onPress={openOriginal} className="rounded-full bg-white/15 px-4 py-2">
-            <NouText className="text-white">{t('feed.openOn', { site: watchSiteLabels[post.site] })}</NouText>
-          </Pressable>
-        </View>
-      ) : null}
       {post.text ? (
         <SafeAreaView className="absolute bottom-0 left-0 right-0" edges={['bottom']} pointerEvents="box-none">
           <Pressable
             onPress={() => setCaptionOpen((open) => !open)}
             className="bg-black/60 px-4 py-3"
             // Above the player's own controls, which take the bottom of a video.
-            style={media[index]?.type === 'video' ? { marginBottom: VIDEO_CONTROLS_HEIGHT } : undefined}
+            style={page.item?.type === 'video' ? { marginBottom: VIDEO_CONTROLS_HEIGHT } : undefined}
           >
             {captionOpen ? (
               <ScrollView style={{ maxHeight: height * 0.4 }}>

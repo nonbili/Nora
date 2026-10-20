@@ -41,7 +41,7 @@ describe('watch transfer', () => {
       ],
       timelines: [
         { name: 'A', profileKeys: ['x:jack', 'x:ghost'] },
-        { name: ' a ', profileKeys: ['mastodon:user@mastodon.social'] },
+        { name: ' a ', profileKeys: ['mastodon:user@mastodon.social'], mediaOnly: true },
         { name: '' },
       ],
     })
@@ -50,7 +50,7 @@ describe('watch transfer', () => {
         { site: 'x', handle: 'jack', notify: false },
         { site: 'mastodon', handle: 'user@mastodon.social', notify: false },
       ],
-      timelines: [{ name: 'A', profileKeys: ['x:jack', 'mastodon:user@mastodon.social'] }],
+      timelines: [{ name: 'A', profileKeys: ['x:jack', 'mastodon:user@mastodon.social'], mediaOnly: true }],
     })
   })
 
@@ -90,20 +90,24 @@ describe('watch transfer', () => {
     ])
   })
 
-  it('carries which timelines are pinned to the new tab page', () => {
+  it('carries which timelines are pinned to the new tab page, and which show only photos and videos', () => {
     watch$.watch({ site: 'x', handle: 'jack' })
     const pinnedId = watch$.createTimeline('Friends', ['x:jack'])
     watch$.updateTimeline(pinnedId, { pinned: true })
-    watch$.createTimeline('News', [])
+    const newsId = watch$.createTimeline('News', [])
+    watch$.updateTimeline(newsId, { mediaOnly: true })
     const backup = normalizeWatchBackup(createWatchBackup())!
-    expect(backup.timelines).toEqual([{ name: 'Friends', profileKeys: ['x:jack'], pinned: true }, { name: 'News', profileKeys: [] }])
+    expect(backup.timelines).toEqual([
+      { name: 'Friends', profileKeys: ['x:jack'], pinned: true },
+      { name: 'News', profileKeys: [], mediaOnly: true },
+    ])
 
     reset()
     watch$.createTimeline('friends', [])
     applyWatchBackup(backup)
-    expect(watch$.timelines.get().map(({ name, pinned }) => ({ name, pinned }))).toEqual([
-      { name: 'friends', pinned: true },
-      { name: 'News', pinned: undefined },
+    expect(watch$.timelines.get().map(({ name, pinned, mediaOnly }) => ({ name, pinned, mediaOnly }))).toEqual([
+      { name: 'friends', pinned: true, mediaOnly: undefined },
+      { name: 'News', pinned: undefined, mediaOnly: true },
     ])
   })
 

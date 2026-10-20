@@ -19,6 +19,7 @@ export interface WatchTimelineBackup {
   name: string
   profileKeys: string[]
   pinned?: boolean
+  mediaOnly?: boolean
 }
 
 export interface WatchBackup {
@@ -66,6 +67,7 @@ export const createWatchBackup = (): WatchBackup => ({
     name: timeline.name,
     profileKeys: [...timeline.profileKeys],
     ...(timeline.pinned ? { pinned: true } : {}),
+    ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
   })),
 })
 
@@ -110,12 +112,19 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
       (key): key is string => typeof key === 'string' && profiles.has(key),
     )
     const pinned = item.pinned === true
+    const mediaOnly = item.mediaOnly === true
     const existing = timelines.get(timelineName(name))
     if (existing) {
       existing.profileKeys = Array.from(new Set([...existing.profileKeys, ...keys]))
       if (pinned) existing.pinned = true
+      if (mediaOnly) existing.mediaOnly = true
     } else {
-      timelines.set(timelineName(name), { name, profileKeys: Array.from(new Set(keys)), ...(pinned ? { pinned } : {}) })
+      timelines.set(timelineName(name), {
+        name,
+        profileKeys: Array.from(new Set(keys)),
+        ...(pinned ? { pinned } : {}),
+        ...(mediaOnly ? { mediaOnly } : {}),
+      })
     }
   }
 
@@ -176,6 +185,8 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
       } else {
         const id = watch$.createTimeline(timeline.name, keys)
         if (timeline.pinned) watch$.updateTimeline(id, { pinned: true })
+        // How a timeline already here is shown stays as it was chosen here.
+        if (timeline.mediaOnly) watch$.updateTimeline(id, { mediaOnly: true })
       }
     }
   })

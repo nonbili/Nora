@@ -74,6 +74,25 @@ describe('feeds sync', () => {
     auth$.assign({ userId: 'u1', plan: 'sync' })
   })
 
+  it('carries which timelines show only photos and videos', async () => {
+    remote('feed_timelines', 't1', { name: 'Art', profileKeys: [], mediaOnly: true })
+    await feedsSyncer.syncNow()
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'Art', profileKeys: [], mediaOnly: true }])
+
+    watch$.updateTimeline('t1', { mediaOnly: false })
+    await feedsSyncer.syncNow()
+    expect(server.feed_timelines.get('t1')!.json.mediaOnly).toBeUndefined()
+  })
+
+  it('keeps a timeline made here to show only photos and videos so when put into one of the same name', async () => {
+    const local = watch$.createTimeline('Art', [])
+    watch$.updateTimeline(local, { mediaOnly: true })
+    remote('feed_timelines', 't1', { name: 'art', profileKeys: [] })
+    await feedsSyncer.syncNow()
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', profileKeys: [], mediaOnly: true }])
+    expect(server.feed_timelines.get('t1')!.json.mediaOnly).toBe(true)
+  })
+
   it('pushes what a device had before its first sync, together with what was synced', async () => {
     watch$.watch({ site: 'x', handle: 'jack' })
     const local = watch$.createTimeline('Friends', ['x:jack'])

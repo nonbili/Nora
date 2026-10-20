@@ -112,17 +112,21 @@ export const updateWatchPost = (profileKey: string, key: string, patch: Partial<
   changed()
 }
 
+// A post with photos or videos, or whose media is still to be read; a cover alone, as of a link, is not.
+const HAS_MEDIA = `(json_array_length(p.data, '$.media') > 0 OR json_extract(p.data, '$.mediaComplete') = 0)`
+
 /**
  * The newest posts of these profiles as one list, up to the limit. A post two of them share, as a
  * collaboration on Instagram, is shown once, as the first of them has it.
  */
-export const getFeedPosts = (profileKeys: string[], limit: number): WatchPost[] =>
+export const getFeedPosts = (profileKeys: string[], limit: number, mediaOnly = false): WatchPost[] =>
   parse(
     db().getAllSync(
       `SELECT data FROM (
         SELECT p.data, p.created_at_ms, w.key AS rank,
           ROW_NUMBER() OVER (PARTITION BY p.key ORDER BY w.key) AS copy
         FROM posts p JOIN json_each(?) w ON w.value = p.profile_key
+        ${mediaOnly ? `WHERE ${HAS_MEDIA}` : ''}
       )
       WHERE copy = 1
       ORDER BY created_at_ms DESC, rank
@@ -139,6 +143,7 @@ export const getUnreadPostKeys = (
   profileKeys: string[],
   seenAtByProfile: Record<string, number>,
   defaultSeenAt: number,
+  mediaOnly = false,
 ): Set<string> => {
   // Every profile is looked at: a post these share with another was read where that other was shown.
   const rows = db().getAllSync<{ key: string }>(
@@ -146,6 +151,7 @@ export const getUnreadPostKeys = (
     SELECT DISTINCT p.key FROM posts p LEFT JOIN seen s USING (profile_key)
     WHERE p.profile_key IN (SELECT value FROM json_each(?2))
       AND p.first_seen_at > COALESCE(s.seen_at, ?3)
+      ${mediaOnly ? `AND ${HAS_MEDIA}` : ''}
       AND NOT EXISTS (
         SELECT 1 FROM posts r LEFT JOIN seen rs USING (profile_key)
         WHERE r.key = p.key AND r.first_seen_at <= COALESCE(rs.seen_at, ?3)
@@ -154,6 +160,19 @@ export const getUnreadPostKeys = (
   )
   return new Set(rows.map((row) => row.key))
 }
+
+/** These posts in the order asked for, each as findWatchPost finds it; those no longer kept are left out. */
+export const findWatchPosts = (refs: { profileKey: string; key: string }[]): WatchPost[] =>
+  parse(
+    db().getAllSync<{ data: string | null }>(
+      `SELECT (
+        SELECT p.data FROM posts p WHERE p.key = json_extract(w.value, '$.key')
+        ORDER BY p.profile_key = json_extract(w.value, '$.profileKey') DESC LIMIT 1
+      ) AS data
+      FROM json_each(?) w ORDER BY w.key`,
+      [JSON.stringify(refs.map(({ profileKey, key }) => ({ profileKey, key })))],
+    ).filter((row): row is { data: string } => row.data !== null),
+  )
 
 /** The profiles with a post among these, or first seen after the time, when there is one. */
 export const getProfilesWithPosts = (keys: Iterable<string>, seenAfter: number): Set<string> => {

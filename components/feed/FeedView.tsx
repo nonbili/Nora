@@ -126,8 +126,8 @@ export const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> =
   )
 }
 
-/** The first photo or video of a post, with how many more there are; opens the gallery. */
-const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, onOpen }) => {
+/** What to show of a post's first photo or video: kept on the phone, or else from the site. */
+const usePostCover = (post: WatchPost) => {
   const first = post.media?.[0]
   const kept = useValue(watchMedia$.files[mediaKey(post.key, 0)])
   const keptUri = first?.type === 'image' ? keptMediaUri(kept) : undefined
@@ -142,6 +142,12 @@ const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, on
     // A cover that no longer loads either: the post is read again for new addresses, once.
     if (refreshesMedia(post.site)) ensurePostMedia(post, { force: true }).catch(() => {})
   }
+  return { first, source, onError }
+}
+
+/** The first photo or video of a post, with how many more there are; opens the gallery. */
+const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, onOpen }) => {
+  const { first, source, onError } = usePostCover(post)
   if (!source) return null
   const width = first?.width
   const height = first?.height
@@ -169,6 +175,34 @@ const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, on
           <NouText className="text-xs text-white">{post.media?.length}</NouText>
         </View>
       ) : null}
+    </Pressable>
+  )
+}
+
+/** A post of a timeline of photos and videos, as a square of its cover; opens the gallery. */
+const PostTile: React.FC<{ post: WatchPost; unread: boolean; columns: number; onOpen: () => void }> = ({
+  post,
+  unread,
+  columns,
+  onOpen,
+}) => {
+  const { first, source, onError } = usePostCover(post)
+  return (
+    <Pressable
+      onPress={onOpen}
+      accessibilityRole="imagebutton"
+      accessibilityLabel={watchSourceLabel(post)}
+      style={{ width: `${100 / columns}%`, padding: 1 }}
+    >
+      <View className="bg-zinc-200 dark:bg-zinc-800" style={{ aspectRatio: 1 }}>
+        {source ? <Image source={source} onError={onError} contentFit="cover" style={{ width: '100%', height: '100%' }} /> : null}
+        {first?.type === 'video' || (post.media?.length || 0) > 1 ? (
+          <View className="absolute right-1.5 top-1.5" pointerEvents="none">
+            <MaterialIcons name={first?.type === 'video' ? 'play-circle' : 'collections'} size={18} color="#fff" />
+          </View>
+        ) : null}
+        {unread ? <View className="absolute left-1.5 top-1.5 h-2.5 w-2.5 rounded-full border border-white bg-indigo-500" /> : null}
+      </View>
     </Pressable>
   )
 }
@@ -373,10 +407,23 @@ export const FeedView: React.FC<{
 
   // How many posts the view has scrolled through; a view shown again starts at the first page.
   const postProfileKeys = selected ? [selected.key] : profiles.map((profile) => profile.key)
-  const view = postProfileKeys.join('\n')
+  const mediaOnly = Boolean(timeline?.mediaOnly)
+  const view = `${mediaOnly}\n${postProfileKeys.join('\n')}`
   const [page, setPage] = useState({ view, limit: FEED_PAGE_SIZE })
   const limit = page.view === view ? page.limit : FEED_PAGE_SIZE
-  const posts = useWatchPosts(() => getFeedPosts(postProfileKeys, limit), `${limit}\n${view}`)
+  const posts = useWatchPosts(() => getFeedPosts(postProfileKeys, limit, mediaOnly), `${limit}\n${view}`)
+  // As many squares across as fit at about the size of a phone's three.
+  const [listWidth, setListWidth] = useState(0)
+  const columns = Math.max(3, Math.round(listWidth / 180))
+
+  // The gallery goes on through the posts shown, from the one opened.
+  const openGallery = (post: WatchPost) =>
+    ui$.feedGallery.set({
+      postKey: post.key,
+      profileKey: watchKey(post),
+      index: 0,
+      posts: posts.map((current) => ({ postKey: current.key, profileKey: watchKey(current) })),
+    })
   const showMore = () => {
     if (posts.length >= limit) setPage({ view, limit: limit + FEED_PAGE_SIZE })
   }
@@ -440,6 +487,12 @@ export const FeedView: React.FC<{
             icon: <MaterialIcons name="push-pin" size={18} color={iconColor} />,
             systemImage: timeline.pinned ? 'pin.slash' : 'pin',
             handler: () => watch$.updateTimeline(timeline.id, { pinned: !timeline.pinned }),
+          },
+          {
+            label: timeline.mediaOnly ? t('feed.showAllPosts') : t('feed.showMediaOnly'),
+            icon: <MaterialIcons name={timeline.mediaOnly ? 'view-agenda' : 'grid-view'} size={18} color={iconColor} />,
+            systemImage: timeline.mediaOnly ? 'list.bullet' : 'square.grid.3x3',
+            handler: () => watch$.updateTimeline(timeline.id, { mediaOnly: !timeline.mediaOnly }),
           },
         ]
       : []),
@@ -638,7 +691,7 @@ export const FeedView: React.FC<{
     <View className="items-center px-8 py-16">
       <MaterialIcons name="dynamic-feed" size={40} color={iconColor} />
       <NouText className="mt-4 text-center text-zinc-600 dark:text-zinc-400">
-        {profiles.length ? t('feed.noPosts') : timeline && allProfiles.length ? t('feed.timelineEmpty') : t('feed.empty')}
+        {profiles.length ? (mediaOnly ? t('feed.noMedia') : t('feed.noPosts')) : timeline && allProfiles.length ? t('feed.timelineEmpty') : t('feed.empty')}
       </NouText>
     </View>
   )
@@ -685,21 +738,29 @@ export const FeedView: React.FC<{
       </View>
       <FlatList
         ref={listRef}
+        // The columns of a list can only be set as it is made.
+        key={mediaOnly ? `grid-${columns}` : 'list'}
+        numColumns={mediaOnly ? columns : 1}
+        onLayout={(e) => setListWidth(e.nativeEvent.layout.width)}
         data={posts}
         keyExtractor={(post) => post.key}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
-        ItemSeparatorComponent={() => <View className="mx-4 h-px bg-zinc-200 dark:bg-zinc-800" />}
-        renderItem={({ item }) => (
-          <PostRow
-            post={item}
-            profile={profileByKey.get(watchKey(item))}
-            unread={isUnread(item)}
-            now={now}
-            iconColor={iconColor}
-            onOpenOriginal={() => openUrl(item.url)}
-          />
-        )}
+        ItemSeparatorComponent={mediaOnly ? undefined : () => <View className="mx-4 h-px bg-zinc-200 dark:bg-zinc-800" />}
+        renderItem={({ item }) =>
+          mediaOnly ? (
+            <PostTile post={item} unread={isUnread(item)} columns={columns} onOpen={() => openGallery(item)} />
+          ) : (
+            <PostRow
+              post={item}
+              profile={profileByKey.get(watchKey(item))}
+              unread={isUnread(item)}
+              now={now}
+              iconColor={iconColor}
+              onOpenOriginal={() => openUrl(item.url)}
+            />
+          )
+        }
         onEndReached={showMore}
         ListFooterComponent={<View className="h-16" />}
       />

@@ -1041,6 +1041,8 @@ export interface WatchTimeline {
   profileKeys: string[]
   // Shown on the new tab page, next to the whole feed.
   pinned?: boolean
+  // Only the posts with photos or videos, shown as a grid.
+  mediaOnly?: boolean
 }
 
 // --- merging ----------------------------------------------------------------

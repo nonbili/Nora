@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import {
   deleteProfilePosts,
   findWatchPost,
+  findWatchPosts,
   getFeedPosts,
   getNewestPostTimes,
   getPostsNewestFirst,
@@ -78,6 +79,44 @@ describe('watch db', () => {
     ])
     expect(getFeedPosts(['x:b', 'x:a'], 10).map((current) => current.handle)).toEqual(['nasa', 'second', 'nasa'])
     expect(ids(getFeedPosts(['x:a', 'x:b'], 2))).toEqual(['3', '2'])
+  })
+
+  describe('media only', () => {
+    const photo = { type: 'image' as const, url: 'https://example.com/1.jpg' }
+    beforeEach(() => {
+      setProfilePosts('x:a', [
+        { ...post('text', 4, 200), image: 'https://example.com/link.jpg', mediaComplete: true },
+        { ...post('photo', 3, 200), media: [photo], mediaComplete: true },
+        { ...post('pending', 2, 200), mediaComplete: false },
+        post('plain', 1, 200),
+      ])
+    })
+
+    it('shows only the posts with media, or with media still to be read', () => {
+      expect(ids(getFeedPosts(['x:a'], 10, true))).toEqual(['photo', 'pending'])
+      expect(ids(getFeedPosts(['x:a'], 1, true))).toEqual(['photo'])
+      expect(ids(getFeedPosts(['x:a'], 10))).toEqual(['text', 'photo', 'pending', 'plain'])
+    })
+
+    it('counts as unread only the posts with media', () => {
+      expect([...getUnreadPostKeys(['x:a'], {}, 100, true)].sort()).toEqual(['x:pending', 'x:photo'])
+      expect(getUnreadPostKeys(['x:a'], {}, 100).size).toBe(4)
+    })
+  })
+
+  it('finds posts in the order asked for, of any profile when not of the one given', () => {
+    setProfilePosts('x:a', [post('1', 1), post('2', 2)])
+    setProfilePosts('x:b', [post('3', 3)])
+    expect(
+      ids(
+        findWatchPosts([
+          { profileKey: 'x:b', key: 'x:3' },
+          { profileKey: 'x:a', key: 'x:9' },
+          { profileKey: 'x:c', key: 'x:1' },
+          { profileKey: 'x:a', key: 'x:2' },
+        ]),
+      ),
+    ).toEqual(['3', '1', '2'])
   })
 
   describe('unread', () => {
