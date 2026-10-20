@@ -1,4 +1,5 @@
 import { openDownloadWindow } from 'main/lib/download-window.js'
+import { mainWindow } from '../lib/main-window.js'
 import { MAIN_CHANNEL } from './constants.js'
 import { ipcMain, session } from 'electron'
 import { setLinkHandlingSettings } from '../lib/link-handling.js'
@@ -15,6 +16,7 @@ import {
   writeDesktopBlocklistMatcherSnapshot,
   writeDesktopBlocklistSource,
 } from '../lib/blocklist.js'
+import { abortWatchFetch, downloadWatchMedia, saveWatchMediaToDownloads, setWatchPageScript, watchFetch } from '../lib/watch.js'
 
 const FETCH_TEXT_TIMEOUT_MS = 20_000
 
@@ -140,6 +142,18 @@ const interfaces = {
   setBlocklistExcludedHosts: setDesktopBlocklistExcludedHosts,
   setLinkHandlingSettings,
   setWebRtcProtection,
+  watchFetch,
+  abortWatchFetch,
+  downloadWatchMedia,
+  saveWatchMediaToDownloads,
+  setWatchPageScript,
+  // A notification of Nora's own was clicked.
+  showMainWindow: () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.show()
+    mainWindow.focus()
+  },
 }
 
 export type MainInterface = typeof interfaces

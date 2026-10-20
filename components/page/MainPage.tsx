@@ -99,15 +99,15 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <AddSourcesModal />
         <FeedSettingsModal />
         <SourcesModal />
+        <FeedGalleryModal />
+        <TimelineModal />
+        <WatchWebViewHost />
         {nIf(!isWeb, <TranslationCard />)}
         {nIf(
           !isWeb,
           <>
             <DownloadVideoModal contentJs={contentJs} />
             <TabModal />
-            <FeedGalleryModal />
-            <TimelineModal />
-            <WatchWebViewHost />
           </>,
         )}
       </QueryClientProvider>

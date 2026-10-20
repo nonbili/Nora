@@ -2,9 +2,10 @@ import { Platform } from 'react-native'
 import { observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
-import { Directory, File, Paths } from 'expo-file-system'
 import NoraViewModule from '@/modules/nora-view'
 import { SharedRequests } from '@/lib/shared-request'
+import { watchFetch } from '@/lib/watch-fetch'
+import { clearMediaFiles, deleteMediaFile, downloadMediaFile, listMediaFiles, mediaFileExists, mediaFileUri } from '@/lib/watch-media-files'
 import { watch$ } from '@/states/watch'
 import { findWatchPost, getPostsNewestFirst, getWatchPostKeys, updateWatchPost } from '@/lib/watch-db'
 import { findSignedInCookies } from '@/lib/watch-account'
@@ -54,14 +55,12 @@ interface KeptMedia {
 
 export const watchMedia$ = observable<{ files: Record<string, KeptMedia> }>({ files: {} })
 
-if (Platform.OS !== 'web') {
-  syncObservable(watchMedia$, {
-    persist: {
-      name: 'watch-media',
-      plugin: ObservablePersistMMKV,
-    },
-  })
-}
+syncObservable(watchMedia$, {
+  persist: {
+    name: 'watch-media',
+    plugin: ObservablePersistMMKV,
+  },
+})
 
 const DESKTOP_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
@@ -78,19 +77,8 @@ const RUN_BUDGET_MS = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-let directory: Directory | undefined
-const mediaDirectory = () => {
-  if (!directory) {
-    directory = new Directory(Paths.document, 'watch-media')
-    if (!directory.exists) {
-      directory.create({ intermediates: true, idempotent: true })
-    }
-  }
-  return directory
-}
-
 /** Where a kept file is, for an entry of `watchMedia$.files`. */
-export const keptMediaUri = (kept: KeptMedia | undefined) => (kept ? new File(mediaDirectory(), kept.name).uri : undefined)
+export const keptMediaUri = (kept: KeptMedia | undefined) => (kept ? mediaFileUri(kept.name) : undefined)
 
 export const watchMediaUsageBytes = () =>
   Object.values(watchMedia$.files.peek()).reduce((sum, kept) => sum + (kept?.bytes || 0), 0)
@@ -137,7 +125,7 @@ export const ensurePostMedia = async (
   const read = detailRequests.run(post.key, async (requestSignal) => {
     const account = post.site === 'facebook' ? await findSignedInCookies('facebook') : null
     const url = post.site === 'tiktok' ? tiktokPostPageUrl(post) : ownPage ? threadsPostUrl(post) : instagramEmbedUrl(post.id)
-    const res = await fetch(url, {
+    const res = await watchFetch(url, {
       signal: requestSignal,
       headers: {
         'user-agent': DESKTOP_USER_AGENT,
@@ -197,38 +185,27 @@ export const keepMediaItem = (
 ): Promise<string | undefined> => {
   const key = mediaKey(post.key, index)
   const kept = watchMedia$.files[key].peek()
-  if (kept && new File(mediaDirectory(), kept.name).exists) {
+  if (kept && mediaFileExists(kept.name)) {
     return Promise.resolve(keptMediaUri(kept))
   }
   return downloadRequests.run(key, async (requestSignal) => {
     const startedIn = generation
     const name = `${key.replace(/[^A-Za-z0-9_-]/g, '_')}.${mediaFileName(post, index, item).split('.').pop()}`
-    const destination = new File(mediaDirectory(), name)
     namesInFlight.add(name)
-    let file: File
+    let file: { uri: string; bytes: number }
     try {
-      file = await File.downloadFileAsync(item.url, destination, {
-        idempotent: true,
-        headers: { 'user-agent': DESKTOP_USER_AGENT, ...item.headers },
-        signal: requestSignal,
-      })
-    } catch (e) {
-      // A failed or cancelled download can leave part of the file behind, which nothing counts.
-      try {
-        if (destination.exists) destination.delete()
-      } catch {}
-      throw e
+      file = await downloadMediaFile(item.url, name, { 'user-agent': DESKTOP_USER_AGENT, ...item.headers }, requestSignal)
     } finally {
       namesInFlight.delete(name)
     }
     // Media cleared while this was out: it is not kept, so the cache stays as cleared.
     if (startedIn !== generation) {
       try {
-        if (file.exists) file.delete()
+        deleteMediaFile(name)
       } catch {}
       throw new MediaClearedError()
     }
-    watchMedia$.files[key].set({ name, bytes: file.size || 0, postCreatedAt: post.createdAtMs, usedAt: Date.now() })
+    watchMedia$.files[key].set({ name, bytes: file.bytes, postCreatedAt: post.createdAtMs, usedAt: Date.now() })
     // Whatever kept it, the limit holds; a file in use stays until it is let go.
     pruneWatchMedia()
     return file.uri
@@ -259,6 +236,8 @@ export const touchMedia = (key: string) => {
 }
 
 const isOnWifi = async () => {
+  // A computer is not on a metered connection the way a phone is.
+  if (Platform.OS === 'web') return true
   if (!Network) return false
   try {
     const state = await Network.getNetworkStateAsync()
@@ -292,8 +271,7 @@ export const pruneWatchMedia = () => {
   const evict = mediaToEvict(entries, watch$.mediaLimitMB.peek() * 1024 * 1024, live, new Set(inUse.keys()))
   for (const key of evict) {
     try {
-      const file = new File(mediaDirectory(), files[key].name)
-      if (file.exists) file.delete()
+      deleteMediaFile(files[key].name)
     } catch (e) {
       console.warn('watch media delete failed', key, e)
     }
@@ -302,8 +280,8 @@ export const pruneWatchMedia = () => {
   // Files nothing keeps track of, as one left by a download the app did not live to finish.
   try {
     const tracked = new Set(Object.values(watchMedia$.files.peek()).map((kept) => kept?.name))
-    for (const entry of mediaDirectory().list()) {
-      if (entry instanceof File && !tracked.has(entry.name) && !namesInFlight.has(entry.name)) entry.delete()
+    for (const name of listMediaFiles()) {
+      if (!tracked.has(name) && !namesInFlight.has(name)) deleteMediaFile(name)
     }
   } catch (e) {
     console.warn('watch media cleanup failed', e)
@@ -314,12 +292,10 @@ export const clearWatchMedia = () => {
   generation += 1
   syncController?.abort()
   try {
-    const dir = mediaDirectory()
-    if (dir.exists) dir.delete()
+    clearMediaFiles()
   } catch (e) {
     console.warn('watch media clear failed', e)
   }
-  directory = undefined
   watchMedia$.files.set({})
 }
 
@@ -345,7 +321,6 @@ export const syncWatchMedia = (source: keyof typeof RUN_BUDGET_MS): Promise<void
 }
 
 const runSync = async (source: keyof typeof RUN_BUDGET_MS) => {
-  if (Platform.OS === 'web') return
   pruneWatchMedia()
   const budget = RUN_BUDGET_MS[source]
   if (!budget || (watch$.mediaWifiOnly.peek() && !(await isOnWifi()))) return
@@ -411,9 +386,10 @@ const syncPosts = async (start: number, budget: number, signal: AbortSignal) => 
  * share sheet where that can't be written to. Resolves to how many files were saved or shared.
  */
 // Android writes to the shared Downloads without asking from version 10 on; before that it takes
-// a permission, so there, as on iOS, the file is handed to the share sheet instead.
+// a permission, so there, as on iOS, the file is handed to the share sheet instead. Desktop copies it there.
 export const savesToDownloads =
-  Platform.OS === 'android' && Number(Platform.Version) >= 29 && Boolean(NoraViewModule.saveFileToDownloads)
+  (Platform.OS === 'web' || (Platform.OS === 'android' && Number(Platform.Version) >= 29)) &&
+  Boolean(NoraViewModule.saveFileToDownloads)
 
 export const saveWatchPostMedia = async (post: WatchPost, only?: number): Promise<number> => {
   post = currentPost(post)
@@ -441,12 +417,10 @@ export const saveWatchPostMedia = async (post: WatchPost, only?: number): Promis
 }
 
 // The media of a post that is no longer kept goes with it.
-if (Platform.OS !== 'web') {
-  watch$.profiles.onChange(({ getPrevious, value }) => {
-    // After the unwatch is done: it takes the profile out first, and its posts after.
-    if ((getPrevious()?.length || 0) > value.length) setTimeout(pruneWatchMedia, 0)
-  })
-  watch$.mediaLimitMB.onChange(() => pruneWatchMedia())
-  watch$.postsPerSource.onChange(() => pruneWatchMedia())
-}
+watch$.profiles.onChange(({ getPrevious, value }) => {
+  // After the unwatch is done: it takes the profile out first, and its posts after.
+  if ((getPrevious()?.length || 0) > value.length) setTimeout(pruneWatchMedia, 0)
+})
+watch$.mediaLimitMB.onChange(() => pruneWatchMedia())
+watch$.postsPerSource.onChange(() => pruneWatchMedia())
 

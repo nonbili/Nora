@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, webFrame } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import youTubeGuard from 'nora/assets/scripts/youtube.bjs?raw'
+import { WATCH_PAGE_SCRIPT_CHANNEL } from '../main/ipc/constants'
 import { observeNotificationClicks, installNotificationClickHandler, setupNotificationClicks } from './notifications'
 
 // Tab webviews load this preload in every frame (see `nodeIntegrationInSubFrames`
@@ -25,6 +26,17 @@ if (process.argv.includes('--nora-tab-guest')) {
       () => webFrame.executeJavaScript(`(${installNotificationClickHandler.toString()})()`),
       (error) => console.error('[nora] failed to install notification click handler', error),
     )
+  }
+
+  // The hidden webview reading a watched profile has a script of its own, run in the page
+  // before the page's own, so the answers it asks for as it loads are kept too.
+  if (process.isMainFrame) {
+    try {
+      const watchScript = ipcRenderer.sendSync(WATCH_PAGE_SCRIPT_CHANNEL)
+      if (watchScript) void webFrame.executeJavaScript(watchScript)
+    } catch (error) {
+      console.error('[nora] failed to install watch page script', error)
+    }
   }
 
   const activateTab = (event: Event) => {

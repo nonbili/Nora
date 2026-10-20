@@ -16,6 +16,7 @@ import { useWatchPosts } from '@/lib/use-watch-posts'
 import { ensurePostMedia, holdMedia, keepPostMediaItem, keptMediaUri, saveWatchPostMedia, savesToDownloads, touchMedia, watchMedia$ } from '@/lib/watch-media'
 import { showToast } from '@/lib/toast'
 import { share } from '@/lib/share'
+import { isWeb } from '@/lib/utils'
 
 // The height of the seek bar and buttons the video player draws at its bottom.
 const VIDEO_CONTROLS_HEIGHT = 112
@@ -37,6 +38,10 @@ const VideoItem: React.FC<{
     })
     return () => subscription.remove()
   }, [player, onError])
+  // On desktop the player plays only once its view is there, which is after it is set up.
+  useEffect(() => {
+    if (isWeb) player.play()
+  }, [player])
   return <VideoView player={player} style={{ width, height }} contentFit="contain" nativeControls />
 }
 
@@ -53,6 +58,10 @@ const GalleryItem: React.FC<{
   const kept = useValue(watchMedia$.files[key])
   const [failed, setFailed] = useState(false)
   const keptUri = keptMediaUri(kept)
+  // On desktop the window can't send the headers a video is asked for with, as TikTok's need: it
+  // is kept before it plays, as a photo is.
+  const keptFirst = item.type === 'image' || (isWeb && Boolean(item.headers))
+  const waiting = item.type === 'video' && keptFirst && !keptUri && !failed
 
   // A photo in sight is kept as it is shown; a video plays from the site until it is kept, so
   // it is not loaded twice.
@@ -62,11 +71,11 @@ const GalleryItem: React.FC<{
     const release = holdMedia(key)
     if (keptUri) {
       touchMedia(key)
-    } else if (item.type === 'image') {
+    } else if (keptFirst) {
       keepPostMediaItem(post, index).catch(() => setFailed(true))
     }
     return release
-  }, [active, keptUri, key, post, index, item])
+  }, [active, keptUri, keptFirst, key, post, index, item])
 
   // A video that will not play from the site may have an address that expired: the post is read
   // again, which gives the item a new one and so a new player.
@@ -81,7 +90,7 @@ const GalleryItem: React.FC<{
     }
   }, [post])
 
-  if (item.type === 'video' && active && !failed) {
+  if (item.type === 'video' && active && !failed && !waiting) {
     return (
       <VideoItem
         uri={keptUri || item.url}
@@ -98,7 +107,7 @@ const GalleryItem: React.FC<{
       <Image source={source} style={{ width, height }} contentFit="contain" onError={() => setFailed(true)} />
       {item.type === 'video' ? (
         <View className="absolute h-16 w-16 items-center justify-center rounded-full bg-black/50">
-          <MaterialIcons name="play-arrow" size={40} color="#fff" />
+          {waiting && active ? <ActivityIndicator color="#fff" /> : <MaterialIcons name="play-arrow" size={40} color="#fff" />}
         </View>
       ) : null}
       {failed && !keptUri ? (
@@ -195,8 +204,29 @@ export const FeedGalleryModal = () => {
     }
   })
 
+  // On desktop, Escape closes it, and the arrow keys go through it as a swipe does.
   useEffect(() => {
-    if (!gallery) return
+    if (!gallery || !isWeb) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      const step = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0
+      if (e.key === 'Escape') {
+        ui$.feedGallery.set(null)
+      } else if (step && pages[pageIndex + step]) {
+        const next = pages[pageIndex + step]
+        setPosition({ gallery, postKey: next.post.key, index: next.index })
+      } else {
+        return
+      }
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    document.addEventListener('keydown', onKeyDown, true)
+    return () => document.removeEventListener('keydown', onKeyDown, true)
+  }, [gallery, pages, pageIndex])
+
+  // Android's back button; the desktop has none.
+  useEffect(() => {
+    if (!gallery || isWeb) return
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       ui$.feedGallery.set(null)
       return true

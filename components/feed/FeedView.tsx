@@ -35,7 +35,7 @@ import {
 } from '@/lib/watch-feed'
 import { getFeedPosts, getNewestPostTimes, getProfilesWithPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
-import { androidHitSlop, clsx, iosTouchTarget } from '@/lib/utils'
+import { androidHitSlop, clsx, iosTouchTarget, isWeb } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
@@ -395,7 +395,7 @@ export const FeedView: React.FC<{
 
   // Back leaves a profile for the whole feed before it leaves the tab.
   useEffect(() => {
-    if (!focused || !hasSelection) return
+    if (isWeb || !focused || !hasSelection) return
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       setSelectedKey(null)
       return true

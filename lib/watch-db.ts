@@ -1,5 +1,5 @@
 import { observable } from '@legendapp/state'
-import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite'
+import { openDatabaseSync, type SQLiteDatabase } from '@/lib/sqlite'
 import type { WatchPost } from '@/lib/watch'
 
 /**

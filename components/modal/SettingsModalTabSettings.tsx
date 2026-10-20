@@ -163,22 +163,19 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                 />
               </SettingsRow>,
             )}
-            {nIf(
-              !isWeb,
-              <SettingsRow>
-                <NouSwitch
-                  label={<NouText>{t('settings.feed')}</NouText>}
-                  value={settings.feedEnabled}
-                  onPress={() => {
-                    const next = !settings.feedEnabled
-                    settings$.feedEnabled.set(next)
-                    if (!next) {
-                      tabs$.closeTabsByIds(tabs$.tabs.get().filter((tab) => isFeedTabUrl(tab.url)).map((tab) => tab.id))
-                    }
-                  }}
-                />
-              </SettingsRow>,
-            )}
+            <SettingsRow>
+              <NouSwitch
+                label={<NouText>{t('settings.feed')}</NouText>}
+                value={settings.feedEnabled}
+                onPress={() => {
+                  const next = !settings.feedEnabled
+                  settings$.feedEnabled.set(next)
+                  if (!next) {
+                    tabs$.closeTabsByIds(tabs$.tabs.get().filter((tab) => isFeedTabUrl(tab.url)).map((tab) => tab.id))
+                  }
+                }}
+              />
+            </SettingsRow>
             {nIf(
               isAndroid,
               <SettingsRow>

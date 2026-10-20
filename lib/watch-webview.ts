@@ -136,7 +136,10 @@ export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER
     };
   }
   function send(html) {
-    if (window.NoraI) window.NoraI.onMessage(JSON.stringify({ type: 'watch-page', data: { id: ${id}, html: html, rateLimited: rateLimited } }));
+    var data = { id: ${id}, html: html, rateLimited: rateLimited };
+    if (window.NoraI) window.NoraI.onMessage(JSON.stringify({ type: 'watch-page', data: data }));
+    // On desktop, the webview's host hears it.
+    else if (window.electron) window.electron.ipcRenderer.sendToHost('watch-page', data);
   }
   function collect() {
     var parts = [];

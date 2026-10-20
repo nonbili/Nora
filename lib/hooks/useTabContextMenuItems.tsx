@@ -22,6 +22,9 @@ import { settings$ } from '@/states/settings'
 import { applyBlocklistExclusions, isBlocklistExcludedHost, supportsRuntimeBlocklist, toBlocklistSiteKey } from '@/lib/blocklist'
 import { MenuToggleBadge } from '@/components/menu/MenuToggleBadge'
 import { useTwColor } from '@/lib/theme'
+import { watch$ } from '@/states/watch'
+import { getWatchTarget, watchKey, watchSourceLabel } from '@/lib/watch'
+import { toggleWatched } from '@/lib/watch-feed'
 
 export interface TabContextMenuOptions {
   runWebviewAction: (action: (webview: any) => void) => void
@@ -36,6 +39,8 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
   const excludedHosts = useValue(blocklist$.excludedHosts)
   const anonymousMode = useValue(settings$.anonymousMode)
   const anonymousDisabledHosts = useValue(settings$.anonymousDisabledHosts)
+  const feedEnabled = useValue(settings$.feedEnabled)
+  const watchedProfiles = useValue(watch$.profiles)
 
   let host = ''
   if (tab.url) {
@@ -97,6 +102,10 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
     }
   }
 
+  // On the phone and tablet the header offers this; the desktop has no menu of the page there.
+  const watchTarget = isWeb && feedEnabled ? getWatchTarget(tab.url) : null
+  const watchingThisProfile = !!watchTarget && watchedProfiles.some((profile) => profile.key === watchKey(watchTarget))
+
   const items: ContextItem[] = [
     {
       label: t('menus.reload'),
@@ -143,6 +152,15 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
           icon: <MaterialIcons name="visibility-off" size={16} color={menuIconColor} />,
           meta: <MenuToggleBadge on={anonymousOnThisSite} />,
           handler: () => settings$.setAnonymousHostDisabled(blockingSite, anonymousOnThisSite),
+        }]
+      : []),
+    ...(watchTarget
+      ? [{
+          label: t('menus.watch', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }),
+          metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),
+          icon: <MaterialIcons name="dynamic-feed" size={16} color={menuIconColor} />,
+          meta: <MenuToggleBadge on={watchingThisProfile} />,
+          handler: () => toggleWatched(watchTarget),
         }]
       : []),
     { kind: 'separator' },

@@ -59,7 +59,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   const bookmarks = useValue(bookmarks$.bookmarks)
   // The whole feed, then the timelines pinned here, each with its unread count.
   const feedLinks = useValue(() =>
-    isWeb || !settings$.feedEnabled.get()
+    !settings$.feedEnabled.get()
       ? []
       : [
           { id: undefined, name: t('feed.label') },

@@ -40,7 +40,7 @@ import { useDesktopLayout } from '@/lib/hooks/useDesktopLayout'
 import { useTwColor } from '@/lib/theme'
 import { watch$ } from '@/states/watch'
 import { getWatchTarget, watchKey, watchSourceLabel } from '@/lib/watch'
-import { refreshWatched } from '@/lib/watch-feed'
+import { toggleWatched } from '@/lib/watch-feed'
 
 // The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
 // any time. On native the same decision is made in JS, so the classes are duplicated
@@ -285,16 +285,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
           checked: watchingThisProfile,
           metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),
           meta: <MenuToggleBadge on={watchingThisProfile} />,
-          handler: () => {
-            if (watchingThisProfile) {
-              watch$.unwatch(watchKey(watchTarget))
-              return
-            }
-            watch$.watch(watchTarget)
-            showToast(t('toast.profileWatched', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }))
-            // Fills the feed with what the profile has posted so far.
-            void refreshWatched('manual', [watchKey(watchTarget)])
-          },
+          handler: () => toggleWatched(watchTarget),
         },
       ]
     : []
@@ -588,7 +579,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
               ...(isWeb
                 ? []
                 : [{ label: '', handler: () => {}, kind: 'separator' as const }]),
-              ...(isWeb || !feedEnabled
+              ...(!feedEnabled
                 ? []
                 : [
                     {

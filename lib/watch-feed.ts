@@ -43,6 +43,7 @@ import {
   type WatchFetchResult,
   type WatchPost,
   type WatchSite,
+  type WatchTarget,
 } from '@/lib/watch'
 import {
   FACEBOOK_POSTS_MARKER,
@@ -54,6 +55,8 @@ import {
   loadInWatchWebView,
 } from '@/lib/watch-webview'
 import { syncWatchMedia } from '@/lib/watch-media'
+import { showToast } from '@/lib/toast'
+import { watchFetch } from '@/lib/watch-fetch'
 import NoraViewModule from '@/modules/nora-view'
 import { accountChoice, findSignedInCookies, parseCookieHeader, siteCookieOrigin, type SiteAccount } from '@/lib/watch-account'
 import { getProfilePosts, setProfilePosts } from '@/lib/watch-db'
@@ -84,6 +87,7 @@ const NOTIFICATION_CHANNEL_ID = 'watch'
 const RETRY_AFTER_MS = 60 * 60 * 1000
 // How often, while Nora is open, it looks for profiles whose interval is up; only those are asked for.
 const FOREGROUND_POLL_MS = 5 * 60 * 1000
+const DESKTOP_FIRST_RUN_DELAY_MS = 10 * 1000
 // Between two requests, so a long list does not arrive at a site as a burst.
 const REQUEST_GAP_MS = 1500
 // How long one run may take. The system stops a background task that runs too long, so a long
@@ -144,7 +148,7 @@ const withDeadline = async <T>(deadline: number, run: (signal: AbortSignal) => P
 
 const fetchX = (handle: string, cookie: string, _source: WatchRunSource, deadline: number): Promise<WatchFetchResult> =>
   withDeadline(deadline, async (signal) => {
-    const res = await fetch(xTimelineUrl(handle), {
+    const res = await watchFetch(xTimelineUrl(handle), {
       signal,
       headers: {
         'user-agent': DESKTOP_USER_AGENT,
@@ -162,7 +166,7 @@ const fetchX = (handle: string, cookie: string, _source: WatchRunSource, deadlin
 const fetchInstagramApi = (handle: string, cookie: string, deadline: number): Promise<WatchFetchResult> =>
   withDeadline(deadline, async (signal) => {
     const csrf = parseCookieHeader(cookie).csrftoken
-    const res = await fetch(instagramProfileInfoUrl(handle), {
+    const res = await watchFetch(instagramProfileInfoUrl(handle), {
       signal,
       headers: {
         'user-agent': DESKTOP_USER_AGENT,
@@ -190,7 +194,7 @@ const fetchInstagramApi = (handle: string, cookie: string, deadline: number): Pr
 // The profile's own page, as a browser on a computer would ask for it, without cookies.
 const fetchInstagramPage = (handle: string, deadline: number): Promise<WatchFetchResult> =>
   withDeadline(deadline, async (signal) => {
-    const res = await fetch(watchProfileUrl({ site: 'instagram', handle }), {
+    const res = await watchFetch(watchProfileUrl({ site: 'instagram', handle }), {
       signal,
       headers: { 'user-agent': DESKTOP_USER_AGENT, ...INSTAGRAM_PAGE_HEADERS },
       credentials: 'omit',
@@ -200,8 +204,9 @@ const fetchInstagramPage = (handle: string, deadline: number): Promise<WatchFetc
   })
 
 // The hidden webview needs the app's UI, so a background run goes without it.
+// The desktop's webview reads a page with its window minimized too.
 const canUseWebView = (source: WatchRunSource) =>
-  source !== 'background' && AppState.currentState === 'active' && isWatchWebViewAvailable()
+  source !== 'background' && (Platform.OS === 'web' || AppState.currentState === 'active') && isWatchWebViewAvailable()
 
 const isRateLimited = (e: unknown) => e instanceof WatchFetchError && e.message === WATCH_ERROR_RATE_LIMITED
 
@@ -237,7 +242,7 @@ const fetchInstagram = async (
 /** A page or an API's answer from a site that is read without an account, as text. */
 const fetchText = (url: string, headers: Record<string, string>, deadline: number): Promise<string> =>
   withDeadline(deadline, async (signal) => {
-    const res = await fetch(url, { signal, headers: { 'user-agent': DESKTOP_USER_AGENT, ...headers }, credentials: 'omit' })
+    const res = await watchFetch(url, { signal, headers: { 'user-agent': DESKTOP_USER_AGENT, ...headers }, credentials: 'omit' })
     // An account would not help: a 401 or 403 is a failure like any other.
     checkStatus(res, true)
     return res.text()
@@ -312,7 +317,7 @@ const fetchMastodon = async (handle: string, _cookie: string, _source: WatchRunS
 
 const fetchRedditListing = (handle: string, cookie: string, deadline: number): Promise<WatchFetchResult> =>
   withDeadline(deadline, async (signal) => {
-    const res = await fetch(redditListingUrl(handle), {
+    const res = await watchFetch(redditListingUrl(handle), {
       signal,
       headers: { 'user-agent': DESKTOP_USER_AGENT, accept: 'application/json', cookie },
       credentials: 'omit',
@@ -393,7 +398,7 @@ const fetchFacebook = async (
   let result: WatchFetchResult | undefined
   try {
     const html = await withDeadline(deadline, async (signal) => {
-      const res = await fetch(url, {
+      const res = await watchFetch(url, {
         signal,
         headers: { 'user-agent': DESKTOP_USER_AGENT, ...INSTAGRAM_PAGE_HEADERS, ...(cookie ? { cookie } : {}) },
         credentials: 'omit',
@@ -576,6 +581,18 @@ export const refreshWatched = (source: WatchRunSource, keys?: string[]): Promise
 
 export const isRefreshingWatched = () => Boolean(running)
 
+/** Watches the profile of a page, filling the feed with what it has posted so far, or stops watching it. */
+export const toggleWatched = (target: WatchTarget) => {
+  const key = watchKey(target)
+  if (watch$.profiles.peek().some((profile) => profile.key === key)) {
+    watch$.unwatch(key)
+    return
+  }
+  watch$.watch(target)
+  showToast(t('toast.profileWatched', { handle: target.handle, source: watchSourceLabel(target), interpolation: { escapeValue: false } }))
+  void refreshWatched('manual', [key])
+}
+
 const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
   const start = Date.now()
   const due = dueWatchProfiles(watch$.profiles.peek(), {
@@ -709,4 +726,21 @@ if (isAvailable) {
   })
   syncForegroundTimer(AppState.currentState)
   void syncBackgroundTask()
+} else if (Platform.OS === 'web') {
+  // The desktop app has no background task: while it runs, minimized or not, it checks the
+  // profiles that are due. The first run waits for the window, as some are read in its webview.
+  let timer: ReturnType<typeof setInterval> | undefined
+  let firstRun: ReturnType<typeof setTimeout> | undefined
+  const syncTimer = () => {
+    if (settings$.feedEnabled.peek() && !timer) {
+      firstRun = setTimeout(() => void refreshWatched('foreground'), DESKTOP_FIRST_RUN_DELAY_MS)
+      timer = setInterval(() => void refreshWatched('foreground'), FOREGROUND_POLL_MS)
+    } else if (!settings$.feedEnabled.peek() && timer) {
+      clearTimeout(firstRun)
+      clearInterval(timer)
+      timer = undefined
+    }
+  }
+  settings$.feedEnabled.onChange(syncTimer)
+  syncTimer()
 }

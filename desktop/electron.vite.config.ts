@@ -3,8 +3,14 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import reactNativeWeb from 'vite-plugin-react-native-web'
 
+// What esbuild would read of the app's tsconfig, given here: the tsconfig extends
+// `expo/tsconfig.base`, which Expo no longer exports for Vite to resolve. Given as text, so
+// Vite does not read the tsconfig at all.
+const esbuild = { tsconfigRaw: JSON.stringify({ compilerOptions: { jsx: 'react-jsx', useDefineForClassFields: true } }) }
+
 export default defineConfig({
   main: {
+    esbuild,
     plugins: [externalizeDepsPlugin()],
     resolve: {
       alias: {
@@ -14,11 +20,22 @@ export default defineConfig({
     },
   },
   preload: {
+    esbuild,
     plugins: [externalizeDepsPlugin({ exclude: ['nora'] })],
   },
   renderer: {
+    esbuild,
+    build: {
+      rollupOptions: {
+        // Expo 58's packages import what only the native React Native has, as PlatformColor and
+        // TurboModuleRegistry, in code for Android and iOS: undefined on desktop, never called there.
+        shimMissingExports: true,
+      },
+    },
     resolve: {
       alias: {
+        'node:async_hooks': resolve('src/renderer/lib/async-hooks.ts'),
+        '../fabric/NativeSvgSoundModule': resolve('src/renderer/lib/svg-sound-module.ts'),
         '@': 'nora',
         '@renderer': resolve('src/renderer'),
         main: resolve('src/main'),

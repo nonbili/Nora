@@ -24,6 +24,20 @@ class NoraViewModule extends NativeModule {
 
     await mainClient.clearHostData(profile, host)
   }
+
+  async getCookies(url: string, profile?: string | null) {
+    if (!window.electron?.ipcRenderer) {
+      return ''
+    }
+
+    return mainClient.getCookies(profile || '', url)
+  }
+
+  // A photo or video the feed keeps, copied to Downloads.
+  async saveFileToDownloads(sourceUri: string, fileName: string, _mimeType?: string | null) {
+    const name = decodeURIComponent(new URL(sourceUri).pathname.slice(1))
+    return mainClient.saveWatchMediaToDownloads(name, fileName)
+  }
 }
 
 export default registerWebModule(NoraViewModule, 'NoraViewModule')

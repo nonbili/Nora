@@ -17,6 +17,7 @@ import { randomUUID } from 'node:crypto'
 import { attachGuestShortcuts } from './lib/shortcuts'
 import { attachGuestNotifications } from './lib/notifications'
 import { exportApplication } from './lib/xdg-activation'
+import { isWatchPage, registerWatchMediaScheme, setupWatch } from './lib/watch'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
 
@@ -220,6 +221,7 @@ function createWindow(): void {
     wc.session.setPermissionCheckHandler((_wc, permission) => allowedPermissions.has(permission))
     attachContextMenu(wc, mainWindow)
     wc.setWindowOpenHandler((details) => {
+      if (isWatchPage(wc.id)) return { action: 'deny' }
       const url = normalizeExternalTargetUrl(details.url)
       if (shouldOpenInSystemBrowser(url, details.referrer.url || wc.getURL())) {
         shell.openExternal(url)
@@ -229,6 +231,11 @@ function createWindow(): void {
       return { action: 'deny' }
     })
     wc.on('will-navigate', (event, rawUrl) => {
+      // The hidden page reading a watched profile stays on the web, out of sight.
+      if (isWatchPage(wc.id)) {
+        if (!isHttpUrl(rawUrl)) event.preventDefault()
+        return
+      }
       const url = normalizeExternalTargetUrl(rawUrl)
       if (!shouldOpenInSystemBrowser(url, wc.getURL())) {
         return
@@ -238,6 +245,10 @@ function createWindow(): void {
     })
   })
 }
+
+// The feed's kept photos and videos are served under a scheme of their own, which has to be
+// declared before the app is ready.
+registerWatchMediaScheme()
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -249,6 +260,7 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('jp.nonbili.nora')
 
   initMainChannel()
+  setupWatch()
 
   attachDownloadHandler(session.defaultSession)
 
