@@ -22,6 +22,10 @@ import { accountChoice$ } from '@/lib/supabase/sync/session'
 import { chooseAccountData } from '@/lib/hooks/useAccountChoicePrompt'
 import type { AccountChoice } from '@/lib/supabase/sync/account'
 import { syncOwner$ } from '@/states/sync-owner'
+import { syncMeta$ } from '@/states/sync-meta'
+import { settingsSyncer } from '@/lib/supabase/sync/settings'
+import { bookmarksSyncer } from '@/lib/supabase/sync/bookmarks'
+import { userStylesSyncer } from '@/lib/supabase/sync/user-styles'
 import { saveFile } from '@/lib/file'
 import { settingsBackupFilename } from '@/lib/settings-transfer'
 import { showToast } from '@/lib/toast'
@@ -30,6 +34,13 @@ const surfaceCls = settingsUi.surfaceCls
 const sectionLabelCls = settingsUi.sectionLabelCls
 const TERMS_OF_USE_URL = 'https://www.apple.com/legal/macapps/stdeula/'
 const PRIVACY_POLICY_URL = 'https://inks.page/p/privacy'
+
+// What a merge took the other device's side of, with what this device had kept to put back.
+const mergeBackups = [
+  { key: 'settings', syncer: settingsSyncer, label: () => t('sync.backupSettings') },
+  { key: 'bookmarks', syncer: bookmarksSyncer, label: () => t('sync.backupBookmarks') },
+  { key: 'userStyles', syncer: userStylesSyncer, label: () => t('sync.backupUserStyles') },
+] as const
 
 const SettingsBadge: React.FC<{ label: string }> = ({ label }) => {
   return (
@@ -52,6 +63,12 @@ export const SettingsModalTabSync = () => {
   const needsAccountChoice = use$(accountChoice$)
   const switchBackup = use$(syncOwner$.switchBackup)
   const [choosing, setChoosing] = useState<AccountChoice | null>(null)
+  const backupTimes = {
+    settings: use$(syncMeta$.settings.backup.savedAt),
+    bookmarks: use$(syncMeta$.bookmarks.backup.savedAt),
+    userStyles: use$(syncMeta$.userStyles.backup.savedAt),
+  }
+  const restorableBackups = mergeBackups.filter(({ key }) => backupTimes[key])
 
   const onAccountChoice = async (choice: AccountChoice) => {
     setChoosing(choice)
@@ -299,6 +316,20 @@ export const SettingsModalTabSync = () => {
                 <NouText className="text-xs text-zinc-600 dark:text-zinc-500">
                   {t('sync.exportSwitchBackupHint', { date: new Date(switchBackup.savedAt).toLocaleString(), interpolation: { escapeValue: false } })}
                 </NouText>
+              </View>
+            ) : null}
+            {restorableBackups.length ? (
+              <View className="mt-4 gap-2">
+                <NouText className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">{t('sync.mergeBackupHint')}</NouText>
+                {restorableBackups.map(({ key, syncer, label }) => (
+                  <NouButton key={key} variant="outline" onPress={() => syncer.restoreBackup()}>
+                    {t('sync.restoreMergeBackup', {
+                      name: label(),
+                      date: new Date(backupTimes[key]!).toLocaleString(),
+                      interpolation: { escapeValue: false },
+                    })}
+                  </NouButton>
+                ))}
               </View>
             ) : null}
             {restoreConflict ? (

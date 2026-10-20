@@ -3,6 +3,7 @@ import { createLogger } from '@/lib/log'
 import type { ResourceSyncMeta } from '@/states/sync-meta'
 import { supabase } from '../client'
 import { decideDocumentSync } from './decision'
+import { same, type MergeResult } from './merge'
 import { beginSync, canSync, isCurrentSession, type SyncSession } from './session'
 
 export interface RemoteDocument<T> {
@@ -11,6 +12,8 @@ export interface RemoteDocument<T> {
 }
 
 const syncDelayMs = 5 * 1000
+// Rounds a run may take when a write is refused or something changes here meanwhile.
+const maxRounds = 5
 const traceLogger = createLogger('sync', { devOnly: true })
 const errorLogger = createLogger('sync')
 
@@ -29,11 +32,15 @@ export abstract class BaseSyncer<T> {
   abstract hasMeaningfulLocalValue(value: T): boolean
   abstract getMeta(): ResourceSyncMeta<T>
   abstract setMeta(meta: Partial<ResourceSyncMeta<T>>): void
+  /** Puts together what changed here and on another device since `base`. */
+  abstract merge(base: T | undefined, local: T, remote: T): MergeResult<T>
 
   private applyingRemote = false
   private inFlight: Promise<void> | null = null
   private rerunRequested = false
   private timer: ReturnType<typeof setTimeout> | undefined
+  // Counts the changes made here, to tell one made while a request was out.
+  private revision = 0
 
   private log(event: string, payload?: Record<string, unknown>) {
     traceLogger.child(this.NAME).log(event, payload)
@@ -44,6 +51,7 @@ export abstract class BaseSyncer<T> {
   }
 
   markDirty() {
+    this.revision += 1
     const meta = this.getMeta()
     if (!meta.dirty || meta.lastError) {
       this.log('marked dirty', {
@@ -52,6 +60,14 @@ export abstract class BaseSyncer<T> {
       })
       this.setMeta({ dirty: true, lastError: undefined })
     }
+  }
+
+  /** Puts back what was here before a merge took the other device's side; it is written as a change made here. */
+  restoreBackup() {
+    const backup = this.getMeta().backup
+    if (!backup) return
+    this.setValue(cloneValue(backup.value))
+    this.setMeta({ backup: undefined })
   }
 
   scheduleSync() {
@@ -112,10 +128,18 @@ export abstract class BaseSyncer<T> {
   }
 
   private async runLoop() {
+    let rounds = 0
     do {
       this.rerunRequested = false
       await this.performSync()
-    } while (this.rerunRequested)
+      rounds += 1
+    } while (this.rerunRequested && rounds < maxRounds)
+
+    // Two devices writing over and over: left for a later run rather than kept going.
+    if (this.rerunRequested) {
+      this.rerunRequested = false
+      this.scheduleSync()
+    }
   }
 
   private async performSync() {
@@ -128,6 +152,7 @@ export abstract class BaseSyncer<T> {
         return
       }
 
+      const revision = this.revision
       const localValue = cloneValue(this.getValue())
       const meta = this.getMeta()
       const remote = await this.fetchRemote()
@@ -136,7 +161,7 @@ export abstract class BaseSyncer<T> {
         this.log('account changed during fetch; stopped')
         return
       }
-      const decision = decideDocumentSync({
+      const action = decideDocumentSync({
         dirty: meta.dirty,
         hasRemote: Boolean(remote),
         remoteUpdatedAt: remote?.updatedAt,
@@ -146,63 +171,71 @@ export abstract class BaseSyncer<T> {
       })
 
       this.log('decision', {
-        action: decision.action,
-        backupLocal: decision.backupLocal,
+        action,
         dirty: meta.dirty,
         hasRemote: Boolean(remote),
         remoteUpdatedAt: remote?.updatedAt,
         lastSyncedRemoteUpdatedAt: meta.lastSyncedRemoteUpdatedAt,
       })
 
-      if (decision.action === 'pull' && remote) {
-        if (decision.backupLocal) {
-          this.log('backing up local state before pull', { remoteUpdatedAt: remote.updatedAt })
-          this.setMeta({
-            backup: {
-              value: localValue,
-              savedAt: Date.now(),
-              remoteUpdatedAt: remote.updatedAt,
-            },
-          })
-        }
+      if (action === 'noop') {
+        this.setMeta({ lastError: undefined, lastSuccessfulSyncAt: Date.now() })
+        return
+      }
 
+      // Changed here while the row was read: read it again, with that change.
+      if (this.revision !== revision) {
+        this.log('local change during fetch; rerun')
+        this.rerunRequested = true
+        return
+      }
+
+      if (action === 'pull' && remote) {
         this.applyRemote(remote.value)
-
-        this.setMeta({
-          dirty: false,
-          lastError: undefined,
-          lastSuccessfulSyncAt: Date.now(),
-          lastSyncedRemoteUpdatedAt: remote.updatedAt,
-        })
+        this.setAgreed(remote.updatedAt, remote.value, false)
         this.log('pulled remote state', { remoteUpdatedAt: remote.updatedAt })
         return
       }
 
-      if (decision.action === 'push') {
-        const saved = await this.saveRemote(session.userId, localValue)
-        if (!isCurrentSession(session)) {
-          this.log('account changed during push; stopped')
+      let value = localValue
+      let lost = false
+      if (action === 'merge' && remote) {
+        const merged = this.merge(meta.base, localValue, remote.value)
+        value = merged.value
+        lost = merged.lost
+        if (same(value, remote.value)) {
+          this.keepMerge(localValue, remote.updatedAt, lost)
+          this.applyRemote(value)
+          this.setAgreed(remote.updatedAt, remote.value, false)
+          this.log('merged into remote state', { remoteUpdatedAt: remote.updatedAt })
           return
         }
-        this.setMeta({
-          dirty: false,
-          lastError: undefined,
-          lastSuccessfulSyncAt: Date.now(),
-          lastSyncedRemoteUpdatedAt: saved.updatedAt,
-        })
-        this.log('pushed local state', { remoteUpdatedAt: saved.updatedAt })
+      }
+
+      // The merge is put in place here only once written: were the write refused, what is here has
+      // to be what this device changed, to merge again against what the other device wrote.
+      const saved = await this.saveRemote(session.userId, value, remote?.updatedAt)
+      if (!isCurrentSession(session)) {
+        this.log('account changed during push; stopped')
+        return
+      }
+      if (!saved.ok) {
+        // Another device wrote first: read what it wrote and merge again.
+        this.log('write refused, remote changed', { remoteUpdatedAt: saved.updatedAt })
+        this.rerunRequested = true
         return
       }
 
-      this.setMeta({
-        lastError: undefined,
-        lastSuccessfulSyncAt: Date.now(),
-        lastSyncedRemoteUpdatedAt: remote?.updatedAt ?? meta.lastSyncedRemoteUpdatedAt,
-      })
-      this.log('no changes to apply', {
-        remoteUpdatedAt: remote?.updatedAt,
-        lastSyncedRemoteUpdatedAt: remote?.updatedAt ?? meta.lastSyncedRemoteUpdatedAt,
-      })
+      // A change made here while writing stays to be written.
+      const changed = this.revision !== revision
+      if (action === 'merge' && remote) {
+        this.keepMerge(localValue, remote.updatedAt, lost)
+        // Changed here meanwhile: those changes go on top of the merge, over what it took.
+        this.applyRemote(changed ? this.merge(localValue, value, cloneValue(this.getValue())).value : value)
+      }
+      this.setAgreed(saved.updatedAt!, value, changed)
+      if (changed) this.rerunRequested = true
+      this.log('pushed local state', { remoteUpdatedAt: saved.updatedAt, changedMeanwhile: changed })
     } catch (error) {
       if (session && !isCurrentSession(session)) {
         return
@@ -211,6 +244,24 @@ export abstract class BaseSyncer<T> {
       this.log('sync failed', { error: getErrorMessage(error) })
       throw error
     }
+  }
+
+  /** Keeps what was here as the backup, when the merge took the other device's side of something. */
+  private keepMerge(localValue: T, remoteUpdatedAt: string, lost: boolean) {
+    if (!lost) return
+    this.log('backing up local state lost in merge', { remoteUpdatedAt })
+    this.setMeta({ backup: { value: localValue, savedAt: Date.now(), remoteUpdatedAt } })
+  }
+
+  /** This device and the server agree on `value`, as the row of `updatedAt`. */
+  private setAgreed(updatedAt: string, value: T, dirty: boolean) {
+    this.setMeta({
+      dirty,
+      lastError: undefined,
+      lastSuccessfulSyncAt: Date.now(),
+      lastSyncedRemoteUpdatedAt: updatedAt,
+      base: cloneValue(value),
+    })
   }
 
   async fetchRemote(): Promise<RemoteDocument<T> | null> {
@@ -234,27 +285,20 @@ export abstract class BaseSyncer<T> {
     }
   }
 
-  private async saveRemote(userId: string, value: T): Promise<RemoteDocument<T>> {
-    const { data, error } = (await supabase
-      .from(this.TABLE_NAME)
-      .upsert({
-        user_id: userId,
-        json: value,
-      })
-      .select('json,updated_at')
-      .single()) as unknown as {
-      data: { json: T; updated_at: string }
-      error: PostgrestError | null
-    }
-
+  /** Writes `value` if the row is still the one of `base` (no row, when absent). */
+  private async saveRemote(userId: string, value: T, base: string | undefined): Promise<{ ok: boolean; updatedAt?: string }> {
+    // The server refuses it when the token the request carries is of another account.
+    const { data, error } = await supabase.rpc('put_doc', {
+      p_user: userId,
+      p_table: this.TABLE_NAME,
+      p_json: value,
+      p_base: base ?? null,
+    })
     if (error) {
       throw error
     }
 
-    this.log('saved remote row', { remoteUpdatedAt: data.updated_at })
-    return {
-      value: data.json,
-      updatedAt: data.updated_at,
-    }
+    const result = data as { ok: boolean; updated_at: string | null }
+    return { ok: result.ok, updatedAt: result.updated_at ?? undefined }
   }
 }

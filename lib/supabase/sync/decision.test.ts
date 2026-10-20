@@ -12,7 +12,7 @@ describe('decideDocumentSync', () => {
         pushWhenRemoteMissing: true,
         hasMeaningfulLocalValue: true,
       }),
-    ).toEqual({ action: 'push', backupLocal: false })
+    ).toBe('push')
   })
 
   it('does nothing when bookmarks are empty and remote row is missing', () => {
@@ -25,7 +25,7 @@ describe('decideDocumentSync', () => {
         pushWhenRemoteMissing: false,
         hasMeaningfulLocalValue: false,
       }),
-    ).toEqual({ action: 'noop', backupLocal: false })
+    ).toBe('noop')
   })
 
   it('pulls remote state when local is clean and the remote row changed', () => {
@@ -38,7 +38,7 @@ describe('decideDocumentSync', () => {
         pushWhenRemoteMissing: false,
         hasMeaningfulLocalValue: true,
       }),
-    ).toEqual({ action: 'pull', backupLocal: false })
+    ).toBe('pull')
   })
 
   it('pushes local state when remote is unchanged since the last successful sync', () => {
@@ -51,10 +51,10 @@ describe('decideDocumentSync', () => {
         pushWhenRemoteMissing: false,
         hasMeaningfulLocalValue: true,
       }),
-    ).toEqual({ action: 'push', backupLocal: false })
+    ).toBe('push')
   })
 
-  it('backs up local state and pulls remote when both sides diverged', () => {
+  it('merges when both sides changed since they last agreed', () => {
     expect(
       decideDocumentSync({
         dirty: true,
@@ -64,10 +64,10 @@ describe('decideDocumentSync', () => {
         pushWhenRemoteMissing: false,
         hasMeaningfulLocalValue: true,
       }),
-    ).toEqual({ action: 'pull', backupLocal: true })
+    ).toBe('merge')
   })
 
-  it('backs up local state and pulls remote on first authenticated sync when remote exists', () => {
+  it('merges on the first authenticated sync when a remote row exists and local changed', () => {
     expect(
       decideDocumentSync({
         dirty: true,
@@ -77,6 +77,6 @@ describe('decideDocumentSync', () => {
         pushWhenRemoteMissing: false,
         hasMeaningfulLocalValue: true,
       }),
-    ).toEqual({ action: 'pull', backupLocal: true })
+    ).toBe('merge')
   })
 })

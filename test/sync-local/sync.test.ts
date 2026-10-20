@@ -243,7 +243,8 @@ local('sync against local Supabase', () => {
   it('retains dirty documents after a failed push and clears them after retry', async () => {
     const a = await device()
     await a.command({ op: 'settings', value: { theme: 'dark' } })
-    await a.command({ op: 'failNextPush', table: 'settings' })
+    // Documents are written through put_doc.
+    await a.command({ op: 'failNextPush', table: 'rpc/put_doc' })
     await expect(a.sync('settings')).rejects.toThrow()
     expect((await a.snapshot()).meta.settings).toMatchObject({ dirty: true, lastError: expect.any(String) })
     await a.sync('settings')
@@ -344,7 +345,7 @@ local('sync against local Supabase', () => {
     await a.sync()
     await a.command({ op: 'settings', value: { theme: 'dark' } })
     await a.command({ op: 'watch', site: 'x', handle: 'jack' })
-    const held = a.command({ op: 'holdNextFetch', table: 'settings' })
+    const held = a.command({ op: 'holdNextRequest', path: 'settings' })
     const run = a.sync()
     await held
     await signIn(a, 1)
@@ -366,9 +367,148 @@ local('sync against local Supabase', () => {
     expect(await remoteRows(1, 'feed_sources')).toEqual([])
   })
 
+  const remoteDoc = async (table: 'settings' | 'bookmarks' | 'user_styles', userIndex = 0) =>
+    (await remoteRows(userIndex, table))[0]?.json
+
+  it('writes an edit made while a document push was in flight', async () => {
+    const a = await device()
+    await a.sync('settings')
+    await a.command({ op: 'settings', value: { theme: 'dark' } })
+    const held = a.command({ op: 'holdNextRequest', path: 'rpc/put_doc' })
+    const run = a.sync('settings')
+    await held
+    await a.command({ op: 'settings', value: { theme: 'light' } })
+    await a.command({ op: 'releaseFetch' })
+    await run
+    expect((await remoteDoc('settings')).theme).toBe('light')
+    expect((await a.snapshot()).meta.settings.dirty).toBe(false)
+  })
+
+  it('keeps an edit made while a document was being pulled', async () => {
+    const a = await device()
+    const b = await device()
+    await a.sync('settings')
+    await b.sync('settings')
+    await b.command({ op: 'settings', value: { theme: 'dark' } })
+    await b.sync('settings')
+    const held = a.command({ op: 'holdNextRequest', path: 'settings' })
+    const run = a.sync('settings')
+    await held
+    await a.command({ op: 'settings', value: { pullToRefresh: true } })
+    await a.command({ op: 'releaseFetch' })
+    await run
+    const after = await a.snapshot()
+    expect(after.settings).toMatchObject({ theme: 'dark', pullToRefresh: true })
+    expect(await remoteDoc('settings')).toMatchObject({ theme: 'dark', pullToRefresh: true })
+    expect(after.meta.settings.backup).toBeUndefined()
+  })
+
+  it('merges settings changed on two devices key by key', async () => {
+    const a = await device()
+    const b = await device()
+    await a.sync()
+    await b.sync()
+    await a.command({ op: 'settings', value: { theme: 'dark' } })
+    await b.command({ op: 'settings', value: { pullToRefresh: true } })
+    await a.sync('settings')
+    await b.sync('settings')
+    await a.sync('settings')
+    for (const instance of [a, b]) {
+      const snapshot = await instance.snapshot()
+      expect(snapshot.settings).toMatchObject({ theme: 'dark', pullToRefresh: true })
+      expect(snapshot.meta.settings.backup).toBeUndefined()
+    }
+  })
+
+  it('merges bookmarks by URL, including deletions, and custom scripts by id', async () => {
+    const a = await device()
+    const b = await device()
+    await a.command({ op: 'bookmark', url: 'https://x.example' })
+    await a.sync()
+    await b.sync()
+    await a.command({ op: 'deleteBookmark', url: 'https://x.example' })
+    await a.command({ op: 'bookmark', url: 'https://y.example' })
+    await b.command({ op: 'bookmark', url: 'https://z.example' })
+    const scriptA = await a.command({ op: 'customScript', name: 'A' }) as string
+    const scriptB = await b.command({ op: 'customScript', name: 'B' }) as string
+    await a.sync()
+    await b.sync()
+    await a.sync()
+    for (const instance of [a, b]) {
+      const snapshot = await instance.snapshot()
+      expect(snapshot.bookmarks.bookmarks.map((bookmark) => bookmark.url).sort()).toEqual(['https://y.example', 'https://z.example'])
+      expect(snapshot.styles.customScripts.map((script) => script.id).sort()).toEqual([scriptA, scriptB].sort())
+    }
+  })
+
+  it('refuses a document write on top of a row that changed since it was read', async () => {
+    const api = users[0].client.schema('nora')
+    const first = await api.rpc('put_doc', { p_user: users[0].id, p_table: 'settings', p_json: { theme: 'dark' }, p_base: null })
+    expect(first.error).toBeNull()
+    expect(first.data.ok).toBe(true)
+    const again = await api.rpc('put_doc', { p_user: users[0].id, p_table: 'settings', p_json: { theme: 'light' }, p_base: null })
+    expect(again.data).toMatchObject({ ok: false, json: { theme: 'dark' }, updated_at: first.data.updated_at })
+    const second = await api.rpc('put_doc', { p_user: users[0].id, p_table: 'settings', p_json: { theme: 'light' }, p_base: first.data.updated_at })
+    expect(second.data.ok).toBe(true)
+    const stale = await api.rpc('put_doc', { p_user: users[0].id, p_table: 'settings', p_json: { theme: 'stale' }, p_base: first.data.updated_at })
+    expect(stale.data).toMatchObject({ ok: false, json: { theme: 'light' } })
+    expect((await api.rpc('put_doc', { p_user: users[0].id, p_table: 'feed_sources', p_json: {}, p_base: null })).error).not.toBeNull()
+    // A write meant for another account than the one signed in is refused.
+    const wrongAccount = await api.rpc('put_doc', { p_user: users[1].id, p_table: 'settings', p_json: { theme: 'x' }, p_base: null })
+    expect(wrongAccount.error?.code).toBe('42501')
+    // Another account's row is out of reach: its write goes to its own row.
+    const other = await users[1].client.schema('nora').rpc('put_doc', { p_user: users[1].id, p_table: 'settings', p_json: { theme: 'x' }, p_base: null })
+    expect(other.data.ok).toBe(true)
+    expect((await remoteDoc('settings')).theme).toBe('light')
+  })
+
+  it('takes the other device on keys that differ when no base is known, keeping a backup to restore', async () => {
+    const a = await device()
+    const b = await device()
+    await a.sync('settings')
+    await b.sync('settings')
+    await a.command({ op: 'forgetBase', scope: 'settings' })
+    await a.command({ op: 'settings', value: { theme: 'dark' } })
+    await b.command({ op: 'settings', value: { pullToRefresh: true } })
+    await b.sync('settings')
+    await a.sync('settings')
+    const merged = await a.snapshot()
+    expect(merged.settings.pullToRefresh).toBe(true)
+    expect(merged.settings.theme).toBeNull()
+    expect(merged.meta.settings.backup?.value.theme).toBe('dark')
+    await a.command({ op: 'restoreBackup', scope: 'settings' })
+    await a.sync('settings')
+    const restored = await a.snapshot()
+    expect(restored.settings.theme).toBe('dark')
+    expect(restored.meta.settings.backup).toBeUndefined()
+    expect((await remoteDoc('settings')).theme).toBe('dark')
+  })
+
+  it('merges again from what this device changed when its merged write is refused', async () => {
+    const a = await device()
+    const b = await device()
+    await a.command({ op: 'bookmark', url: 'https://a.example' })
+    await a.sync('bookmarks')
+    await b.sync('bookmarks')
+    await a.command({ op: 'bookmark', url: 'https://mine.example' })
+    await b.command({ op: 'bookmark', url: 'https://theirs.example' })
+    await b.sync('bookmarks')
+    // A merges in B's bookmark, but B takes it away again before A's write lands.
+    const held = a.command({ op: 'holdNextRequest', path: 'rpc/put_doc' })
+    const run = a.sync('bookmarks')
+    await held
+    await b.command({ op: 'deleteBookmark', url: 'https://theirs.example' })
+    await b.sync('bookmarks')
+    await a.command({ op: 'releaseFetch' })
+    await run
+    const urls = ['https://a.example', 'https://mine.example']
+    expect((await a.snapshot()).bookmarks.bookmarks.map((bookmark) => bookmark.url)).toEqual(urls)
+    expect((await remoteDoc('bookmarks')).bookmarks.map((bookmark: { url: string }) => bookmark.url)).toEqual(urls)
+  })
+
   it('drops an account choice whose account changed and came back while it was reading', async () => {
     const { a } = await switchedDevice()
-    const held = a.command({ op: 'holdNextFetch', table: 'feed_sources' })
+    const held = a.command({ op: 'holdNextRequest', path: 'feed_sources' })
     const choice = a.command({ op: 'accountChoice', choice: 'useAccount' })
     await held
     await signIn(a, 0)
@@ -383,7 +523,7 @@ local('sync against local Supabase', () => {
 
   it('keeps what was changed while an account choice was reading in its backup', async () => {
     const { a } = await switchedDevice()
-    const held = a.command({ op: 'holdNextFetch', table: 'feed_sources' })
+    const held = a.command({ op: 'holdNextRequest', path: 'feed_sources' })
     const choice = a.command({ op: 'accountChoice', choice: 'useAccount' })
     await held
     await a.command({ op: 'bookmark', url: 'https://late.example' })

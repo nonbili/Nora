@@ -442,7 +442,12 @@
     "accountChoiceToast": "Sync is paused: this device has data from another account. Choose what to do in Settings › Sync.",
     "accountChoiceFailed": "Could not switch the data to this account: {{message}}",
     "exportSwitchBackup": "Export data from before the switch",
-    "exportSwitchBackupHint": "Saved {{date}}. Import it in Settings › Backup to bring it back."
+    "exportSwitchBackupHint": "Saved {{date}}. Import it in Settings › Backup to bring it back.",
+    "mergeBackupHint": "Another device changed some of the same things as this device, and its changes were kept. You can put back what this device had.",
+    "restoreMergeBackup": "Restore {{name}} from {{date}}",
+    "backupSettings": "settings",
+    "backupBookmarks": "bookmarks",
+    "backupUserStyles": "styles and scripts"
   },
   "tabs": {
     "new": "New tab",

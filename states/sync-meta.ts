@@ -16,7 +16,10 @@ export interface ResourceSyncMeta<T> {
   lastSyncedRemoteUpdatedAt?: string
   lastSuccessfulSyncAt?: number
   lastError?: string
+  // What was here, before a merge took the other device's side of something both changed.
   backup?: SyncBackup<T>
+  // The document as this device and the server last agreed on it, to merge the two against.
+  base?: T
 }
 
 export interface FeedSyncMeta {
@@ -46,6 +49,7 @@ const emptyMeta = <T>(): ResourceSyncMeta<T> => ({
   lastSuccessfulSyncAt: undefined,
   lastError: undefined,
   backup: undefined,
+  base: undefined,
 })
 
 const emptyFeedMeta = (): FeedSyncMeta => ({ pendingSources: [], pendingTimelines: [] })

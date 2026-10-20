@@ -7,10 +7,12 @@ export interface DocumentSyncDecisionInput {
   hasMeaningfulLocalValue: boolean
 }
 
-export interface DocumentSyncDecision {
-  action: 'noop' | 'pull' | 'push'
-  backupLocal: boolean
-}
+/**
+ * - push: write what is here, on top of the row read (or of no row).
+ * - pull: take the row read; nothing changed here.
+ * - merge: both changed since they last agreed; put them together, then write that.
+ */
+export type DocumentSyncAction = 'noop' | 'pull' | 'push' | 'merge'
 
 export function decideDocumentSync({
   dirty,
@@ -19,24 +21,14 @@ export function decideDocumentSync({
   lastSyncedRemoteUpdatedAt,
   pushWhenRemoteMissing,
   hasMeaningfulLocalValue,
-}: DocumentSyncDecisionInput): DocumentSyncDecision {
+}: DocumentSyncDecisionInput): DocumentSyncAction {
   if (!hasRemote) {
-    if (pushWhenRemoteMissing || dirty || hasMeaningfulLocalValue) {
-      return { action: 'push', backupLocal: false }
-    }
-    return { action: 'noop', backupLocal: false }
+    return pushWhenRemoteMissing || dirty || hasMeaningfulLocalValue ? 'push' : 'noop'
   }
 
-  if (!dirty) {
-    if (remoteUpdatedAt !== lastSyncedRemoteUpdatedAt) {
-      return { action: 'pull', backupLocal: false }
-    }
-    return { action: 'noop', backupLocal: false }
+  if (remoteUpdatedAt === lastSyncedRemoteUpdatedAt) {
+    return dirty ? 'push' : 'noop'
   }
 
-  if (!lastSyncedRemoteUpdatedAt || remoteUpdatedAt !== lastSyncedRemoteUpdatedAt) {
-    return { action: 'pull', backupLocal: true }
-  }
-
-  return { action: 'push', backupLocal: false }
+  return dirty ? 'merge' : 'pull'
 }

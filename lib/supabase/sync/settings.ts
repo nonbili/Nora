@@ -2,6 +2,7 @@ import { syncState, when } from '@legendapp/state'
 import { normalizeSettings, Settings, settings$ } from '@/states/settings'
 import { ResourceSyncMeta, syncMeta$ } from '@/states/sync-meta'
 import { BaseSyncer } from './base'
+import { mergeKeys } from './merge'
 
 class SettingsSyncer extends BaseSyncer<Settings> {
   NAME = 'settings'
@@ -20,6 +21,11 @@ class SettingsSyncer extends BaseSyncer<Settings> {
     // Preserve the device-local siteZoom when applying remote settings.
     const siteZoom = settings$.siteZoom.get()
     settings$.assign(normalizeSettings({ ...value, siteZoom }))
+  }
+
+  // Each setting on its own; one both devices changed is the other device's.
+  merge(base: Settings | undefined, local: Settings, remote: Settings) {
+    return mergeKeys(base, local, remote)
   }
 
   hasMeaningfulLocalValue() {

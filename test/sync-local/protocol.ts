@@ -18,7 +18,11 @@ export type Command =
   | { op: 'takeFeedRequests' }
   | { op: 'signIn'; email: string; password: string }
   | { op: 'accountChoice'; choice: 'useAccount' | 'mergeDevice' }
-  | { op: 'holdNextFetch'; table: string }
+  | { op: 'holdNextRequest'; path: string }
+  | { op: 'deleteBookmark'; url: string }
+  | { op: 'customScript'; name: string }
+  | { op: 'restoreBackup'; scope: 'settings' | 'bookmarks' | 'userStyles' }
+  | { op: 'forgetBase'; scope: 'settings' | 'bookmarks' | 'userStyles' }
   | { op: 'releaseFetch' }
 
 export interface Snapshot {

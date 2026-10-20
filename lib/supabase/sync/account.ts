@@ -30,7 +30,7 @@ const resetFeedMeta = () => syncMeta$.feeds.set({ pendingSources: [], pendingTim
 /** The account's document in place of this device's; what the account does not have yet starts as on a new device. */
 const replaceDocument = <T>(syncer: BaseSyncer<T>, remote: RemoteDocument<T> | null, fallback: T) => {
   syncer.applyRemote(remote ? remote.value : fallback)
-  syncer.setMeta({ dirty: false, lastError: undefined, backup: undefined, lastSyncedRemoteUpdatedAt: remote?.updatedAt })
+  syncer.setMeta({ dirty: false, lastError: undefined, backup: undefined, lastSyncedRemoteUpdatedAt: remote?.updatedAt, base: remote?.value })
 }
 
 /** The account's document stays, this device's kept as the backup; else this device's is pushed. */
@@ -39,7 +39,7 @@ const keepAccountDocument = <T>(syncer: BaseSyncer<T>, remote: RemoteDocument<T>
     syncer.setMeta({ backup: { value: syncer.getValue(), savedAt: Date.now(), remoteUpdatedAt: remote.updatedAt } })
     syncer.applyRemote(remote.value)
   }
-  syncer.setMeta({ dirty: !remote, lastError: undefined, lastSyncedRemoteUpdatedAt: remote?.updatedAt })
+  syncer.setMeta({ dirty: !remote, lastError: undefined, lastSyncedRemoteUpdatedAt: remote?.updatedAt, base: remote?.value })
 }
 
 // The rows this device has and the account has not, as taken away.
@@ -98,6 +98,7 @@ const mergeDevice = async () => {
       lastError: undefined,
       backup: undefined,
       lastSyncedRemoteUpdatedAt: bookmarks?.updatedAt,
+      base: bookmarks?.value,
     })
 
     // What the account has of the feed stays, what only this device has is pushed.

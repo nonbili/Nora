@@ -2,6 +2,7 @@ import { syncState, when } from '@legendapp/state'
 import { Bookmarks, bookmarks$ } from '@/states/bookmarks'
 import { ResourceSyncMeta, syncMeta$ } from '@/states/sync-meta'
 import { BaseSyncer } from './base'
+import { mergeKeys, mergeList } from './merge'
 
 class BookmarksSyncer extends BaseSyncer<Bookmarks> {
   NAME = 'bookmarks'
@@ -16,6 +17,11 @@ class BookmarksSyncer extends BaseSyncer<Bookmarks> {
 
   setValue(value: Bookmarks) {
     bookmarks$.assign(value)
+  }
+
+  // Bookmarks are told apart by their URL.
+  merge(base: Bookmarks | undefined, local: Bookmarks, remote: Bookmarks) {
+    return mergeKeys(base, local, remote, { bookmarks: mergeList((bookmark) => bookmark.url) })
   }
 
   hasMeaningfulLocalValue(value: Bookmarks) {

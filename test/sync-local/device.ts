@@ -7,8 +7,8 @@ import { localConfig, type Command } from './protocol'
 
 const { url, anonKey } = localConfig()
 let failTable: string | undefined
-// A read of this table waits until released, to change the account while it is in flight.
-let holdTable: string | undefined
+// A request to this path waits until released, to change things while it is in flight.
+let holdPath: string | undefined
 let releaseHeld: (() => void) | undefined
 let heldStarted: (() => void) | undefined
 const feedRequests: string[] = []
@@ -20,8 +20,8 @@ const client = createClient(url, anonKey, {
       if ((!init?.method || init.method === 'GET') && requestUrl.pathname === '/rest/v1/feed_sources') {
         feedRequests.push(requestUrl.href)
       }
-      if (holdTable && (!init?.method || init.method === 'GET') && requestUrl.pathname === `/rest/v1/${holdTable}`) {
-        holdTable = undefined
+      if (holdPath && requestUrl.pathname === `/rest/v1/${holdPath}`) {
+        holdPath = undefined
         heldStarted?.()
         return new Promise<void>((resolve) => { releaseHeld = resolve }).then(() => fetch(input, init))
       }
@@ -85,12 +85,16 @@ async function execute(command: Command) {
       break
     }
     case 'accountChoice': await resolveAccountChoice(command.choice); break
-    case 'holdNextFetch': {
-      holdTable = command.table
+    case 'holdNextRequest': {
+      holdPath = command.path
       // Answers once the read is in flight, not when it is released.
       return new Promise<null>((resolve) => { heldStarted = () => resolve(null) })
     }
     case 'releaseFetch': releaseHeld?.(); releaseHeld = undefined; break
+    case 'deleteBookmark': bookmarks$.deleteBookmark(bookmarks$.bookmarks.peek().findIndex((bookmark) => bookmark.url === command.url)); break
+    case 'customScript': return userStyles$.addCustomScript({ name: command.name, enabled: true, hostGlobs: ['*'], pinToHeader: false, js: 'void 0' })
+    case 'restoreBackup': syncers[command.scope].restoreBackup(); break
+    case 'forgetBase': syncers[command.scope].setMeta({ base: undefined }); break
     case 'sync':
       if (command.scope) await syncers[command.scope].syncNow()
       else await syncSupabase()
