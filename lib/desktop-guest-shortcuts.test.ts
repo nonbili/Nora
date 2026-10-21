@@ -18,7 +18,7 @@ function setup() {
 describe('guest tab shortcuts', () => {
   test('forwards Ctrl/Cmd tab shortcuts and prevents guest defaults', () => {
     for (const modifier of ['control', 'meta']) {
-      for (const key of ['t', 'T', 'w', '1', '9']) {
+      for (const key of ['t', 'T', 'w', 'f', '1', '9']) {
         const { forward, press } = setup()
         const input = { key, [modifier]: true, shift: key === 'T' }
         const event = press(input)

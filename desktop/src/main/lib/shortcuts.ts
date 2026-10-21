@@ -8,7 +8,7 @@ export function attachGuestShortcuts(webContents: WebContents, handleShortcuts: 
     if (key === 'r') {
       event.preventDefault()
       webContents.reload()
-    } else if (key === 't' || key === 'w' || /^[1-9]$/.test(key)) {
+    } else if (key === 't' || key === 'w' || key === 'f' || /^[1-9]$/.test(key)) {
       // Reserve digit shortcuts even when the renderer has no matching tab:
       // cancellation must be synchronous, while the tab list lives in the renderer.
       event.preventDefault()

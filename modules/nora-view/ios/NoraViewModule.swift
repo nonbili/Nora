@@ -264,6 +264,10 @@ public class NoraViewModule: Module {
         view.load(url: url)
       }
 
+      AsyncFunction("showFind") { (view: NoraView) in
+        view.webView.findInteraction?.presentFindNavigator(showingReplace: false)
+      }
+
       // Argument order must match the JS call site: saveFile(content, fileName, mimeType).
       AsyncFunction("saveFile") { (view: NoraView, content: String, fileName: String, mimeType: String?) in
         view.saveFile(content: content, fileName: fileName, mimeType: mimeType)

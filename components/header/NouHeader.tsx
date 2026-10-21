@@ -41,6 +41,7 @@ import { useTwColor } from '@/lib/theme'
 import { watch$ } from '@/states/watch'
 import { getWatchTarget, watchKey, watchSourceLabel } from '@/lib/watch'
 import { toggleWatched } from '@/lib/watch-feed'
+import { openFindInPage } from '@/lib/find-in-page'
 
 // The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
 // any time. On native the same decision is made in JS, so the classes are duplicated
@@ -483,6 +484,16 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       systemImage: 'globe',
                       handler: editTabUrl,
                     },
+                    ...(isFeedTab || !currentTab?.url
+                      ? []
+                      : [
+                          {
+                            label: t('menus.findInPage'),
+                            icon: <MaterialIcons name="find-in-page" size={18} color={headerControlColor} />,
+                            systemImage: 'text.magnifyingglass',
+                            handler: () => openFindInPage(tabs$.currentTab()?.id),
+                          },
+                        ]),
                     ...(hideDesktopSiteToggle
                       ? []
                       : [

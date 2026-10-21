@@ -60,6 +60,8 @@ import { buildAnonymousModeScript, isAnonymousModeActive, isAnonymousProfile, wa
 import { twColor, useTwColor } from '@/lib/theme'
 import { isFeedTabUrl } from '@/lib/feed-tab'
 import { FeedTab } from './FeedTab'
+import { FindBar } from './FindBar'
+import { closeFindInPage, onFindPageChanged, setFindResult } from '@/lib/find-in-page'
 
 const LOAD_URL_MAX_RETRIES = 5
 const LOAD_URL_RETRY_DELAY = 100
@@ -534,6 +536,7 @@ const WebTab: React.FC<NoraTabProps> = ({
         setTabLoading(false)
       })
       on<Electron.DidNavigateEvent>('did-navigate', (e) => {
+        onFindPageChanged(tab.id)
         setPageUrl(e.url)
         applyContentStateRef.current(webview, e.url)
         void refreshCanGoBack(webview)
@@ -566,6 +569,9 @@ const WebTab: React.FC<NoraTabProps> = ({
       })
       on<Electron.UpdateTargetUrlEvent>('update-target-url', (e) => {
         ui$.hoverLinkUrl.set(e.url || '')
+      })
+      on<Electron.FoundInPageEvent>('found-in-page', (e) => {
+        setFindResult(tab.id, e.result.activeMatchOrdinal ?? 0, e.result.matches ?? 0)
       })
     },
     [openDroppedUrl, refreshCanGoBack, setPageUrl, setTabLoading, tab.id],
@@ -698,6 +704,21 @@ const WebTab: React.FC<NoraTabProps> = ({
   // Keep background tabs registered; only unregister when this tab goes away.
   useEffect(() => () => registerTabWebview(tab.id, null), [tab.id])
 
+  const findOpen = useValue(() => ui$.findInPage.get()?.tabId === tab.id)
+  // On the phone the bar is over the page, which moves down below it so no match is hidden there.
+  const [findBarHeight, setFindBarHeight] = useState(0)
+  // Closed with its tab, or when the tab goes out of sight: a hidden find bar would still take Back.
+  const findVisible = (isWeb || desktopChrome ? desktopVisible : isActive) && !tab.isPaused
+  useEffect(() => {
+    if (findOpen && !findVisible) closeFindInPage()
+  }, [findOpen, findVisible])
+  useEffect(
+    () => () => {
+      if (ui$.findInPage.get()?.tabId === tab.id) closeFindInPage()
+    },
+    [tab.id],
+  )
+
   useEffect(() => {
     return () => {
       if (loadingWatchdogRef.current) {
@@ -735,6 +756,7 @@ const WebTab: React.FC<NoraTabProps> = ({
     const { url, title, icon, canGoBack: nextCanGoBack } = e.nativeEvent
     const hasLoadedUrl = typeof url === 'string' && url !== '' && url !== 'about:blank'
     if (hasLoadedUrl) {
+      onFindPageChanged(tab.id)
       setTabLoading(false)
       setPageUrl(url)
     }
@@ -807,6 +829,9 @@ const WebTab: React.FC<NoraTabProps> = ({
         break
       case 'scroll':
         onScroll({ dy: data.dy, y: data.y, autoHideHeader, hideToolbarWhenScrolled })
+        break
+      case 'find-result':
+        setFindResult(tab.id, Number(data?.active) || 0, Number(data?.total) || 0)
         break
       case 'header-double-tap':
         if (isAndroid && doubleTapToToggleHeader) {
@@ -942,6 +967,7 @@ const WebTab: React.FC<NoraTabProps> = ({
             </View>
           </View>
         </NouContextMenu>
+        {nIf(findOpen, <FindBar tabId={tab.id} />)}
         {tab.isPaused ? (
           <View className="flex-1 min-h-0 items-center justify-center gap-3 px-6">
             <MaterialIcons name="pause-circle-outline" size={40} color={tw('#a1a1aa')} />
@@ -1066,6 +1092,7 @@ const WebTab: React.FC<NoraTabProps> = ({
           </View>
         </View>,
       )}
+      {nIf(findOpen && desktopChrome, <FindBar tabId={tab.id} />)}
       {/* Pausing is not a discard on native -- it stops the load and the media, so the
           webview stays mounted and only the header shows the paused state. */}
       {nIf(
@@ -1087,7 +1114,7 @@ const WebTab: React.FC<NoraTabProps> = ({
                   position: 'absolute',
                   left: 0,
                   right: 0,
-                  top: 0,
+                  top: findOpen ? findBarHeight : 0,
                   bottom: 0,
                 }
           }
@@ -1119,6 +1146,15 @@ const WebTab: React.FC<NoraTabProps> = ({
         !tab.url && (desktopChrome || isActive),
         <View className="flex-1 min-h-0">
           <NavModalContent index={index} />
+        </View>,
+      )}
+      {nIf(
+        findOpen && !desktopChrome,
+        <View
+          style={{ position: 'absolute', left: 0, right: 0, top: 0, zIndex: 2 }}
+          onLayout={(e) => setFindBarHeight(e.nativeEvent.layout.height)}
+        >
+          <FindBar tabId={tab.id} />
         </View>,
       )}
       {nIf(desktopChrome, <NouMenu ref={desktopMenuRef} items={[]} hideTrigger />)}

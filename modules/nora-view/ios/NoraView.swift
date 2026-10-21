@@ -238,6 +238,8 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     webView.uiDelegate = self
     webView.scrollView.delegate = self
     webView.allowsBackForwardNavigationGestures = true
+    // The system find bar, opened from the menu or with Cmd+F on a keyboard.
+    webView.isFindInteractionEnabled = true
     let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleContextMenuLongPress(_:)))
     longPressRecognizer.cancelsTouchesInView = false
     longPressRecognizer.delegate = self

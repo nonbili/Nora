@@ -1,5 +1,7 @@
 import { tabs$ } from '../../../../states/tabs'
 import { getSidebarOrderedTabIds, openTabForActiveDesktopView } from '../../../../lib/desktop-view-actions'
+import { openFindInPage } from '../../../../lib/find-in-page'
+import { isFeedTabUrl } from '../../../../lib/feed-tab'
 
 export function handleShortcuts(e: {
   metaKey?: boolean
@@ -34,6 +36,14 @@ export function handleShortcuts(e: {
       ? tabs$.activeTabIndex.get()
       : tabs$.tabs.get().findIndex((tab) => tab.id === e.sourceTabId)
     if (index >= 0) tabs$.closeTab(index)
+  } else if (key === 'f') {
+    const tab = e.sourceTabId === undefined
+      ? tabs$.tabs.get()[tabs$.activeTabIndex.get()]
+      : tabs$.tabs.get().find((tab) => tab.id === e.sourceTabId)
+    if (tab?.url && !isFeedTabUrl(tab.url)) {
+      e.preventDefault?.()
+      openFindInPage(tab.id)
+    }
   } else if (key >= '1' && key <= '9') {
     // As in other browsers, 9 is the last tab however many there are.
     const tabIds = getSidebarOrderedTabIds()

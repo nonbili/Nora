@@ -25,6 +25,8 @@ import { useTwColor } from '@/lib/theme'
 import { watch$ } from '@/states/watch'
 import { getWatchTarget, watchKey, watchSourceLabel } from '@/lib/watch'
 import { toggleWatched } from '@/lib/watch-feed'
+import { isFeedTabUrl } from '@/lib/feed-tab'
+import { openFindInPage } from '@/lib/find-in-page'
 
 export interface TabContextMenuOptions {
   runWebviewAction: (action: (webview: any) => void) => void
@@ -134,6 +136,14 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
           void scrollWebviewToTop(webview)
         }),
     },
+    ...(tab.url && !tab.isPaused && !isFeedTabUrl(tab.url)
+      ? [{
+          label: t('menus.findInPage'),
+          systemImage: 'text.magnifyingglass',
+          icon: <MaterialIcons name="find-in-page" size={16} color={menuIconColor} />,
+          handler: () => openFindInPage(tab.id),
+        }]
+      : []),
     ...(supportsRuntimeBlocklist() && blocklistEnabled && blockingSite
       ? [{
           label: t('menus.blockAds'),

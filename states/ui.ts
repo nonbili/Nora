@@ -56,6 +56,8 @@ interface Store {
   activeCanGoBack: boolean
   webview: any
   hoverLinkUrl: string
+  // The tab whose find bar is open, when it was last asked for, its text, and its matches: the one shown (from 1) and how many.
+  findInPage: { tabId: string; openedAt: number; text: string; active: number; total: number } | null
   translation: {
     id: string
     text: string
@@ -111,5 +113,6 @@ export const ui$ = observable<Store>({
   activeCanGoBack: false,
   webview: undefined,
   hoverLinkUrl: '',
+  findInPage: null,
   translation: null,
 })

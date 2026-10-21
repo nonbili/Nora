@@ -1252,6 +1252,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
     webView.addJavascriptInterface(NouJsInterface(context, this), "NoraI")
     installGoogleOAuthShim(webView)
+    webView.setFindListener { active, total, isDone ->
+      if (isDone) {
+        emit("find-result", mapOf("active" to if (total > 0) active + 1 else 0, "total" to total))
+      }
+    }
 
     // some websites have `padding-bottom: env(safe-area-inset-bottom)`, this set it to 0
     // but we need to preserve the IME inset so the WebView resizes when the keyboard opens

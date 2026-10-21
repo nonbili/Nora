@@ -43,8 +43,9 @@ let lastLinkHandlingSettingsKey = ''
 function App(): React.JSX.Element {
   useEffect(() => {
     initUiChannel()
-    window.addEventListener('keydown', handleShortcuts)
-    return () => window.removeEventListener('keydown', handleShortcuts)
+    // Captured: react-native-web's TextInput stops every keydown, so a focused field would swallow them.
+    window.addEventListener('keydown', handleShortcuts, true)
+    return () => window.removeEventListener('keydown', handleShortcuts, true)
   }, [])
 
   useBlocklistSync()

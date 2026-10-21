@@ -439,6 +439,12 @@ class NoraViewModule : Module() {
 
       AsyncFunction("loadUrl") { view: NoraView, url: String -> view.load(url) }
 
+      AsyncFunction("findInPage") { view: NoraView, text: String -> view.webView.findAllAsync(text) }
+
+      AsyncFunction("findNext") { view: NoraView, forward: Boolean -> view.webView.findNext(forward) }
+
+      AsyncFunction("clearFind") { view: NoraView -> view.webView.clearMatches() }
+
       // Argument order must match the JS call site: saveFile(content, fileName, mimeType).
       AsyncFunction("saveFile") { view: NoraView, content: String, fileName: String, mimeType: String? ->
         view.saveFile(content, fileName, mimeType)

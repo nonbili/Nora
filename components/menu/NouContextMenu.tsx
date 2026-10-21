@@ -37,7 +37,13 @@ export const NouContextMenu: React.FC<{ children: ReactNode; items: ContextItem[
   return (
     <ContextMenu.Root modal={true}>
       <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-      <ContextMenu.Content variant="soft" className="border border-zinc-300/70 dark:border-zinc-800/80 shadow-xl shadow-zinc-900/15 dark:shadow-black/40">
+      <ContextMenu.Content
+        variant="soft"
+        // An item that focuses something of its own, as Find in page does, keeps it.
+        onCloseAutoFocus={(e) => {
+          if (document.activeElement && document.activeElement !== document.body) e.preventDefault()
+        }}
+        className="border border-zinc-300/70 dark:border-zinc-800/80 shadow-xl shadow-zinc-900/15 dark:shadow-black/40">
         {menuItems}
       </ContextMenu.Content>
     </ContextMenu.Root>
