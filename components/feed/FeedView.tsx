@@ -77,6 +77,14 @@ export const ChoicePicker: React.FC<{
 )
 
 /** What to tell about how a profile is being checked; null when all is well. */
+/** The sites some of these profiles are checked on without an account, and so less reliably; none when the user turned accounts off. */
+export const getLoggedOutSites = (profiles: WatchedProfile[], useAccounts: boolean): WatchSite[] =>
+  useAccounts
+    ? Array.from(
+        new Set(profiles.filter((profile) => profile.mode === 'loggedOut' || profile.error === WATCH_ERROR_NEEDS_LOGIN).map((p) => p.site)),
+      )
+    : []
+
 /** The names of the timelines, the whole feed among them, whose notifications are on for a profile. */
 const notifyVia = (profileKey: string) => [
   ...(watch$.feedNotify.get() ? [t('feed.allSources')] : []),
@@ -502,11 +510,12 @@ export const FeedView: React.FC<{
   // Sites that some profile is checked on without an account, and so less reliably; not told when
   // the user turned accounts off.
   const useAccounts = useValue(watch$.useAccounts)
-  const loggedOutSites = useAccounts
-    ? Array.from(
-        new Set(profiles.filter((profile) => profile.mode === 'loggedOut' || profile.error === WATCH_ERROR_NEEDS_LOGIN).map((p) => p.site)),
-      )
-    : []
+  const loggedOutSites = getLoggedOutSites(profiles, useAccounts)
+  // Closed for the sites it told of, it is told again only of another one.
+  const loginHintDismissedSites = useValue(watch$.loginHintDismissedSites)
+  const showLoginHint = loggedOutSites.some((site) => !loginHintDismissedSites.includes(site))
+  const dismissLoginHint = () =>
+    watch$.loginHintDismissedSites.set(Array.from(new Set([...loginHintDismissedSites, ...loggedOutSites])))
 
   const iconColor = isDark ? tw('#f8fafc') : tw('#334155')
 
@@ -814,11 +823,24 @@ export const FeedView: React.FC<{
             </View>
           ) : null}
         </View>
-      ) : !timeline && loggedOutSites.length ? (
-        <View className="mx-4 mb-3 rounded-2xl bg-amber-50 px-4 py-3 dark:bg-amber-500/10">
-          <NouText className="text-sm text-amber-800 dark:text-amber-300">
-            {t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
-          </NouText>
+      ) : !timeline && showLoginHint ? (
+        <View className="mx-4 mb-3 flex-row items-start rounded-2xl bg-amber-50 py-1 pl-4 pr-1 dark:bg-amber-500/10">
+          {/* What it asks for is chosen in Feed settings, where it is told again. */}
+          <Pressable onPress={() => ui$.feedSettingsModalOpen.set(true)} accessibilityRole="button" className="flex-1 py-2">
+            <NouText className="text-sm text-amber-800 dark:text-amber-300">
+              {t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
+            </NouText>
+          </Pressable>
+          <Pressable
+            onPress={dismissLoginHint}
+            accessibilityRole="button"
+            accessibilityLabel={t('menus.close')}
+            hitSlop={androidHitSlop}
+            style={iosTouchTarget}
+            className="h-9 w-9 items-center justify-center"
+          >
+            <MaterialIcons name="close" size={18} color={tw('#b45309')} />
+          </Pressable>
         </View>
       ) : null}
     </View>

@@ -10,7 +10,7 @@ import { NouButton } from '../button/NouButton'
 import { EmojiGrid } from '../EmojiGrid'
 import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
-import { ChoicePicker, formatInterval } from '../feed/FeedView'
+import { ChoicePicker, formatInterval, getLoggedOutSites } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
 import { watch$ } from '@/states/watch'
 import { settings$ } from '@/states/settings'
@@ -56,6 +56,8 @@ export const FeedSettingsModal = () => {
   const feedNotify = useValue(watch$.feedNotify)
   const [pickingEmoji, setPickingEmoji] = useState(false)
   const accountProfiles = useValue(watch$.accountProfiles)
+  // Told here too, where it is set right, as the feed's own hint can be closed.
+  const loggedOutSites = useValue(() => getLoggedOutSites(watch$.profiles.get(), watch$.useAccounts.get()))
   const profiles = useValue(() =>
     settings$.profiles.get().filter((profile) => profile && !isAnonymousProfile(profile.id)),
   )
@@ -155,6 +157,11 @@ export const FeedSettingsModal = () => {
             sites: WATCH_ACCOUNT_SITES.map((site) => watchSiteLabels[site]).join(', '),
           })}
         </Hint>
+        {loggedOutSites.length ? (
+          <NouText className="mt-2 text-sm leading-5 text-amber-700 dark:text-amber-400">
+            {t('feed.loggedOutSites', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
+          </NouText>
+        ) : null}
       </View>
       {useAccounts && profiles.length > 1
         ? WATCH_ACCOUNT_SITES.map((site) => {

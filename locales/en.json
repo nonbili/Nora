@@ -508,6 +508,7 @@
     "noPosts": "No posts yet.",
     "repostOf": "Reposted from @{{handle}}",
     "loginHint": "Some sources are checked without logging in, which can be delayed or blocked. Log in to {{sites}} in any Nora profile for more reliable updates.",
+    "loggedOutSites": "Some sources on {{sites}} are checked without logging in, which can be delayed or blocked. Log in to these sites in any Nora profile for more reliable updates.",
     "statusLoggedIn": "Checked with the {{site}} account logged in to your {{profile}} profile.",
     "statusLoggedOutInProfile": "Checked without logging in. Log in to {{site}} in your {{profile}} profile, or choose another profile in Feed settings, for more reliable updates.",
     "statusAccountsOff": "Checked without logging in, as set in Feed settings.",

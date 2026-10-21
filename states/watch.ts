@@ -73,6 +73,8 @@ interface Store {
   notifyTimelineIds: string[]
   // Whether every source notifies, as the whole feed's choice; of this device too.
   feedNotify: boolean
+  // The sites the hint about checking without logging in was closed for; it comes back for another site.
+  loginHintDismissedSites: WatchSite[]
 
   isWatched: (target: WatchTarget) => boolean
   watch: (target: WatchTarget) => void
@@ -112,6 +114,7 @@ export const watch$: Observable<Store> = observable<Store>({
   feedMediaOnly: false,
   notifyTimelineIds: [],
   feedNotify: false,
+  loginHintDismissedSites: [],
 
   isWatched: (target) => watch$.profiles.get().some((profile) => profile.key === watchKey(target)),
 
