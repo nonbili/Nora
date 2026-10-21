@@ -7,6 +7,7 @@ import * as DocumentPicker from 'expo-document-picker'
 import { t } from 'i18next'
 import { FormModal } from './FormModal'
 import { NouText } from '../NouText'
+import { WatchSites } from '../feed/WatchSites'
 import { ui$ } from '@/states/ui'
 import { getTimeline, watch$ } from '@/states/watch'
 import { watchKey, watchSiteLabels, watchSourceLabel } from '@/lib/watch'
@@ -67,13 +68,20 @@ export const AddSourcesModal = () => {
   useEffect(() => {
     setText('')
     if (!target) return
-    // A profile link just copied is likely the one to add.
+    let cancelled = false
+    // A profile link just copied is likely the one to add, unless it was added already, as it stays copied after.
     Clipboard.getStringAsync()
       .then((copied) => {
         const links = readLinks(copied)
-        if (links.length && links.every((link) => link.target)) setText((current) => current || copied.trim())
+        const timeline = getTimeline(target.timelineId)
+        const added = new Set(timeline ? timeline.profileKeys : watch$.profiles.peek().map((profile) => profile.key))
+        const fresh = links.some(({ target: source }) => source && !added.has(watchKey(source)))
+        if (!cancelled && fresh && links.every((link) => link.target)) setText((current) => current || copied.trim())
       })
       .catch(() => {})
+    return () => {
+      cancelled = true
+    }
   }, [target])
 
   const onClose = () => ui$.addSourcesModal.set(null)
@@ -165,7 +173,11 @@ export const AddSourcesModal = () => {
           })}
         </ScrollView>
       ) : (
-        <NouText className="text-sm leading-5 text-zinc-500 dark:text-zinc-400">{t('feed.addSourcesHint')}</NouText>
+        // Shrinks, and scrolls, to leave the buttons in view above the keyboard.
+        <ScrollView style={{ flexShrink: 1 }} keyboardShouldPersistTaps="handled">
+          <NouText className="text-sm leading-5 text-zinc-500 dark:text-zinc-400">{t('feed.addSourcesHint')}</NouText>
+          <WatchSites compact className="mt-4" />
+        </ScrollView>
       )}
     </FormModal>
   )

@@ -38,6 +38,7 @@ import {
   splitMastodonHandle,
   watchKey,
   watchProfileUrl,
+  watchSiteLabels,
   watchSourceLabel,
   xTimelineUrl,
   type WatchFetchResult,
@@ -548,7 +549,8 @@ const notifyFresh = async (profile: WatchedProfile, fresh: WatchPost[]) => {
   const current = watch$.profiles.peek().find((p) => p.key === profile.key) || profile
   try {
     await presentNotification(notificationChannel(), {
-      title: current.name ? `${current.name} (${watchSourceLabel(current)})` : watchSourceLabel(current),
+      // The site too: the same name can be watched on several.
+      title: `${current.name ? `${current.name} (${watchSourceLabel(current)})` : watchSourceLabel(current)} · ${watchSiteLabels[current.site]}`,
       body: fresh.length === 1 ? latest.text || t('feed.newPost') : t('feed.newPosts', { count: fresh.length }),
       // One post opens on its own; several open on the profile, where they all are.
       url: fresh.length === 1 ? latest.url : watchProfileUrl(current),

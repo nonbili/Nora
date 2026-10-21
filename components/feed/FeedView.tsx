@@ -21,10 +21,12 @@ import {
   watchSiteLabels,
   watchSourceLabel,
   type WatchPost,
+  type WatchQuote,
   type WatchSite,
 } from '@/lib/watch'
 import { NouMenu } from '../menu/NouMenu'
 import { siteIcon } from '../service/Services'
+import { WatchSites } from './WatchSites'
 import {
   WATCH_ERROR_NEEDS_LOGIN,
   WATCH_ERROR_RATE_LIMITED,
@@ -223,6 +225,63 @@ const PostMedia: React.FC<{ post: WatchPost; onOpen: () => void }> = ({ post, on
   )
 }
 
+/** The post a post quotes, as a card below it with its first photo or video; opens it on its site. */
+const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }> = ({ quote, now, onOpen }) => {
+  const first = quote.media?.[0]
+  const cover = first?.thumb || first?.url
+  const name = quote.name || quote.handle
+  const aspectRatio = first?.width && first?.height ? Math.min(Math.max(first.width / first.height, 0.8), 1.91) : 16 / 9
+  return (
+    <Pressable onPress={onOpen} accessibilityRole="link" className="mt-2 overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-700">
+      <View className="px-3 pt-2.5">
+        <View className="flex-row items-center gap-1.5">
+          <View className="h-5 w-5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+            {quote.avatar ? <Image source={quote.avatar} contentFit="cover" style={{ width: 20, height: 20 }} /> : null}
+          </View>
+          <NouText className="shrink text-sm font-semibold" numberOfLines={1}>
+            {name}
+          </NouText>
+          {quote.handle && !sameAsName(name, quote.handle) ? (
+            <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+              @{quote.handle}
+            </NouText>
+          ) : null}
+          {quote.createdAtMs ? (
+            <NouText className="shrink-0 text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+              · {formatPostAge(quote.createdAtMs, now)}
+            </NouText>
+          ) : null}
+        </View>
+        {quote.text ? (
+          <NouText className="mt-1 leading-[22px]" numberOfLines={6}>
+            {quote.text}
+          </NouText>
+        ) : null}
+      </View>
+      {cover ? (
+        <View className="mt-2">
+          <Image source={cover} contentFit="cover" className="bg-zinc-200 dark:bg-zinc-800" style={{ width: '100%', aspectRatio }} />
+          {first?.type === 'video' ? (
+            <View className="absolute inset-0 items-center justify-center" pointerEvents="none">
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-black/50">
+                <MaterialIcons name="play-arrow" size={26} color="#fff" />
+              </View>
+            </View>
+          ) : null}
+          {(quote.media?.length || 0) > 1 ? (
+            <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-black/60 px-2 py-0.5" pointerEvents="none">
+              <MaterialIcons name="collections" size={12} color="#fff" />
+              <NouText className="text-xs text-white">{quote.media?.length}</NouText>
+            </View>
+          ) : null}
+        </View>
+      ) : (
+        <View className="h-2.5" />
+      )}
+    </Pressable>
+  )
+}
+
 /** A post of a timeline of photos and videos, as a square of its cover; opens the gallery. */
 const PostTile: React.FC<{ post: WatchPost; unread: boolean; columns: number; onOpen: () => void }> = ({
   post,
@@ -251,8 +310,8 @@ const PostTile: React.FC<{ post: WatchPost; unread: boolean; columns: number; on
   )
 }
 
-/** Whether a name says no more than the handle beside it, as a subreddit's does. */
-const sameAsName = (name: string, handle: string) => name.replace(/^@/, '').toLowerCase() === handle.replace(/^@/, '').toLowerCase()
+/** Whether a name is the very handle beside it, as a subreddit's is. */
+const sameAsName = (name: string, handle: string) => name.replace(/^@/, '') === handle.replace(/^@/, '')
 
 const PostRow: React.FC<{
   post: WatchPost
@@ -298,8 +357,14 @@ const PostRow: React.FC<{
               {name}
             </NouText>
           </Pressable>
-          <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
-            {sameAsName(name, source) ? '' : `${source} · `}
+          {sameAsName(name, source) ? null : (
+            <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+              {source}
+            </NouText>
+          )}
+          {/* The age is never cut off; a long name or handle is instead. */}
+          <NouText className="shrink-0 text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+            {sameAsName(name, source) ? '' : '· '}
             {formatPostAge(post.createdAtMs, now)}
           </NouText>
           {unread ? <View className="h-2 w-2 rounded-full bg-indigo-500" /> : null}
@@ -327,6 +392,7 @@ const PostRow: React.FC<{
                   : onOpenOriginal()
             }
           />
+          {post.quote ? <QuoteCard quote={post.quote} now={now} onOpen={() => onOpenLink(post.quote!.url)} /> : null}
         </View>
       </View>
       <View className="absolute right-0 top-0">
@@ -877,16 +943,7 @@ export const FeedView: React.FC<{
       <MaterialIcons name="rss-feed" size={40} color={iconColor} />
       <NouText className="mt-4 text-center text-lg font-semibold">{t('feed.emptyTitle')}</NouText>
       <NouText className="mt-1 text-center text-zinc-600 dark:text-zinc-400">{t('feed.emptyDescription')}</NouText>
-      <View className="mt-6 flex-row flex-wrap justify-center gap-x-4 gap-y-4">
-        {(Object.keys(watchSiteLabels) as WatchSite[]).map((site) => (
-          <View key={site} className="w-20 items-center gap-1.5">
-            <View className="h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-zinc-800">{siteIcon(site)}</View>
-            <NouText className="text-xs text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
-              {watchSiteLabels[site]}
-            </NouText>
-          </View>
-        ))}
-      </View>
+      <WatchSites className="mt-6" />
       <Pressable
         onPress={() => ui$.addSourcesModal.set({ timelineId: timeline?.id })}
         accessibilityRole="button"

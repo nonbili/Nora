@@ -54,6 +54,18 @@ export interface WatchPost {
   // When Nora first saw it; 0 for the posts a profile already had when it was watched.
   firstSeenAt: number
   repostOf?: string
+  quote?: WatchQuote
+}
+
+/** The post a post quotes, shown inside it as the site does; its media is not kept on the phone. */
+export interface WatchQuote {
+  handle: string
+  name?: string
+  avatar?: string
+  url: string
+  text: string
+  media?: WatchMedia[]
+  createdAtMs?: number
 }
 
 export interface WatchProfileInfo {
@@ -291,6 +303,23 @@ const xText = (tweet: any): string => {
     .trim()
 }
 
+// A quote's text ends with the link to the post it quotes, which is shown below it instead.
+const withoutXQuoteLink = (text: string, quotedId: string) =>
+  text.replace(new RegExp(`\\s*https://(?:x|twitter)\\.com/\\w+/status/${quotedId}\\S*\\s*$`), '').trim()
+
+const xQuote = (tweet: any): WatchQuote => {
+  const screenName = tweet.user?.screen_name || ''
+  return {
+    handle: screenName,
+    name: tweet.user?.name || undefined,
+    avatar: tweet.user?.profile_image_url_https || undefined,
+    url: `https://x.com/${screenName || 'i'}/status/${tweet.id_str}`,
+    text: xText(tweet),
+    media: xMedia(tweet),
+    createdAtMs: parseXDate(tweet.created_at) || undefined,
+  }
+}
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /** X's dates, as "Fri Oct 16 19:42:20 +0000 2026": not a format every engine's Date.parse reads. */
@@ -327,12 +356,14 @@ export function parseXTimeline(html: string, handle: string): WatchFetchResult {
       info.avatar = user.profile_image_url_https
     }
     const shown = tweet.retweeted_status || tweet
+    const quoted = shown.quoted_status
     posts.push({
       id: tweet.id_str,
       site: 'x',
       handle,
       url: `https://x.com${tweet.permalink || `/${user?.screen_name || handle}/status/${tweet.id_str}`}`,
-      text: xText(shown),
+      text: quoted?.id_str ? withoutXQuoteLink(xText(shown), quoted.id_str) : xText(shown),
+      quote: quoted?.id_str ? xQuote(quoted) : undefined,
       image: xImage(shown),
       media: xMedia(shown),
       mediaComplete: true,
@@ -575,12 +606,23 @@ export function parseThreadsProfilePage(html: string, handle: string): WatchFetc
     const reposted = post.text_post_app_info?.share_info?.reposted_post
     const shown = reposted?.code ? reposted : post
     const media = threadsMedia(shown)
+    const quoted = shown.text_post_app_info?.share_info?.quoted_post
     posts.push({
       id: shown.code,
       site: 'threads',
       handle,
       url: `https://www.threads.com/@${shown.user?.username || handle}/post/${shown.code}`,
       text: shown.caption?.text || '',
+      quote: quoted?.code
+        ? {
+            handle: quoted.user?.username || '',
+            avatar: quoted.user?.profile_pic_url || undefined,
+            url: `https://www.threads.com/@${quoted.user?.username || handle}/post/${quoted.code}`,
+            text: quoted.caption?.text || '',
+            media: threadsMedia(quoted),
+            createdAtMs: quoted.taken_at ? quoted.taken_at * 1000 : undefined,
+          }
+        : undefined,
       image: media[0]?.thumb || media[0]?.url,
       media,
       mediaComplete: true,
@@ -699,12 +741,23 @@ export function expandBlueskyLinks(text: string, facets: any): string {
 
 const embeddedMedia = (embed: any) => (embed?.$type === 'app.bsky.embed.recordWithMedia#view' ? embed.media : embed)
 
-/** The accounts whose videos are in a feed: the server each is on is asked for before the feed is read. */
+/** The post a post quotes, alone or with media of its own; not one that was deleted or blocked. */
+const blueskyQuoted = (embed: any) => {
+  const record = embed?.$type === 'app.bsky.embed.recordWithMedia#view' ? embed.record?.record : embed?.$type === 'app.bsky.embed.record#view' ? embed.record : undefined
+  return record?.$type === 'app.bsky.embed.record#viewRecord' && typeof record.uri === 'string' ? record : undefined
+}
+
+/** The accounts whose videos are in a feed, quoted ones too: the server each is on is asked for before the feed is read. */
 export function blueskyVideoDids(json: any): string[] {
   const dids = new Set<string>()
+  const add = (uri: unknown, embed: any) => {
+    const did = typeof uri === 'string' ? uri.match(AT_POST_URI)?.[1] : undefined
+    if (did && embeddedMedia(embed)?.$type === 'app.bsky.embed.video#view') dids.add(did)
+  }
   for (const item of Array.isArray(json?.feed) ? json.feed : []) {
-    const did = typeof item?.post?.uri === 'string' ? item.post.uri.match(AT_POST_URI)?.[1] : undefined
-    if (did && embeddedMedia(item.post.embed)?.$type === 'app.bsky.embed.video#view') dids.add(did)
+    add(item?.post?.uri, item?.post?.embed)
+    const quoted = blueskyQuoted(item?.post?.embed)
+    add(quoted?.uri, quoted?.embeds?.[0])
   }
   return [...dids]
 }
@@ -746,6 +799,25 @@ export function parseBlueskyFeed(json: any, handle: string, pdsOf: (did: string)
     const external = post.embed?.$type === 'app.bsky.embed.external#view' ? post.embed.external : undefined
     let text = expandBlueskyLinks(post.record?.text || '', post.record?.facets)
     if (external?.uri && !text.includes(external.uri)) text = text ? `${text}\n${external.uri}` : external.uri
+    const quoted = blueskyQuoted(post.embed)
+    const quotedParts = quoted?.uri.match(AT_POST_URI)
+    let quote: WatchQuote | undefined
+    if (quoted && quotedParts) {
+      const [, quotedDid, quotedRkey] = quotedParts
+      const quotedEmbed = quoted.embeds?.[0]
+      const quotedExternal = quotedEmbed?.$type === 'app.bsky.embed.external#view' ? quotedEmbed.external : undefined
+      let quotedText = expandBlueskyLinks(quoted.value?.text || '', quoted.value?.facets)
+      if (quotedExternal?.uri && !quotedText.includes(quotedExternal.uri)) quotedText = quotedText ? `${quotedText}\n${quotedExternal.uri}` : quotedExternal.uri
+      quote = {
+        handle: quoted.author?.handle || quotedDid,
+        name: quoted.author?.displayName || undefined,
+        avatar: quoted.author?.avatar || undefined,
+        url: `https://bsky.app/profile/${quoted.author?.handle || quotedDid}/post/${quotedRkey}`,
+        text: quotedText,
+        media: blueskyMedia(quotedEmbed, quotedDid, pdsOf(quotedDid)),
+        createdAtMs: Date.parse(quoted.value?.createdAt || quoted.indexedAt) || undefined,
+      }
+    }
     posts.push({
       // A record's key is only unique within its author's repository.
       id: `${did}/${rkey}`,
@@ -760,6 +832,7 @@ export function parseBlueskyFeed(json: any, handle: string, pdsOf: (did: string)
       // A repost shows up in the feed when it was reposted.
       createdAtMs: Date.parse((repost ? item.reason.indexedAt : post.record?.createdAt) || post.indexedAt) || 0,
       repostOf: repost ? post.author?.handle : undefined,
+      quote,
     })
   }
   return { info, posts }
@@ -802,6 +875,9 @@ const mastodonMedia = (attachment: any): WatchMedia | null => {
   return null
 }
 
+const mastodonMediaOf = (status: any): WatchMedia[] =>
+  (status.media_attachments || []).map(mastodonMedia).filter((item: WatchMedia | null): item is WatchMedia => Boolean(item))
+
 /** The posts of an account, as the server it is on, `server`, has them. */
 export function parseMastodonStatuses(account: any, statuses: any, handle: string, server = splitMastodonHandle(handle).host): WatchFetchResult {
   if (!Array.isArray(statuses)) {
@@ -811,8 +887,12 @@ export function parseMastodonStatuses(account: any, statuses: any, handle: strin
   for (const status of statuses) {
     const shown = status?.reblog || status
     if (!shown?.id) continue
-    const media = (shown.media_attachments || []).map(mastodonMedia).filter((item: WatchMedia | null): item is WatchMedia => Boolean(item))
-    const content = htmlToText(shown.content || '')
+    const media = mastodonMediaOf(shown)
+    // Mastodon's quotes; some other servers give the quoted post as the quote itself.
+    const quoted = shown.quote?.quoted_status || (shown.quote?.id ? shown.quote : undefined)
+    // A quote's content starts with a link to what it quotes, for apps that do not show quotes.
+    const html: string = shown.content || ''
+    const content = htmlToText(quoted?.id ? html.replace(/<p class="quote-inline">[\s\S]*?<\/p>/, '') : html)
     posts.push({
       // The same post has an id of its own on each server; its address is the same everywhere.
       id: shown.uri || shown.id,
@@ -827,6 +907,17 @@ export function parseMastodonStatuses(account: any, statuses: any, handle: strin
       mediaComplete: true,
       createdAtMs: Date.parse(status.created_at) || 0,
       repostOf: status.reblog ? shown.account?.acct : undefined,
+      quote: quoted?.id
+        ? {
+            handle: quoted.account?.acct || '',
+            name: quoted.account?.display_name || undefined,
+            avatar: quoted.account?.avatar || undefined,
+            url: quoted.url || quoted.uri,
+            text: [quoted.spoiler_text, htmlToText(quoted.content || '')].filter(Boolean).join('\n\n'),
+            media: mastodonMediaOf(quoted),
+            createdAtMs: Date.parse(quoted.created_at) || undefined,
+          }
+        : undefined,
     })
   }
   const url = typeof account?.url === 'string' && /^https:\/\//.test(account.url) ? account.url : undefined

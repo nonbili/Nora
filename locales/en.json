@@ -605,7 +605,7 @@
     "settings": "Feed settings",
     "addSources": "Add sources",
     "addSourcesPlaceholder": "https://bsky.app/profile/…",
-    "addSourcesHint": "Paste profile links, one per line, from X, Instagram, Threads, Bluesky, Reddit, Mastodon, Facebook or TikTok.",
+    "addSourcesHint": "Paste profile links, one per line, from these sites.",
     "addSourcesUnrecognized": "Not a profile link that can be watched",
     "addSourcesAlready": "Already added",
     "add": "Add",

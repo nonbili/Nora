@@ -400,6 +400,64 @@ describe('parseBlueskyFeed', () => {
     expect(result.posts[0].media?.[0].url).toBe('https://pds.example/xrpc/com.atproto.sync.getBlob?did=did%3Aplc%3Aself&cid=bafkvideo')
   })
 
+  it('reads the post a post quotes, alone or with media, but not one that is gone', () => {
+    const quoted = (rkey: string, embeds?: any[]) => ({
+      $type: 'app.bsky.embed.record#viewRecord',
+      uri: `at://did:plc:q/app.bsky.feed.post/${rkey}`,
+      author: { did: 'did:plc:q', handle: 'grove.bsky.social', displayName: 'Grove', avatar: 'https://cdn/grove' },
+      value: { text: 'launching delve.town', facets: [{ index: { byteStart: 10, byteEnd: 20 }, features: [{ $type: 'app.bsky.richtext.facet#link', uri: 'https://delve.town' }] }], createdAt: '2026-09-30T21:49:38.012Z' },
+      embeds,
+    })
+    const json = {
+      feed: [
+        {
+          post: {
+            uri: `at://${did}/app.bsky.feed.post/a`,
+            author,
+            record: { text: 'very true', createdAt: '2026-10-16T16:23:26.498Z' },
+            embed: {
+              $type: 'app.bsky.embed.record#view',
+              record: quoted('q1', [{ $type: 'app.bsky.embed.video#view', cid: 'bafkq', thumbnail: 'https://video/q.jpg' }]),
+            },
+          },
+        },
+        {
+          post: {
+            uri: `at://${did}/app.bsky.feed.post/b`,
+            author,
+            record: { text: 'see this', createdAt: '2026-10-15T16:23:26.498Z' },
+            embed: {
+              $type: 'app.bsky.embed.recordWithMedia#view',
+              media: { $type: 'app.bsky.embed.images#view', images: [{ thumb: 'https://cdn/t', fullsize: 'https://cdn/f' }] },
+              record: { record: quoted('q2') },
+            },
+          },
+        },
+        {
+          post: {
+            uri: `at://${did}/app.bsky.feed.post/c`,
+            author,
+            record: { text: 'gone', createdAt: '2026-10-14T16:23:26.498Z' },
+            embed: { $type: 'app.bsky.embed.record#view', record: { $type: 'app.bsky.embed.record#viewNotFound', uri: 'at://did:plc:q/app.bsky.feed.post/q3' } },
+          },
+        },
+      ],
+    }
+    expect(blueskyVideoDids(json)).toEqual(['did:plc:q'])
+    const { posts } = parseBlueskyFeed(json, 'bsky.app', (pdsDid) => (pdsDid === 'did:plc:q' ? 'https://pds.example' : undefined))
+    expect(posts[0].quote).toEqual({
+      handle: 'grove.bsky.social',
+      name: 'Grove',
+      avatar: 'https://cdn/grove',
+      url: 'https://bsky.app/profile/grove.bsky.social/post/q1',
+      text: 'launching https://delve.town',
+      media: [{ type: 'video', url: 'https://pds.example/xrpc/com.atproto.sync.getBlob?did=did%3Aplc%3Aq&cid=bafkq', thumb: 'https://video/q.jpg', width: undefined, height: undefined }],
+      createdAtMs: Date.parse('2026-09-30T21:49:38.012Z'),
+    })
+    expect(posts[1]).toMatchObject({ media: [{ url: 'https://cdn/f' }], quote: { url: 'https://bsky.app/profile/grove.bsky.social/post/q2', media: [] } })
+    expect(posts[2].quote).toBeUndefined()
+  })
+
   it('throws on an answer that is not a feed', () => {
     expect(() => parseBlueskyFeed({ error: 'InvalidRequest', message: 'Profile not found' }, 'nobody')).toThrow('Profile not found')
   })
@@ -425,6 +483,44 @@ describe('Bluesky servers', () => {
 })
 
 describe('parseMastodonStatuses', () => {
+  it('reads the post a post quotes, without the link to it in the text', () => {
+    const { posts } = parseMastodonStatuses(
+      {},
+      [
+        {
+          id: '12',
+          created_at: '2026-10-18T15:09:06.289Z',
+          content: '<p class="quote-inline">RE: <a href="https://social.coop/@cwebber/5">social.coop/@cwebber/5</a></p><p>Agreed</p>',
+          account: { acct: 'Gargron' },
+          quote: {
+            state: 'accepted',
+            quoted_status: {
+              id: '5',
+              uri: 'https://social.coop/users/cwebber/statuses/5',
+              url: 'https://social.coop/@cwebber/5',
+              created_at: '2026-10-14T19:37:13.000Z',
+              content: '<p>Spec draft</p>',
+              spoiler_text: '',
+              account: { acct: 'cwebber@social.coop', display_name: 'Christine', avatar: 'https://files/cw.png' },
+              media_attachments: [],
+            },
+          },
+        },
+      ],
+      'Gargron@mastodon.social',
+    )
+    expect(posts[0].text).toBe('Agreed')
+    expect(posts[0].quote).toEqual({
+      handle: 'cwebber@social.coop',
+      name: 'Christine',
+      avatar: 'https://files/cw.png',
+      url: 'https://social.coop/@cwebber/5',
+      text: 'Spec draft',
+      media: [],
+      createdAtMs: Date.parse('2026-10-14T19:37:13.000Z'),
+    })
+  })
+
   it('reads posts and boosts, with their media, linked on the profile\'s own server', () => {
     const result = parseMastodonStatuses(
       { id: '1', display_name: 'Eugen Rochko', avatar: 'https://files/avatar.png', url: 'https://mastodon.social/@Gargron' },
@@ -942,6 +1038,42 @@ describe('parseXTimeline', () => {
       createdAtMs: Date.parse('2026-10-16T19:42:20Z'),
     })
     expect(posts[1]).toMatchObject({ id: '1', text: 'hello', repostOf: 'esa' })
+  })
+
+  it('reads the post a post quotes, without the link to it at the end of the text', () => {
+    const html = xPage([
+      {
+        type: 'tweet',
+        content: {
+          tweet: {
+            id_str: '3',
+            created_at: 'Fri Oct 16 19:42:20 +0000 2026',
+            full_text: 'Look at this https://t.co/q',
+            permalink: '/NASA/status/3',
+            entities: { urls: [{ url: 'https://t.co/q', expanded_url: 'https://twitter.com/esa/status/7' }] },
+            user: nasa,
+            quoted_status: {
+              id_str: '7',
+              created_at: 'Thu Oct 15 20:03:45 +0000 2026',
+              full_text: 'Ariane 6 https://t.co/m',
+              entities: { media: [{ url: 'https://t.co/m', media_url_https: 'https://pbs.twimg.com/a.jpg' }] },
+              user: { screen_name: 'esa', name: 'ESA', profile_image_url_https: 'https://pbs.twimg.com/esa.jpg' },
+            },
+          },
+        },
+      },
+    ])
+    const [post] = parseXTimeline(html, 'nasa').posts
+    expect(post.text).toBe('Look at this')
+    expect(post.quote).toEqual({
+      handle: 'esa',
+      name: 'ESA',
+      avatar: 'https://pbs.twimg.com/esa.jpg',
+      url: 'https://x.com/esa/status/7',
+      text: 'Ariane 6',
+      media: [{ type: 'image', url: 'https://pbs.twimg.com/a.jpg?name=large', thumb: 'https://pbs.twimg.com/a.jpg', width: undefined, height: undefined }],
+      createdAtMs: Date.parse('2026-10-15T20:03:45Z'),
+    })
   })
 
   it('throws on a page without a timeline, so that it is not taken for an empty one', () => {
