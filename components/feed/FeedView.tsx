@@ -262,7 +262,9 @@ const PostRow: React.FC<{
   iconColor: string
   onOpenOriginal: () => void
   onOpenLink: (url: string) => void
-}> = ({ post, profile, unread, now, iconColor, onOpenOriginal, onOpenLink }) => {
+  // Shows only this post's source, from its avatar or name; not there while it is the one shown.
+  onOpenSource?: () => void
+}> = ({ post, profile, unread, now, iconColor, onOpenOriginal, onOpenLink, onOpenSource }) => {
   const [expanded, setExpanded] = useState(false)
   const name = profile?.name || post.handle
   const source = watchSourceLabel(post)
@@ -280,12 +282,22 @@ const PostRow: React.FC<{
 
   return (
     <View className="flex-row items-start gap-3 py-3 pl-4 pr-1">
-      <Avatar uri={profile?.avatar} size={36} site={post.site} />
+      <Pressable
+        onPress={onOpenSource}
+        disabled={!onOpenSource}
+        accessibilityRole="button"
+        accessibilityLabel={t('feed.showSource', { name })}
+        style={iosTouchTarget}
+      >
+        <Avatar uri={profile?.avatar} size={36} site={post.site} />
+      </Pressable>
       <View className="flex-1">
         <View className="min-h-6 flex-row items-center gap-1.5 pr-10">
-          <NouText className="shrink font-semibold" numberOfLines={1}>
-            {name}
-          </NouText>
+          <Pressable onPress={onOpenSource} disabled={!onOpenSource} className="shrink" accessible={false}>
+            <NouText className="font-semibold" numberOfLines={1}>
+              {name}
+            </NouText>
+          </Pressable>
           <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
             {sameAsName(name, source) ? '' : `${source} · `}
             {formatPostAge(post.createdAtMs, now)}
@@ -297,7 +309,7 @@ const PostRow: React.FC<{
         ) : null}
         {post.text ? (
           <Pressable onPress={() => setExpanded((value) => !value)} style={iosTouchTarget} className="pr-3">
-            <NouText className="mt-1 leading-5" numberOfLines={expanded ? undefined : 8}>
+            <NouText className="mt-1 leading-[22px]" numberOfLines={expanded ? undefined : 8}>
               {post.text}
             </NouText>
           </Pressable>
@@ -521,6 +533,13 @@ export const FeedView: React.FC<{
 
   // Back in the opened tab comes back to the feed.
   const openUrl = (url: string) => tabs$.openTab(url, { source: 'child', parentTabId: tabId })
+
+  // From a post: the list starts again at the top, where the source's own header is.
+  const showSource = (key: string) => {
+    setSelectedKey(key)
+    setHeadHidden(false)
+    listRef.current?.scrollToOffset({ offset: 0, animated: false })
+  }
 
   const showTimeline = (id?: string) => {
     const index = tabs$.tabs.peek().findIndex((tab) => tab?.id === tabId)
@@ -1013,6 +1032,7 @@ export const FeedView: React.FC<{
               iconColor={iconColor}
               onOpenOriginal={() => openUrl(item.url)}
               onOpenLink={openUrl}
+              onOpenSource={selected ? undefined : () => showSource(watchKey(item))}
             />
           )
         }
