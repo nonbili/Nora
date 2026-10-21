@@ -226,7 +226,8 @@ export const FeedSettingsModal = () => {
       <BottomSheet
         isPresented={open}
         onDismiss={onClose}
-        snapPoints={['half', 'full']}
+        // Full only: with a half one too, closing it from full height took two drags.
+        snapPoints={['full']}
         // Material's own handle has a wide margin above and below: a tighter one is drawn instead.
         showDragIndicator={false}
         // The sheet's own inset would not narrow the views inside it: they are padded themselves.

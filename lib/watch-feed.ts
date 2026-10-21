@@ -588,6 +588,7 @@ export const toggleWatched = (target: WatchTarget) => {
   const key = watchKey(target)
   if (watch$.profiles.peek().some((profile) => profile.key === key)) {
     watch$.unwatch(key)
+    showToast(t('toast.profileUnwatched', { source: watchSourceLabel(target), interpolation: { escapeValue: false } }))
     return
   }
   watch$.watch(target)

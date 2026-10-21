@@ -44,10 +44,16 @@ describe('watch transfer', () => {
   it('exports the sources and timelines without what was read from the sites', () => {
     watch$.watch({ site: 'x', handle: 'Jack' })
     watch$.updateProfile('x:jack', { name: 'Jack', avatar: 'https://a', lastCheckedAt: 1, error: 'boom', notify: true, checkIntervalMinutes: 30 })
+    watch$.watch({ site: 'reddit', handle: 'r/rust' })
+    watch$.setMuted('reddit:r/rust', true)
     watch$.createTimeline('Friends', ['x:jack'])
 
     const backup = createWatchBackup()
-    expect(backup.profiles).toEqual([{ site: 'x', handle: 'Jack', name: 'Jack', notify: true, checkIntervalMinutes: 30 }])
+    expect(backup.profiles).toEqual([
+      { site: 'x', handle: 'Jack', name: 'Jack', notify: true, checkIntervalMinutes: 30 },
+      { site: 'reddit', handle: 'r/rust', notify: false, muted: true },
+    ])
+    expect(normalizeWatchBackup(backup)?.profiles[1].muted).toBe(true)
     expect(backup.timelines).toEqual([{ name: 'Friends', profileKeys: ['x:jack'] }])
     expect(backup.checkIntervalMinutes).toBe(60)
     expect(backup.postsPerSource).toBe(100)
@@ -89,7 +95,7 @@ describe('watch transfer', () => {
       postsPerSource: 200,
       profiles: [
         { site: 'bluesky', handle: 'alice.bsky.social', notify: true },
-        { site: 'reddit', handle: 'r/rust', checkIntervalMinutes: 30 },
+        { site: 'reddit', handle: 'r/rust', checkIntervalMinutes: 30, muted: true },
       ],
       timelines: [
         { name: 'friends', profileKeys: ['reddit:r/rust'] },
@@ -109,6 +115,7 @@ describe('watch transfer', () => {
     // Left for enableWatchNotifications, which asks for permission first.
     expect(profiles[0].notify).toBe(false)
     expect(profiles[1].checkIntervalMinutes).toBe(30)
+    expect(profiles[1].muted).toBe(true)
     expect(watch$.timelines.get().map(({ name, profileKeys }) => ({ name, profileKeys }))).toEqual([
       { name: 'Friends', profileKeys: ['bluesky:alice.bsky.social', 'reddit:r/rust'] },
       { name: 'News', profileKeys: ['reddit:r/rust'] },

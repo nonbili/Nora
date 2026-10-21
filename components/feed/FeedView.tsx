@@ -129,6 +129,8 @@ const profileAccount = (profile: WatchedProfile): string | null => {
 
 // The service icons are drawn at 24px.
 const SERVICE_ICON_SIZE = 24
+// Sites whose icon fills a square, to be cut round in an avatar's badge.
+const SQUARE_ICON_SITES = new Set<WatchSite>(['x', 'threads', 'tiktok', 'instagram'])
 
 /** A button of an empty state: the one to do first is filled. */
 const EmptyAction: React.FC<{
@@ -165,7 +167,13 @@ export const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> =
         className="absolute items-center justify-center overflow-hidden rounded-full bg-white"
         style={{ width: badge + 3, height: badge + 3, right: -3, bottom: -3 }}
       >
-        <View style={{ transform: [{ scale: badge / SERVICE_ICON_SIZE }] }}>{siteIcon(site)}</View>
+        {/* A square icon is cut to a circle the size of a round one, as Reddit's: not a square in the ring. */}
+        <View
+          className={clsx('items-center justify-center', SQUARE_ICON_SITES.has(site) && 'overflow-hidden rounded-full')}
+          style={{ width: badge, height: badge }}
+        >
+          <View style={{ transform: [{ scale: badge / SERVICE_ICON_SIZE }] }}>{siteIcon(site)}</View>
+        </View>
       </View>
     </View>
   )
@@ -231,6 +239,7 @@ const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }
   const cover = first?.thumb || first?.url
   const name = quote.name || quote.handle
   const aspectRatio = first?.width && first?.height ? Math.min(Math.max(first.width / first.height, 0.8), 1.91) : 16 / 9
+  const text = usePostText()
   return (
     <Pressable onPress={onOpen} accessibilityRole="link" className="mt-2 overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-700">
       <View className="px-3 pt-2.5">
@@ -238,22 +247,22 @@ const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }
           <View className="h-5 w-5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
             {quote.avatar ? <Image source={quote.avatar} contentFit="cover" style={{ width: 20, height: 20 }} /> : null}
           </View>
-          <NouText className="shrink text-sm font-semibold" numberOfLines={1}>
+          <NouText className="shrink font-semibold" style={text('sm')} numberOfLines={1}>
             {name}
           </NouText>
           {quote.handle && !sameAsName(name, quote.handle) ? (
-            <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+            <NouText className="shrink text-zinc-600 dark:text-zinc-400" style={text('sm')} numberOfLines={1}>
               @{quote.handle}
             </NouText>
           ) : null}
           {quote.createdAtMs ? (
-            <NouText className="shrink-0 text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+            <NouText className="shrink-0 text-zinc-600 dark:text-zinc-400" style={text('sm')} numberOfLines={1}>
               · {formatPostAge(quote.createdAtMs, now)}
             </NouText>
           ) : null}
         </View>
         {quote.text ? (
-          <NouText className="mt-1 leading-[22px]" numberOfLines={6}>
+          <NouText className="mt-1" style={text('base')} numberOfLines={6}>
             {quote.text}
           </NouText>
         ) : null}
@@ -310,6 +319,18 @@ const PostTile: React.FC<{ post: WatchPost; unread: boolean; columns: number; on
   )
 }
 
+// The sizes of the text of posts at 100%, as NativeWind's rem of 14 makes them: plain, text-sm, text-xs.
+const POST_TEXT = { base: [14, 22], name: [14, 0], sm: [12.25, 17.5], xs: [10.5, 14] } as const
+
+/** The text of posts at the default zoom of web pages: one text size for both. */
+const usePostText = () => {
+  const zoom = useValue(settings$.defaultZoom) / 100
+  return (size: keyof typeof POST_TEXT) => {
+    const [fontSize, lineHeight] = POST_TEXT[size]
+    return { fontSize: fontSize * zoom, ...(lineHeight ? { lineHeight: lineHeight * zoom } : {}) }
+  }
+}
+
 /** Whether a name is the very handle beside it, as a subreddit's is. */
 const sameAsName = (name: string, handle: string) => name.replace(/^@/, '') === handle.replace(/^@/, '')
 
@@ -327,6 +348,7 @@ const PostRow: React.FC<{
   const [expanded, setExpanded] = useState(false)
   const name = profile?.name || post.handle
   const source = watchSourceLabel(post)
+  const text = usePostText()
 
   const save = async () => {
     try {
@@ -353,28 +375,28 @@ const PostRow: React.FC<{
       <View className="flex-1">
         <View className="min-h-6 flex-row items-center gap-1.5 pr-10">
           <Pressable onPress={onOpenSource} disabled={!onOpenSource} className="shrink" accessible={false}>
-            <NouText className="font-semibold" numberOfLines={1}>
+            <NouText className="font-semibold" style={text('name')} numberOfLines={1}>
               {name}
             </NouText>
           </Pressable>
           {sameAsName(name, source) ? null : (
-            <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+            <NouText className="shrink text-zinc-600 dark:text-zinc-400" style={text('sm')} numberOfLines={1}>
               {source}
             </NouText>
           )}
           {/* The age is never cut off; a long name or handle is instead. */}
-          <NouText className="shrink-0 text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+          <NouText className="shrink-0 text-zinc-600 dark:text-zinc-400" style={text('sm')} numberOfLines={1}>
             {sameAsName(name, source) ? '' : '· '}
             {formatPostAge(post.createdAtMs, now)}
           </NouText>
           {unread ? <View className="h-2 w-2 rounded-full bg-indigo-500" /> : null}
         </View>
         {post.repostOf ? (
-          <NouText className="text-xs text-zinc-600 dark:text-zinc-400">{t('feed.repostOf', { handle: post.repostOf })}</NouText>
+          <NouText className="text-zinc-600 dark:text-zinc-400" style={text('xs')}>{t('feed.repostOf', { handle: post.repostOf })}</NouText>
         ) : null}
         {post.text ? (
           <Pressable onPress={() => setExpanded((value) => !value)} style={iosTouchTarget} className="pr-3">
-            <NouText className="mt-1 leading-[22px]" numberOfLines={expanded ? undefined : 8}>
+            <NouText className="mt-1" style={text('base')} numberOfLines={expanded ? undefined : 8}>
               {post.text}
             </NouText>
           </Pressable>
@@ -693,10 +715,13 @@ export const FeedView: React.FC<{
   ]
 
   const toggleNotify = async (profile: WatchedProfile) => {
-    // A timeline that notifies does so for each of its sources: it is turned off there.
+    // A timeline that notifies does so for each of its sources, unless one is muted.
     const via = notifyVia(profile.key)
-    if (!profile.notify && via.length) {
-      showToast(t('feed.notifyViaTimeline', { names: via.join(', ') }))
+    if (via.length) {
+      // Read first: the profile is the store's own object, which setMuted changes.
+      const muting = !profile.muted
+      watch$.setMuted(profile.key, muting)
+      if (muting) showToast(t('feed.notifyMuted', { names: via.join(', ') }))
       return
     }
     if (profile.notify) {
@@ -717,7 +742,8 @@ export const FeedView: React.FC<{
 
   const selectedStatus = selected ? profileStatus(selected) : null
   const selectedNotifyVia = useValue(() => (selected ? notifyVia(selected.key) : []))
-  const selectedNotifies = Boolean(selected?.notify || selectedNotifyVia.length)
+  const selectedMuted = Boolean(selected?.muted && selectedNotifyVia.length)
+  const selectedNotifies = !selectedMuted && Boolean(selected?.notify || selectedNotifyVia.length)
   const selectedAccount = selected ? profileAccount(selected) : null
 
   const newestPostAt = useWatchPosts(getNewestPostTimes)
@@ -737,7 +763,10 @@ export const FeedView: React.FC<{
         ],
         ...(selectedAccount ? [[t('feed.detailAccount'), selectedAccount]] : []),
         ...(selectedNotifyVia.length
-          ? [[t('feed.detailNotify'), t('feed.detailNotifyVia', { names: selectedNotifyVia.join(', ') })]]
+          ? [[
+              t('feed.detailNotify'),
+              t(selectedMuted ? 'feed.detailNotifyMuted' : 'feed.detailNotifyVia', { names: selectedNotifyVia.join(', ') }),
+            ]]
           : []),
       ]
     : []
@@ -848,7 +877,7 @@ export const FeedView: React.FC<{
             >
               {/* Fainter when it is a timeline's choice and not the source's own. */}
               <MaterialIcons
-                name={selectedNotifies ? 'notifications-active' : 'notifications-none'}
+                name={selectedNotifies ? 'notifications-active' : selectedMuted ? 'notifications-off' : 'notifications-none'}
                 size={22}
                 color={selectedNotifies ? tw('#6366f1') : iconColor}
                 style={selectedNotifies && !selected.notify ? { opacity: 0.5 } : undefined}

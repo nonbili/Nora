@@ -12,6 +12,8 @@ export interface WatchSourceBackup extends WatchTarget {
   url?: string
   name?: string
   notify?: boolean
+  // Only there when it is muted.
+  muted?: true
   checkIntervalMinutes?: number
 }
 
@@ -72,6 +74,7 @@ export const createWatchBackup = (): WatchBackup => ({
     ...(profile.url ? { url: profile.url } : {}),
     ...(profile.name ? { name: profile.name } : {}),
     notify: profile.notify,
+    ...(profile.muted ? { muted: true as const } : {}),
     ...(profile.checkIntervalMinutes ? { checkIntervalMinutes: profile.checkIntervalMinutes } : {}),
   })),
   timelines: watch$.timelines.get().map((timeline) => ({
@@ -112,6 +115,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
       ...(url && /^https?:\/\//i.test(url) ? { url } : {}),
       ...(name ? { name } : {}),
       notify: item.notify === true,
+      ...(item.muted === true ? { muted: true as const } : {}),
       ...(checkIntervalMinutes ? { checkIntervalMinutes } : {}),
     })
   }
@@ -195,6 +199,8 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
       if (source.name && !profile?.name) patch.name = source.name
       // Turned on only through enableWatchNotifications, which asks the system for permission first.
       if (source.notify === false) patch.notify = false
+      // Keeping quiet needs no permission.
+      if (source.muted) patch.muted = true
       if (source.checkIntervalMinutes) patch.checkIntervalMinutes = source.checkIntervalMinutes
       if (Object.keys(patch).length) watch$.updateProfile(key, patch)
     }

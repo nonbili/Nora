@@ -129,6 +129,20 @@ describe('feeds sync', () => {
     expect(profileNotifies(profile)).toBe(true)
   })
 
+  it('keeps a muted source quiet in a timeline or feed that notifies, until it notifies by its own choice', () => {
+    watch$.watch({ site: 'x', handle: 'jack' })
+    const id = watch$.createTimeline('Art', ['x:jack'])
+    watch$.setTimelineNotify(id, true)
+    watch$.feedNotify.set(true)
+    watch$.setNotify('x:jack', true)
+    watch$.setMuted('x:jack', true)
+    expect(watch$.profiles.peek()[0].notify).toBe(false)
+    expect(profileNotifies(watch$.profiles.peek()[0])).toBe(false)
+    watch$.setNotify('x:jack', true)
+    expect(watch$.profiles.peek()[0].muted).toBe(false)
+    expect(profileNotifies(watch$.profiles.peek()[0])).toBe(true)
+  })
+
   it('syncs whether the whole feed is pinned and its emoji', async () => {
     watch$.feedPinned.set(false)
     watch$.feedEmoji.set('📡')

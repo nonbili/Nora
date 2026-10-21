@@ -25,6 +25,8 @@ export interface WatchedProfile {
   url?: string
   addedAt: number
   notify: boolean
+  // Kept quiet even when the whole feed or a timeline of it notifies. Of this device, as notify is.
+  muted?: boolean
   // Minutes between checks for this profile; the default for all when not set.
   checkIntervalMinutes?: number
   // How the last check got through: with the cookies of a profile signed in to the site, or without.
@@ -80,6 +82,7 @@ interface Store {
   watch: (target: WatchTarget) => void
   unwatch: (key: string) => void
   setNotify: (key: string, notify: boolean) => void
+  setMuted: (key: string, muted: boolean) => void
   setProfileCheckInterval: (key: string, minutes: number | undefined) => void
   updateProfile: (key: string, patch: Partial<WatchedProfile>) => void
   // Unread posts of the whole feed.
@@ -139,7 +142,10 @@ export const watch$: Observable<Store> = observable<Store>({
     })
   },
 
-  setNotify: (key, notify) => watch$.updateProfile(key, { notify }),
+  // Its own choice to notify is no longer muted.
+  setNotify: (key, notify) => watch$.updateProfile(key, notify ? { notify, muted: false } : { notify }),
+
+  setMuted: (key, muted) => watch$.updateProfile(key, muted ? { muted, notify: false } : { muted }),
 
   setProfileCheckInterval: (key, minutes) => watch$.updateProfile(key, { checkIntervalMinutes: minutes }),
 
@@ -206,9 +212,9 @@ export const notifyingTimelines = (profileKey: string) => {
   return watch$.timelines.get().filter((timeline) => ids.includes(timeline.id) && timeline.profileKeys.includes(profileKey))
 }
 
-/** Whether new posts of a profile notify: by its own choice, as the whole feed's, or as one of a timeline that does. */
+/** Whether new posts of a profile notify: by its own choice, as the whole feed's, or as one of a timeline that does, unless it is muted. */
 export const profileNotifies = (profile: WatchedProfile) =>
-  profile.notify || watch$.feedNotify.get() || notifyingTimelines(profile.key).length > 0
+  !profile.muted && (profile.notify || watch$.feedNotify.get() || notifyingTimelines(profile.key).length > 0)
 
 /** The emoji of a timeline, or of the whole feed; the default one when none was chosen. */
 export const timelineEmoji = (timelineId?: string) =>
