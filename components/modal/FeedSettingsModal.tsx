@@ -14,6 +14,8 @@ import { ChoicePicker, formatInterval } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
 import { watch$ } from '@/states/watch'
 import { settings$ } from '@/states/settings'
+import { enableTimelineNotifications } from '@/lib/watch-feed'
+import { showToast } from '@/lib/toast'
 import {
   DEFAULT_TIMELINE_EMOJI,
   POSTS_PER_SOURCE_OPTIONS,
@@ -51,6 +53,7 @@ export const FeedSettingsModal = () => {
   const useAccounts = useValue(watch$.useAccounts)
   const feedPinned = useValue(watch$.feedPinned)
   const feedEmoji = useValue(watch$.feedEmoji)
+  const feedNotify = useValue(watch$.feedNotify)
   const [pickingEmoji, setPickingEmoji] = useState(false)
   const accountProfiles = useValue(watch$.accountProfiles)
   const profiles = useValue(() =>
@@ -68,6 +71,12 @@ export const FeedSettingsModal = () => {
   }
 
   const iconColor = isDark ? tw('#f8fafc') : tw('#334155')
+
+  // Turned on only once the system allows it to notify.
+  const toggleFeedNotify = async () => {
+    if (feedNotify) watch$.feedNotify.set(false)
+    else if (!(await enableTimelineNotifications())) showToast(t('feed.notificationPermissionDenied'))
+  }
 
   const clearMedia = () => {
     confirmDestructiveAction(t('feed.mediaClear'), t('feed.mediaClearConfirm'), t('feed.mediaClear'), clearWatchMedia)
@@ -107,6 +116,11 @@ export const FeedSettingsModal = () => {
       {pickingEmoji ? (
         <EmojiGrid value={feedEmoji} onSelect={(selected) => watch$.feedEmoji.set(selected === feedEmoji ? '' : selected)} />
       ) : null}
+      <Divider />
+      <View className="py-3">
+        <NouSwitch label={t('feed.notifyTimeline')} value={feedNotify} onPress={() => void toggleFeedNotify()} />
+        <Hint>{t('feed.notifyFeedHint')}</Hint>
+      </View>
       <Divider />
       <View className="py-3">
         <ChoicePicker

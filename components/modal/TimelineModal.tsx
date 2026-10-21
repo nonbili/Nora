@@ -15,6 +15,8 @@ import { watch$ } from '@/states/watch'
 import { feedTabUrl } from '@/lib/feed-tab'
 import { DEFAULT_TIMELINE_EMOJI, cleanEmoji, watchSourceLabel } from '@/lib/watch'
 import { confirmDestructiveAction } from '@/lib/confirm'
+import { enableTimelineNotifications } from '@/lib/watch-feed'
+import { showToast } from '@/lib/toast'
 import { useTwColor } from '@/lib/theme'
 import { androidHitSlop, iosTouchTarget } from '@/lib/utils'
 
@@ -34,6 +36,7 @@ export const TimelineModal = () => {
   const [mediaOnly, setMediaOnly] = useState(false)
   const [emoji, setEmoji] = useState('')
   const [pinned, setPinned] = useState(false)
+  const [notify, setNotify] = useState(false)
   const [pickingEmoji, setPickingEmoji] = useState(false)
 
   useEffect(() => {
@@ -42,6 +45,7 @@ export const TimelineModal = () => {
     setName(timeline?.name || '')
     setEmoji(timeline?.emoji || '')
     setPinned(Boolean(timeline?.pinned))
+    setNotify(Boolean(timeline && watch$.notifyTimelineIds.peek().includes(timeline.id)))
     setPickingEmoji(false)
     setSelectedKeys(timeline?.profileKeys || (target.profileKey ? [target.profileKey] : []))
     setMediaOnly(Boolean(timeline?.mediaOnly))
@@ -60,17 +64,26 @@ export const TimelineModal = () => {
   const toggle = (key: string) =>
     setSelectedKeys((keys) => (keys.includes(key) ? keys.filter((current) => current !== key) : [...keys, key]))
 
+  // Turned on only once the system allows it to notify.
+  const saveNotify = async (id: string) => {
+    if (notify === watch$.notifyTimelineIds.peek().includes(id)) return
+    if (!notify) watch$.setTimelineNotify(id, false)
+    else if (!(await enableTimelineNotifications(id))) showToast(t('feed.notificationPermissionDenied'))
+  }
+
   const save = () => {
     if (target.timelineId) {
       watch$.updateTimeline(
         target.timelineId,
         sourcesOnly ? { profileKeys: selectedKeys } : { name, profileKeys: selectedKeys, mediaOnly, pinned, emoji: cleanEmoji(emoji) },
       )
+      if (!sourcesOnly) void saveNotify(target.timelineId)
     } else {
       const id = watch$.createTimeline(name, selectedKeys)
       if (mediaOnly) watch$.updateTimeline(id, { mediaOnly })
       if (pinned) watch$.updateTimeline(id, { pinned })
       if (cleanEmoji(emoji)) watch$.updateTimeline(id, { emoji: cleanEmoji(emoji) })
+      void saveNotify(id)
       showInTab(target.tabId, id)
     }
     onClose()
@@ -142,6 +155,8 @@ export const TimelineModal = () => {
             {pickingEmoji ? <EmojiGrid value={emoji} onSelect={(selected) => setEmoji(selected === emoji ? '' : selected)} /> : null}
             <NouSwitch className="mb-3" label={t('feed.pinToNewTab')} value={pinned} onPress={() => setPinned((value) => !value)} />
             <NouSwitch className="mb-3" label={t('feed.mediaOnly')} value={mediaOnly} onPress={() => setMediaOnly((value) => !value)} />
+            <NouSwitch className="mb-1" label={t('feed.notifyTimeline')} value={notify} onPress={() => setNotify((value) => !value)} />
+            <NouText className="mb-3 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{t('feed.notifyTimelineHint')}</NouText>
           </>
         ) : null}
         <NouText className="mb-2 text-sm leading-5 text-zinc-600 dark:text-zinc-400">

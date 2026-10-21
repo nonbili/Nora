@@ -21,6 +21,8 @@ export interface WatchTimelineBackup {
   pinned?: boolean
   mediaOnly?: boolean
   emoji?: string
+  // Only there when it notifies of new posts.
+  notify?: true
 }
 
 export interface WatchBackup {
@@ -31,6 +33,8 @@ export interface WatchBackup {
   // Only there when the whole feed is not pinned to the new tab page.
   feedPinned?: false
   feedEmoji?: string
+  // Only there when the whole feed notifies of new posts.
+  feedNotify?: true
   profiles: WatchSourceBackup[]
   timelines: WatchTimelineBackup[]
 }
@@ -61,6 +65,7 @@ export const createWatchBackup = (): WatchBackup => ({
   postsPerSource: watch$.postsPerSource.get(),
   ...(watch$.feedPinned.get() ? {} : { feedPinned: false as const }),
   ...(watch$.feedEmoji.get() ? { feedEmoji: watch$.feedEmoji.get() } : {}),
+  ...(watch$.feedNotify.get() ? { feedNotify: true as const } : {}),
   profiles: watch$.profiles.get().map((profile) => ({
     site: profile.site,
     handle: profile.handle,
@@ -75,6 +80,7 @@ export const createWatchBackup = (): WatchBackup => ({
     ...(timeline.pinned ? { pinned: true } : {}),
     ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
     ...(timeline.emoji ? { emoji: timeline.emoji } : {}),
+    ...(watch$.notifyTimelineIds.get().includes(timeline.id) ? { notify: true as const } : {}),
   })),
 })
 
@@ -121,12 +127,14 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     const pinned = item.pinned === true
     const mediaOnly = item.mediaOnly === true
     const emoji = cleanEmoji(item.emoji)
+    const notify = item.notify === true
     const existing = timelines.get(timelineName(name))
     if (existing) {
       existing.profileKeys = Array.from(new Set([...existing.profileKeys, ...keys]))
       if (pinned) existing.pinned = true
       if (mediaOnly) existing.mediaOnly = true
       if (emoji && !existing.emoji) existing.emoji = emoji
+      if (notify) existing.notify = true
     } else {
       timelines.set(timelineName(name), {
         name,
@@ -134,6 +142,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
         ...(pinned ? { pinned } : {}),
         ...(mediaOnly ? { mediaOnly } : {}),
         ...(emoji ? { emoji } : {}),
+        ...(notify ? { notify } : {}),
       })
     }
   }
@@ -148,6 +157,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     ...(postsPerSource ? { postsPerSource: Math.round(postsPerSource) } : {}),
     ...(value.feedPinned === false ? { feedPinned: false as const } : {}),
     ...(cleanEmoji(value.feedEmoji) ? { feedEmoji: cleanEmoji(value.feedEmoji) } : {}),
+    ...(value.feedNotify === true ? { feedNotify: true as const } : {}),
     profiles: [...profiles.values()],
     timelines: [...timelines.values()],
   }
@@ -156,7 +166,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
 /**
  * Adds the sources that are not watched yet, and puts them in their timelines, made when there is
  * none of that name. Nothing already watched is taken away; the choices the backup has for a source
- * are taken over, except notifications, which are turned on with watchNotifyKeys.
+ * are taken over, except notifications, which are turned on with watchNotifyKeys and watchNotifyTimelineIds.
  */
 export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
   let added = 0
@@ -213,6 +223,18 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
 /** The sources of a backup that notify, to turn on once permission is given on this device. */
 export const watchNotifyKeys = (backup: WatchBackup) =>
   backup.profiles.filter((source) => source.notify).map(watchKey)
+
+/**
+ * The timelines of a backup that notify, by the id of the one here of the same name, once the backup
+ * is applied; undefined for the whole feed. To turn on once permission is given on this device.
+ */
+export const watchNotifyTimelineIds = (backup: WatchBackup): (string | undefined)[] => [
+  ...(backup.feedNotify ? [undefined] : []),
+  ...backup.timelines
+    .filter((timeline) => timeline.notify)
+    .map((timeline) => watch$.timelines.peek().find((t) => timelineName(t.name) === timelineName(timeline.name))?.id)
+    .filter((id): id is string => Boolean(id)),
+]
 
 // The feeds the sites have for a source: /r/name/.rss, /@user.rss, /profile/handle/rss.
 const FEED_SUFFIX = /(?:\/\.?|\.)(?:rss|atom)$/i

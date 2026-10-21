@@ -69,6 +69,10 @@ interface Store {
   accountProfiles: Partial<Record<WatchSite, string>>
   // Whether the whole feed shows only the posts with photos or videos, as a timeline can.
   feedMediaOnly: boolean
+  // The timelines all of whose sources notify of new posts. Of this device, as a source's own choice is: not synced.
+  notifyTimelineIds: string[]
+  // Whether every source notifies, as the whole feed's choice; of this device too.
+  feedNotify: boolean
 
   isWatched: (target: WatchTarget) => boolean
   watch: (target: WatchTarget) => void
@@ -84,6 +88,7 @@ interface Store {
   updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys' | 'pinned' | 'mediaOnly' | 'emoji'>>) => void
   deleteTimeline: (id: string) => void
   setInTimeline: (id: string, profileKey: string, included: boolean) => void
+  setTimelineNotify: (id: string, notify: boolean) => void
 }
 
 const findIndex = (key: string) => watch$.profiles.peek().findIndex((profile) => profile.key === key)
@@ -105,6 +110,8 @@ export const watch$: Observable<Store> = observable<Store>({
   useAccounts: true,
   accountProfiles: {},
   feedMediaOnly: false,
+  notifyTimelineIds: [],
+  feedNotify: false,
 
   isWatched: (target) => watch$.profiles.get().some((profile) => profile.key === watchKey(target)),
 
@@ -170,6 +177,7 @@ export const watch$: Observable<Store> = observable<Store>({
     if (index !== -1) {
       watch$.timelines.splice(index, 1)
     }
+    watch$.setTimelineNotify(id, false)
   },
 
   setInTimeline: (id, profileKey, included) => {
@@ -178,11 +186,26 @@ export const watch$: Observable<Store> = observable<Store>({
     const keys = watch$.timelines[index].profileKeys.peek().filter((key) => key !== profileKey)
     watch$.timelines[index].profileKeys.set(included ? [...keys, profileKey] : keys)
   },
+
+  setTimelineNotify: (id, notify) => {
+    const ids = watch$.notifyTimelineIds.peek().filter((current) => current !== id)
+    watch$.notifyTimelineIds.set(notify ? [...ids, id] : ids)
+  },
 })
 
 /** A timeline that is still there; undefined for the whole feed, or one that was deleted. */
 export const getTimeline = (timelineId: string | undefined) =>
   timelineId ? watch$.timelines.get().find((timeline) => timeline.id === timelineId) : undefined
+
+/** The timelines that notify of new posts and show this profile; one deleted on another device is not among them. */
+export const notifyingTimelines = (profileKey: string) => {
+  const ids = watch$.notifyTimelineIds.get()
+  return watch$.timelines.get().filter((timeline) => ids.includes(timeline.id) && timeline.profileKeys.includes(profileKey))
+}
+
+/** Whether new posts of a profile notify: by its own choice, as the whole feed's, or as one of a timeline that does. */
+export const profileNotifies = (profile: WatchedProfile) =>
+  profile.notify || watch$.feedNotify.get() || notifyingTimelines(profile.key).length > 0
 
 /** The emoji of a timeline, or of the whole feed; the default one when none was chosen. */
 export const timelineEmoji = (timelineId?: string) =>

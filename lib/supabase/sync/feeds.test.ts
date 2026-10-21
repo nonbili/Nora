@@ -50,7 +50,7 @@ mock.module('@/lib/supabase/client', () => ({
 }))
 
 const { auth$ } = await import('@/states/auth')
-const { watch$ } = await import('@/states/watch')
+const { profileNotifies, watch$ } = await import('@/states/watch')
 const { syncMeta$ } = await import('@/states/sync-meta')
 const { feedsSyncer } = await import('./feeds')
 const { tabs$ } = await import('@/states/tabs')
@@ -70,6 +70,8 @@ describe('feeds sync', () => {
     watch$.timelines.set([])
     watch$.feedPinned.set(true)
     watch$.feedEmoji.set('')
+    watch$.notifyTimelineIds.set([])
+    watch$.feedNotify.set(false)
     server.feed_sources.clear()
     server.feed_timelines.clear()
     syncMeta$.feeds.set({ pendingSources: [], pendingTimelines: [] })
@@ -102,6 +104,29 @@ describe('feeds sync', () => {
     await feedsSyncer.syncNow()
     expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', profileKeys: [], emoji: '🎨' }])
     expect(server.feed_timelines.get('t1')!.json.emoji).toBe('🎨')
+  })
+
+  it('keeps a timeline made here notifying when put into one of the same name, without syncing it', async () => {
+    const local = watch$.createTimeline('Art', ['x:jack'])
+    watch$.setTimelineNotify(local, true)
+    remote('feed_timelines', 't1', { name: 'art', profileKeys: [] })
+    await feedsSyncer.syncNow()
+    expect(watch$.notifyTimelineIds.peek()).toEqual(['t1'])
+    expect(server.feed_timelines.get('t1')!.json.notify).toBeUndefined()
+  })
+
+  it('notifies of a source in a timeline that notifies, and no longer once it is deleted', () => {
+    watch$.watch({ site: 'x', handle: 'jack' })
+    const id = watch$.createTimeline('Art', ['x:jack'])
+    const profile = watch$.profiles.peek()[0]
+    expect(profileNotifies(profile)).toBe(false)
+    watch$.setTimelineNotify(id, true)
+    expect(profileNotifies(profile)).toBe(true)
+    watch$.deleteTimeline(id)
+    expect(profileNotifies(profile)).toBe(false)
+    expect(watch$.notifyTimelineIds.peek()).toEqual([])
+    watch$.feedNotify.set(true)
+    expect(profileNotifies(profile)).toBe(true)
   })
 
   it('syncs whether the whole feed is pinned and its emoji', async () => {

@@ -18,8 +18,8 @@ import {
   settingsBackupFilename,
 } from '@/lib/settings-transfer'
 import { useTwColor } from '@/lib/theme'
-import { watchNotifyKeys } from '@/lib/watch-transfer'
-import { enableWatchNotifications } from '@/lib/watch-feed'
+import { watchNotifyKeys, watchNotifyTimelineIds } from '@/lib/watch-transfer'
+import { enableTimelineNotifications, enableWatchNotifications } from '@/lib/watch-feed'
 
 const SettingsActionRow: React.FC<{
   label: string
@@ -98,10 +98,14 @@ export const SettingsBackupContent = () => {
       return
     }
 
-    // The permission is asked once; the sources after the first see it given or refused.
-    const enableBackupNotifications = async (keys: string[]) => {
-      for (const key of keys) {
-        if (!(await enableWatchNotifications(key))) {
+    // The permission is asked once; the sources and timelines after the first see it given or refused.
+    const enableBackupNotifications = async (keys: string[], timelineIds: (string | undefined)[]) => {
+      const enables = [
+        ...keys.map((key) => () => enableWatchNotifications(key)),
+        ...timelineIds.map((id) => () => enableTimelineNotifications(id)),
+      ]
+      for (const enable of enables) {
+        if (!(await enable())) {
           showToast(t('feed.notificationPermissionDenied'))
           return
         }
@@ -117,7 +121,10 @@ export const SettingsBackupContent = () => {
       const apply = () => {
         const restored = applySettingsBackup(backup)
         showToast(t('settings.backup.importDone', { sections: restored.join(', ') }))
-        void enableBackupNotifications(backup.watch ? watchNotifyKeys(backup.watch) : [])
+        void enableBackupNotifications(
+          backup.watch ? watchNotifyKeys(backup.watch) : [],
+          backup.watch ? watchNotifyTimelineIds(backup.watch) : [],
+        )
       }
 
       if (enabledScripts > 0) {

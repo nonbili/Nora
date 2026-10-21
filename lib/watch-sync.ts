@@ -1,6 +1,7 @@
 /**
  * The feed's sources and timelines as rows synced one by one, so what two devices change at once
- * both stays. Notifications, posts and how the checks went are of each device and stay on it.
+ * both stays. Notifications, of a source or a timeline, posts and how the checks went are of each
+ * device and stay on it.
  */
 
 import { batch } from '@legendapp/state'
@@ -220,6 +221,11 @@ export const foldUnsyncedTimelines = (unsyncedIds: string[], remoteTimelines: Re
       )
     folded.set(id, intoId)
   }
-  if (folded.size) watch$.timelines.set(timelines)
+  if (folded.size) {
+    watch$.timelines.set(timelines)
+    // One that notified here goes on notifying as the synced one.
+    const notifyIds = watch$.notifyTimelineIds.peek()
+    watch$.notifyTimelineIds.set(Array.from(new Set(notifyIds.map((id) => folded.get(id) ?? id))))
+  }
   return folded
 }

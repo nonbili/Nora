@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { watch$ } from '@/states/watch'
 import { deleteProfilePosts, getProfilePosts, setProfilePosts } from '@/lib/watch-db'
-import { applyWatchBackup, createWatchBackup, normalizeWatchBackup, parseSourceList, sourceFromUrl, watchNotifyKeys } from './watch-transfer'
+import { applyWatchBackup, createWatchBackup, normalizeWatchBackup, parseSourceList, sourceFromUrl, watchNotifyKeys, watchNotifyTimelineIds } from './watch-transfer'
 
 const reset = () => {
   watch$.profiles.set([])
@@ -11,10 +11,35 @@ const reset = () => {
   watch$.mediaWifiOnly.set(true)
   watch$.mediaLimitMB.set(1024)
   watch$.postsPerSource.set(100)
+  watch$.notifyTimelineIds.set([])
+  watch$.feedNotify.set(false)
 }
 
 describe('watch transfer', () => {
   beforeEach(reset)
+
+  it('carries which timelines and whether the whole feed notify, to turn on once permission is given', () => {
+    watch$.watch({ site: 'x', handle: 'jack' })
+    const id = watch$.createTimeline('Friends', ['x:jack'])
+    watch$.createTimeline('News', ['x:jack'])
+    watch$.setTimelineNotify(id, true)
+    watch$.feedNotify.set(true)
+
+    const backup = normalizeWatchBackup(JSON.parse(JSON.stringify(createWatchBackup())))!
+    expect(backup.feedNotify).toBe(true)
+    expect(backup.timelines).toEqual([
+      { name: 'Friends', profileKeys: ['x:jack'], notify: true },
+      { name: 'News', profileKeys: ['x:jack'] },
+    ])
+
+    reset()
+    applyWatchBackup(backup)
+    // Left for enableTimelineNotifications, which asks for permission first.
+    expect(watch$.notifyTimelineIds.get()).toEqual([])
+    expect(watch$.feedNotify.get()).toBe(false)
+    const friends = watch$.timelines.get().find((timeline) => timeline.name === 'Friends')!.id
+    expect(watchNotifyTimelineIds(backup)).toEqual([undefined, friends])
+  })
 
   it('exports the sources and timelines without what was read from the sites', () => {
     watch$.watch({ site: 'x', handle: 'Jack' })

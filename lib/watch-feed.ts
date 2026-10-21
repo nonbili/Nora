@@ -1,7 +1,7 @@
 import { AppState, Platform } from 'react-native'
 import { t } from 'i18next'
 import { settings$ } from '@/states/settings'
-import { watch$, type WatchedProfile } from '@/states/watch'
+import { profileNotifies, watch$, type WatchedProfile } from '@/states/watch'
 import {
   INSTAGRAM_APP_ID,
   instagramProfileInfoUrl,
@@ -622,7 +622,7 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
     }
     const fresh = await checkProfile(profile, accounts[profile.site]?.account || null, source, start + RUN_BUDGET_MS[source])
     found += fresh.length
-    if (profile.notify && fresh.length && settings$.feedEnabled.peek()) {
+    if (fresh.length && profileNotifies(profile) && settings$.feedEnabled.peek()) {
       await notifyFresh(profile, fresh)
     }
   }
@@ -689,13 +689,26 @@ const syncBackgroundTask = () => {
   return syncing
 }
 
-/** Asks for permission to notify, and turns notifications on for one watched profile if given. */
-export const enableWatchNotifications = async (key: string): Promise<boolean> => {
+const allowWatchNotifications = async () => {
   if (!isNotificationsAvailable) return false
   const granted = await requestNotificationPermission()
+  if (granted) await ensureChannel(notificationChannel())
+  return granted
+}
+
+/** Asks for permission to notify, and turns notifications on for one watched profile if given. */
+export const enableWatchNotifications = async (key: string): Promise<boolean> => {
+  const granted = await allowWatchNotifications()
+  if (granted) watch$.setNotify(key, true)
+  return granted
+}
+
+/** Asks for permission to notify, and turns notifications on for every source of a timeline, or of the whole feed, if given. */
+export const enableTimelineNotifications = async (id?: string): Promise<boolean> => {
+  const granted = await allowWatchNotifications()
   if (granted) {
-    watch$.setNotify(key, true)
-    await ensureChannel(notificationChannel())
+    if (id) watch$.setTimelineNotify(id, true)
+    else watch$.feedNotify.set(true)
   }
   return granted
 }

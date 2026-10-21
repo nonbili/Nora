@@ -8,7 +8,7 @@ import { NouText } from '../NouText'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
-import { getTimeline, timelineEmoji, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
+import { getTimeline, notifyingTimelines, timelineEmoji, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
   DEFAULT_TIMELINE_EMOJI,
   feedChipSources,
@@ -77,6 +77,12 @@ export const ChoicePicker: React.FC<{
 )
 
 /** What to tell about how a profile is being checked; null when all is well. */
+/** The names of the timelines, the whole feed among them, whose notifications are on for a profile. */
+const notifyVia = (profileKey: string) => [
+  ...(watch$.feedNotify.get() ? [t('feed.allSources')] : []),
+  ...notifyingTimelines(profileKey).map((timeline) => timeline.name),
+]
+
 export const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean } | null => {
   const site = watchSiteLabels[profile.site]
   const useAccounts = watch$.useAccounts.peek()
@@ -587,6 +593,12 @@ export const FeedView: React.FC<{
   ]
 
   const toggleNotify = async (profile: WatchedProfile) => {
+    // A timeline that notifies does so for each of its sources: it is turned off there.
+    const via = notifyVia(profile.key)
+    if (!profile.notify && via.length) {
+      showToast(t('feed.notifyViaTimeline', { names: via.join(', ') }))
+      return
+    }
     if (profile.notify) {
       watch$.setNotify(profile.key, false)
       return
@@ -604,6 +616,8 @@ export const FeedView: React.FC<{
   }
 
   const selectedStatus = selected ? profileStatus(selected) : null
+  const selectedNotifyVia = useValue(() => (selected ? notifyVia(selected.key) : []))
+  const selectedNotifies = Boolean(selected?.notify || selectedNotifyVia.length)
   const selectedAccount = selected ? profileAccount(selected) : null
 
   const newestPostAt = useWatchPosts(getNewestPostTimes)
@@ -622,6 +636,9 @@ export const FeedView: React.FC<{
             : t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }),
         ],
         ...(selectedAccount ? [[t('feed.detailAccount'), selectedAccount]] : []),
+        ...(selectedNotifyVia.length
+          ? [[t('feed.detailNotify'), t('feed.detailNotifyVia', { names: selectedNotifyVia.join(', ') })]]
+          : []),
       ]
     : []
   const chips = feedChipSources(profiles, newestPostAt, unreadSourceKeys, CHIP_LIMIT, selected?.key)
@@ -724,15 +741,17 @@ export const FeedView: React.FC<{
               onPress={() => void toggleNotify(selected)}
               accessibilityRole="switch"
               accessibilityLabel={t('feed.notify')}
-              accessibilityState={{ checked: selected.notify }}
+              accessibilityState={{ checked: selectedNotifies }}
               hitSlop={androidHitSlop}
               style={iosTouchTarget}
               className="h-11 w-11 items-center justify-center"
             >
+              {/* Fainter when it is a timeline's choice and not the source's own. */}
               <MaterialIcons
-                name={selected.notify ? 'notifications-active' : 'notifications-none'}
+                name={selectedNotifies ? 'notifications-active' : 'notifications-none'}
                 size={22}
-                color={selected.notify ? tw('#6366f1') : iconColor}
+                color={selectedNotifies ? tw('#6366f1') : iconColor}
+                style={selectedNotifies && !selected.notify ? { opacity: 0.5 } : undefined}
               />
             </Pressable>
             <NouMenu
