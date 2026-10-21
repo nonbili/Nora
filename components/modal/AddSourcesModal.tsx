@@ -24,16 +24,18 @@ const readLinks = (text: string) =>
     .filter(Boolean)
     .map((link) => ({ link, target: sourceFromUrl(link) }))
 
-/** Puts the profiles in a timeline, after those it has. */
-const addToTimeline = (timelineId: string | undefined, keys: string[]) => {
+/** Moves the profiles into a timeline; with onlyLoose, only those that are in none. */
+const addToTimeline = (timelineId: string | undefined, keys: string[], onlyLoose = false) => {
   const timeline = getTimeline(timelineId)
   if (!timeline) return
+  const profiles = new Map(watch$.profiles.peek().map((profile) => [profile.key, profile]))
   for (const key of keys) {
-    if (!timeline.profileKeys.includes(key)) watch$.setInTimeline(timeline.id, key, true)
+    if (onlyLoose && getTimeline(profiles.get(key)?.timelineId)) continue
+    watch$.setProfileTimeline(key, timeline.id)
   }
 }
 
-/** Adds the sources of an OPML file or of a list of links, with the OPML folders as timelines, and all to the timeline given. */
+/** Adds the sources of an OPML file or of a list of links, with the OPML folders as timelines, and the others to the timeline given. */
 const importSources = async (timelineId?: string) => {
   // OPML files have no type of their own on most systems.
   const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true, multiple: false, type: '*/*' })
@@ -46,7 +48,7 @@ const importSources = async (timelineId?: string) => {
       return true
     }
     const { added, existing } = applyWatchBackup(list)
-    addToTimeline(timelineId, list.profiles.map(watchKey))
+    addToTimeline(timelineId, list.profiles.map(watchKey), true)
     showToast(t('feed.importSourcesDone', { added, existing, unrecognized: list.unrecognized }))
     if (added) void refreshWatched('foreground')
   } catch (e) {
@@ -74,7 +76,12 @@ export const AddSourcesModal = () => {
       .then((copied) => {
         const links = readLinks(copied)
         const timeline = getTimeline(target.timelineId)
-        const added = new Set(timeline ? timeline.profileKeys : watch$.profiles.peek().map((profile) => profile.key))
+        const added = new Set(
+          watch$.profiles
+            .peek()
+            .filter((profile) => !timeline || profile.timelineId === timeline.id)
+            .map((profile) => profile.key),
+        )
         const fresh = links.some(({ target: source }) => source && !added.has(watchKey(source)))
         if (!cancelled && fresh && links.every((link) => link.target)) setText((current) => current || copied.trim())
       })
@@ -93,7 +100,16 @@ export const AddSourcesModal = () => {
   const watched = new Set(profiles.map((profile) => profile.key))
   // Already added: in the timeline it was opened from, or watched at all for the whole feed.
   const timeline = timelines.find((current) => current.id === target.timelineId)
-  const added = timeline ? new Set(timeline.profileKeys) : watched
+  const added = timeline
+    ? new Set(profiles.filter((profile) => profile.timelineId === timeline.id).map((profile) => profile.key))
+    : watched
+  // The timeline each source already watched is in, which adding it here moves it out of.
+  const timelineOf = new Map(
+    profiles.flatMap((profile) => {
+      const current = timelines.find((t) => t.id === profile.timelineId)
+      return current ? [[profile.key, current.name] as const] : []
+    }),
+  )
   const links = readLinks(text)
   const toAdd = [...new Map(links.flatMap(({ target }) => (target && !added.has(watchKey(target)) ? [[watchKey(target), target]] : []))).entries()]
 
@@ -157,7 +173,11 @@ export const AddSourcesModal = () => {
                       {watchSourceLabel(source)}
                     </NouText>
                     <NouText className="text-xs text-zinc-500">
-                      {already ? t('feed.addSourcesAlready') : watchSiteLabels[source.site]}
+                      {already
+                        ? t('feed.addSourcesAlready')
+                        : timeline && timelineOf.has(watchKey(source))
+                          ? t('feed.addSourcesMove', { name: timelineOf.get(watchKey(source)) })
+                          : watchSiteLabels[source.site]}
                     </NouText>
                   </>
                 ) : (

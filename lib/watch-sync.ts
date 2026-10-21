@@ -12,12 +12,14 @@ import { cleanEmoji, watchKey, type WatchTarget, type WatchTimeline } from './wa
 
 export interface WatchSourceRow extends WatchTarget {
   addedAt: number
+  // Kept with the source, so that two devices moving it at once leave it in one timeline.
+  timelineId?: string
   checkIntervalMinutes?: number
 }
 
 export interface WatchTimelineRow {
   name: string
-  profileKeys: string[]
+  checkIntervalMinutes?: number
   pinned?: boolean
   mediaOnly?: boolean
   emoji?: string
@@ -60,6 +62,7 @@ export const getWatchSyncRows = (
         site: profile.site,
         handle: profile.handle,
         addedAt: profile.addedAt,
+        ...(profile.timelineId ? { timelineId: profile.timelineId } : {}),
         ...(profile.checkIntervalMinutes ? { checkIntervalMinutes: profile.checkIntervalMinutes } : {}),
       },
     ]),
@@ -67,12 +70,12 @@ export const getWatchSyncRows = (
   timelines: Object.fromEntries([
     ...(value.feedPinned && !value.feedEmoji
       ? []
-      : [[FEED_ROW_ID, { name: '', profileKeys: [], pinned: value.feedPinned, ...(value.feedEmoji ? { emoji: value.feedEmoji } : {}) }] as const]),
+      : [[FEED_ROW_ID, { name: '', pinned: value.feedPinned, ...(value.feedEmoji ? { emoji: value.feedEmoji } : {}) }] as const]),
     ...value.timelines.map((timeline) => [
       timeline.id,
       {
         name: timeline.name,
-        profileKeys: [...timeline.profileKeys],
+        ...(timeline.checkIntervalMinutes ? { checkIntervalMinutes: timeline.checkIntervalMinutes } : {}),
         ...(timeline.pinned ? { pinned: true } : {}),
         ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
         ...(timeline.emoji ? { emoji: timeline.emoji } : {}),
@@ -104,6 +107,7 @@ export const parseSourceRow = (row: RemoteWatchRow): WatchSourceRow | null => {
   return {
     ...target,
     addedAt: positiveNumber(json.addedAt) ?? Date.parse(row.updated_at),
+    ...(typeof json.timelineId === 'string' && json.timelineId ? { timelineId: json.timelineId } : {}),
     ...(checkIntervalMinutes ? { checkIntervalMinutes } : {}),
   }
 }
@@ -111,10 +115,10 @@ export const parseSourceRow = (row: RemoteWatchRow): WatchSourceRow | null => {
 export const parseTimelineRow = (row: RemoteWatchRow): WatchTimelineRow | null => {
   const json = row.json
   if (!isObject(json) || typeof json.name !== 'string' || !json.name.trim()) return null
-  const keys = (Array.isArray(json.profileKeys) ? json.profileKeys : []).filter((key): key is string => typeof key === 'string')
+  const checkIntervalMinutes = positiveNumber(json.checkIntervalMinutes)
   return {
     name: json.name.trim(),
-    profileKeys: Array.from(new Set(keys)),
+    ...(checkIntervalMinutes ? { checkIntervalMinutes } : {}),
     ...(json.pinned === true ? { pinned: true } : {}),
     ...(json.mediaOnly === true ? { mediaOnly: true } : {}),
     ...(cleanEmoji(json.emoji) ? { emoji: cleanEmoji(json.emoji) } : {}),
@@ -145,6 +149,7 @@ export const applyRemoteWatchRows = (sources: RemoteWatchRow[], timelines: Remot
       site: source.site,
       handle: source.handle,
       addedAt: source.addedAt,
+      timelineId: source.timelineId,
       checkIntervalMinutes: source.checkIntervalMinutes,
     }
     if (index === -1) {
@@ -211,18 +216,27 @@ export const foldUnsyncedTimelines = (unsyncedIds: string[], remoteTimelines: Re
         timeline.id === intoId
           ? {
               ...timeline,
-              profileKeys: Array.from(new Set([...timeline.profileKeys, ...local.profileKeys])),
               ...(local.pinned ? { pinned: true } : {}),
               ...(local.mediaOnly ? { mediaOnly: true } : {}),
               // What was chosen there stays.
               ...(local.emoji && !timeline.emoji ? { emoji: local.emoji } : {}),
+              ...(local.checkIntervalMinutes && !timeline.checkIntervalMinutes
+                ? { checkIntervalMinutes: local.checkIntervalMinutes }
+                : {}),
             }
           : timeline,
       )
     folded.set(id, intoId)
   }
   if (folded.size) {
-    watch$.timelines.set(timelines)
+    batch(() => {
+      watch$.timelines.set(timelines)
+      // Its sources go along, and so are pushed again in the synced one.
+      watch$.profiles.peek().forEach((profile) => {
+        const intoId = profile.timelineId && folded.get(profile.timelineId)
+        if (intoId) watch$.setProfileTimeline(profile.key, intoId)
+      })
+    })
     // One that notified here goes on notifying as the synced one.
     const notifyIds = watch$.notifyTimelineIds.peek()
     watch$.notifyTimelineIds.set(Array.from(new Set(notifyIds.map((id) => folded.get(id) ?? id))))

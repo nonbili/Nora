@@ -1502,20 +1502,30 @@ export const DEFAULT_WATCH_INTERVAL_MINUTES = 60
 // The system does not run a background task more often than this.
 export const MIN_BACKGROUND_INTERVAL_MINUTES = 15
 
-/** How often a profile is checked: its own choice, or else the one for all. */
-export const watchIntervalMinutes = (profile: { checkIntervalMinutes?: number }, defaultMinutes: number) =>
-  profile.checkIntervalMinutes || defaultMinutes
+interface IntervalProfile {
+  timelineId?: string
+  checkIntervalMinutes?: number
+}
+
+/** The interval each timeline chose, by its id; a timeline without one is not there. */
+export type TimelineIntervals = Record<string, number | undefined>
+
+/** How often a profile is checked: its own choice, or else its timeline's, or else the one for all. */
+export const watchIntervalMinutes = (profile: IntervalProfile, defaultMinutes: number, timelineMinutes: TimelineIntervals = {}) =>
+  profile.checkIntervalMinutes || (profile.timelineId && timelineMinutes[profile.timelineId]) || defaultMinutes
 
 /** How often the background task has to run for the profile checked most often. */
-export const backgroundIntervalMinutes = (profiles: { checkIntervalMinutes?: number }[], defaultMinutes: number) =>
-  Math.max(MIN_BACKGROUND_INTERVAL_MINUTES, Math.min(...profiles.map((profile) => watchIntervalMinutes(profile, defaultMinutes))))
+export const backgroundIntervalMinutes = (profiles: IntervalProfile[], defaultMinutes: number, timelineMinutes: TimelineIntervals = {}) =>
+  Math.max(
+    MIN_BACKGROUND_INTERVAL_MINUTES,
+    Math.min(...profiles.map((profile) => watchIntervalMinutes(profile, defaultMinutes, timelineMinutes))),
+  )
 
 // A refresh by hand does not ask again for a profile checked this recently, however often it is tapped.
 export const MANUAL_REFRESH_COOLDOWN_MS = 30 * 1000
 
-interface DueProfile {
+interface DueProfile extends IntervalProfile {
   key: string
-  checkIntervalMinutes?: number
   lastCheckedAt?: number
   retryAfter?: number
 }
@@ -1526,7 +1536,13 @@ interface DueProfile {
  */
 export function dueWatchProfiles<T extends DueProfile>(
   profiles: T[],
-  { manual, keys, now, defaultMinutes }: { manual: boolean; keys?: string[]; now: number; defaultMinutes: number },
+  {
+    manual,
+    keys,
+    now,
+    defaultMinutes,
+    timelineMinutes,
+  }: { manual: boolean; keys?: string[]; now: number; defaultMinutes: number; timelineMinutes?: TimelineIntervals },
 ): T[] {
   return (
     profiles
@@ -1536,7 +1552,7 @@ export function dueWatchProfiles<T extends DueProfile>(
       .filter((profile) => {
         if (!profile.lastCheckedAt) return true
         const since = now - profile.lastCheckedAt
-        return manual ? since >= MANUAL_REFRESH_COOLDOWN_MS : since >= watchIntervalMinutes(profile, defaultMinutes) * 60000
+        return manual ? since >= MANUAL_REFRESH_COOLDOWN_MS : since >= watchIntervalMinutes(profile, defaultMinutes, timelineMinutes) * 60000
       })
       .sort((a, b) => (a.lastCheckedAt || 0) - (b.lastCheckedAt || 0))
   )
@@ -1693,11 +1709,12 @@ export function filterWatchSources<T extends WatchTarget & { name?: string }>(so
   })
 }
 
-/** Some of the watched profiles, which a feed tab can show on their own. */
+/** Some of the watched profiles, which a feed tab can show on their own; a profile is in one at most. */
 export interface WatchTimeline {
   id: string
   name: string
-  profileKeys: string[]
+  // Minutes between checks of its profiles that have no choice of their own; the default for all when not set.
+  checkIntervalMinutes?: number
   // Shown on the new tab page, next to the whole feed.
   pinned?: boolean
   // Only the posts with photos or videos, shown as a grid.

@@ -139,7 +139,7 @@ describe('settings transfer', () => {
     watch$.createTimeline('News', ['reddit:r/rust'])
 
     const json = exportSettingsJson()
-    expect(JSON.parse(json).watch.profiles).toEqual([{ site: 'reddit', handle: 'r/rust', notify: false }])
+    expect(JSON.parse(json).watch.profiles).toEqual([{ site: 'reddit', handle: 'r/rust', notify: false, timeline: 'News' }])
 
     watch$.profiles.set([])
     watch$.timelines.set([])
@@ -148,8 +148,7 @@ describe('settings transfer', () => {
     const restored = applySettingsBackup(parseSettingsBackup(json))
     expect(restored).toContain('feed sources')
     expect(watch$.profiles.get().map((profile) => profile.key)).toEqual(['x:jack', 'reddit:r/rust'])
-    expect(watch$.timelines.get().map(({ name, profileKeys }) => ({ name, profileKeys }))).toEqual([
-      { name: 'News', profileKeys: ['reddit:r/rust'] },
-    ])
+    expect(watch$.timelines.get().map(({ name }) => name)).toEqual(['News'])
+    expect(watch$.profiles.get()[1].timelineId).toBe(watch$.timelines.get()[0].id)
   })
 })

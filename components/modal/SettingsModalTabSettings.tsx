@@ -165,7 +165,12 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
             )}
             <SettingsRow>
               <NouSwitch
-                label={<NouText>{t('settings.feed')}</NouText>}
+                label={
+                  <View>
+                    <NouText>{t('settings.feed')}</NouText>
+                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t('settings.feedHint')}</NouText>
+                  </View>
+                }
                 value={settings.feedEnabled}
                 onPress={() => {
                   const next = !settings.feedEnabled
@@ -245,7 +250,9 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                 label={
                   <View>
                     <NouText>{t('settings.mentionNotifications')}</NouText>
-                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">X and Facebook</NouText>
+                    <NouText className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                      {t('settings.mentionNotificationsSites')}
+                    </NouText>
                   </View>
                 }
                 value={settings.mentionNotificationsEnabled}

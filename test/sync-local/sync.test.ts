@@ -76,9 +76,8 @@ local('sync against local Supabase', () => {
     for (const instance of [a, b]) {
       const snapshot = await instance.snapshot()
       expect(snapshot.watch.profiles.map((profile) => profile.key).sort()).toEqual(['bluesky:alice.bsky.social', 'x:jack'])
-      expect(snapshot.watch.timelines).toEqual([{
-        id: timeline, name: 'Friends', profileKeys: ['x:jack', 'bluesky:alice.bsky.social'],
-      }])
+      expect(snapshot.watch.timelines).toEqual([{ id: timeline, name: 'Friends' }])
+      expect(snapshot.watch.profiles.map((profile) => profile.timelineId)).toEqual([timeline, timeline])
       expect(snapshot.meta.feeds.pendingSources).toEqual([])
       expect(snapshot.meta.feeds.pendingTimelines).toEqual([])
     }

@@ -1476,6 +1476,14 @@ describe('watchIntervalMinutes', () => {
     expect(watchIntervalMinutes({ checkIntervalMinutes: 15 }, 60)).toBe(15)
     expect(watchIntervalMinutes({}, 60)).toBe(60)
   })
+
+  it('is the choice of its timeline when the profile has none of its own', () => {
+    const timelines = { news: 30, art: undefined }
+    expect(watchIntervalMinutes({ timelineId: 'news' }, 60, timelines)).toBe(30)
+    expect(watchIntervalMinutes({ timelineId: 'news', checkIntervalMinutes: 15 }, 60, timelines)).toBe(15)
+    expect(watchIntervalMinutes({ timelineId: 'art' }, 60, timelines)).toBe(60)
+    expect(watchIntervalMinutes({ timelineId: 'gone' }, 60, timelines)).toBe(60)
+  })
 })
 
 describe('backgroundIntervalMinutes', () => {
@@ -1517,6 +1525,11 @@ describe('dueWatchProfiles', () => {
     const keys = ['x:recent', 'x:fresh']
     expect(keysOf(dueWatchProfiles(profiles, { manual: true, keys, now, defaultMinutes: 60 }))).toEqual(['x:recent'])
     expect(dueWatchProfiles(profiles, { manual: false, keys, now, defaultMinutes: 60 })).toEqual([])
+  })
+
+  it('waits as long as the timeline of a profile chose', () => {
+    const inNews = [{ key: 'x:old', timelineId: 'news', lastCheckedAt: now - 2 * 60 * 60 * 1000 }]
+    expect(dueWatchProfiles(inNews, { manual: false, now, defaultMinutes: 60, timelineMinutes: { news: 180 } })).toEqual([])
   })
 })
 

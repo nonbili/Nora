@@ -7,7 +7,7 @@ import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import { formatInterval } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
-import { watch$ } from '@/states/watch'
+import { inheritedInterval, watch$ } from '@/states/watch'
 import { WATCH_INTERVAL_OPTIONS, watchSourceLabel } from '@/lib/watch'
 import { useTwColor } from '@/lib/theme'
 import { androidHitSlop, iosTouchTarget } from '@/lib/utils'
@@ -35,17 +35,17 @@ const Row: React.FC<{ icon: string; iconColor: string; label: string; checked?: 
   </Pressable>
 )
 
-/** The timelines a watched source is in, or how often it is checked, chosen from its menu in the feed. */
+/** The one timeline a watched source is in, or how often it is checked, chosen from its menu in the feed. */
 export const SourcePickerModal = () => {
   const tw = useTwColor()
   const picker = useValue(ui$.sourcePicker)
   const profile = useValue(() => watch$.profiles.get().find((current) => current.key === picker?.profileKey))
   const timelines = useValue(watch$.timelines)
-  const defaultInterval = useValue(watch$.checkIntervalMinutes)
+  const inherited = useValue(() => (profile ? inheritedInterval(profile) : undefined))
 
   const onClose = () => ui$.sourcePicker.set(null)
 
-  if (!picker || !profile) {
+  if (!picker || !profile || !inherited) {
     return null
   }
 
@@ -53,31 +53,40 @@ export const SourcePickerModal = () => {
   const off = tw('#a1a1aa')
 
   const intervals = [
-    { label: t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }), minutes: undefined },
+    {
+      label: inherited.timeline
+        ? t('feed.intervalDefaultFrom', { interval: formatInterval(inherited.minutes), name: inherited.timeline.name })
+        : t('feed.intervalDefault', { interval: formatInterval(inherited.minutes) }),
+      minutes: undefined,
+    },
     ...WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes })),
   ]
 
   return (
     <BaseCenterModal onClose={onClose}>
       <View className="w-full p-4" style={{ flexShrink: 1 }}>
-        <NouText className="text-lg font-bold">{picker.kind === 'timelines' ? t('feed.timelines') : t('feed.checkEvery')}</NouText>
+        <NouText className="text-lg font-bold">{picker.kind === 'timeline' ? t('feed.timeline') : t('feed.checkEvery')}</NouText>
         <NouText className="mb-3 text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
           {profile.name || watchSourceLabel(profile)}
         </NouText>
         <ScrollView style={{ maxHeight: 360 }}>
-          {picker.kind === 'timelines' ? (
+          {picker.kind === 'timeline' ? (
             <>
-              {timelines.map((timeline) => {
-                const included = timeline.profileKeys.includes(profile.key)
+              {/* One that is gone counts as none. */}
+              {[{ id: undefined, name: t('feed.noTimeline') }, ...timelines].map((timeline) => {
+                const checked = timeline.id === (timelines.some((current) => current.id === profile.timelineId) ? profile.timelineId : undefined)
                 return (
                   <Row
-                    key={timeline.id}
-                    icon={included ? 'check-box' : 'check-box-outline-blank'}
-                    iconColor={included ? on : off}
+                    key={timeline.id ?? ''}
+                    icon={checked ? 'radio-button-checked' : 'radio-button-unchecked'}
+                    iconColor={checked ? on : off}
                     label={timeline.name}
-                    checked={included}
-                    role="checkbox"
-                    onPress={() => watch$.setInTimeline(timeline.id, profile.key, !included)}
+                    checked={checked}
+                    role="radio"
+                    onPress={() => {
+                      watch$.setProfileTimeline(profile.key, timeline.id)
+                      onClose()
+                    }}
                   />
                 )
               })}

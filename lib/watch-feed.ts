@@ -1,7 +1,7 @@
 import { AppState, Platform } from 'react-native'
 import { t } from 'i18next'
 import { settings$ } from '@/states/settings'
-import { profileNotifies, watch$, type WatchedProfile } from '@/states/watch'
+import { profileNotifies, timelineIntervals, watch$, type WatchedProfile } from '@/states/watch'
 import {
   INSTAGRAM_APP_ID,
   instagramProfileInfoUrl,
@@ -603,6 +603,7 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
     keys,
     now: start,
     defaultMinutes: watch$.checkIntervalMinutes.peek(),
+    timelineMinutes: timelineIntervals(),
   })
   // Each site's account, looked up once a run unless the user changes which to use while it goes on.
   const accounts: Partial<Record<WatchSite, { choice: string | null; account: SiteAccount | null }>> = {}
@@ -657,7 +658,7 @@ if (isAvailable && TaskManager && !TaskManager.isTaskDefined(WATCH_TASK)) {
 const wantedTaskInterval = () => {
   const profiles = watch$.profiles.peek()
   if (!profiles.length || !settings$.feedEnabled.peek()) return null
-  const interval = backgroundIntervalMinutes(profiles, watch$.checkIntervalMinutes.peek())
+  const interval = backgroundIntervalMinutes(profiles, watch$.checkIntervalMinutes.peek(), timelineIntervals())
   // All background tasks of the app run on one schedule, set by the last one registered: it
   // must not be longer than what the mention notifications register theirs with.
   return settings$.mentionNotificationsEnabled.peek() ? Math.min(interval, MENTION_POLL_INTERVAL_MINUTES) : interval
@@ -720,6 +721,7 @@ if (isAvailable) {
   // Every check changes the list too; the task is only registered again when its interval changes.
   watch$.profiles.onChange(() => void syncBackgroundTask())
   watch$.checkIntervalMinutes.onChange(() => void syncBackgroundTask())
+  watch$.timelines.onChange(() => void syncBackgroundTask())
   settings$.mentionNotificationsEnabled.onChange(() => void syncBackgroundTask())
   // While Nora is open the background task does not run on iOS, and on Android only when the
   // system gets to it; a profile whose interval is up is checked from here then.

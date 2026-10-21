@@ -208,7 +208,11 @@ class FeedsSyncer {
         syncMeta$.feeds.pendingTimelines.set(
           syncMeta$.feeds.pendingTimelines.peek().filter((id) => id in rows.timelines || remoteTimelines.has(id)),
         )
-        this.addPending('pendingSources', Object.keys(rows.sources).filter((id) => !remoteSources.has(id)))
+        this.addPending('pendingSources', [
+          ...Object.keys(rows.sources).filter((id) => !remoteSources.has(id)),
+          // Moved into the synced timeline along with theirs.
+          ...changedRowIds(rows.sources, local.sources),
+        ])
         this.addPending('pendingTimelines', [...folded.values(), ...Object.keys(rows.timelines).filter((id) => !remoteTimelines.has(id))])
       }
     } finally {
@@ -216,7 +220,7 @@ class FeedsSyncer {
       this.lastRows = getWatchSyncRows()
     }
 
-    // Sources first, so a timeline never reaches another device before the sources it shows.
+    // Sources first; one in a timeline that has not reached another device yet is only in its whole feed till then.
     if (!(await this.push('feed_sources', userId, isCurrent))) return
     if (!(await this.push('feed_timelines', userId, isCurrent))) return
 

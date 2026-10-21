@@ -41,7 +41,7 @@ const FOREGROUND_POLL_MIN_AGE_MS = 5 * 60 * 1000
 const FOREGROUND_POLL_INTERVAL_MS = 5 * 60 * 1000
 const FOREGROUND_POLL_BACKGROUND_GRACE_MS = 60 * 60 * 1000
 export const BACKGROUND_POLL_MIN_INTERVAL_MINUTES = 15
-const NOTIFICATION_CHANNEL = { id: 'mentions', name: 'Social notifications', high: true }
+const NOTIFICATION_CHANNEL = { id: 'mentions', name: 'Mentions and messages', high: true }
 
 export const POLL_TASK = 'nora.mentionNotifications.poll'
 

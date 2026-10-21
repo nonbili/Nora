@@ -4,7 +4,7 @@
  */
 
 import { batch } from '@legendapp/state'
-import { watch$, type WatchedProfile } from '@/states/watch'
+import { getTimeline, watch$, type WatchedProfile } from '@/states/watch'
 import { cleanEmoji, decodeEntities, getWatchTarget, watchKey, watchProfileUrl, watchSiteLabels, type WatchSite, type WatchTarget } from './watch'
 
 /** A watched source as it travels: what was chosen for it, not what was last read from the site. */
@@ -15,11 +15,13 @@ export interface WatchSourceBackup extends WatchTarget {
   // Only there when it is muted.
   muted?: true
   checkIntervalMinutes?: number
+  // The name of the timeline it is in, as timelines are told apart by name across devices.
+  timeline?: string
 }
 
 export interface WatchTimelineBackup {
   name: string
-  profileKeys: string[]
+  checkIntervalMinutes?: number
   pinned?: boolean
   mediaOnly?: boolean
   emoji?: string
@@ -68,18 +70,22 @@ export const createWatchBackup = (): WatchBackup => ({
   ...(watch$.feedPinned.get() ? {} : { feedPinned: false as const }),
   ...(watch$.feedEmoji.get() ? { feedEmoji: watch$.feedEmoji.get() } : {}),
   ...(watch$.feedNotify.get() ? { feedNotify: true as const } : {}),
-  profiles: watch$.profiles.get().map((profile) => ({
-    site: profile.site,
-    handle: profile.handle,
-    ...(profile.url ? { url: profile.url } : {}),
-    ...(profile.name ? { name: profile.name } : {}),
-    notify: profile.notify,
-    ...(profile.muted ? { muted: true as const } : {}),
-    ...(profile.checkIntervalMinutes ? { checkIntervalMinutes: profile.checkIntervalMinutes } : {}),
-  })),
+  profiles: watch$.profiles.get().map((profile) => {
+    const timeline = getTimeline(profile.timelineId)
+    return {
+      site: profile.site,
+      handle: profile.handle,
+      ...(profile.url ? { url: profile.url } : {}),
+      ...(profile.name ? { name: profile.name } : {}),
+      notify: profile.notify,
+      ...(profile.muted ? { muted: true as const } : {}),
+      ...(profile.checkIntervalMinutes ? { checkIntervalMinutes: profile.checkIntervalMinutes } : {}),
+      ...(timeline ? { timeline: timeline.name } : {}),
+    }
+  }),
   timelines: watch$.timelines.get().map((timeline) => ({
     name: timeline.name,
-    profileKeys: [...timeline.profileKeys],
+    ...(timeline.checkIntervalMinutes ? { checkIntervalMinutes: timeline.checkIntervalMinutes } : {}),
     ...(timeline.pinned ? { pinned: true } : {}),
     ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
     ...(timeline.emoji ? { emoji: timeline.emoji } : {}),
@@ -110,6 +116,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     const url = text(item.url)
     const name = text(item.name)
     const checkIntervalMinutes = positiveNumber(item.checkIntervalMinutes)
+    const timeline = text(item.timeline)
     profiles.set(watchKey(target), {
       ...target,
       ...(url && /^https?:\/\//i.test(url) ? { url } : {}),
@@ -117,6 +124,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
       notify: item.notify === true,
       ...(item.muted === true ? { muted: true as const } : {}),
       ...(checkIntervalMinutes ? { checkIntervalMinutes } : {}),
+      ...(timeline ? { timeline } : {}),
     })
   }
 
@@ -125,16 +133,14 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     if (!isObject(item)) continue
     const name = text(item.name)
     if (!name) continue
-    const keys = (Array.isArray(item.profileKeys) ? item.profileKeys : []).filter(
-      (key): key is string => typeof key === 'string' && profiles.has(key),
-    )
+    const checkIntervalMinutes = positiveNumber(item.checkIntervalMinutes)
     const pinned = item.pinned === true
     const mediaOnly = item.mediaOnly === true
     const emoji = cleanEmoji(item.emoji)
     const notify = item.notify === true
     const existing = timelines.get(timelineName(name))
     if (existing) {
-      existing.profileKeys = Array.from(new Set([...existing.profileKeys, ...keys]))
+      if (checkIntervalMinutes && !existing.checkIntervalMinutes) existing.checkIntervalMinutes = checkIntervalMinutes
       if (pinned) existing.pinned = true
       if (mediaOnly) existing.mediaOnly = true
       if (emoji && !existing.emoji) existing.emoji = emoji
@@ -142,7 +148,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     } else {
       timelines.set(timelineName(name), {
         name,
-        profileKeys: Array.from(new Set(keys)),
+        ...(checkIntervalMinutes ? { checkIntervalMinutes } : {}),
         ...(pinned ? { pinned } : {}),
         ...(mediaOnly ? { mediaOnly } : {}),
         ...(emoji ? { emoji } : {}),
@@ -162,15 +168,20 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     ...(value.feedPinned === false ? { feedPinned: false as const } : {}),
     ...(cleanEmoji(value.feedEmoji) ? { feedEmoji: cleanEmoji(value.feedEmoji) } : {}),
     ...(value.feedNotify === true ? { feedNotify: true as const } : {}),
-    profiles: [...profiles.values()],
+    // A source's timeline is one the backup has, or it is in none.
+    profiles: [...profiles.values()].map(({ timeline, ...source }) => {
+      const known = timeline && timelines.get(timelineName(timeline))
+      return known ? { ...source, timeline: known.name } : source
+    }),
     timelines: [...timelines.values()],
   }
 }
 
 /**
  * Adds the sources that are not watched yet, and puts them in their timelines, made when there is
- * none of that name. Nothing already watched is taken away; the choices the backup has for a source
- * are taken over, except notifications, which are turned on with watchNotifyKeys and watchNotifyTimelineIds.
+ * none of that name; a source already in a timeline here stays in it. Nothing already watched is
+ * taken away; the choices the backup has for a source are taken over, except notifications, which
+ * are turned on with watchNotifyKeys and watchNotifyTimelineIds.
  */
 export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
   let added = 0
@@ -183,6 +194,27 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
     if (backup.feedPinned === false) watch$.feedPinned.set(false)
     // What was chosen here stays.
     if (backup.feedEmoji && !watch$.feedEmoji.peek()) watch$.feedEmoji.set(backup.feedEmoji)
+
+    const timelineIds = new Map<string, string>()
+    for (const timeline of backup.timelines) {
+      const same = watch$.timelines.peek().find((t) => timelineName(t.name) === timelineName(timeline.name))
+      if (same) {
+        if (timeline.pinned && !same.pinned) watch$.updateTimeline(same.id, { pinned: true })
+        if (timeline.emoji && !same.emoji) watch$.updateTimeline(same.id, { emoji: timeline.emoji })
+        if (timeline.checkIntervalMinutes && !same.checkIntervalMinutes) {
+          watch$.updateTimeline(same.id, { checkIntervalMinutes: timeline.checkIntervalMinutes })
+        }
+        timelineIds.set(timelineName(timeline.name), same.id)
+      } else {
+        const id = watch$.createTimeline(timeline.name, [])
+        if (timeline.pinned) watch$.updateTimeline(id, { pinned: true })
+        // How a timeline already here is shown stays as it was chosen here.
+        if (timeline.mediaOnly) watch$.updateTimeline(id, { mediaOnly: true })
+        if (timeline.emoji) watch$.updateTimeline(id, { emoji: timeline.emoji })
+        if (timeline.checkIntervalMinutes) watch$.updateTimeline(id, { checkIntervalMinutes: timeline.checkIntervalMinutes })
+        timelineIds.set(timelineName(timeline.name), id)
+      }
+    }
 
     const current = new Map(watch$.profiles.peek().map((profile) => [profile.key, profile]))
     for (const source of backup.profiles) {
@@ -202,25 +234,9 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
       // Keeping quiet needs no permission.
       if (source.muted) patch.muted = true
       if (source.checkIntervalMinutes) patch.checkIntervalMinutes = source.checkIntervalMinutes
+      const timelineId = source.timeline && timelineIds.get(timelineName(source.timeline))
+      if (timelineId && !getTimeline(profile?.timelineId)) patch.timelineId = timelineId
       if (Object.keys(patch).length) watch$.updateProfile(key, patch)
-    }
-
-    const watched = new Set(watch$.profiles.peek().map((profile) => profile.key))
-    for (const timeline of backup.timelines) {
-      const keys = timeline.profileKeys.filter((key) => watched.has(key))
-      const same = watch$.timelines.peek().find((t) => timelineName(t.name) === timelineName(timeline.name))
-      if (same) {
-        const merged = Array.from(new Set([...same.profileKeys, ...keys]))
-        if (merged.length !== same.profileKeys.length) watch$.updateTimeline(same.id, { profileKeys: merged })
-        if (timeline.pinned && !same.pinned) watch$.updateTimeline(same.id, { pinned: true })
-        if (timeline.emoji && !same.emoji) watch$.updateTimeline(same.id, { emoji: timeline.emoji })
-      } else {
-        const id = watch$.createTimeline(timeline.name, keys)
-        if (timeline.pinned) watch$.updateTimeline(id, { pinned: true })
-        // How a timeline already here is shown stays as it was chosen here.
-        if (timeline.mediaOnly) watch$.updateTimeline(id, { mediaOnly: true })
-        if (timeline.emoji) watch$.updateTimeline(id, { emoji: timeline.emoji })
-      }
     }
   })
   return { added, existing }
@@ -333,11 +349,15 @@ export const parseSourceList = (list: string): SourceListImport => {
   const timelines = new Map<string, WatchTimelineBackup>()
   for (const { target, folder } of sources) {
     const key = watchKey(target)
-    if (!profiles.has(key)) profiles.set(key, target)
-    if (!folder) continue
-    const timeline = timelines.get(timelineName(folder)) || { name: folder, profileKeys: [] }
-    if (!timeline.profileKeys.includes(key)) timeline.profileKeys.push(key)
+    // A source in more than one folder is in the first.
+    if (profiles.has(key)) continue
+    if (!folder) {
+      profiles.set(key, target)
+      continue
+    }
+    const timeline = timelines.get(timelineName(folder)) || { name: folder }
     timelines.set(timelineName(folder), timeline)
+    profiles.set(key, { ...target, timeline: timeline.name })
   }
   return { profiles: [...profiles.values()], timelines: [...timelines.values()], unrecognized }
 }

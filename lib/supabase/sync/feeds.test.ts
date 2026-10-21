@@ -79,9 +79,9 @@ describe('feeds sync', () => {
   })
 
   it('carries which timelines show only photos and videos', async () => {
-    remote('feed_timelines', 't1', { name: 'Art', profileKeys: [], mediaOnly: true })
+    remote('feed_timelines', 't1', { name: 'Art', mediaOnly: true })
     await feedsSyncer.syncNow()
-    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'Art', profileKeys: [], mediaOnly: true }])
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'Art', mediaOnly: true }])
 
     watch$.updateTimeline('t1', { mediaOnly: false })
     await feedsSyncer.syncNow()
@@ -91,25 +91,25 @@ describe('feeds sync', () => {
   it('keeps a timeline made here to show only photos and videos so when put into one of the same name', async () => {
     const local = watch$.createTimeline('Art', [])
     watch$.updateTimeline(local, { mediaOnly: true })
-    remote('feed_timelines', 't1', { name: 'art', profileKeys: [] })
+    remote('feed_timelines', 't1', { name: 'art' })
     await feedsSyncer.syncNow()
-    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', profileKeys: [], mediaOnly: true }])
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', mediaOnly: true }])
     expect(server.feed_timelines.get('t1')!.json.mediaOnly).toBe(true)
   })
 
   it('keeps the emoji of a timeline made here when put into one of the same name', async () => {
     const local = watch$.createTimeline('Art', [])
     watch$.updateTimeline(local, { emoji: '🎨' })
-    remote('feed_timelines', 't1', { name: 'art', profileKeys: [] })
+    remote('feed_timelines', 't1', { name: 'art' })
     await feedsSyncer.syncNow()
-    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', profileKeys: [], emoji: '🎨' }])
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', emoji: '🎨' }])
     expect(server.feed_timelines.get('t1')!.json.emoji).toBe('🎨')
   })
 
   it('keeps a timeline made here notifying when put into one of the same name, without syncing it', async () => {
     const local = watch$.createTimeline('Art', ['x:jack'])
     watch$.setTimelineNotify(local, true)
-    remote('feed_timelines', 't1', { name: 'art', profileKeys: [] })
+    remote('feed_timelines', 't1', { name: 'art' })
     await feedsSyncer.syncNow()
     expect(watch$.notifyTimelineIds.peek()).toEqual(['t1'])
     expect(server.feed_timelines.get('t1')!.json.notify).toBeUndefined()
@@ -143,6 +143,35 @@ describe('feeds sync', () => {
     expect(profileNotifies(watch$.profiles.peek()[0])).toBe(true)
   })
 
+  it('keeps a source in one timeline, moved with its own row, and in none once its timeline is deleted', async () => {
+    watch$.watch({ site: 'x', handle: 'jack' })
+    const art = watch$.createTimeline('Art', ['x:jack'])
+    const news = watch$.createTimeline('News', ['x:jack'])
+    expect(watch$.profiles.peek()[0].timelineId).toBe(news)
+    await feedsSyncer.syncNow()
+    expect(server.feed_sources.get('x:jack')!.json.timelineId).toBe(news)
+
+    // Moved back on another device.
+    remote('feed_sources', 'x:jack', { site: 'x', handle: 'jack', addedAt: 1, timelineId: art })
+    await feedsSyncer.syncNow()
+    expect(watch$.profiles.peek()[0].timelineId).toBe(art)
+
+    watch$.deleteTimeline(art)
+    expect(watch$.profiles.peek()[0].timelineId).toBeUndefined()
+    await feedsSyncer.syncNow()
+    expect(server.feed_sources.get('x:jack')!.json.timelineId).toBeUndefined()
+  })
+
+  it('syncs how often the sources of a timeline are checked', async () => {
+    remote('feed_timelines', 't1', { name: 'News', checkIntervalMinutes: 15 })
+    await feedsSyncer.syncNow()
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'News', checkIntervalMinutes: 15 }])
+
+    watch$.updateTimeline('t1', { checkIntervalMinutes: 180 })
+    await feedsSyncer.syncNow()
+    expect(server.feed_timelines.get('t1')!.json.checkIntervalMinutes).toBe(180)
+  })
+
   it('syncs whether the whole feed is pinned and its emoji', async () => {
     watch$.feedPinned.set(false)
     watch$.feedEmoji.set('📡')
@@ -154,7 +183,7 @@ describe('feeds sync', () => {
     watch$.feedEmoji.set('')
     await feedsSyncer.syncNow()
     expect(server.feed_timelines.get('_feed')!.json.deleted_at).toBeString()
-    remote('feed_timelines', '_feed', { name: '', profileKeys: [], pinned: false, emoji: '🔥' })
+    remote('feed_timelines', '_feed', { name: '', pinned: false, emoji: '🔥' })
     await feedsSyncer.syncNow()
     expect(watch$.feedPinned.peek()).toBe(false)
     expect(watch$.feedEmoji.peek()).toBe('🔥')
@@ -164,15 +193,16 @@ describe('feeds sync', () => {
     watch$.watch({ site: 'x', handle: 'jack' })
     const local = watch$.createTimeline('Friends', ['x:jack'])
     tabs$.tabs.set([{ id: 'tab', url: feedTabUrl(local) } as any, { id: 'other', url: 'https://example.com' } as any])
-    remote('feed_sources', 'reddit:r/rust', { site: 'reddit', handle: 'r/rust', addedAt: 5 })
-    remote('feed_timelines', 't1', { name: 'friends', profileKeys: ['reddit:r/rust'], pinned: true })
+    remote('feed_sources', 'reddit:r/rust', { site: 'reddit', handle: 'r/rust', addedAt: 5, timelineId: 't1' })
+    remote('feed_timelines', 't1', { name: 'friends', pinned: true })
 
     await feedsSyncer.syncNow()
 
     expect(ids().sort()).toEqual(['reddit:r/rust', 'x:jack'])
-    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'friends', profileKeys: ['reddit:r/rust', 'x:jack'], pinned: true }])
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'friends', pinned: true }])
+    expect(watch$.profiles.peek().map((profile) => profile.timelineId)).toEqual(['t1', 't1'])
     expect([...server.feed_sources.keys()].sort()).toEqual(['reddit:r/rust', 'x:jack'])
-    expect(server.feed_timelines.get('t1')!.json.profileKeys).toEqual(['reddit:r/rust', 'x:jack'])
+    expect(server.feed_sources.get('x:jack')!.json.timelineId).toBe('t1')
     expect(server.feed_timelines.size).toBe(1)
     // The tab that showed the timeline made here shows the one it was put into.
     expect(tabs$.tabs.peek().map((tab) => tab.url)).toEqual([feedTabUrl('t1'), 'https://example.com'])
@@ -217,7 +247,7 @@ describe('feeds sync', () => {
     const id = watch$.createTimeline('News', [])
     await feedsSyncer.syncNow()
 
-    remote('feed_timelines', id, { name: 'Elsewhere', profileKeys: [] })
+    remote('feed_timelines', id, { name: 'Elsewhere' })
     watch$.updateTimeline(id, { name: 'Here' })
     await feedsSyncer.syncNow()
 

@@ -63,7 +63,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
   const onClose = () => ui$.sourcesModal.set(null)
 
   const iconColor = tw('#71717a')
-  const profiles = timeline ? allProfiles.filter((profile) => timeline.profileKeys.includes(profile.key)) : allProfiles
+  const profiles = timeline ? allProfiles.filter((profile) => profile.timelineId === timeline.id) : allProfiles
   // Only the sites some source is on, and only when there is more than one to choose from.
   const sites = [...new Set(profiles.map((profile) => profile.site))].sort((a, b) =>
     watchSiteLabels[a].localeCompare(watchSiteLabels[b]),

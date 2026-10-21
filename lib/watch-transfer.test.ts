@@ -21,16 +21,17 @@ describe('watch transfer', () => {
   it('carries which timelines and whether the whole feed notify, to turn on once permission is given', () => {
     watch$.watch({ site: 'x', handle: 'jack' })
     const id = watch$.createTimeline('Friends', ['x:jack'])
-    watch$.createTimeline('News', ['x:jack'])
+    watch$.createTimeline('News', [])
     watch$.setTimelineNotify(id, true)
     watch$.feedNotify.set(true)
 
     const backup = normalizeWatchBackup(JSON.parse(JSON.stringify(createWatchBackup())))!
     expect(backup.feedNotify).toBe(true)
     expect(backup.timelines).toEqual([
-      { name: 'Friends', profileKeys: ['x:jack'], notify: true },
-      { name: 'News', profileKeys: ['x:jack'] },
+      { name: 'Friends', notify: true },
+      { name: 'News' },
     ])
+    expect(backup.profiles[0].timeline).toBe('Friends')
 
     reset()
     applyWatchBackup(backup)
@@ -50,43 +51,44 @@ describe('watch transfer', () => {
 
     const backup = createWatchBackup()
     expect(backup.profiles).toEqual([
-      { site: 'x', handle: 'Jack', name: 'Jack', notify: true, checkIntervalMinutes: 30 },
+      { site: 'x', handle: 'Jack', name: 'Jack', notify: true, checkIntervalMinutes: 30, timeline: 'Friends' },
       { site: 'reddit', handle: 'r/rust', notify: false, muted: true },
     ])
     expect(normalizeWatchBackup(backup)?.profiles[1].muted).toBe(true)
-    expect(backup.timelines).toEqual([{ name: 'Friends', profileKeys: ['x:jack'] }])
+    expect(backup.timelines).toEqual([{ name: 'Friends' }])
     expect(backup.checkIntervalMinutes).toBe(60)
     expect(backup.postsPerSource).toBe(100)
   })
 
-  it('drops sources that cannot be watched and timeline keys of no source', () => {
+  it('drops sources that cannot be watched and timelines of a source that the backup does not have', () => {
     const backup = normalizeWatchBackup({
       checkIntervalMinutes: -5,
       profiles: [
-        { site: 'x', handle: 'jack', notify: 'yes' },
+        { site: 'x', handle: 'jack', notify: 'yes', timeline: ' a ' },
         { site: 'x', handle: 'JACK' },
         { site: 'myspace', handle: 'tom' },
         { site: 'reddit', handle: 'nope' },
-        { site: 'mastodon', handle: 'user@mastodon.social', url: 'javascript:alert(1)' },
+        { site: 'mastodon', handle: 'user@mastodon.social', url: 'javascript:alert(1)', timeline: 'Gone' },
         null,
       ],
       timelines: [
-        { name: 'A', profileKeys: ['x:jack', 'x:ghost'] },
-        { name: ' a ', profileKeys: ['mastodon:user@mastodon.social'], mediaOnly: true },
+        { name: 'A', checkIntervalMinutes: 30 },
+        { name: ' a ', mediaOnly: true, checkIntervalMinutes: 180 },
         { name: '' },
       ],
     })
     expect(backup).toEqual({
       profiles: [
-        { site: 'x', handle: 'jack', notify: false },
+        { site: 'x', handle: 'jack', notify: false, timeline: 'A' },
         { site: 'mastodon', handle: 'user@mastodon.social', notify: false },
       ],
-      timelines: [{ name: 'A', profileKeys: ['x:jack', 'mastodon:user@mastodon.social'], mediaOnly: true }],
+      timelines: [{ name: 'A', checkIntervalMinutes: 30, mediaOnly: true }],
     })
   })
 
-  it('adds new sources, keeps the ones watched, and merges timelines by name', () => {
+  it('adds new sources, keeps the ones watched in their timelines, and merges timelines by name', () => {
     watch$.watch({ site: 'bluesky', handle: 'alice.bsky.social' })
+    watch$.watch({ site: 'x', handle: 'jack' })
     setProfilePosts('bluesky:alice.bsky.social', [{ key: 'k', createdAtMs: 1, firstSeenAt: 0 } as any])
     watch$.createTimeline('Friends', ['bluesky:alice.bsky.social'])
 
@@ -94,16 +96,14 @@ describe('watch transfer', () => {
       checkIntervalMinutes: 120,
       postsPerSource: 200,
       profiles: [
-        { site: 'bluesky', handle: 'alice.bsky.social', notify: true },
-        { site: 'reddit', handle: 'r/rust', checkIntervalMinutes: 30, muted: true },
+        { site: 'bluesky', handle: 'alice.bsky.social', notify: true, timeline: 'News' },
+        { site: 'x', handle: 'jack', timeline: 'News' },
+        { site: 'reddit', handle: 'r/rust', checkIntervalMinutes: 30, muted: true, timeline: 'friends' },
       ],
-      timelines: [
-        { name: 'friends', profileKeys: ['reddit:r/rust'] },
-        { name: 'News', profileKeys: ['reddit:r/rust'] },
-      ],
+      timelines: [{ name: 'friends' }, { name: 'News', checkIntervalMinutes: 180 }],
     })
 
-    expect(result).toEqual({ added: 1, existing: 1 })
+    expect(result).toEqual({ added: 1, existing: 2 })
     expect(
       watchNotifyKeys({ profiles: [{ site: 'bluesky', handle: 'Alice.bsky.social', notify: true }, { site: 'x', handle: 'jack' }], timelines: [] }),
     ).toEqual(['bluesky:alice.bsky.social'])
@@ -111,15 +111,19 @@ describe('watch transfer', () => {
     expect(watch$.postsPerSource.get()).toBe(200)
     expect(getProfilePosts('bluesky:alice.bsky.social')).toHaveLength(1)
     const profiles = watch$.profiles.get()
-    expect(profiles.map((profile) => profile.key)).toEqual(['bluesky:alice.bsky.social', 'reddit:r/rust'])
+    expect(profiles.map((profile) => profile.key)).toEqual(['bluesky:alice.bsky.social', 'x:jack', 'reddit:r/rust'])
     // Left for enableWatchNotifications, which asks for permission first.
     expect(profiles[0].notify).toBe(false)
-    expect(profiles[1].checkIntervalMinutes).toBe(30)
-    expect(profiles[1].muted).toBe(true)
-    expect(watch$.timelines.get().map(({ name, profileKeys }) => ({ name, profileKeys }))).toEqual([
-      { name: 'Friends', profileKeys: ['bluesky:alice.bsky.social', 'reddit:r/rust'] },
-      { name: 'News', profileKeys: ['reddit:r/rust'] },
+    expect(profiles[2].checkIntervalMinutes).toBe(30)
+    expect(profiles[2].muted).toBe(true)
+    const timelines = watch$.timelines.get()
+    expect(timelines.map(({ name, checkIntervalMinutes }) => ({ name, checkIntervalMinutes }))).toEqual([
+      { name: 'Friends', checkIntervalMinutes: undefined },
+      { name: 'News', checkIntervalMinutes: 180 },
     ])
+    const [friends, news] = timelines.map((timeline) => timeline.id)
+    // Alice was in Friends here, and stays there; jack was in none, and goes in News.
+    expect(profiles.map((profile) => profile.timelineId)).toEqual([friends, news, friends])
   })
 
   it('carries which timelines are pinned to the new tab page, and which show only photos and videos', () => {
@@ -130,8 +134,8 @@ describe('watch transfer', () => {
     watch$.updateTimeline(newsId, { mediaOnly: true })
     const backup = normalizeWatchBackup(createWatchBackup())!
     expect(backup.timelines).toEqual([
-      { name: 'Friends', profileKeys: ['x:jack'], pinned: true },
-      { name: 'News', profileKeys: [], mediaOnly: true },
+      { name: 'Friends', pinned: true },
+      { name: 'News', mediaOnly: true },
     ])
 
     reset()
@@ -155,7 +159,7 @@ describe('watch transfer', () => {
     expect(sourceFromUrl('https://example.com/feed.xml')).toBeNull()
   })
 
-  it('reads an OPML file with its folders as timelines', () => {
+  it('reads an OPML file with its folders as timelines, a source in two folders in the first', () => {
     const list = parseSourceList(`<?xml version="1.0"?>
 <opml version="2.0">
   <body>
@@ -166,14 +170,17 @@ describe('watch transfer', () => {
     </outline>
     <outline type="rss" text="Alice" xmlUrl="https://bsky.app/profile/alice.bsky.social/rss"/>
     <outline type="rss" text="Again" xmlUrl="https://www.reddit.com/r/Rust/.rss"/>
+    <outline text="News">
+      <outline type="rss" text="Gargron again" xmlUrl="https://mastodon.social/@Gargron.rss"/>
+    </outline>
   </body>
 </opml>`)
     expect(list.profiles).toEqual([
-      { site: 'reddit', handle: 'r/rust' },
-      { site: 'mastodon', handle: 'Gargron@mastodon.social' },
+      { site: 'reddit', handle: 'r/rust', timeline: 'Tech & Code' },
+      { site: 'mastodon', handle: 'Gargron@mastodon.social', timeline: 'Tech & Code' },
       { site: 'bluesky', handle: 'alice.bsky.social' },
     ])
-    expect(list.timelines).toEqual([{ name: 'Tech & Code', profileKeys: ['reddit:r/rust', 'mastodon:gargron@mastodon.social'] }])
+    expect(list.timelines).toEqual([{ name: 'Tech & Code' }])
     expect(list.unrecognized).toBe(1)
   })
 

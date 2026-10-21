@@ -12,6 +12,7 @@ import {
   type WatchSite,
   type WatchSourceSort,
   type WatchTarget,
+  type TimelineIntervals,
   type WatchTimeline,
 } from '@/lib/watch'
 
@@ -27,7 +28,9 @@ export interface WatchedProfile {
   notify: boolean
   // Kept quiet even when the whole feed or a timeline of it notifies. Of this device, as notify is.
   muted?: boolean
-  // Minutes between checks for this profile; the default for all when not set.
+  // The one timeline it is in; only in the whole feed when not set, or when that timeline is gone.
+  timelineId?: string
+  // Minutes between checks for this profile; its timeline's, or the default for all, when not set.
   checkIntervalMinutes?: number
   // How the last check got through: with the cookies of a profile signed in to the site, or without.
   mode?: 'loggedIn' | 'loggedOut'
@@ -89,10 +92,14 @@ interface Store {
   unreadCount: () => number
   // Marks the profiles a tab shows as read: one when it shows only that one.
   markFeedSeen: (timelineId?: string, profileKey?: string) => void
+  // Makes a timeline and moves the profiles into it, out of the one each was in.
   createTimeline: (name: string, profileKeys: string[]) => string
-  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys' | 'pinned' | 'mediaOnly' | 'emoji'>>) => void
+  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'pinned' | 'mediaOnly' | 'emoji' | 'checkIntervalMinutes'>>) => void
   deleteTimeline: (id: string) => void
-  setInTimeline: (id: string, profileKey: string, included: boolean) => void
+  // Moves a profile into a timeline, or out of any for undefined.
+  setProfileTimeline: (profileKey: string, timelineId: string | undefined) => void
+  // The profiles of a timeline become these: each moved in from where it was, and the others moved out.
+  setTimelineProfiles: (id: string, profileKeys: string[]) => void
   setTimelineNotify: (id: string, notify: boolean) => void
 }
 
@@ -135,11 +142,6 @@ export const watch$: Observable<Store> = observable<Store>({
       watch$.profiles.splice(index, 1)
     }
     deleteProfilePosts(key)
-    watch$.timelines.peek().forEach((timeline, index) => {
-      if (timeline.profileKeys.includes(key)) {
-        watch$.timelines[index].profileKeys.set(timeline.profileKeys.filter((profileKey) => profileKey !== key))
-      }
-    })
   },
 
   // Its own choice to notify is no longer muted.
@@ -170,7 +172,10 @@ export const watch$: Observable<Store> = observable<Store>({
 
   createTimeline: (name, profileKeys) => {
     const id = genId()
-    watch$.timelines.push({ id, name: name.trim(), profileKeys })
+    batch(() => {
+      watch$.timelines.push({ id, name: name.trim() })
+      for (const key of profileKeys) watch$.setProfileTimeline(key, id)
+    })
     return id
   },
 
@@ -183,17 +188,31 @@ export const watch$: Observable<Store> = observable<Store>({
 
   deleteTimeline: (id) => {
     const index = findTimelineIndex(id)
-    if (index !== -1) {
-      watch$.timelines.splice(index, 1)
-    }
+    batch(() => {
+      if (index !== -1) {
+        watch$.timelines.splice(index, 1)
+      }
+      // Its profiles stay watched, in the whole feed only.
+      watch$.setTimelineProfiles(id, [])
+    })
     watch$.setTimelineNotify(id, false)
   },
 
-  setInTimeline: (id, profileKey, included) => {
-    const index = findTimelineIndex(id)
-    if (index === -1) return
-    const keys = watch$.timelines[index].profileKeys.peek().filter((key) => key !== profileKey)
-    watch$.timelines[index].profileKeys.set(included ? [...keys, profileKey] : keys)
+  setProfileTimeline: (profileKey, timelineId) => {
+    const index = findIndex(profileKey)
+    if (index !== -1 && watch$.profiles[index].timelineId.peek() !== timelineId) {
+      watch$.profiles[index].timelineId.set(timelineId)
+    }
+  },
+
+  setTimelineProfiles: (id, profileKeys) => {
+    const keys = new Set(profileKeys)
+    batch(() => {
+      watch$.profiles.peek().forEach((profile) => {
+        if (keys.has(profile.key)) watch$.setProfileTimeline(profile.key, id)
+        else if (profile.timelineId === id) watch$.setProfileTimeline(profile.key, undefined)
+      })
+    })
   },
 
   setTimelineNotify: (id, notify) => {
@@ -206,15 +225,27 @@ export const watch$: Observable<Store> = observable<Store>({
 export const getTimeline = (timelineId: string | undefined) =>
   timelineId ? watch$.timelines.get().find((timeline) => timeline.id === timelineId) : undefined
 
-/** The timelines that notify of new posts and show this profile; one deleted on another device is not among them. */
-export const notifyingTimelines = (profileKey: string) => {
-  const ids = watch$.notifyTimelineIds.get()
-  return watch$.timelines.get().filter((timeline) => ids.includes(timeline.id) && timeline.profileKeys.includes(profileKey))
+/** The timeline that notifies of new posts and shows this profile, as a list of none or one; one deleted on another device is not among them. */
+export const notifyingTimelines = (profile: Pick<WatchedProfile, 'timelineId'>) => {
+  const timeline = getTimeline(profile.timelineId)
+  return timeline && watch$.notifyTimelineIds.get().includes(timeline.id) ? [timeline] : []
 }
 
-/** Whether new posts of a profile notify: by its own choice, as the whole feed's, or as one of a timeline that does, unless it is muted. */
+/** Whether new posts of a profile notify: by its own choice, as the whole feed's, or as its timeline's, unless it is muted. */
 export const profileNotifies = (profile: WatchedProfile) =>
-  !profile.muted && (profile.notify || watch$.feedNotify.get() || notifyingTimelines(profile.key).length > 0)
+  !profile.muted && (profile.notify || watch$.feedNotify.get() || notifyingTimelines(profile).length > 0)
+
+/** The interval each timeline chose, by its id, for watchIntervalMinutes. */
+export const timelineIntervals = (): TimelineIntervals =>
+  Object.fromEntries(watch$.timelines.peek().map((timeline) => [timeline.id, timeline.checkIntervalMinutes]))
+
+/** The interval a profile that has no choice of its own takes, and the timeline it is from; none for the one for all. */
+export const inheritedInterval = (profile: Pick<WatchedProfile, 'timelineId'>) => {
+  const timeline = getTimeline(profile.timelineId)
+  return timeline?.checkIntervalMinutes
+    ? { minutes: timeline.checkIntervalMinutes, timeline }
+    : { minutes: watch$.checkIntervalMinutes.get(), timeline: undefined }
+}
 
 /** The emoji of a timeline, or of the whole feed; the default one when none was chosen. */
 export const timelineEmoji = (timelineId?: string) =>
@@ -228,9 +259,9 @@ export const isMediaOnly = (timelineId?: string) => {
 
 /** The profiles a timeline shows, in the order they were watched; every profile for the whole feed. */
 export const timelineProfileKeys = (timelineId?: string) => {
-  const keys = watch$.profiles.get().map((profile) => profile.key)
   const timeline = getTimeline(timelineId)
-  return timeline ? keys.filter((key) => timeline.profileKeys.includes(key)) : keys
+  const profiles = watch$.profiles.get()
+  return (timeline ? profiles.filter((profile) => profile.timelineId === timeline.id) : profiles).map((profile) => profile.key)
 }
 
 export const unreadKeys = (timelineId?: string) => {

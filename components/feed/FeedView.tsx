@@ -8,7 +8,7 @@ import { NouText } from '../NouText'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
-import { getTimeline, notifyingTimelines, timelineEmoji, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
+import { getTimeline, inheritedInterval, notifyingTimelines, timelineEmoji, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
   DEFAULT_TIMELINE_EMOJI,
   feedChipSources,
@@ -88,9 +88,9 @@ export const getLoggedOutSites = (profiles: WatchedProfile[], useAccounts: boole
     : []
 
 /** The names of the timelines, the whole feed among them, whose notifications are on for a profile. */
-const notifyVia = (profileKey: string) => [
+const notifyVia = (profile: WatchedProfile) => [
   ...(watch$.feedNotify.get() ? [t('feed.allSources')] : []),
-  ...notifyingTimelines(profileKey).map((timeline) => timeline.name),
+  ...notifyingTimelines(profile).map((timeline) => timeline.name),
 ]
 
 export const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean } | null => {
@@ -547,7 +547,7 @@ export const FeedView: React.FC<{
   }, [tabId, refresh])
 
   // Not memoized: the store changes its arrays in place, so they keep their identity across changes.
-  const profiles = timeline ? allProfiles.filter((profile) => timeline.profileKeys.includes(profile.key)) : allProfiles
+  const profiles = timeline ? allProfiles.filter((profile) => profile.timelineId === timeline.id) : allProfiles
   const profileByKey = new Map(allProfiles.map((profile) => [profile.key, profile]))
   // A profile taken out of the timeline is no longer the one shown.
   const selected = selectedKey ? profiles.find((profile) => profile.key === selectedKey) : undefined
@@ -585,7 +585,6 @@ export const FeedView: React.FC<{
   // How many posts the view has scrolled through; a view shown again starts at the first page.
   const postProfileKeys = selected ? [selected.key] : profiles.map((profile) => profile.key)
   const feedMediaOnly = useValue(watch$.feedMediaOnly)
-  const defaultInterval = useValue(watch$.checkIntervalMinutes)
   const mediaOnly = timeline ? Boolean(timeline.mediaOnly) : feedMediaOnly
   const view = `${mediaOnly}\n${postProfileKeys.join('\n')}`
   const [page, setPage] = useState({ view, limit: FEED_PAGE_SIZE })
@@ -667,6 +666,24 @@ export const FeedView: React.FC<{
     }),
     { label: '', handler: () => {}, kind: 'separator' as const },
     {
+      label: t('feed.addSources'),
+      icon: <MaterialIcons name="add-link" size={18} color={iconColor} />,
+      systemImage: 'link.badge.plus',
+      handler: () => ui$.addSourcesModal.set({ timelineId: timeline?.id }),
+    },
+    {
+      label: t('feed.manageSources'),
+      icon: <MaterialIcons name="manage-accounts" size={18} color={iconColor} />,
+      systemImage: 'person.2',
+      handler: () => ui$.sourcesModal.set({ tabId }),
+    },
+    {
+      label: t('feed.settings'),
+      icon: <MaterialIcons name="tune" size={18} color={iconColor} />,
+      systemImage: 'slider.horizontal.3',
+      handler: () => ui$.feedSettingsModalOpen.set(true),
+    },
+    {
       label: t('feed.newTimeline'),
       icon: <MaterialIcons name="playlist-add" size={18} color={iconColor} />,
       systemImage: 'plus',
@@ -689,24 +706,6 @@ export const FeedView: React.FC<{
         ]
       : []),
     {
-      label: t('feed.manageSources'),
-      icon: <MaterialIcons name="manage-accounts" size={18} color={iconColor} />,
-      systemImage: 'person.2',
-      handler: () => ui$.sourcesModal.set({ tabId }),
-    },
-    {
-      label: t('feed.addSources'),
-      icon: <MaterialIcons name="add-link" size={18} color={iconColor} />,
-      systemImage: 'link.badge.plus',
-      handler: () => ui$.addSourcesModal.set({ timelineId: timeline?.id }),
-    },
-    {
-      label: t('feed.settings'),
-      icon: <MaterialIcons name="tune" size={18} color={iconColor} />,
-      systemImage: 'slider.horizontal.3',
-      handler: () => ui$.feedSettingsModalOpen.set(true),
-    },
-    {
       label: t('feed.openInNewTab'),
       icon: <MaterialIcons name="open-in-new" size={18} color={iconColor} />,
       systemImage: 'plus.square.on.square',
@@ -716,7 +715,7 @@ export const FeedView: React.FC<{
 
   const toggleNotify = async (profile: WatchedProfile) => {
     // A timeline that notifies does so for each of its sources, unless one is muted.
-    const via = notifyVia(profile.key)
+    const via = notifyVia(profile)
     if (via.length) {
       // Read first: the profile is the store's own object, which setMuted changes.
       const muting = !profile.muted
@@ -741,10 +740,11 @@ export const FeedView: React.FC<{
   }
 
   const selectedStatus = selected ? profileStatus(selected) : null
-  const selectedNotifyVia = useValue(() => (selected ? notifyVia(selected.key) : []))
+  const selectedNotifyVia = useValue(() => (selected ? notifyVia(selected) : []))
   const selectedMuted = Boolean(selected?.muted && selectedNotifyVia.length)
   const selectedNotifies = !selectedMuted && Boolean(selected?.notify || selectedNotifyVia.length)
   const selectedAccount = selected ? profileAccount(selected) : null
+  const selectedInherited = useValue(() => (selected ? inheritedInterval(selected) : inheritedInterval({})))
 
   const newestPostAt = useWatchPosts(getNewestPostTimes)
   const unreadSourceKeys = useWatchPosts(() => getProfilesWithPosts(unreadOnShow.keys, unreadOnShow.at), unreadOnShow)
@@ -759,7 +759,9 @@ export const FeedView: React.FC<{
           t('feed.checkEvery'),
           selected.checkIntervalMinutes
             ? formatInterval(selected.checkIntervalMinutes)
-            : t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }),
+            : selectedInherited.timeline
+              ? t('feed.intervalDefaultFrom', { interval: formatInterval(selectedInherited.minutes), name: selectedInherited.timeline.name })
+              : t('feed.intervalDefault', { interval: formatInterval(selectedInherited.minutes) }),
         ],
         ...(selectedAccount ? [[t('feed.detailAccount'), selectedAccount]] : []),
         ...(selectedNotifyVia.length
@@ -898,10 +900,10 @@ export const FeedView: React.FC<{
                   handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'interval' }),
                 },
                 {
-                  label: t('feed.timelinesMenu'),
-                  icon: <MaterialIcons name="view-list" size={18} color={iconColor} />,
-                  systemImage: 'list.bullet',
-                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'timelines' }),
+                  label: t('feed.timelineMenu'),
+                  icon: <MaterialIcons name="drive-file-move" size={18} color={iconColor} />,
+                  systemImage: 'folder',
+                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'timeline' }),
                 },
                 {
                   label: t('feed.openOn', { site: watchSiteLabels[selected.site] }),
