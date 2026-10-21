@@ -280,13 +280,16 @@ const resolveOpenProfile = (url: string, options?: OpenTabOptions): Pick<Tab, 'p
   const requestedAuto = options?.profile === AUTO_PROFILE_ID || options?.profileMode === 'auto'
   const requestedProfile = requestedAuto ? undefined : options?.profile
   const fallbackProfile = requestedProfile || ui$.lastSelectedProfileId.get() || 'default'
+  // The feed tab has no site of its own: what it opens takes the profile of its own site.
+  const inheritsParentProfile = options?.source === 'child' && parentTab?.profile && !isFeedTabUrl(parentTab.url)
 
   if (!oneProfilePerSite) {
-    return { profile: fallbackProfile, profileMode: 'manual' }
+    // A link opens in the profile of the tab it came from, not whichever profile was chosen last.
+    const profile = requestedProfile || (inheritsParentProfile ? parentTab.profile : undefined) || fallbackProfile
+    return { profile, profileMode: 'manual' }
   }
 
-  // The feed tab has no site of its own: what it opens takes the profile of its own site.
-  if (options?.source === 'child' && parentTab?.profile && !isFeedTabUrl(parentTab.url)) {
+  if (inheritsParentProfile) {
     recordAutoProfile(parentTab.profile)
     return {
       profile: parentTab.profile,

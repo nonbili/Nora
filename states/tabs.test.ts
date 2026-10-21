@@ -108,6 +108,35 @@ it('opens a child in its supplied profile even with one tab per site enabled', a
   }
 })
 
+it('opens a child in the profile of its parent tab, not the last chosen one', async () => {
+  const { settings$ } = await import('./settings')
+  const { ui$ } = await import('./ui')
+  const previousTabs = tabs$.tabs.get()
+  const previousIndex = tabs$.activeTabIndex.get()
+  const previousOneTab = settings$.oneTabPerSite.get()
+  const previousOneProfile = settings$.oneProfilePerSite.get()
+  const previousProfile = ui$.lastSelectedProfileId.get()
+  try {
+    settings$.oneTabPerSite.set(false)
+    settings$.oneProfilePerSite.set(false)
+    ui$.lastSelectedProfileId.set('other')
+    tabs$.tabs.set([{ id: 'source', url: 'https://source.test', profile: 'work' }])
+    tabs$.activeTabIndex.set(0)
+    const id = tabs$.openTab('https://target.test/post', { parentTabId: 'source', source: 'child' })
+    expect(tabs$.tabs.get().find((tab) => tab.id === id)?.profile).toBe('work')
+
+    // A tab the user opens still takes the last chosen profile.
+    const manual = tabs$.openTab('https://manual.test')
+    expect(tabs$.tabs.get().find((tab) => tab.id === manual)?.profile).toBe('other')
+  } finally {
+    tabs$.tabs.set(previousTabs)
+    tabs$.activeTabIndex.set(previousIndex)
+    settings$.oneTabPerSite.set(previousOneTab)
+    settings$.oneProfilePerSite.set(previousOneProfile)
+    ui$.lastSelectedProfileId.set(previousProfile)
+  }
+})
+
 it('does not reuse a tab of the Anonymous profile for a link from a tab of another profile', async () => {
   const { settings$ } = await import('./settings')
   const previousTabs = tabs$.tabs.get()

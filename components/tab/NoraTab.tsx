@@ -781,12 +781,13 @@ const WebTab: React.FC<NoraTabProps> = ({
       case 'new-tab':
         if (!isExternalAppUrl(data.url)) {
           const nextUrl = data.kind === 'image' ? buildImageViewerUrl(data.url, theme) : forceHttps(data.url)
-          // A tab opened from the Anonymous profile stays in it, and does not go to whichever
-          // profile was chosen last.
+          // The profile goes along, so one tab per site only reuses a tab of the same profile,
+          // as on desktop. A tab opened from the Anonymous profile always stays in it.
           tabs$.openTab(nextUrl, {
             parentTabId: tab.id,
+            profile: tab.profile || 'default',
             source: 'child',
-            ...(isAnonymousProfile(tab.profile) ? { profile: tab.profile, profileMode: 'manual' as const } : {}),
+            ...(isAnonymousProfile(tab.profile) ? { profileMode: 'manual' as const } : {}),
           })
         }
         break
