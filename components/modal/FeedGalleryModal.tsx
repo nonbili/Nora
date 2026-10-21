@@ -8,9 +8,11 @@ import { useVideoPlayer, VideoView } from 'expo-video'
 import { t } from 'i18next'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
+import { Avatar } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
+import { watch$ } from '@/states/watch'
 import { tabs$ } from '@/states/tabs'
-import { mediaKey, refreshesMedia, watchSiteLabels, watchSourceLabel, type WatchMedia, type WatchPost } from '@/lib/watch'
+import { mediaKey, refreshesMedia, watchKey, watchSiteLabels, watchSourceLabel, type WatchMedia, type WatchPost } from '@/lib/watch'
 import { findWatchPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
 import { ensurePostMedia, holdMedia, keepPostMediaItem, keptMediaUri, saveWatchPostMedia, savesToDownloads, touchMedia, watchMedia$ } from '@/lib/watch-media'
@@ -172,6 +174,8 @@ export const FeedGalleryModal = () => {
   const page = pages[pageIndex] as GalleryPage | undefined
   const post = page?.post
   const incompletePost = post?.mediaComplete === false ? post : undefined
+  const profileKey = post ? watchKey(post) : undefined
+  const profile = useValue(() => (profileKey ? watch$.profiles.get().find((current) => current.key === profileKey) : undefined))
 
   const onClose = () => ui$.feedGallery.set(null)
 
@@ -310,13 +314,23 @@ export const FeedGalleryModal = () => {
           <Pressable onPress={onClose} className="h-11 w-11 items-center justify-center rounded-full bg-black/40">
             <MaterialIcons name="close" color="#fff" size={22} />
           </Pressable>
-          <View className="flex-1">
-            {gallery.posts ? (
-              <NouText className="font-medium text-white" numberOfLines={1}>
-                {watchSourceLabel(post)}
-              </NouText>
-            ) : null}
-            {media.length > 1 ? <NouText className="text-sm text-white">{`${page.index + 1} / ${media.length}`}</NouText> : null}
+          {/* Whose post it is, as the gallery goes on through the posts of many. */}
+          <View className="min-w-0 flex-1 flex-row items-center gap-2">
+            {gallery.posts ? <Avatar uri={profile?.avatar} size={32} site={post.site} /> : null}
+            <View className="min-w-0 flex-1">
+              {gallery.posts ? (
+                <NouText className="font-medium text-white" numberOfLines={1}>
+                  {profile?.name || watchSourceLabel(post)}
+                </NouText>
+              ) : null}
+              {(gallery.posts && profile?.name) || media.length > 1 ? (
+                <NouText className="text-sm text-white" numberOfLines={1}>
+                  {[gallery.posts && profile?.name ? watchSourceLabel(post) : '', media.length > 1 ? `${page.index + 1} / ${media.length}` : '']
+                    .filter(Boolean)
+                    .join(' · ')}
+                </NouText>
+              ) : null}
+            </View>
           </View>
           {page.item ? (
             <Pressable
