@@ -18,6 +18,7 @@ import { RenameGroupModal } from '../modal/RenameGroupModal'
 import { ZoomModal } from '../modal/ZoomModal'
 import { FeedGalleryModal } from '../modal/FeedGalleryModal'
 import { TimelineModal } from '../modal/TimelineModal'
+import { SourcePickerModal } from '../modal/SourcePickerModal'
 import { AddSourcesModal } from '../modal/AddSourcesModal'
 import { FeedSettingsModal } from '../modal/FeedSettingsModal'
 import { SourcesModal } from '../modal/SourcesModal'
@@ -101,6 +102,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <SourcesModal />
         <FeedGalleryModal />
         <TimelineModal />
+        <SourcePickerModal />
         <WatchWebViewHost />
         {nIf(!isWeb, <TranslationCard />)}
         {nIf(

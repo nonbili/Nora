@@ -22,6 +22,8 @@ interface Store {
   // The list of all watched sources, opened from the feed tab whose links it opens beside; or, to pick
   // one, the sources of the timeline that tab shows.
   sourcesModal: { tabId?: string; timelineId?: string; pick?: boolean } | null
+  // A watched source's timelines or check interval, chosen from its menu in the feed.
+  sourcePicker: { profileKey: string; kind: 'timelines' | 'interval' } | null
   // A source picked from that list, for its feed tab to show.
   feedSelection: { tabId: string; profileKey: string } | null
   // Adding sources by their links or from a file: into the timeline it was opened from, if any.
@@ -76,6 +78,7 @@ export const ui$ = observable<Store>({
   downloadVideoModalUrl: '',
   feedGallery: null,
   timelineModal: null,
+  sourcePicker: null,
   sourcesModal: null,
   feedSelection: null,
   addSourcesModal: null,

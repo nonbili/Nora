@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
 import { useValue } from '@legendapp/state/react'
+import { BottomSheet, RNHostView } from '@expo/ui'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { t } from 'i18next'
 import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
@@ -14,7 +16,7 @@ import { isAnonymousProfile } from '@/lib/anonymous'
 import { clearWatchMedia, watchMedia$ } from '@/lib/watch-media'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
-import { clsx } from '@/lib/utils'
+import { clsx, isWeb } from '@/lib/utils'
 
 const MEDIA_LIMIT_OPTIONS_MB = [250, 500, 1024, 2048, 5120]
 
@@ -31,6 +33,7 @@ export const FeedSettingsModal = () => {
   const tw = useTwColor()
   const isDark = useColorScheme() === 'dark'
   const open = useValue(ui$.feedSettingsModalOpen)
+  const insets = useSafeAreaInsets()
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
   const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
   const mediaLimitMB = useValue(watch$.mediaLimitMB)
@@ -46,7 +49,8 @@ export const FeedSettingsModal = () => {
 
   const onClose = () => ui$.feedSettingsModalOpen.set(false)
 
-  if (!open) {
+  // A phone's sheet stays there while it slides away; the desktop's dialog goes at once.
+  if (!open && isWeb) {
     return null
   }
 
@@ -56,105 +60,136 @@ export const FeedSettingsModal = () => {
     confirmDestructiveAction(t('feed.mediaClear'), t('feed.mediaClearConfirm'), t('feed.mediaClear'), clearWatchMedia)
   }
 
+  const list = (
+    <ScrollView style={{ flexShrink: 1 }} contentContainerClassName="rounded-xl bg-white px-4 dark:bg-zinc-900">
+      <View className="py-3">
+        <ChoicePicker
+          label={t('feed.checkEvery')}
+          value={formatInterval(defaultInterval)}
+          options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes }))}
+          onSelect={(minutes) => minutes && watch$.checkIntervalMinutes.set(minutes)}
+          iconColor={iconColor}
+        />
+        <Hint>{t('feed.intervalHint')}</Hint>
+      </View>
+      <Divider />
+      <View className="py-3">
+        <ChoicePicker
+          label={t('feed.postsPerSource')}
+          value={String(postsPerSource)}
+          options={POSTS_PER_SOURCE_OPTIONS.map((count) => ({ label: String(count), minutes: count }))}
+          onSelect={(count) => count && watch$.postsPerSource.set(count)}
+          iconColor={iconColor}
+        />
+        <Hint>{t('feed.postsPerSourceHint')}</Hint>
+      </View>
+      <Divider />
+      <View className="py-3">
+        <NouSwitch
+          label={t('feed.useAccounts')}
+          value={useAccounts}
+          onPress={() => watch$.useAccounts.set(!useAccounts)}
+        />
+        <Hint>
+          {t('feed.useAccountsHint', {
+            sites: WATCH_ACCOUNT_SITES.map((site) => watchSiteLabels[site]).join(', '),
+          })}
+        </Hint>
+      </View>
+      {useAccounts && profiles.length > 1
+        ? WATCH_ACCOUNT_SITES.map((site) => {
+            // The menu gives back a number: the place of the profile in the list, or none for any.
+            const chosen = profiles.find((profile) => profile.id === accountProfiles[site])
+            return (
+              <View key={site} className="pb-3">
+                <ChoicePicker
+                  label={t('feed.accountFrom', { site: watchSiteLabels[site] })}
+                  value={chosen?.name ?? t('feed.accountAnyProfile')}
+                  options={[
+                    { label: t('feed.accountAnyProfile'), minutes: undefined },
+                    ...profiles.map((profile, index) => ({ label: profile.name, minutes: index })),
+                  ]}
+                  onSelect={(index) =>
+                    watch$.accountProfiles[site].set(index === undefined ? undefined : profiles[index].id)
+                  }
+                  iconColor={iconColor}
+                />
+              </View>
+            )
+          })
+        : null}
+      <Divider />
+      <NouSwitch
+        className="py-3"
+        label={t('feed.mediaWifiOnly')}
+        value={mediaWifiOnly}
+        onPress={() => watch$.mediaWifiOnly.set(!mediaWifiOnly)}
+      />
+      <Divider />
+      <View className="py-3">
+        <ChoicePicker
+          label={t('feed.mediaLimit')}
+          value={formatMegabytes(mediaLimitMB)}
+          options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), minutes: mb }))}
+          onSelect={(mb) => mb && watch$.mediaLimitMB.set(mb)}
+          iconColor={iconColor}
+        />
+        <Hint>
+          {t('feed.mediaUsage', {
+            used: formatMegabytes(mediaUsedBytes / 1024 / 1024),
+            limit: formatMegabytes(mediaLimitMB),
+          })}
+        </Hint>
+      </View>
+      <Divider />
+      <Pressable onPress={clearMedia} disabled={!mediaUsedBytes} accessibilityRole="button">
+        <View className="py-4">
+          <NouText
+            className={clsx(
+              'font-medium',
+              mediaUsedBytes ? 'text-red-600 dark:text-red-400' : 'text-zinc-400 dark:text-zinc-600',
+            )}
+          >
+            {t('feed.mediaClear')}
+          </NouText>
+        </View>
+      </Pressable>
+    </ScrollView>
+  )
+
+  if (!isWeb) {
+    return (
+      <BottomSheet
+        isPresented={open}
+        onDismiss={onClose}
+        snapPoints={['half', 'full']}
+        // Material's own handle has a wide margin above and below: a tighter one is drawn instead.
+        showDragIndicator={false}
+        // The sheet's own inset would not narrow the views inside it: they are padded themselves.
+        contentPadding={0}
+        containerColor={isDark ? tw('#030712') : tw('#f4f4f5')}
+      >
+        {/* Hosted, so that touches reach the views inside: a native switch works without, a Pressable not.
+            It fills the sheet, whose full height bounds the list: on a short screen the list scrolls. */}
+        <RNHostView>
+          <View className="flex-1 px-4" style={{ paddingBottom: insets.bottom + 16 }}>
+            <View
+              style={{ width: 32, height: 4, borderRadius: 2, marginTop: 16, marginBottom: 16, alignSelf: 'center', backgroundColor: isDark ? tw('#52525b') : tw('#a1a1aa') }}
+            />
+            <NouText className="mb-3 text-lg font-bold">{t('feed.settings')}</NouText>
+            {list}
+          </View>
+        </RNHostView>
+      </BottomSheet>
+    )
+  }
+
   return (
     <BaseCenterModal onClose={onClose}>
-      {/* On a short screen, as a phone held sideways, the settings scroll between the title and Close. */}
+      {/* On a short screen, the settings scroll between the title and Close. */}
       <View className="w-full p-4" style={{ flexShrink: 1 }}>
         <NouText className="mb-4 text-lg font-bold">{t('feed.settings')}</NouText>
-        <ScrollView style={{ flexShrink: 1 }} contentContainerClassName="rounded-xl bg-white px-4 dark:bg-zinc-900">
-          <View className="py-3">
-            <ChoicePicker
-              label={t('feed.checkEvery')}
-              value={formatInterval(defaultInterval)}
-              options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes }))}
-              onSelect={(minutes) => minutes && watch$.checkIntervalMinutes.set(minutes)}
-              iconColor={iconColor}
-            />
-            <Hint>{t('feed.intervalHint')}</Hint>
-          </View>
-          <Divider />
-          <View className="py-3">
-            <ChoicePicker
-              label={t('feed.postsPerSource')}
-              value={String(postsPerSource)}
-              options={POSTS_PER_SOURCE_OPTIONS.map((count) => ({ label: String(count), minutes: count }))}
-              onSelect={(count) => count && watch$.postsPerSource.set(count)}
-              iconColor={iconColor}
-            />
-            <Hint>{t('feed.postsPerSourceHint')}</Hint>
-          </View>
-          <Divider />
-          <View className="py-3">
-            <NouSwitch
-              label={t('feed.useAccounts')}
-              value={useAccounts}
-              onPress={() => watch$.useAccounts.set(!useAccounts)}
-            />
-            <Hint>
-              {t('feed.useAccountsHint', {
-                sites: WATCH_ACCOUNT_SITES.map((site) => watchSiteLabels[site]).join(', '),
-              })}
-            </Hint>
-          </View>
-          {useAccounts && profiles.length > 1
-            ? WATCH_ACCOUNT_SITES.map((site) => {
-                // The menu gives back a number: the place of the profile in the list, or none for any.
-                const chosen = profiles.find((profile) => profile.id === accountProfiles[site])
-                return (
-                  <View key={site} className="pb-3">
-                    <ChoicePicker
-                      label={t('feed.accountFrom', { site: watchSiteLabels[site] })}
-                      value={chosen?.name ?? t('feed.accountAnyProfile')}
-                      options={[
-                        { label: t('feed.accountAnyProfile'), minutes: undefined },
-                        ...profiles.map((profile, index) => ({ label: profile.name, minutes: index })),
-                      ]}
-                      onSelect={(index) =>
-                        watch$.accountProfiles[site].set(index === undefined ? undefined : profiles[index].id)
-                      }
-                      iconColor={iconColor}
-                    />
-                  </View>
-                )
-              })
-            : null}
-          <Divider />
-          <NouSwitch
-            className="py-3"
-            label={t('feed.mediaWifiOnly')}
-            value={mediaWifiOnly}
-            onPress={() => watch$.mediaWifiOnly.set(!mediaWifiOnly)}
-          />
-          <Divider />
-          <View className="py-3">
-            <ChoicePicker
-              label={t('feed.mediaLimit')}
-              value={formatMegabytes(mediaLimitMB)}
-              options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), minutes: mb }))}
-              onSelect={(mb) => mb && watch$.mediaLimitMB.set(mb)}
-              iconColor={iconColor}
-            />
-            <Hint>
-              {t('feed.mediaUsage', {
-                used: formatMegabytes(mediaUsedBytes / 1024 / 1024),
-                limit: formatMegabytes(mediaLimitMB),
-              })}
-            </Hint>
-          </View>
-          <Divider />
-          <Pressable onPress={clearMedia} disabled={!mediaUsedBytes} accessibilityRole="button">
-            <View className="py-4">
-              <NouText
-                className={clsx(
-                  'font-medium',
-                  mediaUsedBytes ? 'text-red-600 dark:text-red-400' : 'text-zinc-400 dark:text-zinc-600',
-                )}
-              >
-                {t('feed.mediaClear')}
-              </NouText>
-            </View>
-          </Pressable>
-        </ScrollView>
+        {list}
         <View className="mt-6 flex-row justify-end">
           <NouButton size="1" onPress={onClose}>
             {t('menus.close')}

@@ -46,6 +46,8 @@ export interface WatchPost {
   // The picture shown for the post in the feed.
   image?: string
   media?: WatchMedia[]
+  // The page a post's cover is of, as the card of a link it shares: a tap on the cover opens it.
+  link?: string
   // False while only the post's cover is known: Instagram tells the rest on the post's own embed page.
   mediaComplete?: boolean
   createdAtMs: number
@@ -753,6 +755,7 @@ export function parseBlueskyFeed(json: any, handle: string, pdsOf: (did: string)
       text,
       image: media[0]?.thumb || media[0]?.url || external?.thumb,
       media,
+      link: !media.length && external?.thumb ? external.uri : undefined,
       mediaComplete: true,
       // A repost shows up in the feed when it was reposted.
       createdAtMs: Date.parse((repost ? item.reason.indexedAt : post.record?.createdAt) || post.indexedAt) || 0,
@@ -820,6 +823,7 @@ export function parseMastodonStatuses(account: any, statuses: any, handle: strin
       text: [shown.spoiler_text, content].filter(Boolean).join('\n\n'),
       image: media[0]?.thumb || media[0]?.url || shown.card?.image || undefined,
       media,
+      link: !media.length && shown.card?.image ? shown.card.url || undefined : undefined,
       mediaComplete: true,
       createdAtMs: Date.parse(status.created_at) || 0,
       repostOf: status.reblog ? shown.account?.acct : undefined,

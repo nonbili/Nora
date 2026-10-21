@@ -5,14 +5,11 @@ import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { Image } from 'expo-image'
 import { t } from 'i18next'
 import { NouText } from '../NouText'
-import { NouButton } from '../button/NouButton'
-import { NouSwitch } from '../switch/NouSwitch'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { getTimeline, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
-  WATCH_INTERVAL_OPTIONS,
   feedChipSources,
   formatPostAge,
   mediaKey,
@@ -100,6 +97,16 @@ export const profileStatus = (profile: WatchedProfile): { text: string; warn: bo
     if (name) return { text: t('feed.statusLoggedIn', { site, profile: name }), warn: false }
   }
   if (!profile.lastCheckedAt) return { text: t('feed.statusPending'), warn: false }
+  return null
+}
+
+/** How a profile was last checked, in short, for its details: with which account, if any. */
+const profileAccount = (profile: WatchedProfile): string | null => {
+  if (profile.mode === 'loggedIn') {
+    const name = settings$.profiles.peek().find((p) => p?.id === profile.accountProfileId)?.name
+    return name ? t('feed.accountLoggedInProfile', { profile: name }) : t('feed.accountLoggedIn')
+  }
+  if (profile.mode === 'loggedOut') return watch$.useAccounts.peek() ? t('feed.accountLoggedOut') : t('feed.accountsOff')
   return null
 }
 
@@ -217,7 +224,8 @@ const PostRow: React.FC<{
   now: number
   iconColor: string
   onOpenOriginal: () => void
-}> = ({ post, profile, unread, now, iconColor, onOpenOriginal }) => {
+  onOpenLink: (url: string) => void
+}> = ({ post, profile, unread, now, iconColor, onOpenOriginal, onOpenLink }) => {
   const [expanded, setExpanded] = useState(false)
   const name = profile?.name || post.handle
   const source = watchSourceLabel(post)
@@ -260,12 +268,14 @@ const PostRow: React.FC<{
         <View className="pr-3">
           <PostMedia
             post={post}
-            // A cover alone, of a link or of what the feed does not have, as a Reddit video: the post opens.
-            // Media still to be read, as of an Instagram post, is read by the gallery.
+            // A cover alone: the page of a link card opens, and of what the feed does not have, as a
+            // Reddit video, the post. Media still to be read, as of an Instagram post, is read by the gallery.
             onOpen={() =>
               post.media?.length || post.mediaComplete === false
                 ? ui$.feedGallery.set({ postKey: post.key, profileKey: watchKey(post), index: 0 })
-                : onOpenOriginal()
+                : post.link
+                  ? onOpenLink(post.link)
+                  : onOpenOriginal()
             }
           />
         </View>
@@ -302,8 +312,10 @@ export const FeedView: React.FC<{
   const allProfiles = useValue(watch$.profiles)
   const timelines = useValue(watch$.timelines)
   const timeline = useValue(() => getTimeline(timelineId))
-  const defaultInterval = useValue(watch$.checkIntervalMinutes)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  // When the selected source's header was opened to show how it is being checked; null while it is closed.
+  const [detailsAt, setDetailsAt] = useState<number | null>(null)
+  const detailsOpen = detailsAt !== null
   const [refreshing, setRefreshing] = useState(false)
   // What was unread when the tab was switched to stays marked while it is shown, as does what comes in since.
   const [unreadOnShow, setUnreadOnShow] = useState<{ keys: Set<string>; at: number }>(() => ({ keys: new Set(), at: 0 }))
@@ -408,7 +420,9 @@ export const FeedView: React.FC<{
 
   // How many posts the view has scrolled through; a view shown again starts at the first page.
   const postProfileKeys = selected ? [selected.key] : profiles.map((profile) => profile.key)
-  const mediaOnly = Boolean(timeline?.mediaOnly)
+  const feedMediaOnly = useValue(watch$.feedMediaOnly)
+  const defaultInterval = useValue(watch$.checkIntervalMinutes)
+  const mediaOnly = timeline ? Boolean(timeline.mediaOnly) : feedMediaOnly
   const view = `${mediaOnly}\n${postProfileKeys.join('\n')}`
   const [page, setPage] = useState({ view, limit: FEED_PAGE_SIZE })
   const limit = page.view === view ? page.limit : FEED_PAGE_SIZE
@@ -489,12 +503,6 @@ export const FeedView: React.FC<{
             systemImage: timeline.pinned ? 'pin.slash' : 'pin',
             handler: () => watch$.updateTimeline(timeline.id, { pinned: !timeline.pinned }),
           },
-          {
-            label: timeline.mediaOnly ? t('feed.showAllPosts') : t('feed.showMediaOnly'),
-            icon: <MaterialIcons name={timeline.mediaOnly ? 'view-agenda' : 'grid-view'} size={18} color={iconColor} />,
-            systemImage: timeline.mediaOnly ? 'list.bullet' : 'square.grid.3x3',
-            handler: () => watch$.updateTimeline(timeline.id, { mediaOnly: !timeline.mediaOnly }),
-          },
         ]
       : []),
     {
@@ -541,9 +549,26 @@ export const FeedView: React.FC<{
   }
 
   const selectedStatus = selected ? profileStatus(selected) : null
+  const selectedAccount = selected ? profileAccount(selected) : null
 
   const newestPostAt = useWatchPosts(getNewestPostTimes)
   const unreadSourceKeys = useWatchPosts(() => getProfilesWithPosts(unreadOnShow.keys, unreadOnShow.at), unreadOnShow)
+  const ago = (at?: number) => (at ? t('feed.ago', { age: formatPostAge(at, detailsAt ?? now) }) : t('feed.never'))
+  // The last successful check is told apart only when the last check failed.
+  const detailRows: string[][] = selected
+    ? [
+        [t('feed.detailLastChecked'), ago(selected.lastCheckedAt)],
+        ...(selected.lastSuccessAt !== selected.lastCheckedAt ? [[t('feed.detailLastSuccess'), ago(selected.lastSuccessAt)]] : []),
+        [t('feed.detailNewestPost'), ago(newestPostAt[selected.key])],
+        [
+          t('feed.checkEvery'),
+          selected.checkIntervalMinutes
+            ? formatInterval(selected.checkIntervalMinutes)
+            : t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }),
+        ],
+        ...(selectedAccount ? [[t('feed.detailAccount'), selectedAccount]] : []),
+      ]
+    : []
   const chips = feedChipSources(profiles, newestPostAt, unreadSourceKeys, CHIP_LIMIT, selected?.key)
 
   // Handles that are on more than one site, whose chips also tell the site.
@@ -613,74 +638,107 @@ export const FeedView: React.FC<{
       ) : null}
 
       {selected ? (
-        <View className="mx-4 mb-3 gap-3 rounded-2xl bg-white px-4 py-3 dark:bg-zinc-900">
-          <Pressable onPress={() => openUrl(watchProfileUrl(selected))} className="flex-row items-center gap-3">
-            <Avatar uri={selected.avatar} size={40} site={selected.site} />
-            <View className="flex-1">
-              <NouText className="font-semibold" numberOfLines={1}>
-                {selected.name || selected.handle}
-              </NouText>
-              <NouText className="text-sm text-zinc-600 dark:text-zinc-400">
-                {watchSourceLabel(selected)} · {watchSiteLabels[selected.site]}
-              </NouText>
-            </View>
-            <MaterialIcons name="open-in-new" size={18} color={iconColor} />
-          </Pressable>
-          {selectedStatus ? (
-            <NouText className={clsx('text-sm', selectedStatus.warn ? 'text-amber-700 dark:text-amber-400' : 'text-zinc-600 dark:text-zinc-400')}>
-              {selectedStatus.text}
-            </NouText>
-          ) : null}
-          <ChoicePicker
-            label={t('feed.checkEvery')}
-            value={selected.checkIntervalMinutes ? formatInterval(selected.checkIntervalMinutes) : t('feed.intervalDefault', { interval: formatInterval(defaultInterval) })}
-            options={[
-              { label: t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }), minutes: undefined },
-              ...WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes })),
-            ]}
-            onSelect={(minutes) => watch$.setProfileCheckInterval(selected.key, minutes)}
-            iconColor={iconColor}
-          />
-          <NouSwitch label={t('feed.notify')} value={selected.notify} onPress={() => void toggleNotify(selected)} />
-          <View className="gap-2">
-            <NouText className="font-medium">{t('feed.timelines')}</NouText>
-            <View className="flex-row flex-wrap gap-2">
-              {timelines.map((current) => {
-                const included = current.profileKeys.includes(selected.key)
-                return (
-                  <Pressable
-                    key={current.id}
-                    onPress={() => watch$.setInTimeline(current.id, selected.key, !included)}
-                    accessibilityRole="checkbox"
-                    hitSlop={androidHitSlop}
-                    accessibilityState={{ checked: included }}
-                    style={iosTouchTarget}
-                    className={clsx(
-                      'h-8 flex-row items-center gap-1 rounded-full border px-3',
-                      included
-                        ? 'border-indigo-300 bg-indigo-100 dark:border-indigo-400/40 dark:bg-indigo-500/20'
-                        : 'border-zinc-300 dark:border-zinc-700',
-                    )}
-                  >
-                    {included ? <MaterialIcons name="check" size={14} color={iconColor} /> : null}
-                    <NouText className="text-sm">{current.name}</NouText>
-                  </Pressable>
-                )
-              })}
-              <Pressable
-                onPress={() => ui$.timelineModal.set({ profileKey: selected.key })}
-                hitSlop={androidHitSlop}
-                style={iosTouchTarget}
-                className="h-8 flex-row items-center gap-1 rounded-full border border-dashed border-zinc-300 px-3 dark:border-zinc-700"
-              >
-                <MaterialIcons name="add" size={14} color={iconColor} />
-                <NouText className="text-sm">{t('feed.newTimeline')}</NouText>
-              </Pressable>
-            </View>
+        <View className="mx-4 mb-3 gap-2 rounded-2xl bg-white py-2 pl-4 pr-1 dark:bg-zinc-900">
+          <View className="flex-row items-center gap-1">
+            <Pressable
+              onPress={() => setDetailsAt(detailsOpen ? null : Date.now())}
+              accessibilityRole="button"
+              accessibilityLabel={t('feed.showDetails')}
+              accessibilityState={{ expanded: detailsOpen }}
+              className="min-w-0 flex-1 flex-row items-center gap-3"
+            >
+              <Avatar uri={selected.avatar} size={40} site={selected.site} />
+              <View className="min-w-0 flex-1">
+                <View className="flex-row items-center gap-1">
+                  <NouText className="shrink font-semibold" numberOfLines={1}>
+                    {selected.name || selected.handle}
+                  </NouText>
+                  {selectedStatus?.warn && !detailsOpen ? <MaterialIcons name="error-outline" size={16} color={tw('#b45309')} /> : null}
+                </View>
+                <View className="flex-row items-center gap-0.5">
+                  <NouText className="shrink text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+                    {sameAsName(selected.name || selected.handle, watchSourceLabel(selected))
+                      ? watchSiteLabels[selected.site]
+                      : `${watchSourceLabel(selected)} · ${watchSiteLabels[selected.site]}`}
+                  </NouText>
+                  <MaterialIcons name={detailsOpen ? 'expand-less' : 'expand-more'} size={18} color={iconColor} />
+                </View>
+              </View>
+            </Pressable>
+            <Pressable
+              onPress={() => void toggleNotify(selected)}
+              accessibilityRole="switch"
+              accessibilityLabel={t('feed.notify')}
+              accessibilityState={{ checked: selected.notify }}
+              hitSlop={androidHitSlop}
+              style={iosTouchTarget}
+              className="h-11 w-11 items-center justify-center"
+            >
+              <MaterialIcons
+                name={selected.notify ? 'notifications-active' : 'notifications-none'}
+                size={22}
+                color={selected.notify ? tw('#6366f1') : iconColor}
+              />
+            </Pressable>
+            <NouMenu
+              triggerLabel={t('menus.more')}
+              trigger={(
+                <View className="h-11 w-11 items-center justify-center" style={iosTouchTarget}>
+                  <MaterialIcons name="more-vert" size={22} color={iconColor} />
+                </View>
+              )}
+              items={[
+                {
+                  label: t('feed.checkEveryMenu'),
+                  icon: <MaterialIcons name="schedule" size={18} color={iconColor} />,
+                  systemImage: 'clock',
+                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'interval' }),
+                },
+                {
+                  label: t('feed.timelinesMenu'),
+                  icon: <MaterialIcons name="view-list" size={18} color={iconColor} />,
+                  systemImage: 'list.bullet',
+                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'timelines' }),
+                },
+                {
+                  label: t('feed.openOn', { site: watchSiteLabels[selected.site] }),
+                  icon: <MaterialIcons name="open-in-new" size={18} color={iconColor} />,
+                  systemImage: 'arrow.up.right.square',
+                  handler: () => openUrl(watchProfileUrl(selected)),
+                },
+                { label: '', handler: () => {}, kind: 'separator' as const },
+                {
+                  label: t('feed.unwatch'),
+                  icon: <MaterialIcons name="remove-circle-outline" size={18} color={tw('#dc2626')} />,
+                  systemImage: 'minus.circle',
+                  handler: () => unwatch(selected),
+                },
+              ]}
+            />
           </View>
-          <NouButton variant="outline" size="1" className="self-start" textClassName="text-red-600 dark:text-red-400" onPress={() => unwatch(selected)}>
-            {t('feed.unwatch')}
-          </NouButton>
+          {detailsOpen ? (
+            <View className="gap-1 pb-1 pr-3">
+              {selectedStatus?.warn ? (
+                <NouText className="mb-1 text-sm text-amber-700 dark:text-amber-400">{selectedStatus.text}</NouText>
+              ) : null}
+              <View className="flex-row gap-3">
+                <View className="gap-1">
+                  {detailRows.map(([label]) => (
+                    <NouText key={label} className="text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+                      {label}
+                    </NouText>
+                  ))}
+                </View>
+                <View className="flex-1 gap-1">
+                  {detailRows.map(([label, value]) => (
+                    <NouText key={label} className="text-sm" numberOfLines={1}>
+                      {value}
+                    </NouText>
+                  ))}
+                </View>
+              </View>
+            </View>
+          ) : null}
         </View>
       ) : !timeline && loggedOutSites.length ? (
         <View className="mx-4 mb-3 rounded-2xl bg-amber-50 px-4 py-3 dark:bg-amber-500/10">
@@ -717,6 +775,19 @@ export const FeedView: React.FC<{
             items={timelineMenuItems}
           />
         </View>
+        {profiles.length ? (
+          <Pressable
+            onPress={() =>
+              timeline ? watch$.updateTimeline(timeline.id, { mediaOnly: !mediaOnly }) : watch$.feedMediaOnly.set(!mediaOnly)
+            }
+            accessibilityRole="button"
+            accessibilityLabel={mediaOnly ? t('feed.showAllPosts') : t('feed.showMediaOnly')}
+            style={iosTouchTarget}
+            className="h-11 w-11 items-center justify-center rounded-full"
+          >
+            <MaterialIcons name={mediaOnly ? 'view-agenda' : 'grid-view'} color={iconColor} size={22} />
+          </Pressable>
+        ) : null}
         {profiles.length ? (
           <Pressable
             onPress={() => ui$.feedSettingsModalOpen.set(true)}
@@ -763,6 +834,7 @@ export const FeedView: React.FC<{
               now={now}
               iconColor={iconColor}
               onOpenOriginal={() => openUrl(item.url)}
+              onOpenLink={openUrl}
             />
           )
         }

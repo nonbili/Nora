@@ -371,7 +371,7 @@ describe('parseBlueskyFeed', () => {
       createdAtMs: Date.parse('2026-10-16T17:23:53.466Z'),
       repostOf: 'stephen.bsky.social',
     })
-    expect(result.posts[2]).toMatchObject({ text: 'read this\nhttps://example.com/story', image: 'https://cdn/card', media: [] })
+    expect(result.posts[2]).toMatchObject({ text: 'read this\nhttps://example.com/story', image: 'https://cdn/card', media: [], link: 'https://example.com/story' })
   })
 
   it('asks for a video at the server its account is on, and finds those accounts in the feed', () => {

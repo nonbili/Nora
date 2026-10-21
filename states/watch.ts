@@ -62,6 +62,8 @@ interface Store {
   useAccounts: boolean
   // The Nora profile to take each site's account from; any profile logged in to it when not set.
   accountProfiles: Partial<Record<WatchSite, string>>
+  // Whether the whole feed shows only the posts with photos or videos, as a timeline can.
+  feedMediaOnly: boolean
 
   isWatched: (target: WatchTarget) => boolean
   watch: (target: WatchTarget) => void
@@ -95,6 +97,7 @@ export const watch$: Observable<Store> = observable<Store>({
   sourcesSortReversed: false,
   useAccounts: true,
   accountProfiles: {},
+  feedMediaOnly: false,
 
   isWatched: (target) => watch$.profiles.get().some((profile) => profile.key === watchKey(target)),
 
@@ -174,6 +177,12 @@ export const watch$: Observable<Store> = observable<Store>({
 export const getTimeline = (timelineId: string | undefined) =>
   timelineId ? watch$.timelines.get().find((timeline) => timeline.id === timelineId) : undefined
 
+/** Whether a timeline shows only the posts with photos or videos; the feed's own choice for the whole feed. */
+export const isMediaOnly = (timelineId?: string) => {
+  const timeline = getTimeline(timelineId)
+  return timeline ? Boolean(timeline.mediaOnly) : watch$.feedMediaOnly.get()
+}
+
 /** The profiles a timeline shows, in the order they were watched; every profile for the whole feed. */
 export const timelineProfileKeys = (timelineId?: string) => {
   const keys = watch$.profiles.get().map((profile) => profile.key)
@@ -187,7 +196,7 @@ export const unreadKeys = (timelineId?: string) => {
   const feedSeenAt = watch$.feedSeenAt.get()
   const seenAt = Object.fromEntries(watch$.profiles.get().map((profile) => [profile.key, profile.seenAt ?? feedSeenAt]))
   // A timeline of photos and videos counts only the posts it shows.
-  return getUnreadPostKeys(timelineProfileKeys(timelineId), seenAt, feedSeenAt, getTimeline(timelineId)?.mediaOnly)
+  return getUnreadPostKeys(timelineProfileKeys(timelineId), seenAt, feedSeenAt, isMediaOnly(timelineId))
 }
 
 syncObservable(watch$, {
