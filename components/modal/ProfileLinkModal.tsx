@@ -15,6 +15,8 @@ import { useTwColor } from '@/lib/theme'
 export const ProfileLinkModal: React.FC = () => {
   const tw = useTwColor()
   const profileLinkUrl = useValue(ui$.profileLinkUrl)
+  const profileTabId = useValue(ui$.profileTabId)
+  const tabs = useValue(tabs$.tabs)
   const profiles = useValue(settings$.profiles)
   const oneProfilePerSite = useValue(settings$.oneProfilePerSite)
   const allowHttpWebsite = useValue(settings$.allowHttpWebsite)
@@ -22,15 +24,26 @@ export const ProfileLinkModal: React.FC = () => {
   const colorScheme = useColorScheme()
   const iconColor = colorScheme === 'light' ? tw(colors.iconLightStrong) : tw(colors.icon)
 
-  if (!profileLinkUrl) {
+  // A tab being reopened in another profile, rather than a link opened in a new tab.
+  const reopenTab = profileTabId ? tabs.find((tab) => tab.id === profileTabId) : undefined
+
+  if (!profileLinkUrl && !reopenTab) {
     return null
   }
 
   const close = () => {
-    ui$.profileLinkUrl.set('')
+    ui$.assign({ profileLinkUrl: '', profileTabId: null })
   }
 
   const openInProfile = (profileId: string) => {
+    if (reopenTab) {
+      if (profileId !== AUTO_PROFILE_ID) {
+        ui$.lastSelectedProfileId.set(profileId)
+      }
+      tabs$.setTabProfile(reopenTab.id, profileId)
+      close()
+      return
+    }
     const targetUrl = allowHttpWebsite ? profileLinkUrl : profileLinkUrl.replace('http://', 'https://')
     if (profileId === AUTO_PROFILE_ID) {
       tabs$.openTab(targetUrl, { profileMode: 'auto', source: 'manual' })
@@ -41,12 +54,20 @@ export const ProfileLinkModal: React.FC = () => {
     close()
   }
 
+  const selectedProfileId = reopenTab
+    ? oneProfilePerSite && reopenTab.profileMode === 'auto'
+      ? AUTO_PROFILE_ID
+      : reopenTab.profile || 'default'
+    : oneProfilePerSite
+      ? AUTO_PROFILE_ID
+      : lastSelectedProfileId
+
   return (
     <BaseCenterModal onClose={close} containerClassName="w-[28rem] max-w-[90vw]">
       <View className="gap-4 p-4">
         <View className="flex-row items-center justify-between gap-3">
           <NouText className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            {t('profiles.openLinkInProfile')}
+            {reopenTab ? t('profiles.reopenTabInProfile') : t('profiles.openLinkInProfile')}
           </NouText>
           <Pressable
             onPress={close}
@@ -56,12 +77,12 @@ export const ProfileLinkModal: React.FC = () => {
           </Pressable>
         </View>
         <NouText className="text-xs text-zinc-500 dark:text-zinc-400" numberOfLines={2}>
-          {profileLinkUrl}
+          {reopenTab ? reopenTab.title || reopenTab.url || t('tabs.new') : profileLinkUrl}
         </NouText>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="py-1">
           <ProfileSelectorChips
             profiles={profiles}
-            selectedProfileId={oneProfilePerSite ? AUTO_PROFILE_ID : lastSelectedProfileId}
+            selectedProfileId={selectedProfileId}
             onSelectProfile={openInProfile}
             showAuto={oneProfilePerSite}
             containerClassName="flex-row flex-nowrap gap-2"

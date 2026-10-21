@@ -31,7 +31,7 @@ import { SearchProviderIcon } from '../service/SearchProviderIcon'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ProfileSelectorChips } from '../profile/ProfileSelectorChips'
 import { colors } from '@/lib/colors'
-import { AUTO_PROFILE_ID, getSiteProfileId, isSiteProfileId } from '@/lib/site-profile'
+import { AUTO_PROFILE_ID, isSiteProfileId } from '@/lib/site-profile'
 import { BaseCenterModal } from './BaseCenterModal'
 import { presetBookmarkGroups, presetBookmarks } from '@/lib/preset-bookmarks'
 import { useTwColor } from '@/lib/theme'
@@ -120,16 +120,9 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
     if (onSelectProfile) {
       onSelectProfile(profileId)
     } else {
-      const tab$ = tabs$.tabs[index]
-      if (tab$.get()) {
-        if (profileId === AUTO_PROFILE_ID) {
-          const currentUrl = tab$.url.peek()
-          tab$.profile.set((currentUrl && getSiteProfileId(currentUrl)) || 'default')
-          tab$.profileMode.set('auto')
-        } else {
-          tab$.profile.set(profileId)
-          tab$.profileMode.set('manual')
-        }
+      const tabId = tabs$.tabs[index]?.id.peek()
+      if (tabId) {
+        tabs$.setTabProfile(tabId, profileId)
       }
     }
     if (profileId !== AUTO_PROFILE_ID) {

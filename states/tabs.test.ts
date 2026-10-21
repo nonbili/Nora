@@ -137,6 +137,27 @@ it('opens a child in the profile of its parent tab, not the last chosen one', as
   }
 })
 
+it('reopens a tab in another profile in its place', () => {
+  const previousTabs = tabs$.tabs.get()
+  try {
+    tabs$.tabs.set([
+      { id: 'first', url: 'https://first.test', profile: 'default' },
+      { id: 'second', url: 'https://second.test', profile: 'work', profileMode: 'manual' },
+    ])
+    tabs$.setTabProfile('second', 'other')
+    expect(tabs$.tabs.get().map((tab) => [tab.id, tab.url, tab.profile])).toEqual([
+      ['first', 'https://first.test', 'default'],
+      ['second', 'https://second.test', 'other'],
+    ])
+    expect(tabs$.tabs[1].profileMode.get()).toBe('manual')
+
+    tabs$.setTabProfile('second', 'auto')
+    expect(tabs$.tabs[1].profileMode.get()).toBe('auto')
+  } finally {
+    tabs$.tabs.set(previousTabs)
+  }
+})
+
 it('does not reuse a tab of the Anonymous profile for a link from a tab of another profile', async () => {
   const { settings$ } = await import('./settings')
   const previousTabs = tabs$.tabs.get()

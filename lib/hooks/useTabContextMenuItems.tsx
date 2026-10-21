@@ -184,6 +184,11 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
         }
       },
     },
+    {
+      label: t('menus.reopenInProfile'),
+      icon: <MaterialIcons name="switch-account" size={16} color={menuIconColor} />,
+      handler: () => ui$.profileTabId.set(tab.id),
+    },
     ...(options.canDuplicate !== false
       ? [
           {

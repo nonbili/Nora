@@ -32,6 +32,8 @@ interface Store {
   feedSettingsModalOpen: boolean
   navModalOpen: boolean
   profileLinkUrl: string
+  // A tab to reopen in another profile, picked in the same modal as a link.
+  profileTabId: string | null
   autoProfilesModalOpen: boolean
   profileModalOpen: boolean
   editingProfileId: string | null
@@ -86,6 +88,7 @@ export const ui$ = observable<Store>({
   feedSettingsModalOpen: false,
   navModalOpen: false,
   profileLinkUrl: '',
+  profileTabId: null,
   autoProfilesModalOpen: false,
   profileModalOpen: false,
   editingProfileId: null,

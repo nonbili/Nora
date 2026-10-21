@@ -176,7 +176,14 @@ export const TabModal = () => {
             className={clsx('flex-row items-center justify-between gap-2 pr-4', index !== tabs.length - 1 && 'mb-3')}
             key={tab.id || index}
           >
-            <TouchableOpacity className="flex-1 min-w-0" onPress={() => onPress(index)}>
+            <TouchableOpacity
+              className="flex-1 min-w-0"
+              onPress={() => onPress(index)}
+              onLongPress={() => {
+                ui$.profileTabId.set(tab.id)
+                closeModal()
+              }}
+            >
               <View
                 className={clsx(
                   'flex-1 flex-row items-center gap-3 rounded-md border py-2 px-2',

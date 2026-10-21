@@ -74,6 +74,7 @@ interface Store {
 
   openTab: (url: string, options?: OpenTabOptions) => string | undefined
   duplicateTab: (tabId: string) => string | undefined
+  setTabProfile: (tabId: string, profileId: string) => void
   closeTab: (index: number) => void
   closeTabsByIds: (tabIds: string[]) => void
   closeAll: () => void
@@ -608,6 +609,23 @@ export const tabs$: Observable<Store> = observable<Store>({
     }
 
     tabs$.recentlyClosedTabs.set(nextRecentlyClosedTabs)
+  },
+
+  // The tab keeps its place and its url, and its page loads again in the other profile.
+  setTabProfile: (tabId, profileId) => {
+    const index = tabs$.tabs.get().findIndex((tab) => tab.id === tabId)
+    if (index === -1) {
+      return
+    }
+    const tab$ = tabs$.tabs[index]
+    if (profileId === AUTO_PROFILE_ID) {
+      const currentUrl = tab$.url.peek()
+      tab$.profile.set((currentUrl && getSiteProfileId(currentUrl)) || 'default')
+      tab$.profileMode.set('auto')
+    } else {
+      tab$.profile.set(profileId)
+      tab$.profileMode.set('manual')
+    }
   },
 
   duplicateTab: (tabId) => {
