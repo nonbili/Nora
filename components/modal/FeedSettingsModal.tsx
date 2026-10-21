@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, TextInput, View, useColorScheme } from 'react-native'
+import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
 import { useValue } from '@legendapp/state/react'
-import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { BottomSheet, RNHostView } from '@expo/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { t } from 'i18next'
 import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
-import { EmojiGrid } from '../EmojiGrid'
+import { EmojiButton, EmojiPicker } from '../EmojiPicker'
 import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { ChoicePicker, formatInterval, getLoggedOutSites } from '../feed/FeedView'
@@ -21,7 +20,6 @@ import {
   POSTS_PER_SOURCE_OPTIONS,
   WATCH_ACCOUNT_SITES,
   WATCH_INTERVAL_OPTIONS,
-  cleanEmoji,
   watchSiteLabels,
 } from '@/lib/watch'
 import { isAnonymousProfile } from '@/lib/anonymous'
@@ -84,6 +82,13 @@ export const FeedSettingsModal = () => {
     confirmDestructiveAction(t('feed.mediaClear'), t('feed.mediaClearConfirm'), t('feed.mediaClear'), clearWatchMedia)
   }
 
+  const emojiRow = (
+    <View className="flex-row items-center justify-between gap-3 py-3">
+      <NouText className="flex-1">{t('feed.emoji')}</NouText>
+      <EmojiButton value={feedEmoji} placeholder={DEFAULT_TIMELINE_EMOJI} open={pickingEmoji} onPress={() => setPickingEmoji((value) => !value)} />
+    </View>
+  )
+
   const list = (
     <ScrollView style={{ flexShrink: 1 }} contentContainerClassName="rounded-xl bg-white px-4 dark:bg-zinc-900">
       <NouSwitch
@@ -93,31 +98,7 @@ export const FeedSettingsModal = () => {
         onPress={() => watch$.feedPinned.set(!feedPinned)}
       />
       <Divider />
-      <View className="flex-row items-center justify-between gap-3 py-3">
-        <NouText className="flex-1">{t('feed.emoji')}</NouText>
-        <Pressable
-          onPress={() => setPickingEmoji((value) => !value)}
-          accessibilityRole="button"
-          accessibilityLabel={t('feed.emojiPicker')}
-          accessibilityState={{ expanded: pickingEmoji }}
-          className="h-10 w-10 items-center justify-center rounded-md border border-zinc-300 dark:border-zinc-700"
-        >
-          <MaterialIcons name={pickingEmoji ? 'expand-less' : 'emoji-emotions'} size={22} color={iconColor} />
-        </Pressable>
-        <TextInput
-          className="w-16 rounded-md border border-zinc-300 bg-zinc-100 px-2 py-2 text-center text-lg text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-          value={feedEmoji}
-          onChangeText={(value) => watch$.feedEmoji.set(cleanEmoji(value) ?? '')}
-          placeholder={DEFAULT_TIMELINE_EMOJI}
-          placeholderTextColor={tw('#9ca3af')}
-          maxLength={16}
-          autoCorrect={false}
-          accessibilityLabel={t('feed.emoji')}
-        />
-      </View>
-      {pickingEmoji ? (
-        <EmojiGrid value={feedEmoji} onSelect={(selected) => watch$.feedEmoji.set(selected === feedEmoji ? '' : selected)} />
-      ) : null}
+      {emojiRow}
       <Divider />
       <View className="py-3">
         <NouSwitch label={t('feed.notifyTimeline')} value={feedNotify} onPress={() => void toggleFeedNotify()} />
@@ -224,6 +205,22 @@ export const FeedSettingsModal = () => {
     </ScrollView>
   )
 
+  // The picker scrolls its own list, so it takes the place of the settings while it is open.
+  const body = pickingEmoji ? (
+    <View style={{ flexShrink: 1 }} className="rounded-xl bg-white px-4 dark:bg-zinc-900">
+      {emojiRow}
+      <EmojiPicker
+        value={feedEmoji}
+        onSelect={(selected) => {
+          watch$.feedEmoji.set(selected)
+          setPickingEmoji(false)
+        }}
+      />
+    </View>
+  ) : (
+    list
+  )
+
   if (!isWeb) {
     return (
       <BottomSheet
@@ -244,7 +241,7 @@ export const FeedSettingsModal = () => {
               style={{ width: 32, height: 4, borderRadius: 2, marginTop: 16, marginBottom: 16, alignSelf: 'center', backgroundColor: isDark ? tw('#52525b') : tw('#a1a1aa') }}
             />
             <NouText className="mb-3 text-lg font-bold">{t('feed.settings')}</NouText>
-            {list}
+            {body}
           </View>
         </RNHostView>
       </BottomSheet>
@@ -256,7 +253,7 @@ export const FeedSettingsModal = () => {
       {/* On a short screen, the settings scroll between the title and Close. */}
       <View className="w-full p-4" style={{ flexShrink: 1 }}>
         <NouText className="mb-4 text-lg font-bold">{t('feed.settings')}</NouText>
-        {list}
+        {body}
         <View className="mt-6 flex-row justify-end">
           <NouButton size="1" onPress={onClose}>
             {t('menus.close')}

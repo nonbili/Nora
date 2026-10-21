@@ -88,7 +88,8 @@
     "eslint-config-expo": "~58.0.4",
     "react-test-renderer": "19.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "unicode-emoji-json": "^0.8.0"
   },
   "patchedDependencies": {
     "@legendapp/state@3.0.0-beta.47": "patches/@legendapp%2Fstate@3.0.0-beta.47.patch"

@@ -5,7 +5,7 @@ import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { t } from 'i18next'
 import { FormModal } from './FormModal'
 import { NouButton } from '../button/NouButton'
-import { EmojiGrid } from '../EmojiGrid'
+import { EmojiButton, EmojiPicker } from '../EmojiPicker'
 import { NouText } from '../NouText'
 import { Avatar } from '../feed/FeedView'
 import { NouSwitch } from '../switch/NouSwitch'
@@ -33,9 +33,7 @@ export const TimelineModal = () => {
   const profiles = useValue(watch$.profiles)
   const [name, setName] = useState('')
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
-  const [mediaOnly, setMediaOnly] = useState(false)
   const [emoji, setEmoji] = useState('')
-  const [pinned, setPinned] = useState(false)
   const [notify, setNotify] = useState(false)
   const [pickingEmoji, setPickingEmoji] = useState(false)
 
@@ -44,11 +42,9 @@ export const TimelineModal = () => {
     const timeline = target.timelineId ? watch$.timelines.peek().find((current) => current.id === target.timelineId) : undefined
     setName(timeline?.name || '')
     setEmoji(timeline?.emoji || '')
-    setPinned(Boolean(timeline?.pinned))
     setNotify(Boolean(timeline && watch$.notifyTimelineIds.peek().includes(timeline.id)))
     setPickingEmoji(false)
     setSelectedKeys(timeline?.profileKeys || (target.profileKey ? [target.profileKey] : []))
-    setMediaOnly(Boolean(timeline?.mediaOnly))
   }, [target])
 
   const onClose = () => ui$.timelineModal.set(null)
@@ -75,13 +71,11 @@ export const TimelineModal = () => {
     if (target.timelineId) {
       watch$.updateTimeline(
         target.timelineId,
-        sourcesOnly ? { profileKeys: selectedKeys } : { name, profileKeys: selectedKeys, mediaOnly, pinned, emoji: cleanEmoji(emoji) },
+        sourcesOnly ? { profileKeys: selectedKeys } : { name, profileKeys: selectedKeys, emoji: cleanEmoji(emoji) },
       )
       if (!sourcesOnly) void saveNotify(target.timelineId)
     } else {
       const id = watch$.createTimeline(name, selectedKeys)
-      if (mediaOnly) watch$.updateTimeline(id, { mediaOnly })
-      if (pinned) watch$.updateTimeline(id, { pinned })
       if (cleanEmoji(emoji)) watch$.updateTimeline(id, { emoji: cleanEmoji(emoji) })
       void saveNotify(id)
       showInTab(target.tabId, id)
@@ -115,85 +109,73 @@ export const TimelineModal = () => {
         </NouButton>
       ) : undefined}
     >
-      {/* The fields and the list scroll together, so that the emoji picker and the keyboard never push Save out of reach. */}
-      <ScrollView style={{ flexShrink: 1 }} keyboardShouldPersistTaps="handled">
-        {!sourcesOnly ? (
-          <>
-            <View className="mb-3 flex-row gap-2">
-              <TextInput
-                className="w-14 rounded-md border border-zinc-300 bg-zinc-100 px-2 py-2 text-center text-lg text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-                value={emoji}
-                onChangeText={setEmoji}
-                placeholder={DEFAULT_TIMELINE_EMOJI}
-                placeholderTextColor={tw('#9ca3af')}
-                style={iosTouchTarget}
-                maxLength={16}
-                autoCorrect={false}
-                accessibilityLabel={t('feed.emoji')}
-              />
-              <Pressable
-                onPress={() => setPickingEmoji((value) => !value)}
-                accessibilityRole="button"
-                accessibilityLabel={t('feed.emojiPicker')}
-                accessibilityState={{ expanded: pickingEmoji }}
-                hitSlop={androidHitSlop}
-                className="items-center justify-center rounded-md border border-zinc-300 px-2 dark:border-zinc-700"
-                style={iosTouchTarget}
-              >
-                <MaterialIcons name={pickingEmoji ? 'expand-less' : 'emoji-emotions'} size={22} color={tw('#71717a')} />
-              </Pressable>
-              <TextInput
-                className="flex-1 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-                value={name}
-                onChangeText={setName}
-                placeholder={t('feed.timelineNamePlaceholder')}
-                placeholderTextColor={tw('#9ca3af')}
-                style={iosTouchTarget}
-                autoFocus={!editing}
-              />
+      {!sourcesOnly ? (
+        <View className="mb-3 flex-row gap-2">
+          <EmojiButton value={cleanEmoji(emoji) ?? ''} placeholder={DEFAULT_TIMELINE_EMOJI} open={pickingEmoji} onPress={() => setPickingEmoji((value) => !value)} />
+          <TextInput
+            className="flex-1 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            value={name}
+            onChangeText={setName}
+            placeholder={t('feed.timelineNamePlaceholder')}
+            placeholderTextColor={tw('#9ca3af')}
+            style={iosTouchTarget}
+            autoFocus={!editing}
+          />
+        </View>
+      ) : null}
+      {/* The picker scrolls its own list, so it takes the place of the rest while it is open. */}
+      {pickingEmoji && !sourcesOnly ? (
+        <EmojiPicker
+          value={emoji}
+          onSelect={(selected) => {
+            setEmoji(selected)
+            setPickingEmoji(false)
+          }}
+        />
+      ) : (
+        <ScrollView style={{ flexShrink: 1 }} keyboardShouldPersistTaps="handled">
+          {!sourcesOnly ? (
+            <>
+              <NouSwitch className="mb-1" label={t('feed.notifyTimeline')} value={notify} onPress={() => setNotify((value) => !value)} />
+              <NouText className="mb-3 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{t('feed.notifyTimelineHint')}</NouText>
+            </>
+          ) : null}
+          <NouText className="mb-2 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
+            {t('feed.timelineSourcesHint', { name: sourcesOnly ? timelineName : name || t('feed.timelineThis') })}
+          </NouText>
+          {profiles.length ? (
+            <View>
+              {profiles.map((profile) => {
+                const checked = selectedKeys.includes(profile.key)
+                return (
+                  <Pressable
+                    key={profile.key}
+                    onPress={() => toggle(profile.key)}
+                    hitSlop={androidHitSlop}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked }}
+                    className="flex-row items-center gap-3 py-2"
+                    style={iosTouchTarget}
+                  >
+                    <MaterialIcons
+                      name={checked ? 'check-box' : 'check-box-outline-blank'}
+                      size={22}
+                      color={checked ? tw('#6366f1') : tw('#a1a1aa')}
+                    />
+                    <Avatar uri={profile.avatar} size={32} site={profile.site} />
+                    <NouText className="flex-1" numberOfLines={1}>
+                      {profile.name ? `${profile.name} ` : ''}
+                      <NouText className="text-zinc-600 dark:text-zinc-400">{watchSourceLabel(profile)}</NouText>
+                    </NouText>
+                  </Pressable>
+                )
+              })}
             </View>
-            {pickingEmoji ? <EmojiGrid value={emoji} onSelect={(selected) => setEmoji(selected === emoji ? '' : selected)} /> : null}
-            <NouSwitch className="mb-3" label={t('feed.pinToNewTab')} value={pinned} onPress={() => setPinned((value) => !value)} />
-            <NouSwitch className="mb-3" label={t('feed.mediaOnly')} value={mediaOnly} onPress={() => setMediaOnly((value) => !value)} />
-            <NouSwitch className="mb-1" label={t('feed.notifyTimeline')} value={notify} onPress={() => setNotify((value) => !value)} />
-            <NouText className="mb-3 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{t('feed.notifyTimelineHint')}</NouText>
-          </>
-        ) : null}
-        <NouText className="mb-2 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
-          {t('feed.timelineSourcesHint', { name: sourcesOnly ? timelineName : name || t('feed.timelineThis') })}
-        </NouText>
-        {profiles.length ? (
-          <View>
-            {profiles.map((profile) => {
-              const checked = selectedKeys.includes(profile.key)
-              return (
-                <Pressable
-                  key={profile.key}
-                  onPress={() => toggle(profile.key)}
-                  hitSlop={androidHitSlop}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked }}
-                  className="flex-row items-center gap-3 py-2"
-                  style={iosTouchTarget}
-                >
-                  <MaterialIcons
-                    name={checked ? 'check-box' : 'check-box-outline-blank'}
-                    size={22}
-                    color={checked ? tw('#6366f1') : tw('#a1a1aa')}
-                  />
-                  <Avatar uri={profile.avatar} size={32} site={profile.site} />
-                  <NouText className="flex-1" numberOfLines={1}>
-                    {profile.name ? `${profile.name} ` : ''}
-                    <NouText className="text-zinc-600 dark:text-zinc-400">{watchSourceLabel(profile)}</NouText>
-                  </NouText>
-                </Pressable>
-              )
-            })}
-          </View>
-        ) : (
-          <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.empty')}</NouText>
-        )}
-      </ScrollView>
+          ) : (
+            <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('feed.empty')}</NouText>
+          )}
+        </ScrollView>
+      )}
     </FormModal>
   )
 }
