@@ -76,6 +76,12 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
             // shrinking/obfuscation and flags the app as unoptimized.
             enableMinifyInReleaseBuilds: true,
             enableShrinkResourcesInReleaseBuilds: true,
+            // Room 2.5 and WorkManager 2.9 keep these classes but omit the
+            // constructors they call reflectively. R8 strips them in release builds.
+            extraProguardRules: [
+              '-keep class * extends androidx.room.RoomDatabase { <init>(); }',
+              '-keep class * extends androidx.work.InputMerger { <init>(); }',
+            ].join('\n'),
           },
           ios: {
             deploymentTarget: '17.0',
