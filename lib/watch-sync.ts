@@ -7,7 +7,7 @@ import { batch } from '@legendapp/state'
 import { deleteProfilePosts } from '@/lib/watch-db'
 import { watch$, type WatchedProfile } from '@/states/watch'
 import { validTarget } from './watch-transfer'
-import { watchKey, type WatchTarget, type WatchTimeline } from './watch'
+import { cleanEmoji, watchKey, type WatchTarget, type WatchTimeline } from './watch'
 
 export interface WatchSourceRow extends WatchTarget {
   addedAt: number
@@ -19,6 +19,7 @@ export interface WatchTimelineRow {
   profileKeys: string[]
   pinned?: boolean
   mediaOnly?: boolean
+  emoji?: string
 }
 
 /** Sources by their key, timelines by their id. */
@@ -45,8 +46,11 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const positiveNumber = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
 
+/** The row of the whole feed among the timelines: there only once it is unpinned or has an emoji of its own. */
+export const FEED_ROW_ID = '_feed'
+
 export const getWatchSyncRows = (
-  value: { profiles: WatchedProfile[]; timelines: WatchTimeline[] } = watch$.peek(),
+  value: { profiles: WatchedProfile[]; timelines: WatchTimeline[]; feedPinned: boolean; feedEmoji: string } = watch$.peek(),
 ): WatchSyncRows => ({
   sources: Object.fromEntries(
     value.profiles.map((profile) => [
@@ -59,17 +63,21 @@ export const getWatchSyncRows = (
       },
     ]),
   ),
-  timelines: Object.fromEntries(
-    value.timelines.map((timeline) => [
+  timelines: Object.fromEntries([
+    ...(value.feedPinned && !value.feedEmoji
+      ? []
+      : [[FEED_ROW_ID, { name: '', profileKeys: [], pinned: value.feedPinned, ...(value.feedEmoji ? { emoji: value.feedEmoji } : {}) }] as const]),
+    ...value.timelines.map((timeline) => [
       timeline.id,
       {
         name: timeline.name,
         profileKeys: [...timeline.profileKeys],
         ...(timeline.pinned ? { pinned: true } : {}),
         ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
+        ...(timeline.emoji ? { emoji: timeline.emoji } : {}),
       },
     ]),
-  ),
+  ]),
 })
 
 /** The ids of rows added, changed or taken away. */
@@ -108,6 +116,7 @@ export const parseTimelineRow = (row: RemoteWatchRow): WatchTimelineRow | null =
     profileKeys: Array.from(new Set(keys)),
     ...(json.pinned === true ? { pinned: true } : {}),
     ...(json.mediaOnly === true ? { mediaOnly: true } : {}),
+    ...(cleanEmoji(json.emoji) ? { emoji: cleanEmoji(json.emoji) } : {}),
   }
 }
 
@@ -145,8 +154,16 @@ export const applyRemoteWatchRows = (sources: RemoteWatchRow[], timelines: Remot
   }
 
   const nextTimelines = [...watch$.timelines.peek()]
+  let feedPinned = watch$.feedPinned.peek()
+  let feedEmoji = watch$.feedEmoji.peek()
   for (const row of timelines) {
     if (pending.timelines.has(row.id)) continue
+    if (row.id === FEED_ROW_ID) {
+      // A row taken away is the feed as it starts: pinned, and with the default emoji.
+      feedPinned = isDeletedRow(row) || row.json?.pinned !== false
+      feedEmoji = (!isDeletedRow(row) && cleanEmoji(row.json?.emoji)) || ''
+      continue
+    }
     const index = nextTimelines.findIndex((timeline) => timeline.id === row.id)
     if (isDeletedRow(row)) {
       if (index !== -1) nextTimelines.splice(index, 1)
@@ -164,6 +181,8 @@ export const applyRemoteWatchRows = (sources: RemoteWatchRow[], timelines: Remot
   batch(() => {
     watch$.profiles.set(profiles)
     watch$.timelines.set(nextTimelines)
+    watch$.feedPinned.set(feedPinned)
+    watch$.feedEmoji.set(feedEmoji)
   })
   for (const key of removed) deleteProfilePosts(key)
 }
@@ -194,6 +213,8 @@ export const foldUnsyncedTimelines = (unsyncedIds: string[], remoteTimelines: Re
               profileKeys: Array.from(new Set([...timeline.profileKeys, ...local.profileKeys])),
               ...(local.pinned ? { pinned: true } : {}),
               ...(local.mediaOnly ? { mediaOnly: true } : {}),
+              // What was chosen there stays.
+              ...(local.emoji && !timeline.emoji ? { emoji: local.emoji } : {}),
             }
           : timeline,
       )

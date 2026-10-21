@@ -280,7 +280,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
     ? [
         {
           label: t('menus.watch', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }),
-          icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
+          icon: <MaterialIcons name="rss-feed" size={18} color={headerControlColor} />,
           systemImage: 'dot.radiowaves.left.and.right',
           checked: watchingThisProfile,
           metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),
@@ -584,7 +584,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                 : [
                     {
                       label: t('feed.label'),
-                      icon: <MaterialIcons name="dynamic-feed" size={18} color={headerControlColor} />,
+                      icon: <MaterialIcons name="rss-feed" size={18} color={headerControlColor} />,
                       systemImage: 'list.bullet.rectangle',
                       metaLabel: feedUnreadCount ? String(feedUnreadCount) : undefined,
                       handler: () => openFeedTab(),

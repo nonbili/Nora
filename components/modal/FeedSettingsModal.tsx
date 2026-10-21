@@ -1,17 +1,27 @@
-import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
+import { useState } from 'react'
+import { Pressable, ScrollView, TextInput, View, useColorScheme } from 'react-native'
 import { useValue } from '@legendapp/state/react'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { BottomSheet, RNHostView } from '@expo/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { t } from 'i18next'
 import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
+import { EmojiGrid } from '../EmojiGrid'
 import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { ChoicePicker, formatInterval } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
 import { watch$ } from '@/states/watch'
 import { settings$ } from '@/states/settings'
-import { POSTS_PER_SOURCE_OPTIONS, WATCH_ACCOUNT_SITES, WATCH_INTERVAL_OPTIONS, watchSiteLabels } from '@/lib/watch'
+import {
+  DEFAULT_TIMELINE_EMOJI,
+  POSTS_PER_SOURCE_OPTIONS,
+  WATCH_ACCOUNT_SITES,
+  WATCH_INTERVAL_OPTIONS,
+  cleanEmoji,
+  watchSiteLabels,
+} from '@/lib/watch'
 import { isAnonymousProfile } from '@/lib/anonymous'
 import { clearWatchMedia, watchMedia$ } from '@/lib/watch-media'
 import { confirmDestructiveAction } from '@/lib/confirm'
@@ -39,6 +49,9 @@ export const FeedSettingsModal = () => {
   const mediaLimitMB = useValue(watch$.mediaLimitMB)
   const postsPerSource = useValue(watch$.postsPerSource)
   const useAccounts = useValue(watch$.useAccounts)
+  const feedPinned = useValue(watch$.feedPinned)
+  const feedEmoji = useValue(watch$.feedEmoji)
+  const [pickingEmoji, setPickingEmoji] = useState(false)
   const accountProfiles = useValue(watch$.accountProfiles)
   const profiles = useValue(() =>
     settings$.profiles.get().filter((profile) => profile && !isAnonymousProfile(profile.id)),
@@ -62,6 +75,39 @@ export const FeedSettingsModal = () => {
 
   const list = (
     <ScrollView style={{ flexShrink: 1 }} contentContainerClassName="rounded-xl bg-white px-4 dark:bg-zinc-900">
+      <NouSwitch
+        className="py-3"
+        label={t('feed.showOnNewTab')}
+        value={feedPinned}
+        onPress={() => watch$.feedPinned.set(!feedPinned)}
+      />
+      <Divider />
+      <View className="flex-row items-center justify-between gap-3 py-3">
+        <NouText className="flex-1">{t('feed.emoji')}</NouText>
+        <Pressable
+          onPress={() => setPickingEmoji((value) => !value)}
+          accessibilityRole="button"
+          accessibilityLabel={t('feed.emojiPicker')}
+          accessibilityState={{ expanded: pickingEmoji }}
+          className="h-10 w-10 items-center justify-center rounded-md border border-zinc-300 dark:border-zinc-700"
+        >
+          <MaterialIcons name={pickingEmoji ? 'expand-less' : 'emoji-emotions'} size={22} color={iconColor} />
+        </Pressable>
+        <TextInput
+          className="w-16 rounded-md border border-zinc-300 bg-zinc-100 px-2 py-2 text-center text-lg text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          value={feedEmoji}
+          onChangeText={(value) => watch$.feedEmoji.set(cleanEmoji(value) ?? '')}
+          placeholder={DEFAULT_TIMELINE_EMOJI}
+          placeholderTextColor={tw('#9ca3af')}
+          maxLength={16}
+          autoCorrect={false}
+          accessibilityLabel={t('feed.emoji')}
+        />
+      </View>
+      {pickingEmoji ? (
+        <EmojiGrid value={feedEmoji} onSelect={(selected) => watch$.feedEmoji.set(selected === feedEmoji ? '' : selected)} />
+      ) : null}
+      <Divider />
       <View className="py-3">
         <ChoicePicker
           label={t('feed.checkEvery')}

@@ -18,7 +18,8 @@ interface Store {
   // With posts, the gallery goes on from one post's media to the next one's, in their order.
   feedGallery: { postKey: string; profileKey: string; index: number; posts?: { postKey: string; profileKey: string }[] } | null
   // The timeline to change, or none to make one: with the profile to start it with, and the feed tab to show it in.
-  timelineModal: { timelineId?: string; profileKey?: string; tabId?: string } | null
+  // sourcesOnly: just which sources a timeline shows, without its name and other choices.
+  timelineModal: { timelineId?: string; profileKey?: string; tabId?: string; sourcesOnly?: boolean } | null
   // The list of all watched sources, opened from the feed tab whose links it opens beside; or, to pick
   // one, the sources of the timeline that tab shows.
   sourcesModal: { tabId?: string; timelineId?: string; pick?: boolean } | null

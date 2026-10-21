@@ -21,6 +21,7 @@ import { tabs$ } from '@/states/tabs'
 import { bookmarks$ } from '@/states/bookmarks'
 import { unreadKeys, watch$ } from '@/states/watch'
 import { feedTabUrl } from '@/lib/feed-tab'
+import { DEFAULT_TIMELINE_EMOJI } from '@/lib/watch'
 import { t } from 'i18next'
 import { useEffect, useRef, useState } from 'react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
@@ -62,9 +63,9 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
     !settings$.feedEnabled.get()
       ? []
       : [
-          { id: undefined, name: t('feed.label') },
+          ...(watch$.feedPinned.get() ? [{ id: undefined, name: t('feed.label'), emoji: watch$.feedEmoji.get() || undefined }] : []),
           ...watch$.timelines.get().filter((timeline) => timeline.pinned),
-        ].map(({ id, name }) => ({ id, name, unread: unreadKeys(id).size })),
+        ].map(({ id, name, emoji }) => ({ id, name, emoji: emoji || DEFAULT_TIMELINE_EMOJI, unread: unreadKeys(id).size })),
   )
   const oneHandModeSetting = useValue(settings$.oneHandMode)
   const oneHandMode = !isWeb && oneHandModeSetting
@@ -268,11 +269,10 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
               underlayColor={isDark ? tw('#1f2937') : tw('#e0f2fe')}
             >
               <View className={cls}>
-                <MaterialIcons
-                  name={link.id ? 'view-list' : 'dynamic-feed'}
-                  size={18}
-                  color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
-                />
+                {/* As tall as the service icons, so the tiles in a row match. */}
+                <View className="h-[26px] w-6 items-center justify-center">
+                  <Text style={{ fontSize: 20, lineHeight: 24 }}>{link.emoji}</Text>
+                </View>
                 <Text className="flex-1 text-sm text-zinc-900 dark:text-zinc-100" numberOfLines={1}>
                   {link.name}
                 </Text>

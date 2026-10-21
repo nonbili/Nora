@@ -5,6 +5,7 @@ import { genId } from '@/lib/utils'
 import { deleteProfilePosts, getUnreadPostKeys, importWatchPosts, trimWatchPosts, watchPostsVersion$ } from '@/lib/watch-db'
 import {
   DEFAULT_POSTS_PER_SOURCE,
+  DEFAULT_TIMELINE_EMOJI,
   DEFAULT_WATCH_INTERVAL_MINUTES,
   watchKey,
   type WatchPost,
@@ -47,6 +48,10 @@ interface Store {
   // When a tab showed the whole feed, before each profile had a time of its own.
   feedSeenAt: number
   timelines: WatchTimeline[]
+  // Whether the whole feed is shown on the new tab page, as a pinned timeline is.
+  feedPinned: boolean
+  // Its icon there; empty for the default.
+  feedEmoji: string
   // Minutes between checks of a profile that has no choice of its own.
   checkIntervalMinutes: number
   // Media of new posts is kept on the phone ahead of time only on Wi-Fi.
@@ -76,7 +81,7 @@ interface Store {
   // Marks the profiles a tab shows as read: one when it shows only that one.
   markFeedSeen: (timelineId?: string, profileKey?: string) => void
   createTimeline: (name: string, profileKeys: string[]) => string
-  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys' | 'pinned' | 'mediaOnly'>>) => void
+  updateTimeline: (id: string, patch: Partial<Pick<WatchTimeline, 'name' | 'profileKeys' | 'pinned' | 'mediaOnly' | 'emoji'>>) => void
   deleteTimeline: (id: string) => void
   setInTimeline: (id: string, profileKey: string, included: boolean) => void
 }
@@ -89,6 +94,8 @@ export const watch$: Observable<Store> = observable<Store>({
   profiles: [],
   feedSeenAt: 0,
   timelines: [],
+  feedPinned: true,
+  feedEmoji: '',
   checkIntervalMinutes: DEFAULT_WATCH_INTERVAL_MINUTES,
   mediaWifiOnly: true,
   mediaLimitMB: 1024,
@@ -176,6 +183,10 @@ export const watch$: Observable<Store> = observable<Store>({
 /** A timeline that is still there; undefined for the whole feed, or one that was deleted. */
 export const getTimeline = (timelineId: string | undefined) =>
   timelineId ? watch$.timelines.get().find((timeline) => timeline.id === timelineId) : undefined
+
+/** The emoji of a timeline, or of the whole feed; the default one when none was chosen. */
+export const timelineEmoji = (timelineId?: string) =>
+  (timelineId ? getTimeline(timelineId)?.emoji : watch$.feedEmoji.get()) || DEFAULT_TIMELINE_EMOJI
 
 /** Whether a timeline shows only the posts with photos or videos; the feed's own choice for the whole feed. */
 export const isMediaOnly = (timelineId?: string) => {

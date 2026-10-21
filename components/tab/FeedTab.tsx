@@ -1,12 +1,11 @@
 import { useEffect } from 'react'
-import { View } from 'react-native'
+import { Text, View } from 'react-native'
 import { useValue } from '@legendapp/state/react'
-import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { t } from 'i18next'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
-import { getTimeline } from '@/states/watch'
+import { getTimeline, timelineEmoji } from '@/states/watch'
 import { getFeedTimelineId } from '@/lib/feed-tab'
 import { clsx, isAndroid, isWeb, nIf } from '@/lib/utils'
 import { useTwColor } from '@/lib/theme'
@@ -47,6 +46,7 @@ export const FeedTab: React.FC<NoraTabProps> = ({
   const timelineId = getFeedTimelineId(tab.url)
   const timelineName = useValue(() => getTimeline(timelineId)?.name)
   const label = timelineName || t('feed.label')
+  const emoji = useValue(() => timelineEmoji(timelineId))
 
   // Nothing loads here: the tab is ready as soon as it is there, and is not put to sleep.
   useEffect(() => {
@@ -79,7 +79,7 @@ export const FeedTab: React.FC<NoraTabProps> = ({
       <View className="min-w-0 flex-1 flex-row items-center justify-center">
         {slotSwitcher || (
           <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
-            <MaterialIcons name="dynamic-feed" size={16} color={tw('#71717a')} />
+            <Text style={{ fontSize: 13, lineHeight: 16 }}>{emoji}</Text>
             <NouText
               className={clsx(
                 'min-w-0 flex-1 text-center text-[11px] font-bold tracking-wider',

@@ -158,7 +158,7 @@ export const useTabContextMenuItems = (tab: Tab, options: TabContextMenuOptions)
       ? [{
           label: t('menus.watch', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }),
           metaLabel: watchingThisProfile ? t('common.on') : t('common.off'),
-          icon: <MaterialIcons name="dynamic-feed" size={16} color={menuIconColor} />,
+          icon: <MaterialIcons name="rss-feed" size={16} color={menuIconColor} />,
           meta: <MenuToggleBadge on={watchingThisProfile} />,
           handler: () => toggleWatched(watchTarget),
         }]

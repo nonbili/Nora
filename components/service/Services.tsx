@@ -15,14 +15,15 @@ import {
   IconFacebookMessenger,
 } from '../icons/Icons'
 import { Image } from 'expo-image'
-import { View } from 'react-native'
+import { Text, View } from 'react-native'
 import { clsx, isWeb } from '@/lib/utils'
 import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { settings$ } from '@/states/settings'
 import { useValue } from '@legendapp/state/react'
 import { hostHomes } from '@/content/css'
-import { isFeedTabUrl } from '@/lib/feed-tab'
+import { getFeedTimelineId, isFeedTabUrl } from '@/lib/feed-tab'
+import { timelineEmoji } from '@/states/watch'
 import { t } from 'i18next'
 import { useTwColor } from '@/lib/theme'
 
@@ -73,6 +74,8 @@ export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, ico
   const size = isWeb ? 20 : 24
   const fallbackColor = url ? tw('#52525b') : tw('#a1a1aa')
   const [errored, setErrored] = useState(false)
+  // A feed tab shows the emoji of what it shows.
+  const feedEmoji = useValue(() => (isFeedTabUrl(url) ? timelineEmoji(getFeedTimelineId(url)) : ''))
 
   useEffect(() => {
     setErrored(false)
@@ -89,7 +92,7 @@ export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, ico
   if (isFeedTabUrl(url)) {
     return (
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-        <MaterialIcons name="dynamic-feed" size={Math.max(16, size - 4)} color={fallbackColor} />
+        <Text style={{ fontSize: Math.max(14, size - 8), lineHeight: size }}>{feedEmoji}</Text>
       </View>
     )
   }

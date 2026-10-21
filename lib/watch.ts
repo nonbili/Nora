@@ -1611,7 +1611,14 @@ export interface WatchTimeline {
   pinned?: boolean
   // Only the posts with photos or videos, shown as a grid.
   mediaOnly?: boolean
+  // Its icon on the new tab page; DEFAULT_TIMELINE_EMOJI when not set.
+  emoji?: string
 }
+
+export const DEFAULT_TIMELINE_EMOJI = '🧵'
+
+/** What a person typed as an emoji, or nothing when it was left empty. */
+export const cleanEmoji = (value: unknown) => (typeof value === 'string' ? value.trim().slice(0, 16) : '') || undefined
 
 // --- merging ----------------------------------------------------------------
 

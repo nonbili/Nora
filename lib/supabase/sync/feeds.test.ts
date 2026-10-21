@@ -68,6 +68,8 @@ describe('feeds sync', () => {
     auth$.assign({ userId: undefined, plan: undefined })
     watch$.profiles.set([])
     watch$.timelines.set([])
+    watch$.feedPinned.set(true)
+    watch$.feedEmoji.set('')
     server.feed_sources.clear()
     server.feed_timelines.clear()
     syncMeta$.feeds.set({ pendingSources: [], pendingTimelines: [] })
@@ -91,6 +93,32 @@ describe('feeds sync', () => {
     await feedsSyncer.syncNow()
     expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', profileKeys: [], mediaOnly: true }])
     expect(server.feed_timelines.get('t1')!.json.mediaOnly).toBe(true)
+  })
+
+  it('keeps the emoji of a timeline made here when put into one of the same name', async () => {
+    const local = watch$.createTimeline('Art', [])
+    watch$.updateTimeline(local, { emoji: '🎨' })
+    remote('feed_timelines', 't1', { name: 'art', profileKeys: [] })
+    await feedsSyncer.syncNow()
+    expect(watch$.timelines.peek()).toEqual([{ id: 't1', name: 'art', profileKeys: [], emoji: '🎨' }])
+    expect(server.feed_timelines.get('t1')!.json.emoji).toBe('🎨')
+  })
+
+  it('syncs whether the whole feed is pinned and its emoji', async () => {
+    watch$.feedPinned.set(false)
+    watch$.feedEmoji.set('📡')
+    await feedsSyncer.syncNow()
+    expect(server.feed_timelines.get('_feed')!.json).toMatchObject({ pinned: false, emoji: '📡' })
+
+    // Back to how it starts: the row is taken away, and the other devices follow.
+    watch$.feedPinned.set(true)
+    watch$.feedEmoji.set('')
+    await feedsSyncer.syncNow()
+    expect(server.feed_timelines.get('_feed')!.json.deleted_at).toBeString()
+    remote('feed_timelines', '_feed', { name: '', profileKeys: [], pinned: false, emoji: '🔥' })
+    await feedsSyncer.syncNow()
+    expect(watch$.feedPinned.peek()).toBe(false)
+    expect(watch$.feedEmoji.peek()).toBe('🔥')
   })
 
   it('pushes what a device had before its first sync, together with what was synced', async () => {

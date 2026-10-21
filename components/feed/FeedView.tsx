@@ -1,4 +1,4 @@
-import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, View, useColorScheme, type LayoutRectangle, type ScrollViewInstance } from 'react-native'
+import { ActivityIndicator, Animated, BackHandler, FlatList, Pressable, ScrollView, View, useColorScheme, type LayoutRectangle, type ScrollViewInstance } from 'react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useValue } from '@legendapp/state/react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
@@ -8,8 +8,9 @@ import { NouText } from '../NouText'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
-import { getTimeline, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
+import { getTimeline, timelineEmoji, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
+  DEFAULT_TIMELINE_EMOJI,
   feedChipSources,
   formatPostAge,
   mediaKey,
@@ -32,7 +33,7 @@ import {
 } from '@/lib/watch-feed'
 import { getFeedPosts, getNewestPostTimes, getProfilesWithPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
-import { androidHitSlop, clsx, iosTouchTarget, isWeb } from '@/lib/utils'
+import { androidHitSlop, clsx, iosTouchTarget, isIos, isWeb } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
@@ -112,6 +113,28 @@ const profileAccount = (profile: WatchedProfile): string | null => {
 
 // The service icons are drawn at 24px.
 const SERVICE_ICON_SIZE = 24
+
+/** A button of an empty state: the one to do first is filled. */
+const EmptyAction: React.FC<{
+  icon: React.ComponentProps<typeof MaterialIcons>['name']
+  label: string
+  onPress: () => void
+  primary?: boolean
+  color?: string
+}> = ({ icon, label, onPress, primary, color }) => (
+  <Pressable
+    onPress={onPress}
+    accessibilityRole="button"
+    style={iosTouchTarget}
+    className={clsx(
+      'h-11 flex-row items-center gap-2 rounded-full px-6',
+      primary ? 'bg-indigo-600' : 'border border-zinc-300 dark:border-zinc-700',
+    )}
+  >
+    <MaterialIcons name={icon} size={20} color={primary ? '#ffffff' : color} />
+    <NouText className={clsx('font-medium', primary && 'text-white')}>{label}</NouText>
+  </Pressable>
+)
 
 /** A profile's picture, with the icon of its site at its corner: the same handle can be on both. */
 export const Avatar: React.FC<{ uri?: string; size: number; site: WatchSite }> = ({ uri, size, site }) => {
@@ -317,6 +340,33 @@ export const FeedView: React.FC<{
   const [detailsAt, setDetailsAt] = useState<number | null>(null)
   const detailsOpen = detailsAt !== null
   const [refreshing, setRefreshing] = useState(false)
+  // The title row slides away as the list is scrolled down and comes back on the way up; a phone's screen is short.
+  const headProgress = useRef(new Animated.Value(1)).current
+  const headHeight = useRef(0)
+  const headHidden = useRef(false)
+  const lastScrollY = useRef(0)
+  const scrollRun = useRef(0)
+  const [headMeasured, setHeadMeasured] = useState(false)
+  const setHeadHidden = useCallback(
+    (hidden: boolean) => {
+      if (headHidden.current === hidden) return
+      headHidden.current = hidden
+      Animated.timing(headProgress, { toValue: hidden ? 0 : 1, duration: 180, useNativeDriver: false }).start()
+    },
+    [headProgress],
+  )
+  const onListScroll = useCallback(
+    (y: number) => {
+      const delta = y - lastScrollY.current
+      lastScrollY.current = y
+      // The way scrolled in one direction adds up, so that a slow scroll counts as much as a fast one.
+      scrollRun.current = Math.sign(delta) === Math.sign(scrollRun.current) ? scrollRun.current + delta : delta
+      if (y <= 0) setHeadHidden(false)
+      else if (scrollRun.current > 24 && y > 80) setHeadHidden(true)
+      else if (scrollRun.current < -16) setHeadHidden(false)
+    },
+    [setHeadHidden],
+  )
   // What was unread when the tab was switched to stays marked while it is shown, as does what comes in since.
   const [unreadOnShow, setUnreadOnShow] = useState<{ keys: Set<string>; at: number }>(() => ({ keys: new Set(), at: 0 }))
   const [now, setNow] = useState(() => Date.now())
@@ -467,21 +517,32 @@ export const FeedView: React.FC<{
     return count ? String(count) : undefined
   }
 
+  const feedEmoji = useValue(watch$.feedEmoji) || DEFAULT_TIMELINE_EMOJI
+
+  // The emoji of a timeline in front of its name; iOS menus take no view for an icon, so it goes in the label.
+  const emojiIcon = (emoji: string) => <NouText style={{ fontSize: 15, lineHeight: 20 }}>{emoji}</NouText>
+  // What the menu shows to the right: the unread count, and a check mark on the one shown, where the icon is the emoji.
+  const metaOf = (selected: boolean, unread?: string) =>
+    isIos ? unread : [unread, selected ? '✓' : undefined].filter(Boolean).join(' ') || undefined
+
   const timelineMenuItems = [
     {
-      label: t('feed.label'),
-      icon: <MaterialIcons name={timeline ? 'dynamic-feed' : 'check'} size={18} color={iconColor} />,
+      label: isIos ? `${feedEmoji} ${t('feed.allSources')}` : t('feed.allSources'),
+      icon: emojiIcon(feedEmoji),
       systemImage: timeline ? undefined : 'checkmark',
-      metaLabel: unreadLabel(),
+      metaLabel: metaOf(!timeline, unreadLabel()),
       handler: () => showTimeline(),
     },
-    ...timelines.map((current) => ({
-      label: current.name,
-      icon: <MaterialIcons name={current.id === timeline?.id ? 'check' : 'view-list'} size={18} color={iconColor} />,
-      systemImage: current.id === timeline?.id ? 'checkmark' : undefined,
-      metaLabel: unreadLabel(current.id),
-      handler: () => showTimeline(current.id),
-    })),
+    ...timelines.map((current) => {
+      const emoji = current.emoji || DEFAULT_TIMELINE_EMOJI
+      return {
+        label: isIos ? `${emoji} ${current.name}` : current.name,
+        icon: emojiIcon(emoji),
+        systemImage: current.id === timeline?.id ? 'checkmark' : undefined,
+        metaLabel: metaOf(current.id === timeline?.id, unreadLabel(current.id)),
+        handler: () => showTimeline(current.id),
+      }
+    }),
     { label: '', handler: () => {}, kind: 'separator' as const },
     {
       label: t('feed.newTimeline'),
@@ -496,12 +557,6 @@ export const FeedView: React.FC<{
             icon: <MaterialIcons name="edit" size={18} color={iconColor} />,
             systemImage: 'pencil',
             handler: () => ui$.timelineModal.set({ timelineId: timeline.id, tabId }),
-          },
-          {
-            label: timeline.pinned ? t('feed.unpinFromNewTab') : t('feed.pinToNewTab'),
-            icon: <MaterialIcons name="push-pin" size={18} color={iconColor} />,
-            systemImage: timeline.pinned ? 'pin.slash' : 'pin',
-            handler: () => watch$.updateTimeline(timeline.id, { pinned: !timeline.pinned }),
           },
         ]
       : []),
@@ -750,70 +805,152 @@ export const FeedView: React.FC<{
     </View>
   )
 
-  const empty = (
+  const noSources = !profiles.length && !(timeline && allProfiles.length)
+  const empty = noSources ? (
+    <View className="items-center px-8 py-12">
+      <MaterialIcons name="rss-feed" size={40} color={iconColor} />
+      <NouText className="mt-4 text-center text-lg font-semibold">{t('feed.emptyTitle')}</NouText>
+      <NouText className="mt-1 text-center text-zinc-600 dark:text-zinc-400">{t('feed.emptyDescription')}</NouText>
+      <View className="mt-6 flex-row flex-wrap justify-center gap-x-4 gap-y-4">
+        {(Object.keys(watchSiteLabels) as WatchSite[]).map((site) => (
+          <View key={site} className="w-20 items-center gap-1.5">
+            <View className="h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-zinc-800">{siteIcon(site)}</View>
+            <NouText className="text-xs text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+              {watchSiteLabels[site]}
+            </NouText>
+          </View>
+        ))}
+      </View>
+      <Pressable
+        onPress={() => ui$.addSourcesModal.set({ timelineId: timeline?.id })}
+        accessibilityRole="button"
+        style={iosTouchTarget}
+        className="mt-8 h-11 flex-row items-center gap-2 rounded-full bg-indigo-600 px-6"
+      >
+        <MaterialIcons name="add" size={20} color="#ffffff" />
+        <NouText className="font-medium text-white">{t('feed.addSources')}</NouText>
+      </Pressable>
+      <NouText className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">{t('feed.emptyWatchHint')}</NouText>
+    </View>
+  ) : (
     <View className="items-center px-8 py-16">
-      <MaterialIcons name="dynamic-feed" size={40} color={iconColor} />
+      <NouText style={{ fontSize: 40, lineHeight: 48 }}>{timelineEmoji(timeline?.id)}</NouText>
       <NouText className="mt-4 text-center text-zinc-600 dark:text-zinc-400">
-        {profiles.length ? (mediaOnly ? t('feed.noMedia') : t('feed.noPosts')) : timeline && allProfiles.length ? t('feed.timelineEmpty') : t('feed.empty')}
+        {profiles.length ? (mediaOnly ? t('feed.noMedia') : t('feed.noPosts')) : t('feed.timelineEmpty')}
       </NouText>
+      {/* What to do next, here and not in the menu. */}
+      <View className="mt-6 items-center gap-3">
+        {!profiles.length && timeline ? (
+          <>
+            <EmptyAction
+              primary
+              icon="checklist"
+              label={t('feed.chooseSources')}
+              onPress={() => ui$.timelineModal.set({ timelineId: timeline.id, tabId, sourcesOnly: true })}
+            />
+            <EmptyAction
+              icon="add-link"
+              label={t('feed.addSources')}
+              onPress={() => ui$.addSourcesModal.set({ timelineId: timeline.id })}
+              color={iconColor}
+            />
+          </>
+        ) : (
+          <>
+            <EmptyAction primary icon="refresh" label={t('feed.refresh')} onPress={() => void refresh('manual')} />
+            {mediaOnly ? (
+              <EmptyAction
+                icon="photo-library"
+                label={t('feed.showAllPosts')}
+                onPress={() =>
+                  timeline ? watch$.updateTimeline(timeline.id, { mediaOnly: false }) : watch$.feedMediaOnly.set(false)
+                }
+                color={iconColor}
+              />
+            ) : null}
+          </>
+        )}
+      </View>
     </View>
   )
 
+  // Nothing to scroll: the title row is there.
+  useEffect(() => {
+    if (!posts.length) setHeadHidden(false)
+  }, [posts.length, setHeadHidden])
+
   return (
     <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
-      <View className="flex-row items-center gap-2 py-1 pl-4 pr-2">
-        <View className="min-w-0 flex-1 flex-row">
-          <NouMenu
-            trigger={
-              <View style={iosTouchTarget} className="h-11 min-w-0 flex-row items-center gap-1">
-                <NouText className="shrink text-lg font-semibold" numberOfLines={1}>
-                  {timeline?.name || t('feed.label')}
-                </NouText>
-                <MaterialIcons name="arrow-drop-down" size={22} color={iconColor} />
-              </View>
-            }
-            items={timelineMenuItems}
-          />
+      <Animated.View
+        style={
+          isWeb || !headMeasured
+            ? undefined
+            : { height: Animated.multiply(headProgress, headHeight.current), opacity: headProgress, overflow: 'hidden' }
+        }
+      >
+        <View
+          className="flex-row items-center gap-2 py-1 pl-4 pr-2"
+          onLayout={(e) => {
+            if (isWeb || headMeasured) return
+            headHeight.current = e.nativeEvent.layout.height
+            setHeadMeasured(true)
+          }}
+        >
+          <View className="min-w-0 flex-1 flex-row">
+            <NouMenu
+              trigger={
+                <View style={iosTouchTarget} className="h-11 min-w-0 flex-row items-center gap-1">
+                  <NouText className="shrink text-lg font-semibold" numberOfLines={1}>
+                    {timeline?.name || t('feed.label')}
+                  </NouText>
+                  <MaterialIcons name="arrow-drop-down" size={22} color={iconColor} />
+                </View>
+              }
+              items={timelineMenuItems}
+            />
+          </View>
+          {profiles.length ? (
+            <Pressable
+              onPress={() =>
+                timeline ? watch$.updateTimeline(timeline.id, { mediaOnly: !mediaOnly }) : watch$.feedMediaOnly.set(!mediaOnly)
+              }
+              accessibilityRole="button"
+              accessibilityLabel={mediaOnly ? t('feed.showAllPosts') : t('feed.showMediaOnly')}
+              style={iosTouchTarget}
+              className="h-11 w-11 items-center justify-center rounded-full"
+            >
+              <MaterialIcons name={mediaOnly ? 'view-agenda' : 'grid-view'} color={iconColor} size={22} />
+            </Pressable>
+          ) : null}
+          {profiles.length ? (
+            <Pressable
+              onPress={() => ui$.feedSettingsModalOpen.set(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('feed.settings')}
+              style={iosTouchTarget}
+              className="h-11 w-11 items-center justify-center rounded-full"
+            >
+              <MaterialIcons name="tune" color={iconColor} size={22} />
+            </Pressable>
+          ) : null}
+          {profiles.length ? (
+            <Pressable
+              onPress={() => void refresh('manual')}
+              disabled={refreshing}
+              accessibilityRole="button"
+              accessibilityLabel={t('feed.refresh')}
+              style={iosTouchTarget}
+              className="h-11 w-11 items-center justify-center rounded-full"
+            >
+              {refreshing ? <ActivityIndicator color={iconColor} /> : <MaterialIcons name="refresh" color={iconColor} size={22} />}
+            </Pressable>
+          ) : null}
         </View>
-        {profiles.length ? (
-          <Pressable
-            onPress={() =>
-              timeline ? watch$.updateTimeline(timeline.id, { mediaOnly: !mediaOnly }) : watch$.feedMediaOnly.set(!mediaOnly)
-            }
-            accessibilityRole="button"
-            accessibilityLabel={mediaOnly ? t('feed.showAllPosts') : t('feed.showMediaOnly')}
-            style={iosTouchTarget}
-            className="h-11 w-11 items-center justify-center rounded-full"
-          >
-            <MaterialIcons name={mediaOnly ? 'view-agenda' : 'grid-view'} color={iconColor} size={22} />
-          </Pressable>
-        ) : null}
-        {profiles.length ? (
-          <Pressable
-            onPress={() => ui$.feedSettingsModalOpen.set(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t('feed.settings')}
-            style={iosTouchTarget}
-            className="h-11 w-11 items-center justify-center rounded-full"
-          >
-            <MaterialIcons name="tune" color={iconColor} size={22} />
-          </Pressable>
-        ) : null}
-        {profiles.length ? (
-          <Pressable
-            onPress={() => void refresh('manual')}
-            disabled={refreshing}
-            accessibilityRole="button"
-            accessibilityLabel={t('feed.refresh')}
-            style={iosTouchTarget}
-            className="h-11 w-11 items-center justify-center rounded-full"
-          >
-            {refreshing ? <ActivityIndicator color={iconColor} /> : <MaterialIcons name="refresh" color={iconColor} size={22} />}
-          </Pressable>
-        ) : null}
-      </View>
+      </Animated.View>
       <FlatList
         ref={listRef}
+        onScroll={isWeb ? undefined : (e) => onListScroll(e.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={16}
         // The columns of a list can only be set as it is made.
         key={mediaOnly ? `grid-${columns}` : 'list'}
         numColumns={mediaOnly ? columns : 1}

@@ -5,7 +5,7 @@
 
 import { batch } from '@legendapp/state'
 import { watch$, type WatchedProfile } from '@/states/watch'
-import { decodeEntities, getWatchTarget, watchKey, watchProfileUrl, watchSiteLabels, type WatchSite, type WatchTarget } from './watch'
+import { cleanEmoji, decodeEntities, getWatchTarget, watchKey, watchProfileUrl, watchSiteLabels, type WatchSite, type WatchTarget } from './watch'
 
 /** A watched source as it travels: what was chosen for it, not what was last read from the site. */
 export interface WatchSourceBackup extends WatchTarget {
@@ -20,6 +20,7 @@ export interface WatchTimelineBackup {
   profileKeys: string[]
   pinned?: boolean
   mediaOnly?: boolean
+  emoji?: string
 }
 
 export interface WatchBackup {
@@ -27,6 +28,9 @@ export interface WatchBackup {
   mediaWifiOnly?: boolean
   mediaLimitMB?: number
   postsPerSource?: number
+  // Only there when the whole feed is not pinned to the new tab page.
+  feedPinned?: false
+  feedEmoji?: string
   profiles: WatchSourceBackup[]
   timelines: WatchTimelineBackup[]
 }
@@ -55,6 +59,8 @@ export const createWatchBackup = (): WatchBackup => ({
   mediaWifiOnly: watch$.mediaWifiOnly.get(),
   mediaLimitMB: watch$.mediaLimitMB.get(),
   postsPerSource: watch$.postsPerSource.get(),
+  ...(watch$.feedPinned.get() ? {} : { feedPinned: false as const }),
+  ...(watch$.feedEmoji.get() ? { feedEmoji: watch$.feedEmoji.get() } : {}),
   profiles: watch$.profiles.get().map((profile) => ({
     site: profile.site,
     handle: profile.handle,
@@ -68,6 +74,7 @@ export const createWatchBackup = (): WatchBackup => ({
     profileKeys: [...timeline.profileKeys],
     ...(timeline.pinned ? { pinned: true } : {}),
     ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
+    ...(timeline.emoji ? { emoji: timeline.emoji } : {}),
   })),
 })
 
@@ -113,17 +120,20 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     )
     const pinned = item.pinned === true
     const mediaOnly = item.mediaOnly === true
+    const emoji = cleanEmoji(item.emoji)
     const existing = timelines.get(timelineName(name))
     if (existing) {
       existing.profileKeys = Array.from(new Set([...existing.profileKeys, ...keys]))
       if (pinned) existing.pinned = true
       if (mediaOnly) existing.mediaOnly = true
+      if (emoji && !existing.emoji) existing.emoji = emoji
     } else {
       timelines.set(timelineName(name), {
         name,
         profileKeys: Array.from(new Set(keys)),
         ...(pinned ? { pinned } : {}),
         ...(mediaOnly ? { mediaOnly } : {}),
+        ...(emoji ? { emoji } : {}),
       })
     }
   }
@@ -136,6 +146,8 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     ...(typeof value.mediaWifiOnly === 'boolean' ? { mediaWifiOnly: value.mediaWifiOnly } : {}),
     ...(mediaLimitMB ? { mediaLimitMB } : {}),
     ...(postsPerSource ? { postsPerSource: Math.round(postsPerSource) } : {}),
+    ...(value.feedPinned === false ? { feedPinned: false as const } : {}),
+    ...(cleanEmoji(value.feedEmoji) ? { feedEmoji: cleanEmoji(value.feedEmoji) } : {}),
     profiles: [...profiles.values()],
     timelines: [...timelines.values()],
   }
@@ -154,6 +166,9 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
     if (typeof backup.mediaWifiOnly === 'boolean') watch$.mediaWifiOnly.set(backup.mediaWifiOnly)
     if (backup.mediaLimitMB) watch$.mediaLimitMB.set(backup.mediaLimitMB)
     if (backup.postsPerSource) watch$.postsPerSource.set(backup.postsPerSource)
+    if (backup.feedPinned === false) watch$.feedPinned.set(false)
+    // What was chosen here stays.
+    if (backup.feedEmoji && !watch$.feedEmoji.peek()) watch$.feedEmoji.set(backup.feedEmoji)
 
     const current = new Map(watch$.profiles.peek().map((profile) => [profile.key, profile]))
     for (const source of backup.profiles) {
@@ -182,11 +197,13 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
         const merged = Array.from(new Set([...same.profileKeys, ...keys]))
         if (merged.length !== same.profileKeys.length) watch$.updateTimeline(same.id, { profileKeys: merged })
         if (timeline.pinned && !same.pinned) watch$.updateTimeline(same.id, { pinned: true })
+        if (timeline.emoji && !same.emoji) watch$.updateTimeline(same.id, { emoji: timeline.emoji })
       } else {
         const id = watch$.createTimeline(timeline.name, keys)
         if (timeline.pinned) watch$.updateTimeline(id, { pinned: true })
         // How a timeline already here is shown stays as it was chosen here.
         if (timeline.mediaOnly) watch$.updateTimeline(id, { mediaOnly: true })
+        if (timeline.emoji) watch$.updateTimeline(id, { emoji: timeline.emoji })
       }
     }
   })
