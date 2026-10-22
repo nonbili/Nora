@@ -60,6 +60,17 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.9.0" date="2026-10-22">
+      <description>
+        <ul>
+          <li>Feed reader to follow social accounts and RSS feeds in customizable timelines</li>
+          <li>Media gallery for feed posts with photo and video downloads</li>
+          <li>Manage feed sources with OPML import and export</li>
+          <li>Find in page</li>
+          <li>Switch tabs by number in sidebar order</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.10" date="2026-09-23">
       <description>
         <ul>
