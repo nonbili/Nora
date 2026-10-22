@@ -42,6 +42,8 @@ export default defineConfig({
     resolve: {
       alias: {
         'node:async_hooks': resolve('src/renderer/lib/async-hooks.ts'),
+        // SVG's web implementation must share the registry used by React Native Web.
+        '@react-native/assets-registry/registry': resolve('../node_modules/react-native-web/dist/modules/AssetRegistry/index.js'),
         '../fabric/NativeSvgSoundModule': resolve('src/renderer/lib/svg-sound-module.ts'),
         '@': 'nora',
         '@renderer': resolve('src/renderer'),
