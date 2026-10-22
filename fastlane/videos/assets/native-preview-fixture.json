@@ -1,0 +1,355 @@
+{
+  "profiles": [
+    { "id": "default", "name": "Default", "color": "#6366f1", "isDefault": true },
+    { "id": "work", "name": "Work", "color": "#10b981" },
+    { "id": "personal", "name": "Personal", "color": "#f43f5e" },
+    { "id": "creator", "name": "Studio", "color": "#f59e0b" }
+  ],
+  "autoProfiles": [
+    { "id": "site:bsky.app", "site": "bsky.app", "createdAtOffsetMs": -1209600000, "lastUsedAtOffsetMs": -1800000 },
+    { "id": "site:x.com", "site": "x.com", "createdAtOffsetMs": -1036800000, "lastUsedAtOffsetMs": -3600000 },
+    { "id": "site:instagram.com", "site": "instagram.com", "createdAtOffsetMs": -864000000, "lastUsedAtOffsetMs": -7200000 },
+    { "id": "site:reddit.com", "site": "reddit.com", "createdAtOffsetMs": -604800000, "lastUsedAtOffsetMs": -14400000 },
+    { "id": "site:mastodon.social", "site": "mastodon.social", "createdAtOffsetMs": -432000000, "lastUsedAtOffsetMs": -28800000 }
+  ],
+  "bookmarks": [
+    { "url": "https://news.ycombinator.com", "title": "Hacker News" },
+    { "url": "https://github.com/nonbili/nora", "title": "GitHub" }
+  ],
+  "timelines": [
+    { "id": "tl-design", "name": "Design & Art", "emoji": "🎨", "pinned": true, "mediaOnly": false, "checkIntervalMinutes": 30 },
+    { "id": "tl-tech", "name": "Tech & Web", "emoji": "⚡", "pinned": true, "mediaOnly": false, "checkIntervalMinutes": 60 },
+    { "id": "tl-visuals", "name": "Visuals", "emoji": "📸", "pinned": true, "mediaOnly": true, "checkIntervalMinutes": 60 }
+  ],
+  "watchedProfiles": [
+    {
+      "key": "bluesky:lena.studio",
+      "site": "bluesky",
+      "handle": "lena.studio",
+      "name": "Lena Vance",
+      "avatarFile": "avatar-lena.png",
+      "timelineId": "tl-design",
+      "mode": "loggedIn",
+      "accountProfileId": "default",
+      "notify": true,
+      "seenOffsetMs": -7200000
+    },
+    {
+      "key": "x:ux_kuro",
+      "site": "x",
+      "handle": "ux_kuro",
+      "name": "Kuro Takahashi",
+      "avatarFile": "avatar-kuro.png",
+      "timelineId": "tl-design",
+      "mode": "loggedIn",
+      "accountProfileId": "personal",
+      "notify": true,
+      "seenOffsetMs": -7200000
+    },
+    {
+      "key": "instagram:atelier.nord",
+      "site": "instagram",
+      "handle": "atelier.nord",
+      "name": "Atelier Nord",
+      "avatarFile": "avatar-atelier.png",
+      "timelineId": "tl-visuals",
+      "mode": "loggedIn",
+      "accountProfileId": "creator",
+      "notify": false,
+      "seenOffsetMs": -10800000
+    },
+    {
+      "key": "reddit:r/webdev",
+      "site": "reddit",
+      "handle": "r/webdev",
+      "name": "r/webdev",
+      "avatarFile": "avatar-webdev.png",
+      "timelineId": "tl-tech",
+      "mode": "loggedIn",
+      "accountProfileId": "work",
+      "notify": false,
+      "seenOffsetMs": -10800000
+    },
+    {
+      "key": "mastodon:webkit@mastodon.social",
+      "site": "mastodon",
+      "handle": "webkit@mastodon.social",
+      "name": "WebPlatform Daily",
+      "avatarFile": "avatar-webkit.png",
+      "timelineId": "tl-tech",
+      "mode": "loggedOut",
+      "notify": true,
+      "seenOffsetMs": -14400000
+    },
+    {
+      "key": "threads:maya.creates",
+      "site": "threads",
+      "handle": "maya.creates",
+      "name": "Maya Lin",
+      "avatarFile": "avatar-maya.png",
+      "timelineId": "tl-visuals",
+      "mode": "loggedIn",
+      "accountProfileId": "creator",
+      "notify": false,
+      "seenOffsetMs": -14400000
+    },
+    {
+      "key": "reddit:r/minimalism",
+      "site": "reddit",
+      "handle": "r/minimalism",
+      "name": "r/minimalism",
+      "avatarFile": "avatar-minimal.png",
+      "timelineId": "tl-design",
+      "mode": "loggedOut",
+      "notify": false,
+      "seenOffsetMs": -18000000
+    },
+    {
+      "key": "tiktok:motion.craft",
+      "site": "tiktok",
+      "handle": "motion.craft",
+      "name": "Motion Craft",
+      "avatarFile": "avatar-motion.png",
+      "timelineId": "tl-visuals",
+      "mode": "loggedIn",
+      "accountProfileId": "creator",
+      "notify": false,
+      "seenOffsetMs": -18000000
+    }
+  ],
+  "posts": [
+    {
+      "key": "bluesky:lena.studio:post-101",
+      "id": "post-101",
+      "profileKey": "bluesky:lena.studio",
+      "site": "bluesky",
+      "handle": "lena.studio",
+      "url": "https://bsky.app/profile/lena.studio/post/101",
+      "text": "Exploring tactile glass surfaces and warm ambient lighting for our autumn design system update. Keeping every panel crisp at 60fps with zero visual clutter.",
+      "createdOffsetMs": -720000,
+      "firstSeenOffsetMs": -600000,
+      "mediaFiles": [
+        { "file": "media-01-glass.png", "width": 1200, "height": 900 },
+        { "file": "media-02-palette.png", "width": 1200, "height": 900 }
+      ]
+    },
+    {
+      "key": "mastodon:webkit@mastodon.social:post-102",
+      "id": "post-102",
+      "profileKey": "mastodon:webkit@mastodon.social",
+      "site": "mastodon",
+      "handle": "webkit@mastodon.social",
+      "url": "https://mastodon.social/@webkit/102",
+      "text": "CSS view-transitions and scroll-driven animations now run on the compositor thread across mobile engines — bringing native-grade spring physics to the open web.",
+      "createdOffsetMs": -1680000,
+      "firstSeenOffsetMs": -1500000,
+      "mediaFiles": [
+        { "file": "media-03-compositor.png", "width": 1200, "height": 750 }
+      ]
+    },
+    {
+      "key": "instagram:atelier.nord:post-103",
+      "id": "post-103",
+      "profileKey": "instagram:atelier.nord",
+      "site": "instagram",
+      "handle": "atelier.nord",
+      "url": "https://www.instagram.com/p/post-103/",
+      "text": "Morning light across the Copenhagen studio. Birch plywood, brushed aluminum, and quiet corners built for deep focus.",
+      "createdOffsetMs": -2700000,
+      "firstSeenOffsetMs": -2400000,
+      "mediaFiles": [
+        { "file": "media-04-studio.png", "width": 1080, "height": 1080 },
+        { "file": "media-05-architect.png", "width": 1080, "height": 1080 },
+        { "file": "media-06-ceramics.png", "width": 1080, "height": 1080 }
+      ]
+    },
+    {
+      "key": "x:ux_kuro:post-104",
+      "id": "post-104",
+      "profileKey": "x:ux_kuro",
+      "site": "x",
+      "handle": "ux_kuro",
+      "url": "https://x.com/ux_kuro/status/104",
+      "text": "Switched my daily social workflow to custom timelines + isolated browser profiles. Zero algorithmic noise, separate cookies per workspace, and instant media grids.",
+      "createdOffsetMs": -4200000,
+      "firstSeenOffsetMs": -3900000,
+      "mediaFiles": [
+        { "file": "media-07-workflow.png", "width": 1200, "height": 800 }
+      ],
+      "quote": {
+        "handle": "lena.studio",
+        "name": "Lena Vance",
+        "avatarFile": "avatar-lena.png",
+        "url": "https://bsky.app/profile/lena.studio/post/100",
+        "text": "The best interfaces feel calm — they show you only what you asked to follow and get out of your way.",
+        "createdOffsetMs": -8400000
+      }
+    },
+    {
+      "key": "reddit:r/webdev:post-105",
+      "id": "post-105",
+      "profileKey": "reddit:r/webdev",
+      "site": "reddit",
+      "handle": "r/webdev",
+      "url": "https://www.reddit.com/r/webdev/comments/post105/",
+      "text": "Show r/webdev: Local-first SQLite + MMKV state architecture for instant offline feed rendering and zero-latency tab switching",
+      "createdOffsetMs": -5400000,
+      "firstSeenOffsetMs": -5000000,
+      "mediaFiles": [
+        { "file": "media-08-architecture.png", "width": 1200, "height": 750 }
+      ]
+    },
+    {
+      "key": "threads:maya.creates:post-106",
+      "id": "post-106",
+      "profileKey": "threads:maya.creates",
+      "site": "threads",
+      "handle": "maya.creates",
+      "url": "https://www.threads.com/@maya.creates/post/106",
+      "text": "Color study #42 — midnight indigo, electric cyan, and warm sunset coral on matte dark surfaces.",
+      "createdOffsetMs": -7800000,
+      "firstSeenOffsetMs": -7500000,
+      "mediaFiles": [
+        { "file": "media-09-colorstudy.png", "width": 1080, "height": 1080 }
+      ]
+    },
+    {
+      "key": "tiktok:motion.craft:post-107",
+      "id": "post-107",
+      "profileKey": "tiktok:motion.craft",
+      "site": "tiktok",
+      "handle": "motion.craft",
+      "url": "https://www.tiktok.com/@motion.craft/video/107",
+      "text": " breakdown of spring curves and gesture-driven card transitions in 60 seconds.",
+      "createdOffsetMs": -9600000,
+      "firstSeenOffsetMs": -9000000,
+      "mediaFiles": [
+        { "file": "media-10-motion.png", "width": 1080, "height": 1080 }
+      ]
+    },
+    {
+      "key": "reddit:r/minimalism:post-108",
+      "id": "post-108",
+      "profileKey": "reddit:r/minimalism",
+      "site": "reddit",
+      "handle": "r/minimalism",
+      "url": "https://www.reddit.com/r/minimalism/comments/post108/",
+      "text": "Curating your digital environment: replacing 8 noisy social apps with one calm reader and intentional check intervals.",
+      "createdOffsetMs": -12600000,
+      "firstSeenOffsetMs": -12000000,
+      "mediaFiles": [
+        { "file": "media-11-minimal.png", "width": 1200, "height": 800 }
+      ]
+    }
+  ],
+  "customStyles": [
+    {
+      "id": "style-clean-cards",
+      "name": "Clean Timeline Cards & Typography",
+      "enabled": true,
+      "hostGlobs": ["*.x.com", "bsky.app", "*.threads.com"],
+      "css": "article { border-radius: 16px !important; }"
+    },
+    {
+      "id": "style-hide-promoted",
+      "name": "Hide Promoted Posts & Trend Sidebars",
+      "enabled": true,
+      "hostGlobs": ["*.x.com", "*.reddit.com", "*.instagram.com"],
+      "css": "[data-testid='placementTracking'] { display: none !important; }"
+    },
+    {
+      "id": "style-wide-gallery",
+      "name": "Full-Width Media Lightbox",
+      "enabled": true,
+      "hostGlobs": ["*.instagram.com", "mastodon.social"],
+      "css": ".media-gallery { max-width: 100% !important; }"
+    },
+    {
+      "id": "style-oled-dark",
+      "name": "True OLED Dark Surface",
+      "enabled": false,
+      "hostGlobs": ["*.reddit.com", "news.ycombinator.com"],
+      "css": "body { background-color: #09090b !important; }"
+    }
+  ],
+  "customScripts": [
+    {
+      "id": "script-expand-threads",
+      "name": "Auto-Expand Thread Replies",
+      "enabled": true,
+      "hostGlobs": ["*.x.com", "bsky.app"],
+      "script": "// Automatically expand nested thread replies"
+    },
+    {
+      "id": "script-clean-links",
+      "name": "Strip Tracking Params & Copy Clean URL",
+      "enabled": true,
+      "hostGlobs": ["*.reddit.com", "*.instagram.com", "*.tiktok.com"],
+      "script": "// Strip utm and share tracking tokens"
+    },
+    {
+      "id": "script-hd-media",
+      "name": "Force Original Resolution Images",
+      "enabled": true,
+      "hostGlobs": ["*.x.com", "*.threads.com"],
+      "script": "// Upgrade image URLs to orig quality"
+    }
+  ],
+  "tabs": [
+    {
+      "id": "tab-feed-all",
+      "url": "nora://feed",
+      "title": "Feed",
+      "profile": "default"
+    },
+    {
+      "id": "tab-feed-design",
+      "url": "nora://feed?timeline=tl-design",
+      "title": "Design & Art",
+      "profile": "creator"
+    },
+    {
+      "id": "tab-feed-visuals",
+      "url": "nora://feed?timeline=tl-visuals",
+      "title": "Visuals",
+      "profile": "creator"
+    },
+    {
+      "id": "tab-bsky",
+      "url": "https://bsky.app/profile/lena.studio",
+      "title": "Lena Vance (@lena.studio) — Bluesky",
+      "profile": "default",
+      "isDormant": true
+    },
+    {
+      "id": "tab-github",
+      "url": "https://github.com/nonbili/nora",
+      "title": "nonbili/nora — Social Browser & Feed Reader",
+      "profile": "work",
+      "isDormant": true
+    },
+    {
+      "id": "tab-x",
+      "url": "https://x.com/ux_kuro",
+      "title": "Kuro Takahashi (@ux_kuro) / X",
+      "profile": "personal",
+      "isDormant": true
+    }
+  ],
+  "recentlyClosedTabs": [
+    {
+      "id": "closed-1",
+      "url": "https://mastodon.social/@webkit",
+      "title": "WebPlatform Daily (@webkit@mastodon.social)",
+      "profile": "work",
+      "closedAtOffsetMs": -900000
+    },
+    {
+      "id": "closed-2",
+      "url": "https://www.reddit.com/r/minimalism/",
+      "title": "r/minimalism — Intentional Digital Living",
+      "profile": "personal",
+      "closedAtOffsetMs": -2400000
+    }
+  ]
+}
