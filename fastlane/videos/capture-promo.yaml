@@ -1,0 +1,49 @@
+# Run on a simulator build made with scripts/app-preview-entry.ts and
+# EXPO_PUBLIC_APP_PREVIEW=1. preview-state.json must select tab-home, dark theme,
+# with no modal overrides. OUTPUT_DIR must be an existing absolute directory.
+appId: jp.nonbili.nora
+---
+- launchApp:
+    stopApp: true
+- assertVisible: '.*Feed, 8'
+- startRecording: ${OUTPUT_DIR}/home
+- evalScript: ${var until = Date.now() + 3600; while (Date.now() < until) {}}
+- waitForAnimationToEnd
+- stopRecording
+
+- startRecording: ${OUTPUT_DIR}/timeline
+- tapOn: '.*Feed, 8'
+- assertVisible: 'Show only photos and videos'
+- evalScript: ${var until = Date.now() + 900; while (Date.now() < until) {}}
+- swipe:
+    start: '50%, 75%'
+    end: '50%, 35%'
+    duration: 1400
+- evalScript: ${var until = Date.now() + 1600; while (Date.now() < until) {}}
+- waitForAnimationToEnd
+- stopRecording
+
+- tapOn: 'New tab'
+- startRecording: ${OUTPUT_DIR}/profiles
+- evalScript: ${var until = Date.now() + 500; while (Date.now() < until) {}}
+- tapOn:
+    text: Work
+    index: 0
+- evalScript: ${var until = Date.now() + 1200; while (Date.now() < until) {}}
+- tapOn:
+    text: Personal
+    index: 0
+- evalScript: ${var until = Date.now() + 1800; while (Date.now() < until) {}}
+- waitForAnimationToEnd
+- stopRecording
+
+- tapOn: '.*Feed.*'
+- assertVisible: 'Show only photos and videos'
+- startRecording: ${OUTPUT_DIR}/gallery
+- evalScript: ${var until = Date.now() + 500; while (Date.now() < until) {}}
+- tapOn: 'Show only photos and videos'
+- assertVisible: 'Show all posts'
+- waitForAnimationToEnd
+- evalScript: ${var until = Date.now() + 2600; while (Date.now() < until) {}}
+- waitForAnimationToEnd
+- stopRecording
