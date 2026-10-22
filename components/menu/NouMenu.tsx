@@ -91,7 +91,8 @@ export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerL
       </DropdownMenu.Trigger>
       <DropdownMenu.Content
         variant="soft"
-        className="max-h-[70vh] overflow-auto rounded-xl border border-zinc-300/70 dark:border-zinc-800/80 shadow-xl shadow-zinc-900/15 dark:shadow-black/40"
+        // Menus portal to the body, above the dialogs' z-10 layer.
+        className="z-20 max-h-[70vh] overflow-auto rounded-xl border border-zinc-300/70 dark:border-zinc-800/80 shadow-xl shadow-zinc-900/15 dark:shadow-black/40"
       >
         {menuItems}
       </DropdownMenu.Content>

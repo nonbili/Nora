@@ -25,11 +25,18 @@ export default defineConfig({
   },
   renderer: {
     esbuild,
-    build: {
-      rollupOptions: {
-        // Expo 58's packages import what only the native React Native has, as PlatformColor and
-        // TurboModuleRegistry, in code for Android and iOS: undefined on desktop, never called there.
-        shimMissingExports: true,
+    optimizeDeps: {
+      esbuildOptions: {
+        tsconfigRaw: esbuild.tsconfigRaw,
+        plugins: [{
+          name: 'desktop-svg-sound',
+          setup(build) {
+            // esbuild resolves this require separately from Vite's import aliases.
+            build.onResolve({ filter: /\/fabric\/NativeSvgSoundModule(?:\.js)?$/ }, () => ({
+              path: resolve('src/renderer/lib/svg-sound-module.ts'),
+            }))
+          },
+        }],
       },
     },
     resolve: {
@@ -61,6 +68,19 @@ export default defineConfig({
         },
       }),
       reactNativeWeb(),
+      {
+        name: 'desktop-react-native',
+        // Apply after reactNativeWeb's config hook, which adds its own alias.
+        config: () => ({
+          resolve: {
+            alias: [
+              { find: /^react-native$/, replacement: resolve('src/renderer/lib/react-native.js') },
+              // Erase declaration-only imports without changing other Expo packages' entry points.
+              { find: /^expo-modules-core$/, replacement: resolve('../node_modules/expo-modules-core/src/index.ts') },
+            ],
+          },
+        }),
+      },
     ],
   },
 })

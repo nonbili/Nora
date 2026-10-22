@@ -1064,6 +1064,7 @@ export const FeedView: React.FC<{
   return (
     <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
       <Animated.View
+        className="w-full max-w-[640px] self-center"
         style={
           isWeb || !headMeasured
             ? undefined
@@ -1134,6 +1135,7 @@ export const FeedView: React.FC<{
         </View>
       </Animated.View>
       <FlatList
+        className="w-full max-w-[640px] self-center"
         ref={listRef}
         onScroll={isWeb ? undefined : (e) => onListScroll(e.nativeEvent.contentOffset.y)}
         scrollEventThrottle={16}
