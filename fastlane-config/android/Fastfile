@@ -33,6 +33,27 @@ platform :android do
     )
   end
 
+  desc "Set the English Google Play preview video"
+  lane :upload_video do
+    Dir.mktmpdir("nora-play-video-") do |metadata_path|
+      locale_path = File.join(metadata_path, "en-US")
+      FileUtils.mkdir_p(locale_path)
+      FileUtils.cp(File.expand_path("../../metadata/en-US/video.txt", __dir__), locale_path)
+      upload_to_play_store(
+        package_name: ENV["ANDROID_PACKAGE_NAME"] || "jp.nonbili.nora",
+        json_key: ENV["GOOGLE_PLAY_JSON_KEY"] || ENV["SUPPLY_JSON_KEY"],
+        json_key_data: ENV["GOOGLE_PLAY_JSON_KEY_DATA"] || ENV["SUPPLY_JSON_KEY_DATA"],
+        skip_upload_apk: true,
+        skip_upload_aab: true,
+        skip_upload_metadata: false,
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        metadata_path: metadata_path
+      )
+    end
+  end
+
   desc "Upload screenshots to Google Play Store"
   lane :upload_screenshots do
     # The shared F-Droid tree includes locale names Play does not accept.

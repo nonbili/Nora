@@ -121,6 +121,7 @@ platform :ios do
       app_identifier: ENV["IOS_APP_IDENTIFIER"] || "jp.nonbili.nora",
       overwrite_screenshots: true,
       run_precheck_before_submit: false,
+      metadata_path: File.expand_path("../../fastlane/metadata/ios", __dir__),
       screenshots_path: File.expand_path("../../fastlane/metadata/ios", __dir__),
       skip_binary_upload: true,
       skip_metadata: true,

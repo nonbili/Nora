@@ -22,6 +22,18 @@ separate full-screen renderer described below.
 
 Shots overlap in 0.35-second dissolves, keeping content visible at every boundary.
 
+## Published Google Play preview
+
+The English Play listing uses the portrait video, which matches the phone UI:
+https://www.youtube.com/watch?v=frmIaw4aPkg
+
+The landscape version is also on YouTube:
+https://www.youtube.com/watch?v=asydXW3iUGg
+
+`metadata/en-US/video.txt` is the canonical listing URL. With the Google Play
+credentials loaded, run `bundle exec fastlane android upload_video` to update it.
+The lane stages only this field and preserves the existing listing text and assets.
+
 ## Rendering
 
 Python 3.9+, `pip install -r scripts/requirements-promo-video.txt`, and `ffmpeg`
