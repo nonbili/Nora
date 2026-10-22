@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
+import { supabase } from '@/lib/supabase/client'
 
 type Row = { user_id: string; id: string; json: Record<string, unknown>; updated_at: string }
 
@@ -32,22 +33,19 @@ const query = (table: string) => {
   return builder
 }
 
-mock.module('@/lib/supabase/client', () => ({
-  supabase: {
-    from: (table: string) => ({
-      ...query(table),
-      upsert: async (rows: Omit<Row, 'updated_at'>[]) => {
-        await network()
-        for (const row of rows) {
-          const current = server[table].get(row.id)
-          if (JSON.stringify(current?.json) !== JSON.stringify(row.json)) server[table].set(row.id, { ...row, updated_at: tick() })
-        }
-        return { error: null }
-      },
-    }),
+// Other suites can load the syncers before this file. Spy on the shared client
+// itself so already-imported syncers also use the in-memory server.
+const from = (table: string) => ({
+  ...query(table),
+  upsert: async (rows: Omit<Row, 'updated_at'>[]) => {
+    await network()
+    for (const row of rows) {
+      const current = server[table].get(row.id)
+      if (JSON.stringify(current?.json) !== JSON.stringify(row.json)) server[table].set(row.id, { ...row, updated_at: tick() })
+    }
+    return { error: null }
   },
-  supabaseAuth: { onAuthStateChange: () => {} },
-}))
+})
 
 const { auth$ } = await import('@/states/auth')
 const { notifyChoice, profileNotifies, watch$ } = await import('@/states/watch')
@@ -64,7 +62,10 @@ const remote = (table: 'feed_sources' | 'feed_timelines', id: string, json: Reco
 const ids = () => watch$.profiles.peek().map((profile) => profile.key)
 
 describe('feeds sync', () => {
+  let fromSpy: ReturnType<typeof spyOn>
+
   beforeEach(() => {
+    fromSpy = spyOn(supabase, 'from').mockImplementation(from as typeof supabase.from)
     auth$.assign({ userId: undefined, plan: undefined })
     watch$.profiles.set([])
     watch$.timelines.set([])
@@ -76,6 +77,10 @@ describe('feeds sync', () => {
     server.feed_timelines.clear()
     syncMeta$.feeds.set({ pendingSources: [], pendingTimelines: [] })
     auth$.assign({ userId: 'u1', plan: 'sync' })
+  })
+
+  afterEach(() => {
+    fromSpy.mockRestore()
   })
 
   it('carries which timelines show only photos and videos', async () => {

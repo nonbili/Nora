@@ -11,9 +11,13 @@ mock.module('react-native/Libraries/Utilities/codegenNativeComponent', () => ({ 
 mock.module('react-native/Libraries/Image/resolveAssetSource', () => ({ default: (source: unknown) => source }))
 
 mock.module('@react-native-vector-icons/material-icons', () => ({ default: () => null }))
+mock.module('@react-native-vector-icons/ant-design', () => ({ default: () => null }))
+mock.module('@react-native-vector-icons/material-design-icons', () => ({ default: () => null }))
 mock.module('@/lib/download-notifications', () => ({ ensureDownloadNotificationPermission: async () => true }))
 mock.module('@/components/service/Services', () => ({
   ServiceIcon: () => null,
+  FeedTabIcon: () => null,
+  FeedTabIndicator: () => null,
   services: [],
   siteIcon: () => null,
   getService: () => undefined,
