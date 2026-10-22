@@ -252,7 +252,7 @@ const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }
   const aspectRatio = first?.width && first?.height ? Math.min(Math.max(first.width / first.height, 0.8), 1.91) : 16 / 9
   const text = usePostText()
   return (
-    <Pressable onPress={onOpen} accessibilityRole="link" className="mt-2 overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-700">
+    <Pressable onPress={onOpen} accessibilityRole="link" className="mt-2 overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-600">
       <View className="px-3 pt-2.5">
         <View className="flex-row items-center gap-1.5">
           <View className="h-5 w-5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
@@ -280,7 +280,7 @@ const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }
       </View>
       {cover ? (
         <View className="mt-2">
-          <Image source={cover} contentFit="cover" className="bg-zinc-200 dark:bg-zinc-800" style={{ width: '100%', aspectRatio }} />
+          <Image source={cover} contentFit="cover" className="bg-zinc-300 dark:bg-zinc-700" style={{ width: '100%', aspectRatio }} />
           {first?.type === 'video' ? (
             <View className="absolute inset-0 items-center justify-center" pointerEvents="none">
               <View className="h-10 w-10 items-center justify-center rounded-full bg-black/50">
@@ -373,7 +373,7 @@ const PostRow: React.FC<{
   }
 
   return (
-    <View className="flex-row items-start gap-3 py-3 pl-4 pr-1">
+    <View className="flex-row items-start gap-3 bg-zinc-50 py-3 pl-4 pr-1 dark:bg-zinc-900">
       <Pressable
         onPress={onOpenSource}
         disabled={!onOpenSource}
@@ -834,7 +834,7 @@ export const FeedView: React.FC<{
                   'h-9 flex-row items-center gap-1.5 rounded-full border px-3',
                   active
                     ? 'border-indigo-300 bg-indigo-100 dark:border-indigo-400/40 dark:bg-indigo-500/20'
-                    : 'border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900',
+                    : 'border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900',
                 )}
               >
                 {profile ? <Avatar uri={profile.avatar} size={22} site={profile.site} /> : null}
@@ -863,7 +863,7 @@ export const FeedView: React.FC<{
       ) : null}
 
       {selected ? (
-        <View className="mx-4 mb-3 gap-2 rounded-2xl bg-white py-2 pl-4 pr-1 dark:bg-zinc-900">
+        <View className="mx-4 mb-3 gap-2 rounded-2xl bg-zinc-50 py-2 pl-4 pr-1 dark:bg-zinc-900">
           <View className="flex-row items-center gap-1">
             <Pressable
               onPress={() => setDetailsAt(detailsOpen ? null : Date.now())}
@@ -1145,7 +1145,7 @@ export const FeedView: React.FC<{
         keyExtractor={(post) => post.key}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
-        ItemSeparatorComponent={mediaOnly ? undefined : () => <View className="mx-4 h-px bg-zinc-200 dark:bg-zinc-800" />}
+        ItemSeparatorComponent={mediaOnly ? undefined : () => <View className="h-px bg-zinc-200 dark:bg-zinc-800" />}
         renderItem={({ item }) =>
           mediaOnly ? (
             <PostTile post={item} unread={isUnread(item)} columns={columns} onOpen={() => openGallery(item)} />
