@@ -682,30 +682,12 @@ export const FeedView: React.FC<{
       systemImage: 'link.badge.plus',
       handler: () => ui$.addSourcesModal.set({ timelineId: timeline?.id }),
     },
-    {
-      label: t('feed.manageSources'),
-      icon: <MaterialIcons name="manage-accounts" size={18} color={iconColor} />,
-      systemImage: 'person.2',
-      handler: () => ui$.sourcesModal.set({ tabId }),
-    },
-    {
-      label: t('feed.settings'),
-      icon: <MaterialIcons name="tune" size={18} color={iconColor} />,
-      systemImage: 'slider.horizontal.3',
-      handler: () => ui$.feedSettingsModalOpen.set(true),
-    },
-    {
-      label: t('feed.newTimeline'),
-      icon: <MaterialIcons name="playlist-add" size={18} color={iconColor} />,
-      systemImage: 'plus',
-      handler: () => ui$.timelineModal.set({ tabId }),
-    },
     ...(timeline
       ? [
           {
             label: t('feed.editTimeline'),
-            icon: <MaterialIcons name="edit" size={18} color={iconColor} />,
-            systemImage: 'pencil',
+            icon: <MaterialIcons name="tune" size={18} color={iconColor} />,
+            systemImage: 'slider.horizontal.3',
             handler: () => ui$.timelineModal.set({ timelineId: timeline.id, tabId }),
           },
           {
@@ -721,6 +703,25 @@ export const FeedView: React.FC<{
       icon: <MaterialIcons name="open-in-new" size={18} color={iconColor} />,
       systemImage: 'plus.square.on.square',
       handler: () => openFeedTab(timeline?.id, true),
+    },
+    { label: '', handler: () => {}, kind: 'separator' as const },
+    {
+      label: t('feed.newTimeline'),
+      icon: <MaterialIcons name="playlist-add" size={18} color={iconColor} />,
+      systemImage: 'plus',
+      handler: () => ui$.timelineModal.set({ tabId }),
+    },
+    {
+      label: t('feed.manageSources'),
+      icon: <MaterialIcons name="manage-accounts" size={18} color={iconColor} />,
+      systemImage: 'person.2',
+      handler: () => ui$.sourcesModal.set({ tabId }),
+    },
+    {
+      label: t('feed.settings'),
+      icon: <MaterialIcons name="settings" size={18} color={iconColor} />,
+      systemImage: 'gearshape',
+      handler: () => ui$.feedSettingsModalOpen.set(true),
     },
   ]
 
@@ -1091,9 +1092,12 @@ export const FeedView: React.FC<{
           ) : null}
           {profiles.length ? (
             <Pressable
-              onPress={() => ui$.feedSettingsModalOpen.set(true)}
+              onPress={() => {
+                if (timeline) ui$.timelineModal.set({ timelineId: timeline.id, tabId })
+                else ui$.feedSettingsModalOpen.set(true)
+              }}
               accessibilityRole="button"
-              accessibilityLabel={t('feed.settings')}
+              accessibilityLabel={t(timeline ? 'feed.editTimeline' : 'feed.settings')}
               style={iosTouchTarget}
               className="h-11 w-11 items-center justify-center rounded-full"
             >

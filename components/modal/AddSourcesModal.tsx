@@ -130,7 +130,7 @@ export const AddSourcesModal = () => {
 
   return (
     <FormModal
-      title={t('feed.addSources')}
+      title={timeline ? t('feed.addSourcesTo', { name: timeline.name }) : t('feed.addSources')}
       onClose={onClose}
       onSubmit={save}
       submitLabel={toAdd.length ? t('feed.addSourcesSubmit', { count: toAdd.length }) : t('feed.add')}

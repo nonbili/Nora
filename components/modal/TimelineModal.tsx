@@ -70,7 +70,7 @@ export const TimelineModal = () => {
 
   const notifyOptions = [
     {
-      label: t('feed.notifyDefault', { state: t(feedNotify ? 'feed.notifyOn' : 'feed.notifyOff'), name: t('feed.allSources') }),
+      label: t('feed.notifyDefaultState', { state: t(feedNotify ? 'feed.notifyOn' : 'feed.notifyOff') }),
       choice: undefined as boolean | undefined,
     },
     { label: t('feed.notifyOn'), choice: true },
