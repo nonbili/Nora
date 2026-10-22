@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { FlatList, Pressable, ScrollView, TextInput, View } from 'react-native'
+import { useEffect, useState } from 'react'
+import { FlatList, Keyboard, Pressable, ScrollView, TextInput, View } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
+import * as DocumentPicker from 'expo-document-picker'
 import { t } from 'i18next'
 import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
@@ -27,6 +28,10 @@ import { useWatchPosts } from '@/lib/use-watch-posts'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
 import { androidHitSlop, clsx } from '@/lib/utils'
+import { applyWatchBackup, exportSourcesOpml, parseSourceList } from '@/lib/watch-transfer'
+import { refreshWatched } from '@/lib/watch-feed'
+import { saveFile } from '@/lib/file'
+import { showToast } from '@/lib/toast'
 
 const sortLabelKeys = {
   name: 'feed.sortName',
@@ -52,6 +57,7 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
 }) => {
   const tw = useTwColor()
   const allProfiles = useValue(watch$.profiles)
+  const hasTimelines = useValue(() => watch$.timelines.get().length > 0)
   const timeline = useValue(() => (pick ? getTimeline(timelineId) : undefined))
   const newestPostAt = useWatchPosts(getNewestPostTimes)
   const sort = useValue(watch$.sourcesSort)
@@ -59,6 +65,55 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
   const [now] = useState(() => Date.now())
   const [query, setQuery] = useState('')
   const [site, setSite] = useState<WatchSite | undefined>()
+  const [exporting, setExporting] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [keyboardVisible, setKeyboardVisible] = useState(false)
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true))
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false))
+    return () => {
+      show.remove()
+      hide.remove()
+    }
+  }, [])
+
+  const importSources = async () => {
+    if (importing) return
+    setImporting(true)
+    try {
+      // OPML files have no type of their own on most systems.
+      const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true, multiple: false, type: '*/*' })
+      const asset = result.assets?.[0]
+      if (!asset) return
+      const list = parseSourceList(await (await fetch(asset.uri)).text())
+      if (!list.profiles.length && !list.timelines.length) {
+        showToast(t('feed.importSourcesEmpty'))
+        return
+      }
+      const { added, existing } = applyWatchBackup(list)
+      showToast(t('feed.importSourcesDone', { added, existing, unrecognized: list.unrecognized }))
+      if (added) void refreshWatched('foreground')
+    } catch (e) {
+      console.error('[Feed] source import failed', e)
+      showToast(t('feed.importSourcesFailed', { message: (e as Error).message }))
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const exportSources = async () => {
+    if (exporting) return
+    setExporting(true)
+    try {
+      await saveFile('nora-sources.opml', exportSourcesOpml())
+    } catch (e) {
+      console.error('[Feed] source export failed', e)
+      showToast(t('feed.exportSourcesFailed', { message: (e as Error).message }))
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const onClose = () => ui$.sourcesModal.set(null)
 
@@ -247,6 +302,19 @@ const SourcesList: React.FC<{ tabId?: string; timelineId?: string; pick?: boolea
             {filtered ? t('feed.sourcesNoMatch') : t('feed.empty')}
           </NouText>
         )}
+        {!pick && !keyboardVisible ? (
+          <View className="mt-4">
+            <NouText className="mb-3 text-sm leading-5 text-zinc-500 dark:text-zinc-400">{t('feed.importSourcesHint')}</NouText>
+            <View className="flex-row flex-wrap gap-2">
+              <NouButton size="1" variant="outline" loading={importing} disabled={exporting} onPress={() => void importSources()}>
+                {t('feed.importSources')}
+              </NouButton>
+              <NouButton size="1" variant="outline" loading={exporting} disabled={importing || (!allProfiles.length && !hasTimelines)} onPress={() => void exportSources()}>
+                {t('feed.exportSources')}
+              </NouButton>
+            </View>
+          </View>
+        ) : null}
         <View className="mt-4 flex-row justify-end">
           <NouButton size="1" variant="outline" onPress={onClose}>
             {t('menus.close')}

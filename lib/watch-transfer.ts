@@ -1,11 +1,11 @@
 /**
- * Watched sources out of Nora and back: as a section of the settings backup, and from a list of
+ * Watched sources out of Nora and back: as OPML, as a section of the settings backup, and from a list of
  * links someone else made, an OPML file of an RSS reader or plain links one per line.
  */
 
 import { batch } from '@legendapp/state'
 import { getTimeline, watch$, type WatchedProfile } from '@/states/watch'
-import { cleanEmoji, decodeEntities, getWatchTarget, watchKey, watchProfileUrl, watchSiteLabels, type WatchSite, type WatchTarget } from './watch'
+import { cleanEmoji, decodeEntities, getWatchTarget, watchKey, watchProfileUrl, watchSiteLabels, watchSourceLabel, type WatchSite, type WatchTarget } from './watch'
 
 /** A watched source as it travels: what was chosen for it, not what was last read from the site. */
 export interface WatchSourceBackup extends WatchTarget {
@@ -90,6 +90,30 @@ export const createWatchBackup = (): WatchBackup => ({
     ...(watch$.timelineNotify[timeline.id].get() !== undefined ? { notify: watch$.timelineNotify[timeline.id].get() } : {}),
   })),
 })
+
+/** A portable source list, with timelines as folders; settings and posts stay in Nora. */
+export const exportSourcesOpml = (backup: WatchBackup = createWatchBackup()): string => {
+  const escape = (value: string) => value.replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;',
+  })[char]!)
+  const sourceOutline = (profile: WatchSourceBackup) =>
+    `<outline text="${escape(profile.name || watchSourceLabel(profile))}" htmlUrl="${escape(watchProfileUrl({ site: profile.site, handle: profile.handle }))}" />`
+  const groups = new Map<string, WatchSourceBackup[]>(backup.timelines.map((timeline) => [timeline.name, []]))
+  const outlines: string[] = []
+  for (const profile of backup.profiles) {
+    if (profile.timeline) {
+      if (!groups.has(profile.timeline)) groups.set(profile.timeline, [])
+      groups.get(profile.timeline)!.push(profile)
+    } else outlines.push(`    ${sourceOutline(profile)}`)
+  }
+  for (const [name, profiles] of groups) {
+    outlines.push(`    <outline text="${escape(name)}">`)
+    outlines.push(...profiles.map((profile) => `      ${sourceOutline(profile)}`))
+    outlines.push('    </outline>')
+  }
+  return ['<?xml version="1.0" encoding="UTF-8"?>', '<opml version="2.0">',
+    '  <head><title>Nora sources</title></head>', '  <body>', ...outlines, '  </body>', '</opml>', ''].join('\n')
+}
 
 /** A source of a backup, when it is one Nora could have watched: its page has to read back as the same source. */
 export const validTarget = (site: unknown, handle: unknown): WatchTarget | null => {
@@ -299,6 +323,8 @@ const attributesOf = (source: string) => {
 /** The sources of an OPML file, each in the folder it is in: a folder is an outline with no link. */
 const parseOpml = (opml: string) => {
   const sources: ListedSource[] = []
+  const folders: string[] = []
+  const foldersWithLinks = new Set<string>()
   let unrecognized = 0
   // The name of each open outline that is a folder; undefined for one that is a source.
   const open: (string | undefined)[] = []
@@ -309,7 +335,12 @@ const parseOpml = (opml: string) => {
     }
     const attributes = attributesOf(attributeSource)
     const links = [attributes.htmlurl, attributes.xmlurl, attributes.url].filter(Boolean)
+    const folder = links.length ? undefined : text(attributes.title) || text(attributes.text)
+    if (folder) folders.push(folder)
     if (links.length) {
+      for (const ancestor of open) {
+        if (ancestor) foldersWithLinks.add(timelineName(ancestor))
+      }
       const target = links.map(sourceFromUrl).find(Boolean)
       if (target) {
         sources.push({ target, folder: open.findLast(Boolean) })
@@ -318,10 +349,11 @@ const parseOpml = (opml: string) => {
       }
     }
     if (!selfClosing) {
-      open.push(links.length ? undefined : text(attributes.title) || text(attributes.text))
+      open.push(folder)
     }
   }
-  return { sources, unrecognized }
+  // Truly empty folders can be saved as templates; folders with unsupported feeds are skipped.
+  return { sources, folders: folders.filter((name) => !foldersWithLinks.has(timelineName(name))), unrecognized }
 }
 
 /** The sources of plain text: links one per line, or apart by spaces or commas; a line starting with # is not read. */
@@ -339,14 +371,17 @@ const parseLinks = (list: string) => {
       }
     }
   }
-  return { sources, unrecognized }
+  return { sources, folders: [], unrecognized }
 }
 
 /** The sources of an OPML file or of a list of links, with the OPML folders as timelines. */
 export const parseSourceList = (list: string): SourceListImport => {
-  const { sources, unrecognized } = /<outline\b/i.test(list) ? parseOpml(list) : parseLinks(list)
+  const { sources, folders, unrecognized } = /<outline\b/i.test(list) ? parseOpml(list) : parseLinks(list)
   const profiles = new Map<string, WatchSourceBackup>()
   const timelines = new Map<string, WatchTimelineBackup>()
+  for (const name of folders) {
+    if (!timelines.has(timelineName(name))) timelines.set(timelineName(name), { name })
+  }
   for (const { target, folder } of sources) {
     const key = watchKey(target)
     // A source in more than one folder is in the first.

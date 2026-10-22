@@ -3,6 +3,7 @@ import { shareAsync, isAvailableAsync } from 'expo-sharing'
 
 function getMimeType(filename: string) {
   const name = filename.toLowerCase()
+  if (name.endsWith('.opml')) return 'application/xml'
   if (name.endsWith('.csv')) {
     return 'text/csv'
   }
@@ -19,7 +20,7 @@ export async function saveFile(filename: string, content: string) {
   await file.write(content)
   await shareAsync(file.uri, {
     mimeType: getMimeType(filename),
-    UTI: filename.toLowerCase().endsWith('.json') ? 'public.json' : 'public.plain-text',
+    UTI: filename.toLowerCase().endsWith('.opml') ? 'public.xml' : filename.toLowerCase().endsWith('.json') ? 'public.json' : 'public.plain-text',
     dialogTitle: 'Save the file',
   })
 }

@@ -1,5 +1,6 @@
 function getMimeType(filename: string) {
   const name = filename.toLowerCase()
+  if (name.endsWith('.opml')) return 'application/xml'
   if (name.endsWith('.csv')) {
     return 'text/csv'
   }

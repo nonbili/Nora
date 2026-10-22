@@ -5,7 +5,7 @@ import { t } from 'i18next'
 import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
-import { formatInterval, notifyFromName } from '../feed/FeedView'
+import { formatInterval } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
 import { inheritedInterval, notifyChoice, watch$ } from '@/states/watch'
 import { enableWatchNotifications } from '@/lib/watch-feed'
@@ -107,7 +107,12 @@ export const SourcePickerModal = () => {
             </>
           ) : picker.kind === 'notify' ? (
             [
-              { label: t('feed.notifyDefault', { state: t(inheritedNotify.notify ? 'feed.notifyOn' : 'feed.notifyOff'), name: notifyFromName(inheritedNotify) }), notify: undefined },
+              {
+                label: inheritedNotify.from === 'timeline'
+                  ? t('feed.notifyDefault', { state: t(inheritedNotify.notify ? 'feed.notifyOn' : 'feed.notifyOff'), name: inheritedNotify.timeline.name })
+                  : t('feed.notifyDefaultState', { state: t(inheritedNotify.notify ? 'feed.notifyOn' : 'feed.notifyOff') }),
+                notify: undefined,
+              },
               { label: t('feed.notifyOn'), notify: true },
               { label: t('feed.notifyOff'), notify: false },
             ].map((option) => {

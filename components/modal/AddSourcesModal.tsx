@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Pressable, ScrollView, TextInput, View, useColorScheme } from 'react-native'
+import { ScrollView, TextInput, View } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import * as Clipboard from 'expo-clipboard'
-import * as DocumentPicker from 'expo-document-picker'
 import { t } from 'i18next'
 import { FormModal } from './FormModal'
 import { NouText } from '../NouText'
@@ -12,10 +11,9 @@ import { ui$ } from '@/states/ui'
 import { getTimeline, watch$ } from '@/states/watch'
 import { watchKey, watchSiteLabels, watchSourceLabel } from '@/lib/watch'
 import { refreshWatched } from '@/lib/watch-feed'
-import { applyWatchBackup, parseSourceList, sourceFromUrl } from '@/lib/watch-transfer'
+import { sourceFromUrl } from '@/lib/watch-transfer'
 import { showToast } from '@/lib/toast'
 import { useTwColor } from '@/lib/theme'
-import { androidHitSlop, iosTouchTarget } from '@/lib/utils'
 
 /** The links in what was typed or pasted, each with the source it is of, if any. */
 const readLinks = (text: string) =>
@@ -24,44 +22,9 @@ const readLinks = (text: string) =>
     .filter(Boolean)
     .map((link) => ({ link, target: sourceFromUrl(link) }))
 
-/** Moves the profiles into a timeline; with onlyLoose, only those that are in none. */
-const addToTimeline = (timelineId: string | undefined, keys: string[], onlyLoose = false) => {
-  const timeline = getTimeline(timelineId)
-  if (!timeline) return
-  const profiles = new Map(watch$.profiles.peek().map((profile) => [profile.key, profile]))
-  for (const key of keys) {
-    if (onlyLoose && getTimeline(profiles.get(key)?.timelineId)) continue
-    watch$.setProfileTimeline(key, timeline.id)
-  }
-}
-
-/** Adds the sources of an OPML file or of a list of links, with the OPML folders as timelines, and the others to the timeline given. */
-const importSources = async (timelineId?: string) => {
-  // OPML files have no type of their own on most systems.
-  const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true, multiple: false, type: '*/*' })
-  const asset = result.assets?.[0]
-  if (!asset) return false
-  try {
-    const list = parseSourceList(await (await fetch(asset.uri)).text())
-    if (!list.profiles.length) {
-      showToast(t('feed.importSourcesEmpty'))
-      return true
-    }
-    const { added, existing } = applyWatchBackup(list)
-    addToTimeline(timelineId, list.profiles.map(watchKey), true)
-    showToast(t('feed.importSourcesDone', { added, existing, unrecognized: list.unrecognized }))
-    if (added) void refreshWatched('foreground')
-  } catch (e) {
-    console.error('[Feed] source import failed', e)
-    showToast(t('feed.importSourcesFailed', { message: (e as Error).message }))
-  }
-  return true
-}
-
-/** Adds sources by their links, without opening them, or from a file; into the timeline it was opened from, if any. */
+/** Adds sources by their links into the timeline it was opened from, if any. */
 export const AddSourcesModal = () => {
   const tw = useTwColor()
-  const isDark = useColorScheme() === 'dark'
   const target = useValue(ui$.addSourcesModal)
   const profiles = useValue(watch$.profiles)
   const timelines = useValue(watch$.timelines)
@@ -118,14 +81,12 @@ export const AddSourcesModal = () => {
     for (const [key, source] of toAdd) {
       if (!watched.has(key)) watch$.watch(source)
     }
-    addToTimeline(timeline?.id, toAdd.map(([key]) => key))
+    if (timeline) {
+      for (const [key] of toAdd) watch$.setProfileTimeline(key, timeline.id)
+    }
     showToast(t('feed.addSourcesDone', { count: toAdd.length }))
     if (newKeys.length) void refreshWatched('manual', newKeys)
     onClose()
-  }
-
-  const importFile = async () => {
-    if (await importSources(timeline?.id)) onClose()
   }
 
   return (
@@ -135,12 +96,6 @@ export const AddSourcesModal = () => {
       onSubmit={save}
       submitLabel={toAdd.length ? t('feed.addSourcesSubmit', { count: toAdd.length }) : t('feed.add')}
       submitDisabled={!toAdd.length}
-      footerAccessory={(
-        <Pressable onPress={() => void importFile()} accessibilityRole="button" hitSlop={androidHitSlop} style={iosTouchTarget ?? { height: 36 }} className="flex-row items-center gap-1.5">
-          <MaterialIcons name="upload-file" size={18} color={tw(isDark ? '#818cf8' : '#4f46e5')} />
-          <NouText className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{t('feed.importSources')}</NouText>
-        </Pressable>
-      )}
     >
       <TextInput
         // A few lines tall, as it takes a link on each.
