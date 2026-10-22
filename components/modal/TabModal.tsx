@@ -6,7 +6,7 @@ import { FeedTabIndicator, ServiceIcon } from '../service/Services'
 import { View, Text, ScrollView, TouchableOpacity, Pressable, Modal, useColorScheme, useWindowDimensions } from 'react-native'
 import { androidHitSlop, clsx, isIos, isWeb, iosTouchTarget, nIf } from '@/lib/utils'
 import { settings$ } from '@/states/settings'
-import { Tab, tabs$ } from '@/states/tabs'
+import { Tab, sortTabsByOrder, tabs$ } from '@/states/tabs'
 import { NouMenu } from '../menu/NouMenu'
 import { MenuToggleBadge } from '../menu/MenuToggleBadge'
 import { NouButton } from '../button/NouButton'
@@ -18,6 +18,9 @@ import { isFeedTabUrl } from '@/lib/feed-tab'
 import { useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTwColor } from '@/lib/theme'
+import { SortableTabList } from './SortableTabList'
+import Animated, { useAnimatedRef } from 'react-native-reanimated'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 type Anchor = { x: number; y: number; width: number; height: number }
@@ -29,6 +32,10 @@ export const TabModal = () => {
   const oneHandMode = !isWeb && oneHandModeSetting
   const tabs = useValue(tabs$.tabs)
   const activeTabIndex = useValue(tabs$.activeTabIndex)
+  const orders = useValue(tabs$.orders)
+  const orderedTabs = sortTabsByOrder(tabs, orders)
+  const [dragging, setDragging] = useState(false)
+  const scrollViewRef = useAnimatedRef<Animated.ScrollView>()
   const recentlyClosedTabs = useValue(tabs$.recentlyClosedTabs)
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
@@ -36,14 +43,18 @@ export const TabModal = () => {
   const [iosMenuOpen, setIosMenuOpen] = useState(false)
   const [iosMenuAnchor, setIosMenuAnchor] = useState<Anchor | null>(null)
   const iosMenuTriggerRef = useRef<ViewInstance>(null)
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions()
+  const { width: screenWidth, height: screenHeight, fontScale } = useWindowDimensions()
+  const rowHeight = Math.max(44, Math.ceil(20 * fontScale + 18))
   const insets = useSafeAreaInsets()
 
   if (!tabModalOpen) {
     return null
   }
 
-  const closeModal = () => ui$.tabModalOpen.set(false)
+  const closeModal = () => {
+    setDragging(false)
+    ui$.tabModalOpen.set(false)
+  }
   const onPress = (index: number) => {
     tabs$.setActiveTabIndex(index, 'user')
     closeModal()
@@ -166,61 +177,73 @@ export const TabModal = () => {
 
   return (
     <BaseModal onClose={closeModal} sheetOnPhone>
-      {isIos ? controls : null}
-      <ScrollView
-        className={clsx('pl-4', isIos ? 'flex-1' : 'my-4 min-h-full')}
-        contentContainerClassName={clsx('min-h-full pb-20', oneHandMode && 'justify-end pt-[35vh]')}
-      >
-        {!isIos ? controls : null}
-        {tabs.map((tab, index) => (
-          <View
-            className={clsx('flex-row items-center justify-between gap-2 pr-4', index !== tabs.length - 1 && 'mb-3')}
-            key={tab.id || index}
-          >
-            <TouchableOpacity
-              className="flex-1 min-w-0"
-              onPress={() => onPress(index)}
-              onLongPress={() => {
-                ui$.profileTabId.set(tab.id)
-                closeModal()
-              }}
-            >
-              <View
-                className={clsx(
-                  'flex-1 flex-row items-center gap-3 rounded-md border py-2 px-2',
-                  index === activeTabIndex
-                    ? 'bg-indigo-200 border-indigo-300 dark:bg-indigo-500/30 dark:border-indigo-400/40'
-                    : 'bg-white border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
-                )}
-                style={{
-                  ...(isFeedTabUrl(tab.url)
-                    ? { borderLeftWidth: 1, paddingLeft: 12 }
-                    : { borderLeftWidth: 5, borderLeftColor: getTabColor(tab) }),
-                  ...iosTouchTarget,
-                }}
-              >
-                <ServiceIcon url={tab.url} icon={tab.icon} />
-                <View className="min-w-0 flex-1">
-                  <Text className="text-sm text-zinc-900 dark:text-zinc-100" numberOfLines={1} ellipsizeMode="tail">
-                    {getTabLabel(tab)}
-                  </Text>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        {isIos ? controls : null}
+        <Animated.ScrollView
+          ref={scrollViewRef}
+          className={clsx('pl-4', isIos ? 'flex-1' : 'my-4 min-h-full')}
+          scrollEnabled={!dragging}
+          contentContainerClassName={clsx('min-h-full pb-20', oneHandMode && 'justify-end pt-[35vh]')}
+        >
+          {!isIos ? controls : null}
+          <SortableTabList
+            items={orderedTabs}
+            rowHeight={rowHeight}
+            scrollViewRef={scrollViewRef}
+            onDragging={setDragging}
+            onReorder={(ids) => tabs$.reorderTabs(ids)}
+            renderItem={(tab) => {
+              const index = tabs.findIndex((item) => item.id === tab.id)
+              return (
+                <View className="h-full flex-row items-center justify-between gap-2 pr-4">
+                  <TouchableOpacity
+                    className="h-full flex-1 min-w-0"
+                    onPress={() => onPress(index)}
+                    accessibilityHint={t('tabs.reorder')}
+                    delayLongPress={250}
+                    onLongPress={() => {}}
+                  >
+                    <View
+                      className={clsx(
+                        'h-full flex-row items-center gap-3 rounded-md border py-2 px-2',
+                        index === activeTabIndex
+                          ? 'bg-indigo-200 border-indigo-300 dark:bg-indigo-500/30 dark:border-indigo-400/40'
+                          : 'bg-white border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
+                      )}
+                      style={{
+                        ...(isFeedTabUrl(tab.url)
+                          ? { borderLeftWidth: 1, paddingLeft: 12 }
+                          : { borderLeftWidth: 5, borderLeftColor: getTabColor(tab) }),
+                        ...iosTouchTarget,
+                      }}
+                    >
+                      <ServiceIcon url={tab.url} icon={tab.icon} />
+                      <View className="min-w-0 flex-1">
+                        <Text className="text-sm text-zinc-900 dark:text-zinc-100" numberOfLines={1} ellipsizeMode="tail">
+                          {getTabLabel(tab)}
+                        </Text>
+                      </View>
+                      <FeedTabIndicator url={tab.url} />
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="items-center justify-center p-2 rounded-full"
+                    accessibilityRole="button"
+                    accessibilityLabel={t('menus.close')}
+                    style={iosTouchTarget}
+                    hitSlop={androidHitSlop}
+                    delayLongPress={250}
+                    onLongPress={() => {}}
+                    onPress={() => tabs$.closeTab(index)}
+                  >
+                    <MaterialIcons name="close" size={20} color={iconColor} />
+                  </TouchableOpacity>
                 </View>
-                <FeedTabIndicator url={tab.url} />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="items-center justify-center p-2 rounded-full"
-              accessibilityRole="button"
-              accessibilityLabel={t('menus.close')}
-              style={iosTouchTarget}
-              hitSlop={androidHitSlop}
-              onPress={() => tabs$.closeTab(index)}
-            >
-              <MaterialIcons name="close" size={20} color={iconColor} />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
+              )
+            }}
+          />
+        </Animated.ScrollView>
+      </GestureHandlerRootView>
       {isIos && iosMenuOpen && iosMenuAnchor ? (
         <Modal transparent visible onRequestClose={() => setIosMenuOpen(false)}>
           <View className="flex-1" pointerEvents="box-none">

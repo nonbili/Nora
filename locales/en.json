@@ -463,6 +463,7 @@
   },
   "tabs": {
     "open": "Open tabs ({{count}})",
+    "reorder": "Touch and hold, then drag to reorder",
     "new": "New tab",
     "recentlyClosed": "Recently closed",
     "noRecentlyClosed": "No recently closed tabs",

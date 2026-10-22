@@ -73,6 +73,7 @@ interface Store {
   // currentUrl: () => string
 
   openTab: (url: string, options?: OpenTabOptions) => string | undefined
+  reorderTabs: (orderedIds: string[]) => void
   duplicateTab: (tabId: string) => string | undefined
   setTabProfile: (tabId: string, profileId: string) => void
   closeTab: (index: number) => void
@@ -372,6 +373,14 @@ export const tabs$: Observable<Store> = observable<Store>({
   tabs: [],
   activeTabIndex: 0,
   orders: {},
+  reorderTabs: (orderedIds) => {
+    const currentIds = getOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get())
+    const existingIds = new Set(currentIds)
+    const nextIds = [...new Set(orderedIds.filter((id) => existingIds.has(id)))]
+    const included = new Set(nextIds)
+    nextIds.push(...currentIds.filter((id) => !included.has(id)))
+    tabs$.orders.set(Object.fromEntries(nextIds.map((id, index) => [id, index])))
+  },
   recentlyClosedTabs: [],
 
   currentTab: (): Tab | undefined => {

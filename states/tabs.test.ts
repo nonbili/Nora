@@ -183,3 +183,35 @@ it('does not reuse a tab of the Anonymous profile for a link from a tab of anoth
     settings$.oneTabPerSite.set(previousOneTab)
   }
 })
+
+it('moves tabs in the saved order without changing the active tab or tab instances', async () => {
+  const { getOrderedTabIds } = await import('./tabs')
+  const previousTabs = tabs$.tabs.get()
+  const previousOrders = tabs$.orders.get()
+  const previousIndex = tabs$.activeTabIndex.get()
+  try {
+    tabs$.tabs.set([
+      { id: 'move-a', url: 'https://a.test' },
+      { id: 'move-b', url: 'https://b.test' },
+      { id: 'move-c', url: 'https://c.test' },
+    ])
+    tabs$.activeTabIndex.set(1)
+    // Restored orders may contain closed tabs and omit newly opened tabs.
+    tabs$.orders.set({ 'move-a': 0, stale: 1, 'move-b': 2 })
+    const original = tabs$.tabs.get()
+    tabs$.reorderTabs(['move-b', 'move-c', 'move-a'])
+    expect(getOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get())).toEqual(['move-b', 'move-c', 'move-a'])
+    expect(tabs$.tabs.get()).toBe(original)
+    expect(tabs$.activeTabIndex.get()).toBe(1)
+
+    // A tab opened during a drag is retained; closed and duplicate IDs are ignored.
+    tabs$.tabs.push({ id: 'new-tab', url: 'https://new.test' })
+    tabs$.reorderTabs(['move-a', 'closed-tab', 'move-b', 'move-a', 'move-c'])
+    expect(getOrderedTabIds(tabs$.tabs.get(), tabs$.orders.get())).toEqual(['move-a', 'move-b', 'move-c', 'new-tab'])
+    expect(tabs$.activeTabIndex.get()).toBe(1)
+  } finally {
+    tabs$.tabs.set(previousTabs)
+    tabs$.orders.set(previousOrders)
+    tabs$.activeTabIndex.set(previousIndex)
+  }
+})

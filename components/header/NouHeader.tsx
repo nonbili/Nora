@@ -12,7 +12,7 @@ import { SettingsModal } from '../modal/SettingsModal'
 import { NouMenu } from '../menu/NouMenu'
 import { MenuToggleBadge } from '../menu/MenuToggleBadge'
 import { isWeb, isIos, isAndroid, nIf, clsx } from '@/lib/utils'
-import { tabs$ } from '@/states/tabs'
+import { getOrderedTabIds, tabs$ } from '@/states/tabs'
 import { MaterialButton, MaterialCommunityButton } from '../button/IconButtons'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
@@ -51,16 +51,21 @@ const rc = (web: string, native: string) => (isWeb ? web : native)
 const headerButtonStyle = { width: isAndroid ? 48 : 52, height: isAndroid ? 48 : 44 } as const
 const headerIconSize = 26
 
+function switchTab(direction: number) {
+  const tabs = tabs$.tabs.get()
+  const ids = getOrderedTabIds(tabs, tabs$.orders.get())
+  if (!ids.length) return
+  const activeId = tabs[tabs$.activeTabIndex.get()]?.id
+  const index = ids.indexOf(activeId)
+  tabs$.setActiveTabById(ids[(index + direction + ids.length) % ids.length], 'user')
+}
+
 function prevTab() {
-  const activeIndex = tabs$.activeTabIndex.get()
-  const newIndex = activeIndex > 0 ? activeIndex - 1 : tabs$.tabs.length - 1
-  tabs$.setActiveTabIndex(newIndex, 'user')
+  switchTab(-1)
 }
 
 function nextTab() {
-  const activeIndex = tabs$.activeTabIndex.get()
-  const newIndex = activeIndex < tabs$.tabs.length - 1 ? activeIndex + 1 : 0
-  tabs$.setActiveTabIndex(newIndex, 'user')
+  switchTab(1)
 }
 
 export const NouHeader: React.FC<{}> = ({}) => {
