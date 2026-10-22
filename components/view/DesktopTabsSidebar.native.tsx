@@ -8,14 +8,14 @@ import { t } from 'i18next'
 import { NouText } from '@/components/NouText'
 import { NouMenu } from '@/components/menu/NouMenu'
 import type { Item, NouMenuHandle } from '@/components/menu/NouMenu'
-import { ServiceIcon } from '@/components/service/Services'
+import { FeedTabIndicator, ServiceIcon } from '@/components/service/Services'
 import { MaterialButton } from '@/components/button/IconButtons'
 import { colors } from '@/lib/colors'
 import { closeDesktopGroupWithTabs } from '@/lib/desktop-view-actions'
 import { clsx, isIos } from '@/lib/utils'
 import { getTabWebview } from '@/lib/webview'
 import { NouLongPressMenu } from '@/components/menu/NouLongPressMenu'
-import { getProfileColor } from '@/lib/profile'
+import { getTabColor } from '@/lib/profile'
 import { useTabContextMenuItems } from '@/lib/hooks/useTabContextMenuItems'
 import { getGroupedTabIds, getTabGroupsKey } from '@/lib/tab-groups'
 import { createDesktopTabGroup, tabGroups$, type TabGroup, type TabGroupLayout } from '@/states/tab-groups'
@@ -68,7 +68,7 @@ const TabRow: React.FC<{
   tab: Tab
 }> = ({ collapsed, groupId, groups, isActive, clipRef, openMenu, tab }) => {
   const tw = useTwColor()
-  const profileColor = getProfileColor(tab.profile)
+  const profileColor = getTabColor(tab)
   const rowRef = useRef<ViewInstance>(null)
   const itemsRef = useRef<Item[]>([])
   const openMenuRef = useRef(openMenu)
@@ -193,9 +193,9 @@ const TabRow: React.FC<{
         onPress={activate}
         onLongPress={isIos ? undefined : openRowMenu}
       >
-        <View
-          style={{ position: 'absolute', left: 0, top: 10, bottom: 10, width: 3, backgroundColor: profileColor }}
-        />
+        {profileColor ? (
+          <View style={{ position: 'absolute', left: 0, top: 10, bottom: 10, width: 3, backgroundColor: profileColor }} />
+        ) : null}
         {favicon}
       </Pressable>
     )
@@ -235,6 +235,7 @@ const TabRow: React.FC<{
               {getTabLabel(tab)}
             </NouText>
           </View>
+          <FeedTabIndicator url={tab.url} />
         </Pressable>
       </NouLongPressMenu>
       <Pressable

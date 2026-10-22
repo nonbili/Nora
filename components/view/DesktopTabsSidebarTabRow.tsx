@@ -8,11 +8,11 @@ import { Pressable, View } from 'react-native'
 import { t } from 'i18next'
 import { NouContextMenu } from '@/components/menu/NouContextMenu'
 import { NouText } from '@/components/NouText'
-import { ServiceIcon } from '@/components/service/Services'
+import { FeedTabIndicator, ServiceIcon } from '@/components/service/Services'
 import { clsx } from '@/lib/utils'
 import { openUrlInDesktopTab } from '@/lib/desktop-view-actions'
 import { useUrlDropTarget } from './useUrlDropTarget'
-import { getProfileColor } from '@/lib/profile'
+import { getTabColor } from '@/lib/profile'
 import { getSiteFromProfileId } from '@/lib/site-profile'
 import { settings$ } from '@/states/settings'
 import { tabGroups$ } from '@/states/tab-groups'
@@ -45,7 +45,7 @@ export const TabRow = memo<{
     tabGroups$.setActiveGroup(groupId)
     openUrlInDesktopTab(tab.id, url)
   })
-  const profileColor = getProfileColor(tab.profile)
+  const profileColor = getTabColor(tab)
   const profileName = useValue(() => {
     const site = getSiteFromProfileId(tab.profile)
     if (site) return site
@@ -79,7 +79,7 @@ export const TabRow = memo<{
           tabs$.setActiveTabById(tab.id, 'user')
         }}
       >
-        <View style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} />
+        {profileColor ? <View style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} /> : null}
         {favicon}
       </Pressable>
       <div
@@ -124,6 +124,7 @@ export const TabRow = memo<{
           {getTabLabel(tab)}
         </NouText>
       </View>
+      <FeedTabIndicator url={tab.url} />
       <div title={t('menus.close')}>
         <Pressable
           className="h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-zinc-300/70 dark:hover:bg-zinc-600"
@@ -179,7 +180,7 @@ export const TabRow = memo<{
 TabRow.displayName = 'TabRow'
 
 export const TabRowPreview: React.FC<{ tab: Tab; collapsed?: boolean }> = ({ tab, collapsed = false }) => {
-  const profileColor = getProfileColor(tab.profile)
+  const profileColor = getTabColor(tab)
   if (collapsed) {
     return (
       <div
@@ -197,7 +198,7 @@ export const TabRowPreview: React.FC<{ tab: Tab; collapsed?: boolean }> = ({ tab
           zIndex: 9999,
         }}
       >
-        <span style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} />
+        {profileColor ? <span style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 3, backgroundColor: profileColor }} /> : null}
         <ServiceIcon url={tab.url} icon={tab.icon} />
       </div>
     )
@@ -236,6 +237,7 @@ export const TabRowPreview: React.FC<{ tab: Tab; collapsed?: boolean }> = ({ tab
       >
         {getTabLabel(tab)}
       </span>
+      <FeedTabIndicator url={tab.url} />
     </div>
   )
 }

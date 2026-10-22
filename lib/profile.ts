@@ -1,6 +1,11 @@
 import { settings$, type Profile } from '@/states/settings'
 import { getSiteFromProfileId } from './site-profile'
 import { getDeterministicProfileColor } from './profile-color'
+import { isFeedTabUrl } from './feed-tab'
+
+/** Reserve the stripe's space for alignment, but show profile colors only on web tabs. */
+export const getTabColor = (tab: { url?: string; profile?: string }) =>
+  isFeedTabUrl(tab.url) ? 'transparent' : getProfileColor(tab.profile)
 
 export const getProfileColor = (profileId?: string) => {
   const site = getSiteFromProfileId(profileId)

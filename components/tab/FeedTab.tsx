@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import { t } from 'i18next'
 import { ui$ } from '@/states/ui'
@@ -7,8 +7,8 @@ import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { getTimeline, timelineEmoji } from '@/states/watch'
 import { getFeedTimelineId } from '@/lib/feed-tab'
+import { FeedTabIcon, FeedTabIndicator } from '@/components/service/Services'
 import { clsx, isAndroid, isWeb, nIf } from '@/lib/utils'
-import { useTwColor } from '@/lib/theme'
 import { NouText } from '../NouText'
 import { MaterialButton } from '../button/IconButtons'
 import { FeedView } from '../feed/FeedView'
@@ -27,7 +27,6 @@ export const FeedTab: React.FC<NoraTabProps> = ({
   desktopVariant = 'deck',
   slotSwitcher,
 }) => {
-  const tw = useTwColor()
   const autoHideHeader = useValue(settings$.autoHideHeader)
   const doubleTapToToggleHeader = useValue(settings$.doubleTapToToggleHeader)
   const hideToolbarWhenScrolled = useValue(settings$.hideToolbarWhenScrolled)
@@ -74,12 +73,12 @@ export const FeedTab: React.FC<NoraTabProps> = ({
           ? 'bg-indigo-100 border-indigo-200 dark:bg-indigo-400/30 dark:border-indigo-300/50'
           : 'bg-zinc-50 border-zinc-300 dark:bg-zinc-800 dark:border-zinc-700/50',
       )}
-      style={{ height: 36 }}
+      style={{ borderLeftWidth: 4, borderLeftColor: 'transparent', height: 36 }}
     >
       <View className="min-w-0 flex-1 flex-row items-center justify-center">
         {slotSwitcher || (
           <View className="min-w-0 max-w-full flex-row items-center justify-center gap-2 px-2">
-            <Text style={{ fontSize: 13, lineHeight: 16 }}>{emoji}</Text>
+            <FeedTabIcon emoji={emoji} size={20} />
             <NouText
               className={clsx(
                 'min-w-0 flex-1 text-center text-[11px] font-bold tracking-wider',
@@ -92,6 +91,7 @@ export const FeedTab: React.FC<NoraTabProps> = ({
           </View>
         )}
       </View>
+      <FeedTabIndicator url={tab.url} />
       <MaterialButton name="close" onPress={() => tabs$.closeTab(index)} style={toolbarButtonStyle} size={16} />
     </View>
   )

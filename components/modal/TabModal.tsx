@@ -2,7 +2,7 @@ import type { ViewInstance } from 'react-native'
 import { ui$ } from '@/states/ui'
 import { useValue } from '@legendapp/state/react'
 import { BaseModal } from './BaseModal'
-import { ServiceIcon } from '../service/Services'
+import { FeedTabIndicator, ServiceIcon } from '../service/Services'
 import { View, Text, ScrollView, TouchableOpacity, Pressable, Modal, useColorScheme, useWindowDimensions } from 'react-native'
 import { androidHitSlop, clsx, isIos, isWeb, iosTouchTarget, nIf } from '@/lib/utils'
 import { settings$ } from '@/states/settings'
@@ -13,7 +13,8 @@ import { NouButton } from '../button/NouButton'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { t } from 'i18next'
 import { colors } from '@/lib/colors'
-import { getProfileColor } from '@/lib/profile'
+import { getTabColor } from '@/lib/profile'
+import { isFeedTabUrl } from '@/lib/feed-tab'
 import { useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTwColor } from '@/lib/theme'
@@ -191,7 +192,12 @@ export const TabModal = () => {
                     ? 'bg-indigo-200 border-indigo-300 dark:bg-indigo-500/30 dark:border-indigo-400/40'
                     : 'bg-white border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800',
                 )}
-                style={{ borderLeftWidth: 5, borderLeftColor: getProfileColor(tab.profile), ...iosTouchTarget }}
+                style={{
+                  ...(isFeedTabUrl(tab.url)
+                    ? { borderLeftWidth: 1, paddingLeft: 12 }
+                    : { borderLeftWidth: 5, borderLeftColor: getTabColor(tab) }),
+                  ...iosTouchTarget,
+                }}
               >
                 <ServiceIcon url={tab.url} icon={tab.icon} />
                 <View className="min-w-0 flex-1">
@@ -199,6 +205,7 @@ export const TabModal = () => {
                     {getTabLabel(tab)}
                   </Text>
                 </View>
+                <FeedTabIndicator url={tab.url} />
               </View>
             </TouchableOpacity>
             <TouchableOpacity

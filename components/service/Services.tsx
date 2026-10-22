@@ -69,30 +69,39 @@ export const ServiceManager: React.FC<{ hideTitle?: boolean }> = ({ hideTitle = 
   )
 }
 
+export const FeedTabIcon: React.FC<{ emoji: string; size?: number }> = ({ emoji, size = 20 }) => {
+  return (
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: Math.max(14, size - 8), lineHeight: size }}>{emoji}</Text>
+    </View>
+  )
+}
+
+export const FeedTabIndicator: React.FC<{ url: string }> = ({ url }) => {
+  const tw = useTwColor()
+  return isFeedTabUrl(url) ? <MaterialIcons name="rss-feed" size={14} color={tw('#a1a1aa')} /> : null
+}
+
 export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, icon }) => {
   const tw = useTwColor()
   const size = isWeb ? 20 : 24
   const fallbackColor = url ? tw('#52525b') : tw('#a1a1aa')
   const [errored, setErrored] = useState(false)
-  // A feed tab shows the emoji of what it shows.
+  // Keep the timeline emoji in the same favicon slot as other tabs.
   const feedEmoji = useValue(() => (isFeedTabUrl(url) ? timelineEmoji(getFeedTimelineId(url)) : ''))
 
   useEffect(() => {
     setErrored(false)
   }, [icon])
 
+  if (isFeedTabUrl(url)) {
+    return <FeedTabIcon emoji={feedEmoji} size={size} />
+  }
+
   if (icon && !errored) {
     return (
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
         <Image source={icon} style={{ width: size, height: size }} contentFit="contain" onError={() => setErrored(true)} />
-      </View>
-    )
-  }
-
-  if (isFeedTabUrl(url)) {
-    return (
-      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: Math.max(14, size - 8), lineHeight: size }}>{feedEmoji}</Text>
       </View>
     )
   }
