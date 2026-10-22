@@ -1,3 +1,6 @@
+require "tmpdir"
+require "fileutils"
+
 default_platform(:android)
 
 platform :android do
@@ -32,13 +35,27 @@ platform :android do
 
   desc "Upload screenshots to Google Play Store"
   lane :upload_screenshots do
-    upload_to_play_store(
-      skip_upload_apk: true,
-      skip_upload_aab: true,
-      skip_upload_metadata: true,
-      skip_upload_changelogs: true,
-      skip_upload_images: false,
-      metadata_path: File.expand_path("../../fastlane/metadata/android", __dir__)
-    )
+    # The shared F-Droid tree includes locale names Play does not accept.
+    # Stage only the English screenshots for this upload.
+    Dir.mktmpdir("nora-play-screenshots-") do |metadata_path|
+      images_path = File.join(metadata_path, "en-US", "images")
+      FileUtils.mkdir_p(images_path)
+      FileUtils.cp_r(
+        File.expand_path("../../metadata/en-US/images/phoneScreenshots", __dir__),
+        images_path
+      )
+      upload_to_play_store(
+        package_name: ENV["ANDROID_PACKAGE_NAME"] || "jp.nonbili.nora",
+        json_key: ENV["GOOGLE_PLAY_JSON_KEY"] || ENV["SUPPLY_JSON_KEY"],
+        json_key_data: ENV["GOOGLE_PLAY_JSON_KEY_DATA"] || ENV["SUPPLY_JSON_KEY_DATA"],
+        skip_upload_apk: true,
+        skip_upload_aab: true,
+        skip_upload_metadata: true,
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: false,
+        metadata_path: metadata_path
+      )
+    end
   end
 end

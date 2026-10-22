@@ -117,6 +117,11 @@ platform :ios do
   lane :upload_screenshots do
     upload_to_app_store(
       force: true,
+      api_key: asc_api_key,
+      app_identifier: ENV["IOS_APP_IDENTIFIER"] || "jp.nonbili.nora",
+      overwrite_screenshots: true,
+      run_precheck_before_submit: false,
+      screenshots_path: File.expand_path("../../fastlane/metadata/ios", __dir__),
       skip_binary_upload: true,
       skip_metadata: true,
       skip_screenshots: false

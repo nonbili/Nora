@@ -55,7 +55,9 @@ Install from App Store, Google Play, F-Droid, or download APK from GitHub.
 
 ## Screenshots
 
-<img src="metadata/en-US/images/phoneScreenshots/1.jpg" width="240" alt="drawer"> <img src="metadata/en-US/images/phoneScreenshots/2.jpg" width="240" alt="instagram"> <img src="metadata/en-US/images/phoneScreenshots/3.jpg" width="240" alt="twitter">
+<img src="metadata/en-US/images/phoneScreenshots/1.png" width="240" alt="Social browser home"> <img src="metadata/en-US/images/phoneScreenshots/2.png" width="240" alt="Feed timeline"> <img src="metadata/en-US/images/phoneScreenshots/3.png" width="240" alt="Photo and video grid">
+
+<img src="metadata/en-US/images/phoneScreenshots/4.png" width="240" alt="Manage feed sources"> <img src="metadata/en-US/images/phoneScreenshots/5.png" width="240" alt="Profiles and sessions"> <img src="metadata/en-US/images/phoneScreenshots/6.png" width="240" alt="Tabs">
 
 ## Contributing
 
