@@ -1,3 +1,5 @@
+import { View } from 'react-native'
+import { SourcesScreen } from './SourcesScreen'
 import { useValue } from '@legendapp/state/react'
 import { useEffect, useState } from 'react'
 import { settings$ } from '@/states/settings'
@@ -87,7 +89,10 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   return (
     <ContentJsContext.Provider value={contentJs}>
       <QueryClientProvider client={queryClient}>
-        <MainPageContent contentJs={contentJs} />
+        <View className="relative h-full min-h-0 flex-1">
+          <MainPageContent contentJs={contentJs} />
+          <SourcesScreen />
+        </View>
         <NavModal />
         {nIf(!isWeb, <SettingsModal>{isIos ? settingsDialogs : null}</SettingsModal>)}
         <BookmarkModal />

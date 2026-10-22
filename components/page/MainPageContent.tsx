@@ -1,9 +1,9 @@
 import { useValue } from '@legendapp/state/react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { createLogger } from '@/lib/log'
 import { settings$ } from '@/states/settings'
 import { NouHeader } from '../header/NouHeader'
-import { AppState, View } from 'react-native'
+import { AppState, View, type ViewInstance } from 'react-native'
 import { clsx, isAndroid, isWeb } from '@/lib/utils'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
@@ -25,6 +25,20 @@ const returnSyncThrottleMs = 30 * 1000
 export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) => {
   const headerPosition = useValue(settings$.headerPosition)
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
+  const sourcesScreen = useValue(ui$.sourcesScreen)
+  const workspaceRef = useRef<ViewInstance>(null)
+
+  useEffect(() => {
+    if (!isWeb || !sourcesScreen || !workspaceRef.current) return
+    const workspace = workspaceRef.current as unknown as HTMLElement
+    workspace.inert = true
+    workspace.setAttribute('aria-hidden', 'true')
+    return () => {
+      workspace.inert = false
+      workspace.removeAttribute('aria-hidden')
+    }
+  }, [sourcesScreen])
+
   const tabs = useValue(tabs$.tabs)
   const desktopLayout = useDesktopLayout()
   // Android desktop mode gets the same workspace as the desktop app, laid out with
@@ -68,8 +82,10 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
 
   return (
     <View
+      ref={workspaceRef}
       collapsable={false}
-      importantForAccessibility={isAndroid && settingsModalOpen ? 'no-hide-descendants' : 'auto'}
+      accessibilityElementsHidden={Boolean(sourcesScreen)}
+      importantForAccessibility={sourcesScreen || (isAndroid && settingsModalOpen) ? 'no-hide-descendants' : 'auto'}
       className={clsx(
         'flex-1 h-full overflow-hidden bg-zinc-100 dark:bg-zinc-950',
         !nativeDesktop && headerPosition === 'bottom' && 'flex-col-reverse',

@@ -24,7 +24,7 @@ import {
   type WatchQuote,
   type WatchSite,
 } from '@/lib/watch'
-import { NouMenu } from '../menu/NouMenu'
+import { NouMenu, type NouMenuHandle } from '../menu/NouMenu'
 import { siteIcon } from '../service/Services'
 import { WatchSites } from './WatchSites'
 import {
@@ -657,6 +657,20 @@ export const FeedView: React.FC<{
   const metaOf = (selected: boolean, unread?: string) =>
     isIos ? unread : [unread, selected ? '✓' : undefined].filter(Boolean).join(' ') || undefined
 
+  const timelineMenuRef = useRef<NouMenuHandle>(null)
+  const managingSources = useValue(() => ui$.sourcesScreen.get()?.tabId === tabId)
+  const returnFromSources = useRef(false)
+
+  useEffect(() => {
+    if (managingSources) {
+      returnFromSources.current = true
+    } else if (returnFromSources.current) {
+      returnFromSources.current = false
+      // Passive cleanups have removed the workspace's inert state before this runs.
+      timelineMenuRef.current?.focusTrigger?.()
+    }
+  }, [managingSources])
+
   const timelineMenuItems = [
     {
       label: isIos ? `${feedEmoji} ${t('feed.allSources')}` : t('feed.allSources'),
@@ -715,7 +729,7 @@ export const FeedView: React.FC<{
       label: t('feed.manageSources'),
       icon: <MaterialIcons name="manage-accounts" size={18} color={iconColor} />,
       systemImage: 'person.2',
-      handler: () => ui$.sourcesModal.set({ tabId }),
+      handler: () => ui$.sourcesScreen.set({ tabId }),
     },
     {
       label: t('feed.settings'),
@@ -834,7 +848,7 @@ export const FeedView: React.FC<{
           })}
           {chips.hidden ? (
             <Pressable
-              onPress={() => ui$.sourcesModal.set({ tabId, timelineId: timeline?.id, pick: true })}
+              onPress={() => ui$.sourcesModal.set({ tabId, timelineId: timeline?.id })}
               accessibilityRole="button"
               accessibilityLabel={t('feed.chooseSource')}
               hitSlop={androidHitSlop}
@@ -1074,6 +1088,7 @@ export const FeedView: React.FC<{
                   <MaterialIcons name="arrow-drop-down" size={22} color={iconColor} />
                 </View>
               }
+              ref={timelineMenuRef}
               items={timelineMenuItems}
             />
           </View>

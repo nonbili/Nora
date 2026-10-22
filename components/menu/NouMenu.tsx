@@ -1,5 +1,5 @@
 import { DropdownMenu } from '@radix-ui/themes'
-import { forwardRef, ReactNode, useImperativeHandle } from 'react'
+import { forwardRef, ReactNode, useImperativeHandle, useRef } from 'react'
 import { clsx } from '@/lib/utils'
 
 export interface Item {
@@ -17,11 +17,16 @@ export interface Item {
 }
 
 export interface NouMenuHandle {
+  focusTrigger?: () => void
   openAt: (x: number, y: number, items?: Item[]) => void
 }
 
-export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerLabel?: string; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, items, triggerSize, hideTrigger }, ref) {
-  useImperativeHandle(ref, () => ({ openAt: () => {} }), [])
+export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerLabel?: string; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, triggerLabel, items, triggerSize, hideTrigger }, ref) {
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  useImperativeHandle(ref, () => ({
+    openAt: () => {},
+    focusTrigger: () => triggerRef.current?.focus(),
+  }), [])
   const menuItems = items.map((item, index) => {
     if (item.kind === 'separator') {
       return <DropdownMenu.Separator key={index} />
@@ -70,7 +75,7 @@ export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerL
 
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
+      <DropdownMenu.Trigger ref={triggerRef} aria-label={triggerLabel}>
         {/*
           Radix merges the trigger handlers onto this div, so it has to stay hit-testable.
           The pointer-events-none belongs on the inner wrapper instead: triggers are often

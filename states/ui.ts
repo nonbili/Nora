@@ -20,9 +20,10 @@ interface Store {
   // The timeline to change, or none to make one: with the profile to start it with, and the feed tab to show it in.
   // sourcesOnly: just which sources a timeline shows, without its name and other choices.
   timelineModal: { timelineId?: string; profileKey?: string; tabId?: string; sourcesOnly?: boolean } | null
-  // The list of all watched sources, opened from the feed tab whose links it opens beside; or, to pick
-  // one, the sources of the timeline that tab shows.
-  sourcesModal: { tabId?: string; timelineId?: string; pick?: boolean } | null
+  // Quick selection of a source from the timeline the feed tab shows.
+  sourcesModal: { tabId?: string; timelineId?: string } | null
+  // Source management, with the feed tab to open links beside.
+  sourcesScreen: { tabId?: string } | null
   // A watched source's timeline, check interval or notifications, chosen from its menu in the feed.
   sourcePicker: { profileKey: string; kind: 'timeline' | 'interval' | 'notify' } | null
   // A source picked from that list, for its feed tab to show.
@@ -85,6 +86,7 @@ export const ui$ = observable<Store>({
   timelineModal: null,
   sourcePicker: null,
   sourcesModal: null,
+  sourcesScreen: null,
   feedSelection: null,
   addSourcesModal: null,
   feedSettingsModalOpen: false,
