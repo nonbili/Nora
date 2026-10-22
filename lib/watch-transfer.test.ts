@@ -11,7 +11,7 @@ const reset = () => {
   watch$.mediaWifiOnly.set(true)
   watch$.mediaLimitMB.set(1024)
   watch$.postsPerSource.set(100)
-  watch$.notifyTimelineIds.set([])
+  watch$.timelineNotify.set({})
   watch$.feedNotify.set(false)
 }
 
@@ -21,24 +21,27 @@ describe('watch transfer', () => {
   it('carries which timelines and whether the whole feed notify, to turn on once permission is given', () => {
     watch$.watch({ site: 'x', handle: 'jack' })
     const id = watch$.createTimeline('Friends', ['x:jack'])
-    watch$.createTimeline('News', [])
+    const news = watch$.createTimeline('News', [])
+    watch$.createTimeline('Art', [])
     watch$.setTimelineNotify(id, true)
+    watch$.setTimelineNotify(news, false)
     watch$.feedNotify.set(true)
 
     const backup = normalizeWatchBackup(JSON.parse(JSON.stringify(createWatchBackup())))!
     expect(backup.feedNotify).toBe(true)
     expect(backup.timelines).toEqual([
       { name: 'Friends', notify: true },
-      { name: 'News' },
+      { name: 'News', notify: false },
+      { name: 'Art' },
     ])
     expect(backup.profiles[0].timeline).toBe('Friends')
 
     reset()
     applyWatchBackup(backup)
-    // Left for enableTimelineNotifications, which asks for permission first.
-    expect(watch$.notifyTimelineIds.get()).toEqual([])
+    // On is left for enableTimelineNotifications, which asks for permission first; off needs none.
+    const [friends, newsHere] = watch$.timelines.get().map((timeline) => timeline.id)
+    expect(watch$.timelineNotify.get()).toEqual({ [newsHere]: false })
     expect(watch$.feedNotify.get()).toBe(false)
-    const friends = watch$.timelines.get().find((timeline) => timeline.name === 'Friends')!.id
     expect(watchNotifyTimelineIds(backup)).toEqual([undefined, friends])
   })
 
@@ -46,15 +49,17 @@ describe('watch transfer', () => {
     watch$.watch({ site: 'x', handle: 'Jack' })
     watch$.updateProfile('x:jack', { name: 'Jack', avatar: 'https://a', lastCheckedAt: 1, error: 'boom', notify: true, checkIntervalMinutes: 30 })
     watch$.watch({ site: 'reddit', handle: 'r/rust' })
-    watch$.setMuted('reddit:r/rust', true)
+    watch$.setNotify('reddit:r/rust', false)
+    watch$.watch({ site: 'x', handle: 'ev' })
     watch$.createTimeline('Friends', ['x:jack'])
 
     const backup = createWatchBackup()
     expect(backup.profiles).toEqual([
       { site: 'x', handle: 'Jack', name: 'Jack', notify: true, checkIntervalMinutes: 30, timeline: 'Friends' },
-      { site: 'reddit', handle: 'r/rust', notify: false, muted: true },
+      { site: 'reddit', handle: 'r/rust', notify: false },
+      { site: 'x', handle: 'ev' },
     ])
-    expect(normalizeWatchBackup(backup)?.profiles[1].muted).toBe(true)
+    expect(normalizeWatchBackup(backup)?.profiles.map((source) => source.notify)).toEqual([true, false, undefined])
     expect(backup.timelines).toEqual([{ name: 'Friends' }])
     expect(backup.checkIntervalMinutes).toBe(60)
     expect(backup.postsPerSource).toBe(100)
@@ -79,8 +84,8 @@ describe('watch transfer', () => {
     })
     expect(backup).toEqual({
       profiles: [
-        { site: 'x', handle: 'jack', notify: false, timeline: 'A' },
-        { site: 'mastodon', handle: 'user@mastodon.social', notify: false },
+        { site: 'x', handle: 'jack', timeline: 'A' },
+        { site: 'mastodon', handle: 'user@mastodon.social' },
       ],
       timelines: [{ name: 'A', checkIntervalMinutes: 30, mediaOnly: true }],
     })
@@ -98,7 +103,7 @@ describe('watch transfer', () => {
       profiles: [
         { site: 'bluesky', handle: 'alice.bsky.social', notify: true, timeline: 'News' },
         { site: 'x', handle: 'jack', timeline: 'News' },
-        { site: 'reddit', handle: 'r/rust', checkIntervalMinutes: 30, muted: true, timeline: 'friends' },
+        { site: 'reddit', handle: 'r/rust', checkIntervalMinutes: 30, notify: false, timeline: 'friends' },
       ],
       timelines: [{ name: 'friends' }, { name: 'News', checkIntervalMinutes: 180 }],
     })
@@ -113,9 +118,10 @@ describe('watch transfer', () => {
     const profiles = watch$.profiles.get()
     expect(profiles.map((profile) => profile.key)).toEqual(['bluesky:alice.bsky.social', 'x:jack', 'reddit:r/rust'])
     // Left for enableWatchNotifications, which asks for permission first.
-    expect(profiles[0].notify).toBe(false)
+    expect(profiles[0].notify).toBeUndefined()
     expect(profiles[2].checkIntervalMinutes).toBe(30)
-    expect(profiles[2].muted).toBe(true)
+    // Off needs no permission.
+    expect(profiles[2].notify).toBe(false)
     const timelines = watch$.timelines.get()
     expect(timelines.map(({ name, checkIntervalMinutes }) => ({ name, checkIntervalMinutes }))).toEqual([
       { name: 'Friends', checkIntervalMinutes: undefined },

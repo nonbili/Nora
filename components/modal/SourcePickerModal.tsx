@@ -5,9 +5,11 @@ import { t } from 'i18next'
 import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
-import { formatInterval } from '../feed/FeedView'
+import { formatInterval, notifyFromName } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
-import { inheritedInterval, watch$ } from '@/states/watch'
+import { inheritedInterval, notifyChoice, watch$ } from '@/states/watch'
+import { enableWatchNotifications } from '@/lib/watch-feed'
+import { showToast } from '@/lib/toast'
 import { WATCH_INTERVAL_OPTIONS, watchSourceLabel } from '@/lib/watch'
 import { useTwColor } from '@/lib/theme'
 import { androidHitSlop, iosTouchTarget } from '@/lib/utils'
@@ -35,13 +37,15 @@ const Row: React.FC<{ icon: string; iconColor: string; label: string; checked?: 
   </Pressable>
 )
 
-/** The one timeline a watched source is in, or how often it is checked, chosen from its menu in the feed. */
+/** The one timeline a watched source is in, how often it is checked, or whether it notifies, chosen from its menu in the feed. */
 export const SourcePickerModal = () => {
   const tw = useTwColor()
   const picker = useValue(ui$.sourcePicker)
   const profile = useValue(() => watch$.profiles.get().find((current) => current.key === picker?.profileKey))
   const timelines = useValue(watch$.timelines)
   const inherited = useValue(() => (profile ? inheritedInterval(profile) : undefined))
+  // What it notifies as with no choice of its own.
+  const inheritedNotify = useValue(() => notifyChoice({ timelineId: profile?.timelineId }))
 
   const onClose = () => ui$.sourcePicker.set(null)
 
@@ -65,7 +69,7 @@ export const SourcePickerModal = () => {
   return (
     <BaseCenterModal onClose={onClose}>
       <View className="w-full p-4" style={{ flexShrink: 1 }}>
-        <NouText className="text-lg font-bold">{picker.kind === 'timeline' ? t('feed.timeline') : t('feed.checkEvery')}</NouText>
+        <NouText className="text-lg font-bold">{picker.kind === 'timeline' ? t('feed.timeline') : picker.kind === 'notify' ? t('feed.detailNotify') : t('feed.checkEvery')}</NouText>
         <NouText className="mb-3 text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
           {profile.name || watchSourceLabel(profile)}
         </NouText>
@@ -101,6 +105,30 @@ export const SourcePickerModal = () => {
                 }}
               />
             </>
+          ) : picker.kind === 'notify' ? (
+            [
+              { label: t('feed.notifyDefault', { state: t(inheritedNotify.notify ? 'feed.notifyOn' : 'feed.notifyOff'), name: notifyFromName(inheritedNotify) }), notify: undefined },
+              { label: t('feed.notifyOn'), notify: true },
+              { label: t('feed.notifyOff'), notify: false },
+            ].map((option) => {
+              const checked = profile.notify === option.notify
+              return (
+                <Row
+                  key={option.label}
+                  icon={checked ? 'radio-button-checked' : 'radio-button-unchecked'}
+                  iconColor={checked ? on : off}
+                  label={option.label}
+                  checked={checked}
+                  role="radio"
+                  onPress={async () => {
+                    onClose()
+                    // Turned on only once the system allows it to notify.
+                    if (option.notify !== true) watch$.setNotify(profile.key, option.notify)
+                    else if (!(await enableWatchNotifications(profile.key))) showToast(t('feed.notificationPermissionDenied'))
+                  }}
+                />
+              )
+            })
           ) : (
             intervals.map((option) => {
               const checked = profile.checkIntervalMinutes === option.minutes

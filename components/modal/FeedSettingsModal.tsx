@@ -109,8 +109,8 @@ export const FeedSettingsModal = () => {
         <ChoicePicker
           label={t('feed.checkEvery')}
           value={formatInterval(defaultInterval)}
-          options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes }))}
-          onSelect={(minutes) => minutes && watch$.checkIntervalMinutes.set(minutes)}
+          options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), choice: minutes }))}
+          onSelect={(minutes) => watch$.checkIntervalMinutes.set(minutes)}
           iconColor={iconColor}
         />
         <Hint>{t('feed.intervalHint')}</Hint>
@@ -120,8 +120,8 @@ export const FeedSettingsModal = () => {
         <ChoicePicker
           label={t('feed.postsPerSource')}
           value={String(postsPerSource)}
-          options={POSTS_PER_SOURCE_OPTIONS.map((count) => ({ label: String(count), minutes: count }))}
-          onSelect={(count) => count && watch$.postsPerSource.set(count)}
+          options={POSTS_PER_SOURCE_OPTIONS.map((count) => ({ label: String(count), choice: count }))}
+          onSelect={(count) => watch$.postsPerSource.set(count)}
           iconColor={iconColor}
         />
         <Hint>{t('feed.postsPerSourceHint')}</Hint>
@@ -154,12 +154,10 @@ export const FeedSettingsModal = () => {
                   label={t('feed.accountFrom', { site: watchSiteLabels[site] })}
                   value={chosen?.name ?? t('feed.accountAnyProfile')}
                   options={[
-                    { label: t('feed.accountAnyProfile'), minutes: undefined },
-                    ...profiles.map((profile, index) => ({ label: profile.name, minutes: index })),
+                    { label: t('feed.accountAnyProfile'), choice: undefined as string | undefined },
+                    ...profiles.map((profile) => ({ label: profile.name, choice: profile.id })),
                   ]}
-                  onSelect={(index) =>
-                    watch$.accountProfiles[site].set(index === undefined ? undefined : profiles[index].id)
-                  }
+                  onSelect={(id) => watch$.accountProfiles[site].set(id)}
                   iconColor={iconColor}
                 />
               </View>
@@ -178,8 +176,8 @@ export const FeedSettingsModal = () => {
         <ChoicePicker
           label={t('feed.mediaLimit')}
           value={formatMegabytes(mediaLimitMB)}
-          options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), minutes: mb }))}
-          onSelect={(mb) => mb && watch$.mediaLimitMB.set(mb)}
+          options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), choice: mb }))}
+          onSelect={(mb) => watch$.mediaLimitMB.set(mb)}
           iconColor={iconColor}
         />
         <Hint>

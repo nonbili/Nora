@@ -153,7 +153,7 @@ export const applyRemoteWatchRows = (sources: RemoteWatchRow[], timelines: Remot
       checkIntervalMinutes: source.checkIntervalMinutes,
     }
     if (index === -1) {
-      profiles.push({ key: row.id, notify: false, ...patch })
+      profiles.push({ key: row.id, ...patch })
     } else {
       profiles[index] = { ...profiles[index], ...patch }
     }
@@ -237,9 +237,14 @@ export const foldUnsyncedTimelines = (unsyncedIds: string[], remoteTimelines: Re
         if (intoId) watch$.setProfileTimeline(profile.key, intoId)
       })
     })
-    // One that notified here goes on notifying as the synced one.
-    const notifyIds = watch$.notifyTimelineIds.peek()
-    watch$.notifyTimelineIds.set(Array.from(new Set(notifyIds.map((id) => folded.get(id) ?? id))))
+    // What was chosen here for notifying goes on as the synced one's.
+    for (const [id, intoId] of folded) {
+      const notify = watch$.timelineNotify[id].peek()
+      if (notify === undefined) continue
+      // What was chosen for the synced one here stays.
+      if (watch$.timelineNotify[intoId].peek() === undefined) watch$.setTimelineNotify(intoId, notify)
+      watch$.setTimelineNotify(id, undefined)
+    }
   }
   return folded
 }

@@ -707,7 +707,7 @@ export const enableWatchNotifications = async (key: string): Promise<boolean> =>
   return granted
 }
 
-/** Asks for permission to notify, and turns notifications on for every source of a timeline, or of the whole feed, if given. */
+/** Asks for permission to notify, and turns notifications on for a timeline, or the whole feed, if given: for its sources that have no choice of their own. */
 export const enableTimelineNotifications = async (id?: string): Promise<boolean> => {
   const granted = await allowWatchNotifications()
   if (granted) {

@@ -25,9 +25,8 @@ export interface WatchedProfile {
   // The profile's page, when the site told it.
   url?: string
   addedAt: number
-  notify: boolean
-  // Kept quiet even when the whole feed or a timeline of it notifies. Of this device, as notify is.
-  muted?: boolean
+  // Whether its new posts notify; as its timeline, or else the whole feed, chooses when not set. Of this device.
+  notify?: boolean
   // The one timeline it is in; only in the whole feed when not set, or when that timeline is gone.
   timelineId?: string
   // Minutes between checks for this profile; its timeline's, or the default for all, when not set.
@@ -74,9 +73,10 @@ interface Store {
   accountProfiles: Partial<Record<WatchSite, string>>
   // Whether the whole feed shows only the posts with photos or videos, as a timeline can.
   feedMediaOnly: boolean
-  // The timelines all of whose sources notify of new posts. Of this device, as a source's own choice is: not synced.
-  notifyTimelineIds: string[]
-  // Whether every source notifies, as the whole feed's choice; of this device too.
+  // Whether the sources of each timeline notify of new posts, unless one chooses otherwise; as the whole
+  // feed does for a timeline not here. Of this device, as a source's own choice is: not synced.
+  timelineNotify: Record<string, boolean>
+  // Whether the sources notify, unless their timeline or they choose otherwise; of this device too.
   feedNotify: boolean
   // The sites the hint about checking without logging in was closed for; it comes back for another site.
   loginHintDismissedSites: WatchSite[]
@@ -84,8 +84,8 @@ interface Store {
   isWatched: (target: WatchTarget) => boolean
   watch: (target: WatchTarget) => void
   unwatch: (key: string) => void
-  setNotify: (key: string, notify: boolean) => void
-  setMuted: (key: string, muted: boolean) => void
+  // undefined for its timeline's choice, or the whole feed's.
+  setNotify: (key: string, notify: boolean | undefined) => void
   setProfileCheckInterval: (key: string, minutes: number | undefined) => void
   updateProfile: (key: string, patch: Partial<WatchedProfile>) => void
   // Unread posts of the whole feed.
@@ -100,7 +100,8 @@ interface Store {
   setProfileTimeline: (profileKey: string, timelineId: string | undefined) => void
   // The profiles of a timeline become these: each moved in from where it was, and the others moved out.
   setTimelineProfiles: (id: string, profileKeys: string[]) => void
-  setTimelineNotify: (id: string, notify: boolean) => void
+  // undefined for the whole feed's choice.
+  setTimelineNotify: (id: string, notify: boolean | undefined) => void
 }
 
 const findIndex = (key: string) => watch$.profiles.peek().findIndex((profile) => profile.key === key)
@@ -122,7 +123,7 @@ export const watch$: Observable<Store> = observable<Store>({
   useAccounts: true,
   accountProfiles: {},
   feedMediaOnly: false,
-  notifyTimelineIds: [],
+  timelineNotify: {},
   feedNotify: false,
   loginHintDismissedSites: [],
 
@@ -133,7 +134,7 @@ export const watch$: Observable<Store> = observable<Store>({
     if (findIndex(key) !== -1) {
       return
     }
-    watch$.profiles.push({ key, site: target.site, handle: target.handle, addedAt: Date.now(), notify: false })
+    watch$.profiles.push({ key, site: target.site, handle: target.handle, addedAt: Date.now() })
   },
 
   unwatch: (key) => {
@@ -144,10 +145,7 @@ export const watch$: Observable<Store> = observable<Store>({
     deleteProfilePosts(key)
   },
 
-  // Its own choice to notify is no longer muted.
-  setNotify: (key, notify) => watch$.updateProfile(key, notify ? { notify, muted: false } : { notify }),
-
-  setMuted: (key, muted) => watch$.updateProfile(key, muted ? { muted, notify: false } : { muted }),
+  setNotify: (key, notify) => watch$.updateProfile(key, { notify }),
 
   setProfileCheckInterval: (key, minutes) => watch$.updateProfile(key, { checkIntervalMinutes: minutes }),
 
@@ -195,7 +193,7 @@ export const watch$: Observable<Store> = observable<Store>({
       // Its profiles stay watched, in the whole feed only.
       watch$.setTimelineProfiles(id, [])
     })
-    watch$.setTimelineNotify(id, false)
+    watch$.setTimelineNotify(id, undefined)
   },
 
   setProfileTimeline: (profileKey, timelineId) => {
@@ -216,8 +214,8 @@ export const watch$: Observable<Store> = observable<Store>({
   },
 
   setTimelineNotify: (id, notify) => {
-    const ids = watch$.notifyTimelineIds.peek().filter((current) => current !== id)
-    watch$.notifyTimelineIds.set(notify ? [...ids, id] : ids)
+    if (notify === undefined) watch$.timelineNotify[id].delete()
+    else watch$.timelineNotify[id].set(notify)
   },
 })
 
@@ -225,15 +223,27 @@ export const watch$: Observable<Store> = observable<Store>({
 export const getTimeline = (timelineId: string | undefined) =>
   timelineId ? watch$.timelines.get().find((timeline) => timeline.id === timelineId) : undefined
 
-/** The timeline that notifies of new posts and shows this profile, as a list of none or one; one deleted on another device is not among them. */
-export const notifyingTimelines = (profile: Pick<WatchedProfile, 'timelineId'>) => {
-  const timeline = getTimeline(profile.timelineId)
-  return timeline && watch$.notifyTimelineIds.get().includes(timeline.id) ? [timeline] : []
+/** Whether a timeline notifies of new posts, and whether that is its own choice or the whole feed's. */
+export const timelineNotifyChoice = (timelineId: string | undefined) => {
+  const own = timelineId ? watch$.timelineNotify[timelineId].get() : undefined
+  return own === undefined ? { notify: watch$.feedNotify.get(), own: false } : { notify: own, own: true }
 }
 
-/** Whether new posts of a profile notify: by its own choice, as the whole feed's, or as its timeline's, unless it is muted. */
-export const profileNotifies = (profile: WatchedProfile) =>
-  !profile.muted && (profile.notify || watch$.feedNotify.get() || notifyingTimelines(profile).length > 0)
+/**
+ * Whether new posts of a profile notify, and whose choice that is: its own, else its timeline's, else
+ * the whole feed's. A timeline deleted on another device counts as none.
+ */
+export const notifyChoice = (profile: Pick<WatchedProfile, 'notify' | 'timelineId'>) => {
+  const timeline = getTimeline(profile.timelineId)
+  if (profile.notify !== undefined) return { notify: profile.notify, from: 'source' as const }
+  const ofTimeline = timelineNotifyChoice(timeline?.id)
+  return ofTimeline.own && timeline
+    ? { notify: ofTimeline.notify, from: 'timeline' as const, timeline }
+    : { notify: ofTimeline.notify, from: 'feed' as const }
+}
+
+/** Whether new posts of a profile notify. */
+export const profileNotifies = (profile: Pick<WatchedProfile, 'notify' | 'timelineId'>) => notifyChoice(profile).notify
 
 /** The interval each timeline chose, by its id, for watchIntervalMinutes. */
 export const timelineIntervals = (): TimelineIntervals =>

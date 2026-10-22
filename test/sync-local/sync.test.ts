@@ -83,8 +83,9 @@ local('sync against local Supabase', () => {
     }
     expect((await b.snapshot()).watch.profiles.find((profile) => profile.key === 'bluesky:alice.bsky.social'))
       .toMatchObject({ notify: true, seenAt: 7, lastCheckedAt: 9 })
-    expect((await a.snapshot()).watch.profiles.find((profile) => profile.key === 'bluesky:alice.bsky.social'))
-      .toMatchObject({ notify: false })
+    // Notifications are of each device.
+    expect((await a.snapshot()).watch.profiles.find((profile) => profile.key === 'bluesky:alice.bsky.social')?.notify)
+      .toBeUndefined()
 
     await a.command({ op: 'unwatch', key: 'x:jack' })
     await a.command({ op: 'deleteTimeline', id: timeline })

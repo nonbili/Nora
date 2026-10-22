@@ -8,7 +8,6 @@ import { NouButton } from '../button/NouButton'
 import { EmojiButton, EmojiPicker } from '../EmojiPicker'
 import { NouText } from '../NouText'
 import { Avatar, ChoicePicker, formatInterval } from '../feed/FeedView'
-import { NouSwitch } from '../switch/NouSwitch'
 import { ui$ } from '@/states/ui'
 import { tabs$ } from '@/states/tabs'
 import { watch$ } from '@/states/watch'
@@ -33,10 +32,12 @@ export const TimelineModal = () => {
   const profiles = useValue(watch$.profiles)
   const timelines = useValue(watch$.timelines)
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
+  const feedNotify = useValue(watch$.feedNotify)
   const [name, setName] = useState('')
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
   const [emoji, setEmoji] = useState('')
-  const [notify, setNotify] = useState(false)
+  // undefined for the whole feed's choice.
+  const [notify, setNotify] = useState<boolean | undefined>()
   const [checkInterval, setCheckInterval] = useState<number | undefined>()
   const [pickingEmoji, setPickingEmoji] = useState(false)
 
@@ -45,7 +46,7 @@ export const TimelineModal = () => {
     const timeline = target.timelineId ? watch$.timelines.peek().find((current) => current.id === target.timelineId) : undefined
     setName(timeline?.name || '')
     setEmoji(timeline?.emoji || '')
-    setNotify(Boolean(timeline && watch$.notifyTimelineIds.peek().includes(timeline.id)))
+    setNotify(timeline ? watch$.timelineNotify[timeline.id].peek() : undefined)
     setCheckInterval(timeline?.checkIntervalMinutes)
     setPickingEmoji(false)
     setSelectedKeys(
@@ -67,13 +68,22 @@ export const TimelineModal = () => {
   const sourcesOnly = Boolean(target.sourcesOnly)
   const timelineName = watch$.timelines.peek().find((current) => current.id === target.timelineId)?.name ?? ''
 
+  const notifyOptions = [
+    {
+      label: t('feed.notifyDefault', { state: t(feedNotify ? 'feed.notifyOn' : 'feed.notifyOff'), name: t('feed.allSources') }),
+      choice: undefined as boolean | undefined,
+    },
+    { label: t('feed.notifyOn'), choice: true },
+    { label: t('feed.notifyOff'), choice: false },
+  ]
+
   const toggle = (key: string) =>
     setSelectedKeys((keys) => (keys.includes(key) ? keys.filter((current) => current !== key) : [...keys, key]))
 
   // Turned on only once the system allows it to notify.
   const saveNotify = async (id: string) => {
-    if (notify === watch$.notifyTimelineIds.peek().includes(id)) return
-    if (!notify) watch$.setTimelineNotify(id, false)
+    if (notify === watch$.timelineNotify[id].peek()) return
+    if (notify !== true) watch$.setTimelineNotify(id, notify)
     else if (!(await enableTimelineNotifications(id))) showToast(t('feed.notificationPermissionDenied'))
   }
 
@@ -146,14 +156,20 @@ export const TimelineModal = () => {
         <ScrollView style={{ flexShrink: 1 }} keyboardShouldPersistTaps="handled">
           {!sourcesOnly ? (
             <>
-              <NouSwitch className="mb-1" label={t('feed.notifyTimeline')} value={notify} onPress={() => setNotify((value) => !value)} />
-              <NouText className="mb-3 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{t('feed.notifyTimelineHint')}</NouText>
+              <ChoicePicker
+                label={t('feed.notifyTimeline')}
+                value={notifyOptions.find((option) => option.choice === notify)!.label}
+                options={notifyOptions}
+                onSelect={setNotify}
+                iconColor={tw('#71717a')}
+              />
+              <NouText className="mb-3 mt-1 text-sm leading-5 text-zinc-600 dark:text-zinc-400">{t('feed.notifyTimelineHint')}</NouText>
               <ChoicePicker
                 label={t('feed.checkEvery')}
                 value={checkInterval ? formatInterval(checkInterval) : t('feed.intervalDefault', { interval: formatInterval(defaultInterval) })}
                 options={[
-                  { label: t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }), minutes: undefined },
-                  ...WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), minutes })),
+                  { label: t('feed.intervalDefault', { interval: formatInterval(defaultInterval) }), choice: undefined as number | undefined },
+                  ...WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), choice: minutes })),
                 ]}
                 onSelect={setCheckInterval}
                 iconColor={tw('#71717a')}

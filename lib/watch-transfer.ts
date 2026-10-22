@@ -11,9 +11,8 @@ import { cleanEmoji, decodeEntities, getWatchTarget, watchKey, watchProfileUrl, 
 export interface WatchSourceBackup extends WatchTarget {
   url?: string
   name?: string
+  // Only there when it has a choice of its own, as its timeline's or the whole feed's is taken otherwise.
   notify?: boolean
-  // Only there when it is muted.
-  muted?: true
   checkIntervalMinutes?: number
   // The name of the timeline it is in, as timelines are told apart by name across devices.
   timeline?: string
@@ -25,8 +24,8 @@ export interface WatchTimelineBackup {
   pinned?: boolean
   mediaOnly?: boolean
   emoji?: string
-  // Only there when it notifies of new posts.
-  notify?: true
+  // Only there when it has a choice of its own, as the whole feed's is taken otherwise.
+  notify?: boolean
 }
 
 export interface WatchBackup {
@@ -77,8 +76,7 @@ export const createWatchBackup = (): WatchBackup => ({
       handle: profile.handle,
       ...(profile.url ? { url: profile.url } : {}),
       ...(profile.name ? { name: profile.name } : {}),
-      notify: profile.notify,
-      ...(profile.muted ? { muted: true as const } : {}),
+      ...(profile.notify !== undefined ? { notify: profile.notify } : {}),
       ...(profile.checkIntervalMinutes ? { checkIntervalMinutes: profile.checkIntervalMinutes } : {}),
       ...(timeline ? { timeline: timeline.name } : {}),
     }
@@ -89,7 +87,7 @@ export const createWatchBackup = (): WatchBackup => ({
     ...(timeline.pinned ? { pinned: true } : {}),
     ...(timeline.mediaOnly ? { mediaOnly: true } : {}),
     ...(timeline.emoji ? { emoji: timeline.emoji } : {}),
-    ...(watch$.notifyTimelineIds.get().includes(timeline.id) ? { notify: true as const } : {}),
+    ...(watch$.timelineNotify[timeline.id].get() !== undefined ? { notify: watch$.timelineNotify[timeline.id].get() } : {}),
   })),
 })
 
@@ -121,8 +119,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
       ...target,
       ...(url && /^https?:\/\//i.test(url) ? { url } : {}),
       ...(name ? { name } : {}),
-      notify: item.notify === true,
-      ...(item.muted === true ? { muted: true as const } : {}),
+      ...(typeof item.notify === 'boolean' ? { notify: item.notify } : {}),
       ...(checkIntervalMinutes ? { checkIntervalMinutes } : {}),
       ...(timeline ? { timeline } : {}),
     })
@@ -137,14 +134,15 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     const pinned = item.pinned === true
     const mediaOnly = item.mediaOnly === true
     const emoji = cleanEmoji(item.emoji)
-    const notify = item.notify === true
+    const notify = typeof item.notify === 'boolean' ? item.notify : undefined
     const existing = timelines.get(timelineName(name))
     if (existing) {
       if (checkIntervalMinutes && !existing.checkIntervalMinutes) existing.checkIntervalMinutes = checkIntervalMinutes
       if (pinned) existing.pinned = true
       if (mediaOnly) existing.mediaOnly = true
       if (emoji && !existing.emoji) existing.emoji = emoji
-      if (notify) existing.notify = true
+      // On wins over off, as for the other choices of the same name.
+      if (notify !== undefined && !existing.notify) existing.notify = notify
     } else {
       timelines.set(timelineName(name), {
         name,
@@ -152,7 +150,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
         ...(pinned ? { pinned } : {}),
         ...(mediaOnly ? { mediaOnly } : {}),
         ...(emoji ? { emoji } : {}),
-        ...(notify ? { notify } : {}),
+        ...(notify !== undefined ? { notify } : {}),
       })
     }
   }
@@ -214,6 +212,9 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
         if (timeline.checkIntervalMinutes) watch$.updateTimeline(id, { checkIntervalMinutes: timeline.checkIntervalMinutes })
         timelineIds.set(timelineName(timeline.name), id)
       }
+      // Off needs no permission, and on is left for watchNotifyTimelineIds; a choice made here stays.
+      const id = timelineIds.get(timelineName(timeline.name))!
+      if (timeline.notify === false && watch$.timelineNotify[id].peek() === undefined) watch$.setTimelineNotify(id, false)
     }
 
     const current = new Map(watch$.profiles.peek().map((profile) => [profile.key, profile]))
@@ -229,10 +230,9 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
       const patch: Partial<WatchedProfile> = {}
       if (source.url && !profile?.url) patch.url = source.url
       if (source.name && !profile?.name) patch.name = source.name
-      // Turned on only through enableWatchNotifications, which asks the system for permission first.
+      // Turned on only through enableWatchNotifications, which asks the system for permission first;
+      // turning off needs no permission.
       if (source.notify === false) patch.notify = false
-      // Keeping quiet needs no permission.
-      if (source.muted) patch.muted = true
       if (source.checkIntervalMinutes) patch.checkIntervalMinutes = source.checkIntervalMinutes
       const timelineId = source.timeline && timelineIds.get(timelineName(source.timeline))
       if (timelineId && !getTimeline(profile?.timelineId)) patch.timelineId = timelineId

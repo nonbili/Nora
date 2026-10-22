@@ -8,7 +8,7 @@ import { NouText } from '../NouText'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
-import { getTimeline, inheritedInterval, notifyingTimelines, timelineEmoji, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
+import { getTimeline, inheritedInterval, notifyChoice, timelineEmoji, unreadKeys, watch$, type WatchedProfile } from '@/states/watch'
 import {
   DEFAULT_TIMELINE_EMOJI,
   feedChipSources,
@@ -57,13 +57,19 @@ export const formatInterval = (minutes: number) => {
 }
 
 /** A row with a value and a menu to choose another. */
-export const ChoicePicker: React.FC<{
+export const ChoicePicker = <T,>({
+  label,
+  value,
+  options,
+  onSelect,
+  iconColor,
+}: {
   label: string
   value: string
-  options: { label: string; minutes: number | undefined }[]
-  onSelect: (minutes: number | undefined) => void
+  options: { label: string; choice: T }[]
+  onSelect: (choice: T) => void
   iconColor: string
-}> = ({ label, value, options, onSelect, iconColor }) => (
+}) => (
   <View className="flex-row items-center justify-between gap-3">
     <NouText className="font-medium">{label}</NouText>
     <NouMenu
@@ -73,7 +79,7 @@ export const ChoicePicker: React.FC<{
           <MaterialIcons name="arrow-drop-down" size={18} color={iconColor} />
         </View>
       }
-      items={options.map((option) => ({ label: option.label, handler: () => onSelect(option.minutes) }))}
+      items={options.map((option) => ({ label: option.label, handler: () => onSelect(option.choice) }))}
     />
   </View>
 )
@@ -87,11 +93,16 @@ export const getLoggedOutSites = (profiles: WatchedProfile[], useAccounts: boole
       )
     : []
 
-/** The names of the timelines, the whole feed among them, whose notifications are on for a profile. */
-const notifyVia = (profile: WatchedProfile) => [
-  ...(watch$.feedNotify.get() ? [t('feed.allSources')] : []),
-  ...notifyingTimelines(profile).map((timeline) => timeline.name),
-]
+type NotifyChoice = ReturnType<typeof notifyChoice>
+
+/** Whose choice to notify is taken, when it is not the source's own: its timeline's, or the whole feed's. */
+export const notifyFromName = (choice: NotifyChoice) => (choice.from === 'timeline' ? choice.timeline.name : t('feed.allSources'))
+
+/** On or off, and for one that is not the source's own choice, whose it is. */
+const notifyChoiceLabel = (choice: NotifyChoice) => {
+  const state = t(choice.notify ? 'feed.notifyOn' : 'feed.notifyOff')
+  return choice.from === 'source' ? state : t('feed.notifyFrom', { state, name: notifyFromName(choice) })
+}
 
 export const profileStatus = (profile: WatchedProfile): { text: string; warn: boolean } | null => {
   const site = watchSiteLabels[profile.site]
@@ -713,18 +724,17 @@ export const FeedView: React.FC<{
     },
   ]
 
+  // Turns the source's notifications the other way, with a choice of its own only when that is not already its timeline's or the feed's.
   const toggleNotify = async (profile: WatchedProfile) => {
-    // A timeline that notifies does so for each of its sources, unless one is muted.
-    const via = notifyVia(profile)
-    if (via.length) {
-      // Read first: the profile is the store's own object, which setMuted changes.
-      const muting = !profile.muted
-      watch$.setMuted(profile.key, muting)
-      if (muting) showToast(t('feed.notifyMuted', { names: via.join(', ') }))
+    const notifies = notifyChoice(profile).notify
+    const inherited = notifyChoice({ timelineId: profile.timelineId }).notify
+    if (notifies) {
+      watch$.setNotify(profile.key, inherited ? false : undefined)
+      if (inherited) showToast(t('feed.notifyMuted'))
       return
     }
-    if (profile.notify) {
-      watch$.setNotify(profile.key, false)
+    if (inherited) {
+      watch$.setNotify(profile.key, undefined)
       return
     }
     if (!(await enableWatchNotifications(profile.key))) {
@@ -740,9 +750,11 @@ export const FeedView: React.FC<{
   }
 
   const selectedStatus = selected ? profileStatus(selected) : null
-  const selectedNotifyVia = useValue(() => (selected ? notifyVia(selected) : []))
-  const selectedMuted = Boolean(selected?.muted && selectedNotifyVia.length)
-  const selectedNotifies = !selectedMuted && Boolean(selected?.notify || selectedNotifyVia.length)
+  const selectedNotify = useValue(() => (selected ? notifyChoice(selected) : notifyChoice({})))
+  const selectedNotifies = selectedNotify.notify
+  const selectedInheritedNotify = useValue(() => notifyChoice({ timelineId: selected?.timelineId }).notify)
+  // Off by its own choice, though its timeline or the feed would notify.
+  const selectedMuted = selectedNotify.from === 'source' && !selectedNotify.notify && selectedInheritedNotify
   const selectedAccount = selected ? profileAccount(selected) : null
   const selectedInherited = useValue(() => (selected ? inheritedInterval(selected) : inheritedInterval({})))
 
@@ -764,12 +776,7 @@ export const FeedView: React.FC<{
               : t('feed.intervalDefault', { interval: formatInterval(selectedInherited.minutes) }),
         ],
         ...(selectedAccount ? [[t('feed.detailAccount'), selectedAccount]] : []),
-        ...(selectedNotifyVia.length
-          ? [[
-              t('feed.detailNotify'),
-              t(selectedMuted ? 'feed.detailNotifyMuted' : 'feed.detailNotifyVia', { names: selectedNotifyVia.join(', ') }),
-            ]]
-          : []),
+        [t('feed.detailNotify'), notifyChoiceLabel(selectedNotify)],
       ]
     : []
   const chips = feedChipSources(profiles, newestPostAt, unreadSourceKeys, CHIP_LIMIT, selected?.key)
@@ -882,7 +889,7 @@ export const FeedView: React.FC<{
                 name={selectedNotifies ? 'notifications-active' : selectedMuted ? 'notifications-off' : 'notifications-none'}
                 size={22}
                 color={selectedNotifies ? tw('#6366f1') : iconColor}
-                style={selectedNotifies && !selected.notify ? { opacity: 0.5 } : undefined}
+                style={selectedNotifies && selectedNotify.from !== 'source' ? { opacity: 0.5 } : undefined}
               />
             </Pressable>
             <NouMenu
@@ -898,6 +905,12 @@ export const FeedView: React.FC<{
                   icon: <MaterialIcons name="schedule" size={18} color={iconColor} />,
                   systemImage: 'clock',
                   handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'interval' }),
+                },
+                {
+                  label: t('feed.notifyMenu'),
+                  icon: <MaterialIcons name="notifications-none" size={18} color={iconColor} />,
+                  systemImage: 'bell',
+                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'notify' }),
                 },
                 {
                   label: t('feed.timelineMenu'),

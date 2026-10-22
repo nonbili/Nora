@@ -139,7 +139,7 @@ describe('settings transfer', () => {
     watch$.createTimeline('News', ['reddit:r/rust'])
 
     const json = exportSettingsJson()
-    expect(JSON.parse(json).watch.profiles).toEqual([{ site: 'reddit', handle: 'r/rust', notify: false, timeline: 'News' }])
+    expect(JSON.parse(json).watch.profiles).toEqual([{ site: 'reddit', handle: 'r/rust', timeline: 'News' }])
 
     watch$.profiles.set([])
     watch$.timelines.set([])

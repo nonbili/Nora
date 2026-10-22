@@ -50,7 +50,7 @@ mock.module('@/lib/supabase/client', () => ({
 }))
 
 const { auth$ } = await import('@/states/auth')
-const { profileNotifies, watch$ } = await import('@/states/watch')
+const { notifyChoice, profileNotifies, watch$ } = await import('@/states/watch')
 const { syncMeta$ } = await import('@/states/sync-meta')
 const { feedsSyncer } = await import('./feeds')
 const { tabs$ } = await import('@/states/tabs')
@@ -70,7 +70,7 @@ describe('feeds sync', () => {
     watch$.timelines.set([])
     watch$.feedPinned.set(true)
     watch$.feedEmoji.set('')
-    watch$.notifyTimelineIds.set([])
+    watch$.timelineNotify.set({})
     watch$.feedNotify.set(false)
     server.feed_sources.clear()
     server.feed_timelines.clear()
@@ -111,7 +111,7 @@ describe('feeds sync', () => {
     watch$.setTimelineNotify(local, true)
     remote('feed_timelines', 't1', { name: 'art' })
     await feedsSyncer.syncNow()
-    expect(watch$.notifyTimelineIds.peek()).toEqual(['t1'])
+    expect(watch$.timelineNotify.peek()).toEqual({ t1: true })
     expect(server.feed_timelines.get('t1')!.json.notify).toBeUndefined()
   })
 
@@ -124,23 +124,30 @@ describe('feeds sync', () => {
     expect(profileNotifies(profile)).toBe(true)
     watch$.deleteTimeline(id)
     expect(profileNotifies(profile)).toBe(false)
-    expect(watch$.notifyTimelineIds.peek()).toEqual([])
+    expect(watch$.timelineNotify.peek()).toEqual({})
     watch$.feedNotify.set(true)
     expect(profileNotifies(profile)).toBe(true)
   })
 
-  it('keeps a muted source quiet in a timeline or feed that notifies, until it notifies by its own choice', () => {
+  it('notifies as the source chooses, else as its timeline does, else as the whole feed does', () => {
     watch$.watch({ site: 'x', handle: 'jack' })
     const id = watch$.createTimeline('Art', ['x:jack'])
-    watch$.setTimelineNotify(id, true)
+    const profile = () => watch$.profiles.peek()[0]
     watch$.feedNotify.set(true)
+    expect(notifyChoice(profile())).toEqual({ notify: true, from: 'feed' })
+    watch$.setTimelineNotify(id, false)
+    expect(notifyChoice(profile())).toMatchObject({ notify: false, from: 'timeline' })
     watch$.setNotify('x:jack', true)
-    watch$.setMuted('x:jack', true)
-    expect(watch$.profiles.peek()[0].notify).toBe(false)
-    expect(profileNotifies(watch$.profiles.peek()[0])).toBe(false)
-    watch$.setNotify('x:jack', true)
-    expect(watch$.profiles.peek()[0].muted).toBe(false)
-    expect(profileNotifies(watch$.profiles.peek()[0])).toBe(true)
+    expect(notifyChoice(profile())).toEqual({ notify: true, from: 'source' })
+    watch$.setNotify('x:jack', false)
+    watch$.setTimelineNotify(id, true)
+    expect(profileNotifies(profile())).toBe(false)
+    // Back to its timeline's choice.
+    watch$.setNotify('x:jack', undefined)
+    expect(notifyChoice(profile())).toMatchObject({ notify: true, from: 'timeline' })
+    watch$.setTimelineNotify(id, undefined)
+    watch$.feedNotify.set(false)
+    expect(notifyChoice(profile())).toEqual({ notify: false, from: 'feed' })
   })
 
   it('keeps a source in one timeline, moved with its own row, and in none once its timeline is deleted', async () => {
