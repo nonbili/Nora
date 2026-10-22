@@ -23,7 +23,9 @@ appId: jp.nonbili.nora
 - waitForAnimationToEnd
 - stopRecording
 
-- tapOn: 'New tab'
+- launchApp:
+    stopApp: true
+- assertVisible: Work
 - startRecording: ${OUTPUT_DIR}/profiles
 - evalScript: ${var until = Date.now() + 500; while (Date.now() < until) {}}
 - tapOn:
@@ -46,4 +48,5 @@ appId: jp.nonbili.nora
 - waitForAnimationToEnd
 - evalScript: ${var until = Date.now() + 2600; while (Date.now() < until) {}}
 - waitForAnimationToEnd
+- takeScreenshot: ${OUTPUT_DIR}/gallery-final
 - stopRecording

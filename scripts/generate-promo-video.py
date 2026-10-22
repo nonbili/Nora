@@ -170,7 +170,7 @@ def video_encoder(ffmpeg_cmd: List[str], out_path: Path):
 class VideoFrames:
     """Stream only the requested frames; do not retain decoded videos in memory."""
 
-    def __init__(self, path: Path, width: int, height: int):
+    def __init__(self, path: Path, width: int, height: int, full_screen: bool = False):
         self.path = path
         self.size = (width, height)
         # Crop away simulator status/home bars, then fill the app window without
@@ -179,6 +179,10 @@ class VideoFrames:
                    f"scale={width}:{height}:force_original_aspect_ratio=increase,"
                    f"crop={width}:{height}:0:0,setsar=1,fps={FPS},"
                    "tpad=stop_mode=clone:stop_duration=2")
+        if full_screen:
+            filters = (f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                       f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={FPS},"
+                       "tpad=stop_mode=clone:stop_duration=20")
         self.diagnostics = tempfile.TemporaryFile()
         self.proc = subprocess.Popen(
             [os.environ.get("FFMPEG", "ffmpeg"), "-v", "error", "-i", str(path),
@@ -381,9 +385,9 @@ def render_video_target(name, width, height, out_path, icon, preview_dir=None):
 
 
 
-def import_recordings(directory):
+def import_recordings(directory, output_dir=RECORDINGS_DIR, width=946):
     """Fit raw capture timing to each shot, keeping a handle for the dissolve."""
-    RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     ffmpeg = os.environ.get("FFMPEG", "ffmpeg")
     ffprobe = os.environ.get("FFPROBE", "ffprobe")
     for scene in SCENES:
@@ -411,15 +415,15 @@ def import_recordings(directory):
         # Cap slow motion and hold the completed action when a capture is short.
         timing = min(1.25, target_duration / (duration-trim))
         filters = (f"setpts={timing:.9f}*(PTS-STARTPTS),"
-                   f"fps={FPS},scale=946:-2,setsar=1,"
+                   f"fps={FPS},scale={width}:-2,setsar=1,"
                    f"tpad=stop_mode=clone:stop_duration={target_duration}")
-        with tempfile.TemporaryDirectory(prefix=".capture-", dir=RECORDINGS_DIR) as work:
+        with tempfile.TemporaryDirectory(prefix=".capture-", dir=output_dir) as work:
             staged = Path(work) / source.name
             subprocess.run([ffmpeg, "-v", "error", "-y", "-ss", str(trim), "-i", str(source),
                             "-an", "-vf", filters, "-t", str(target_duration),
                             "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p",
                             "-movflags", "+faststart", str(staged)], check=True)
-            staged.replace(RECORDINGS_DIR / source.name)
+            staged.replace(output_dir / source.name)
         print(f"Imported {source.name}: trimmed {trim:.2f}s; {target_duration:.2f}s shot", flush=True)
 
 

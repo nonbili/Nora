@@ -9,7 +9,8 @@ and a silent stereo AAC track at 44.1 kHz:
 The edit uses real interactions recorded in the seeded iOS Simulator preview app,
 with demo accounts and locally generated media from `assets/native-preview-fixture.json`.
 The app views are cropped for readability, with no stretched UI or simulated scrolling.
-These are promotional compositions; this script does not produce App Store previews.
+The Google Play edits are promotional compositions. App Store previews use the
+separate full-screen renderer described below.
 
 | Time | Story |
 | --- | --- |
@@ -72,3 +73,46 @@ first action, keeps 0.4 seconds of context, fits each clip to its shot, and hold
 the final frame when needed. Inspect the captures and both exports after importing:
 automation timing and image loading can vary between machines. Restore the previous
 preview override and clear the simulator status-bar override after recording.
+
+## App Store previews
+
+`python3 scripts/generate-app-previews.py` exports full-screen app recordings
+with short caption overlays and 0.25-second dissolves. The complete UI retains
+its original aspect ratio; there are no device frames, cropped app windows,
+external backgrounds, or standalone promotional cards.
+
+- `ios/en-US/app-preview-iphone-886x1920.mp4`: iPhone with Face ID / Dynamic Island.
+- `ios/en-US/app-preview-ipad-1200x1600.mp4`: iPad, from a separate iPad capture.
+- Each export has a `-poster.jpg` candidate taken at 16 seconds. Select that
+  time in App Store Connect to use the matching poster frame.
+
+Both previews run for 20 seconds at 30 fps with H.264 High Level 4.0,
+`yuv420p`, an 11 Mbps video target, and silent stereo AAC encoded with a
+256 kbps target at 44.1 kHz. The renderer validates the exported streams and
+fully decodes the file before replacing an existing output.
+
+The sources and output sizes follow Apple's
+[preview specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/app-preview-specifications/)
+and [creative guidance](https://developer.apple.com/app-store/app-previews/).
+Export validation does not replace App Store review.
+
+```bash
+python3 scripts/generate-app-previews.py
+python3 scripts/generate-app-previews.py --target iphone
+python3 scripts/generate-app-previews.py --target ipad
+```
+
+The iPhone preview shares the committed phone recordings in `recordings/promo/`.
+The iPad preview uses `recordings/app-store-ipad/`; it does not resize phone
+footage into a tablet layout. To refresh the iPad source, use the same capture
+flow on a dedicated iPad simulator with `desktopLayout` set to `off` in the
+preview override, and seed its media as described above. Import its four raw
+clips with:
+
+```bash
+python3 scripts/generate-app-previews.py --target ipad --import-recordings /tmp/nora-ipad-captures
+```
+
+Use a working preview app with its JavaScript bundle embedded, rather than a
+native build product that depends on a running development server. The source
+aspect-ratio check rejects recordings from the wrong device family.
