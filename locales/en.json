@@ -503,6 +503,10 @@
     "profileUnwatched": "Stopped watching {{source}}."
   },
   "feed": {
+    "resetZoom": "Reset zoom",
+    "playVideo": "Play video",
+    "pauseVideo": "Pause video",
+    "seekVideo": "Video position",
     "label": "Feed",
     "all": "All",
     "allSources": "All sources",

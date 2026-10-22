@@ -1,3 +1,5 @@
+import './gestures'
+import './video'
 import { mock } from 'bun:test'
 import React from 'react'
 

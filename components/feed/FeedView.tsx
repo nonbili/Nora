@@ -5,6 +5,8 @@ import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { Image } from 'expo-image'
 import { t } from 'i18next'
 import { NouText } from '../NouText'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { TimelineZoom } from './TimelineZoom'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
@@ -496,6 +498,14 @@ export const FeedView: React.FC<{
   const [unreadOnShow, setUnreadOnShow] = useState<{ keys: Set<string>; at: number }>(() => ({ keys: new Set(), at: 0 }))
   const [now, setNow] = useState(() => Date.now())
   const listRef = useRef<FlatList<WatchPost>>(null)
+  const listScrollY = useRef(0)
+  const onTimelineScaleChange = (oldScale: number, newScale: number, focalY: number) => {
+    const offset = Math.max(0, listScrollY.current + focalY * (1 / oldScale - 1 / newScale))
+    listScrollY.current = offset
+    // Scaling is not a user scroll that should hide or reveal the toolbar.
+    lastScrollY.current = offset
+    listRef.current?.scrollToOffset({ offset, animated: false })
+  }
   // The profiles a refresh by hand asks for: the one shown, those of the timeline, or all.
   const shownKeysRef = useRef<string[] | undefined>(undefined)
 
@@ -604,6 +614,13 @@ export const FeedView: React.FC<{
   // As many squares across as fit at about the size of a phone's three.
   const [listWidth, setListWidth] = useState(0)
   const columns = Math.max(3, Math.round(listWidth / 180))
+  const listKey = mediaOnly ? `grid-${columns}` : 'list'
+  useEffect(() => {
+    // A different list mounts at zero without necessarily emitting onScroll.
+    listScrollY.current = 0
+    lastScrollY.current = 0
+    scrollRun.current = 0
+  }, [listKey])
 
   // The gallery goes on through the posts shown, from the one opened.
   const openGallery = (post: WatchPost) =>
@@ -1062,111 +1079,116 @@ export const FeedView: React.FC<{
   }, [posts.length, setHeadHidden])
 
   return (
-    <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
-      <Animated.View
-        className="w-full max-w-[640px] self-center"
-        style={
-          isWeb || !headMeasured
-            ? undefined
-            : { height: Animated.multiply(headProgress, headHeight.current), opacity: headProgress, overflow: 'hidden' }
-        }
-      >
-        <View
-          className="flex-row items-center gap-2 py-1 pl-4 pr-2"
-          onLayout={(e) => {
-            if (isWeb || headMeasured) return
-            headHeight.current = e.nativeEvent.layout.height
-            setHeadMeasured(true)
-          }}
+    <GestureHandlerRootView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+      <TimelineZoom onScaleChange={onTimelineScaleChange}>
+        <Animated.View
+          className="w-full max-w-[640px] self-center"
+          style={
+            isWeb || !headMeasured
+              ? undefined
+              : { height: Animated.multiply(headProgress, headHeight.current), opacity: headProgress, overflow: 'hidden' }
+          }
         >
-          <View className="min-w-0 flex-1 flex-row">
-            <NouMenu
-              trigger={
-                <View style={iosTouchTarget} className="h-11 min-w-0 flex-row items-center gap-1">
-                  <NouText className="shrink text-lg font-semibold" numberOfLines={1}>
-                    {timeline?.name || t('feed.label')}
-                  </NouText>
-                  <MaterialIcons name="arrow-drop-down" size={22} color={iconColor} />
-                </View>
-              }
-              ref={timelineMenuRef}
-              items={timelineMenuItems}
-            />
+          <View
+            className="flex-row items-center gap-2 py-1 pl-4 pr-2"
+            onLayout={(e) => {
+              if (isWeb || headMeasured) return
+              headHeight.current = e.nativeEvent.layout.height
+              setHeadMeasured(true)
+            }}
+          >
+            <View className="min-w-0 flex-1 flex-row">
+              <NouMenu
+                trigger={
+                  <View style={iosTouchTarget} className="h-11 min-w-0 flex-row items-center gap-1">
+                    <NouText className="shrink text-lg font-semibold" numberOfLines={1}>
+                      {timeline?.name || t('feed.label')}
+                    </NouText>
+                    <MaterialIcons name="arrow-drop-down" size={22} color={iconColor} />
+                  </View>
+                }
+                ref={timelineMenuRef}
+                items={timelineMenuItems}
+              />
+            </View>
+            {profiles.length ? (
+              <Pressable
+                onPress={() =>
+                  timeline ? watch$.updateTimeline(timeline.id, { mediaOnly: !mediaOnly }) : watch$.feedMediaOnly.set(!mediaOnly)
+                }
+                accessibilityRole="button"
+                accessibilityLabel={mediaOnly ? t('feed.showAllPosts') : t('feed.showMediaOnly')}
+                style={iosTouchTarget}
+                className="h-11 w-11 items-center justify-center rounded-full"
+              >
+                <MaterialIcons name={mediaOnly ? 'view-agenda' : 'grid-view'} color={iconColor} size={22} />
+              </Pressable>
+            ) : null}
+            {profiles.length ? (
+              <Pressable
+                onPress={() => {
+                  if (timeline) ui$.timelineModal.set({ timelineId: timeline.id, tabId })
+                  else ui$.feedSettingsModalOpen.set(true)
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t(timeline ? 'feed.editTimeline' : 'feed.settings')}
+                style={iosTouchTarget}
+                className="h-11 w-11 items-center justify-center rounded-full"
+              >
+                <MaterialIcons name="tune" color={iconColor} size={22} />
+              </Pressable>
+            ) : null}
+            {profiles.length ? (
+              <Pressable
+                onPress={() => void refresh('manual')}
+                disabled={refreshing}
+                accessibilityRole="button"
+                accessibilityLabel={t('feed.refresh')}
+                style={iosTouchTarget}
+                className="h-11 w-11 items-center justify-center rounded-full"
+              >
+                {refreshing ? <ActivityIndicator color={iconColor} /> : <MaterialIcons name="refresh" color={iconColor} size={22} />}
+              </Pressable>
+            ) : null}
           </View>
-          {profiles.length ? (
-            <Pressable
-              onPress={() =>
-                timeline ? watch$.updateTimeline(timeline.id, { mediaOnly: !mediaOnly }) : watch$.feedMediaOnly.set(!mediaOnly)
-              }
-              accessibilityRole="button"
-              accessibilityLabel={mediaOnly ? t('feed.showAllPosts') : t('feed.showMediaOnly')}
-              style={iosTouchTarget}
-              className="h-11 w-11 items-center justify-center rounded-full"
-            >
-              <MaterialIcons name={mediaOnly ? 'view-agenda' : 'grid-view'} color={iconColor} size={22} />
-            </Pressable>
-          ) : null}
-          {profiles.length ? (
-            <Pressable
-              onPress={() => {
-                if (timeline) ui$.timelineModal.set({ timelineId: timeline.id, tabId })
-                else ui$.feedSettingsModalOpen.set(true)
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={t(timeline ? 'feed.editTimeline' : 'feed.settings')}
-              style={iosTouchTarget}
-              className="h-11 w-11 items-center justify-center rounded-full"
-            >
-              <MaterialIcons name="tune" color={iconColor} size={22} />
-            </Pressable>
-          ) : null}
-          {profiles.length ? (
-            <Pressable
-              onPress={() => void refresh('manual')}
-              disabled={refreshing}
-              accessibilityRole="button"
-              accessibilityLabel={t('feed.refresh')}
-              style={iosTouchTarget}
-              className="h-11 w-11 items-center justify-center rounded-full"
-            >
-              {refreshing ? <ActivityIndicator color={iconColor} /> : <MaterialIcons name="refresh" color={iconColor} size={22} />}
-            </Pressable>
-          ) : null}
-        </View>
-      </Animated.View>
-      <FlatList
-        className="w-full max-w-[640px] self-center"
-        ref={listRef}
-        onScroll={isWeb ? undefined : (e) => onListScroll(e.nativeEvent.contentOffset.y)}
-        scrollEventThrottle={16}
-        // The columns of a list can only be set as it is made.
-        key={mediaOnly ? `grid-${columns}` : 'list'}
-        numColumns={mediaOnly ? columns : 1}
-        onLayout={(e) => setListWidth(e.nativeEvent.layout.width)}
-        data={posts}
-        keyExtractor={(post) => post.key}
-        ListHeaderComponent={header}
-        ListEmptyComponent={empty}
-        ItemSeparatorComponent={mediaOnly ? undefined : () => <View className="h-px bg-zinc-200 dark:bg-zinc-800" />}
-        renderItem={({ item }) =>
-          mediaOnly ? (
-            <PostTile post={item} unread={isUnread(item)} columns={columns} onOpen={() => openGallery(item)} />
-          ) : (
-            <PostRow
-              post={item}
-              profile={profileByKey.get(watchKey(item))}
-              unread={isUnread(item)}
-              now={now}
-              iconColor={iconColor}
-              onOpenOriginal={() => openUrl(item.url)}
-              onOpenLink={openUrl}
-              onOpenSource={selected ? undefined : () => showSource(watchKey(item))}
-            />
-          )
-        }
-        onEndReached={showMore}
-        ListFooterComponent={<View className="h-16" />}
-      />
-    </View>
+        </Animated.View>
+        <FlatList
+          className="w-full max-w-[640px] self-center"
+          ref={listRef}
+          onScroll={(event) => {
+            listScrollY.current = event.nativeEvent.contentOffset.y
+            if (!isWeb) onListScroll(listScrollY.current)
+          }}
+          scrollEventThrottle={16}
+          // The columns of a list can only be set as it is made.
+          key={listKey}
+          numColumns={mediaOnly ? columns : 1}
+          onLayout={(e) => setListWidth(e.nativeEvent.layout.width)}
+          data={posts}
+          keyExtractor={(post) => post.key}
+          ListHeaderComponent={header}
+          ListEmptyComponent={empty}
+          ItemSeparatorComponent={mediaOnly ? undefined : () => <View className="h-px bg-zinc-200 dark:bg-zinc-800" />}
+          renderItem={({ item }) =>
+            mediaOnly ? (
+              <PostTile post={item} unread={isUnread(item)} columns={columns} onOpen={() => openGallery(item)} />
+            ) : (
+              <PostRow
+                post={item}
+                profile={profileByKey.get(watchKey(item))}
+                unread={isUnread(item)}
+                now={now}
+                iconColor={iconColor}
+                onOpenOriginal={() => openUrl(item.url)}
+                onOpenLink={openUrl}
+                onOpenSource={selected ? undefined : () => showSource(watchKey(item))}
+              />
+            )
+          }
+          onEndReached={showMore}
+          ListFooterComponent={<View className="h-16" />}
+        />
+      </TimelineZoom>
+    </GestureHandlerRootView>
   )
 }

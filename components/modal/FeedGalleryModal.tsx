@@ -4,7 +4,9 @@ import { useValue } from '@legendapp/state/react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { Image } from 'expo-image'
-import { useVideoPlayer, VideoView } from 'expo-video'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { FeedVideo } from '../feed/FeedVideo'
+import { ZoomableMedia } from '../feed/ZoomableMedia'
 import { t } from 'i18next'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
@@ -23,30 +25,6 @@ import { isWeb } from '@/lib/utils'
 // The height of the seek bar and buttons the video player draws at its bottom.
 const VIDEO_CONTROLS_HEIGHT = 112
 
-const VideoItem: React.FC<{
-  uri: string
-  headers?: Record<string, string>
-  width: number
-  height: number
-  onError: () => void
-}> = ({ uri, headers, width, height, onError }) => {
-  const player = useVideoPlayer(headers ? { uri, headers } : uri, (p) => {
-    p.loop = true
-    p.play()
-  })
-  useEffect(() => {
-    const subscription = player.addListener('statusChange', ({ status }) => {
-      if (status === 'error') onError()
-    })
-    return () => subscription.remove()
-  }, [player, onError])
-  // On desktop the player plays only once its view is there, which is after it is set up.
-  useEffect(() => {
-    if (isWeb) player.play()
-  }, [player])
-  return <VideoView player={player} style={{ width, height }} contentFit="contain" nativeControls />
-}
-
 /** One photo or video. Only the one in sight plays; the others show their cover. */
 const GalleryItem: React.FC<{
   post: WatchPost
@@ -55,7 +33,8 @@ const GalleryItem: React.FC<{
   active: boolean
   width: number
   height: number
-}> = ({ post, index, item, active, width, height }) => {
+  onZoomChange: (zoomed: boolean) => void
+}> = ({ post, index, item, active, width, height, onZoomChange }) => {
   const key = mediaKey(post.key, index)
   const kept = useValue(watchMedia$.files[key])
   const [failed, setFailed] = useState(false)
@@ -94,28 +73,31 @@ const GalleryItem: React.FC<{
 
   if (item.type === 'video' && active && !failed && !waiting) {
     return (
-      <VideoItem
+      <FeedVideo
         uri={keptUri || item.url}
         headers={keptUri ? undefined : item.headers}
         width={width}
         height={height}
         onError={onVideoError}
+        onZoomChange={onZoomChange}
       />
     )
   }
   const source = item.type === 'video' ? item.thumb || item.url : keptUri || item.url
   return (
-    <View style={{ width, height }} className="items-center justify-center">
-      <Image source={source} style={{ width, height }} contentFit="contain" onError={() => setFailed(true)} />
-      {item.type === 'video' ? (
-        <View className="absolute h-16 w-16 items-center justify-center rounded-full bg-black/50">
-          {waiting && active ? <ActivityIndicator color="#fff" /> : <MaterialIcons name="play-arrow" size={40} color="#fff" />}
-        </View>
-      ) : null}
-      {failed && !keptUri ? (
-        <NouText className="absolute bottom-6 text-sm text-zinc-300">{t('feed.mediaFailed')}</NouText>
-      ) : null}
-    </View>
+    <ZoomableMedia enabled={active} onZoomChange={active ? onZoomChange : undefined} style={{ width, height }}>
+      <View style={{ width, height }} className="items-center justify-center">
+        <Image source={source} style={{ width, height }} contentFit="contain" onError={() => setFailed(true)} />
+        {item.type === 'video' ? (
+          <View className="absolute h-16 w-16 items-center justify-center rounded-full bg-black/50">
+            {waiting && active ? <ActivityIndicator color="#fff" /> : <MaterialIcons name="play-arrow" size={40} color="#fff" />}
+          </View>
+        ) : null}
+        {failed && !keptUri ? (
+          <NouText className="absolute bottom-6 text-sm text-zinc-300">{t('feed.mediaFailed')}</NouText>
+        ) : null}
+      </View>
+    </ZoomableMedia>
   )
 }
 
@@ -150,6 +132,7 @@ export const FeedGalleryModal = () => {
   const requested = useRef(new Set<string>())
   const [settled, setSettled] = useState<ReadonlySet<string>>(() => new Set())
   const [captionOpen, setCaptionOpen] = useState(false)
+  const [zoomed, setZoomed] = useState(false)
   const listRef = useRef<FlatList<GalleryPage>>(null)
   // The page the list is scrolled to, once it is shown.
   const shownPage = useRef<number | null>(null)
@@ -184,6 +167,7 @@ export const FeedGalleryModal = () => {
     requested.current = new Set()
     setSettled(new Set())
     setCaptionOpen(false)
+    setZoomed(false)
   }, [gallery])
 
   // The media of a post the feed has only some of, or only the cover of, is read once it is in sight.
@@ -270,7 +254,7 @@ export const FeedGalleryModal = () => {
   }
 
   return (
-    <View
+    <GestureHandlerRootView
       className="absolute inset-0 z-20 bg-black"
       onLayout={(e) => {
         const { width: w, height: h } = e.nativeEvent.layout
@@ -282,6 +266,7 @@ export const FeedGalleryModal = () => {
         data={pages}
         horizontal
         pagingEnabled
+        scrollEnabled={!zoomed}
         showsHorizontalScrollIndicator={false}
         initialScrollIndex={pageIndex}
         getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
@@ -289,7 +274,16 @@ export const FeedGalleryModal = () => {
         onMomentumScrollEnd={(e) => onScrollEnd(e.nativeEvent.contentOffset.x)}
         renderItem={({ item: current, index: i }) =>
           current.item ? (
-            <GalleryItem post={current.post} index={current.index} item={current.item} active={i === pageIndex} width={width} height={height} />
+            <GalleryItem
+              key={`${current.post.key}:${current.index}:${i === pageIndex}`}
+              onZoomChange={setZoomed}
+              post={current.post}
+              index={current.index}
+              item={current.item}
+              active={i === pageIndex}
+              width={width}
+              height={height}
+            />
           ) : (
             <View style={{ width, height }} className="items-center justify-center px-8">
               {current.post.image ? (
@@ -375,6 +369,6 @@ export const FeedGalleryModal = () => {
           </Pressable>
         </SafeAreaView>
       ) : null}
-    </View>
+    </GestureHandlerRootView>
   )
 }
