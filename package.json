@@ -5,9 +5,9 @@
   "name": "nora",
   "private": true,
   "main": "expo-router/entry",
-  "version": "0.8.13",
-  "versionCode": 97,
-  "buildNumber": "38",
+  "version": "0.9.0",
+  "versionCode": 98,
+  "buildNumber": "39",
   "scripts": {
     "test:sync:local": "bun scripts/test-sync-local.ts",
     "bundle": "bun build --target browser --format iife content/main.ts content/webrtc.ts content/youtube.ts --outdir assets/scripts --entry-naming '[name].bjs'",

@@ -1,0 +1,5 @@
+- Feed reader to follow social accounts and RSS feeds in customizable timelines
+- Media gallery for feed posts with photo and video downloads
+- Manage feed sources with OPML import and export
+- Drag-and-drop reordering in the tab switcher
+- Find in page
