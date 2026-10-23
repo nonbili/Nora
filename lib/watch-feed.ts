@@ -1,7 +1,7 @@
 import { AppState, Platform } from 'react-native'
 import { t } from 'i18next'
 import { settings$ } from '@/states/settings'
-import { profileNotifies, timelineIntervals, watch$, type WatchedProfile } from '@/states/watch'
+import { getTimeline, isMediaOnly, profileNotifies, timelineIntervals, watch$, type WatchedProfile } from '@/states/watch'
 import {
   INSTAGRAM_APP_ID,
   instagramProfileInfoUrl,
@@ -61,6 +61,7 @@ import { watchFetch } from '@/lib/watch-fetch'
 import NoraViewModule from '@/modules/nora-view'
 import { accountChoice, findSignedInCookies, parseCookieHeader, siteCookieOrigin, type SiteAccount } from '@/lib/watch-account'
 import { getProfilePosts, setProfilePosts } from '@/lib/watch-db'
+import { feedTabUrl } from '@/lib/feed-tab'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
 
 import {
@@ -544,16 +545,21 @@ const checkProfile = async (
 const notificationChannel = () => ({ id: NOTIFICATION_CHANNEL_ID, name: t('feed.notificationChannel') })
 
 const notifyFresh = async (profile: WatchedProfile, fresh: WatchPost[]) => {
+  const current = watch$.profiles.peek().find((p) => p.key === profile.key) || profile
+  const timelineId = getTimeline(current.timelineId)?.id
+  // Match the feed's media filter, including posts whose media has yet to be loaded.
+  if (isMediaOnly(timelineId)) {
+    fresh = fresh.filter((post) => Boolean(post.media?.length) || post.mediaComplete === false)
+  }
   if (!fresh.length) return
   const latest = fresh[0]
-  const current = watch$.profiles.peek().find((p) => p.key === profile.key) || profile
   try {
     await presentNotification(notificationChannel(), {
       // The site too: the same name can be watched on several.
       title: `${current.name ? `${current.name} (${watchSourceLabel(current)})` : watchSourceLabel(current)} · ${watchSiteLabels[current.site]}`,
       body: fresh.length === 1 ? latest.text || t('feed.newPost') : t('feed.newPosts', { count: fresh.length }),
-      // One post opens on its own; several open on the profile, where they all are.
-      url: fresh.length === 1 ? latest.url : watchProfileUrl(current),
+      // Read new posts in the source's timeline, or the whole feed when it has none.
+      url: feedTabUrl(timelineId),
     })
   } catch (e) {
     console.warn('watch notification failed', e)

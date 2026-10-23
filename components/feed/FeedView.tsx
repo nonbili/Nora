@@ -526,6 +526,7 @@ export const FeedView: React.FC<{
   useEffect(() => {
     if (picked?.tabId !== tabId) return
     setSelectedKey(picked.profileKey)
+    listRef.current?.scrollToOffset({ offset: 0, animated: false })
     ui$.feedSelection.set(null)
   }, [picked, tabId])
 

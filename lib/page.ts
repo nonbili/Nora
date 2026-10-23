@@ -6,6 +6,7 @@ import { isAuthCallbackUrl } from './auth-callback'
 import { isExternalAppUrl } from './url-schemes'
 import { parseTabShortcutUrl } from './tab-shortcut'
 import { tabGroups$ } from '@/states/tab-groups'
+import { ui$ } from '@/states/ui'
 import { feedTabUrl, getFeedTimelineId, isFeedTabUrl } from './feed-tab'
 export { removeTrackingParams } from './url'
 export { isAuthCallbackUrl } from './auth-callback'
@@ -53,10 +54,10 @@ export function openFeedTab(timelineId?: string, newTab = false) {
     ? undefined
     : tabs$.tabs.get().find((tab) => isFeedTabUrl(tab.url) && getFeedTimelineId(tab.url) === timelineId)
   if (existing && focusTab(existing.id)) {
-    return
+    return existing.id
   }
   tabGroups$.setActiveGroup(null)
-  tabs$.openTab(feedTabUrl(timelineId))
+  return tabs$.openTab(feedTabUrl(timelineId))
 }
 
 export async function openSharedUrl(url: string, replace = false) {
@@ -71,7 +72,9 @@ export async function openSharedUrl(url: string, replace = false) {
     url = shortcut.url
   }
   if (isFeedTabUrl(url)) {
-    openFeedTab(getFeedTimelineId(url))
+    const tabId = openFeedTab(getFeedTimelineId(url))
+    // Incoming links show the timeline's new posts even if its tab was narrowed to a source.
+    if (tabId) ui$.feedSelection.set({ tabId, profileKey: null })
     return
   }
   if (isAuthCallbackUrl(url)) {

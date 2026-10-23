@@ -27,7 +27,7 @@ interface Store {
   // A watched source's timeline, check interval or notifications, chosen from its menu in the feed.
   sourcePicker: { profileKey: string; kind: 'timeline' | 'interval' | 'notify' } | null
   // A source picked from that list, for its feed tab to show.
-  feedSelection: { tabId: string; profileKey: string } | null
+  feedSelection: { tabId: string; profileKey: string | null } | null
   // Adding sources by their links or from a file: into the timeline it was opened from, if any.
   addSourcesModal: { timelineId?: string } | null
   feedSettingsModalOpen: boolean
