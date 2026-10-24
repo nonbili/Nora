@@ -65,6 +65,7 @@ import { closeFindInPage, onFindPageChanged, setFindResult } from '@/lib/find-in
 
 const LOAD_URL_MAX_RETRIES = 5
 const LOAD_URL_RETRY_DELAY = 100
+const HEADER_SCROLL_COOLDOWN_MS = 250
 
 const getRedirectTo = (str: string) => {
   try {
@@ -140,7 +141,7 @@ const isExternalAppUrl = (str: string) => {
   }
 }
 
-const onScroll = ({
+const applyScrollHeader = ({
   dy,
   y,
   autoHideHeader,
@@ -286,6 +287,9 @@ const WebTab: React.FC<NoraTabProps> = ({
   const nativeMenuItemsRef = useRef<Item[]>([])
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
   const webviewListenersRef = useRef<AbortController | null>(null)
+  const scrollHeaderBlockedUntil = useRef(0)
+  const scrollHeaderDeferred = useRef<{ dy?: number; y?: number } | null>(null)
+  const scrollHeaderTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pageUrlRef = useRef('')
   const loadingWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [canGoBack, setCanGoBack] = useState(false)
@@ -308,6 +312,47 @@ const WebTab: React.FC<NoraTabProps> = ({
   useEffect(() => {
     isActiveRef.current = isActive
   }, [isActive])
+
+  // Showing or hiding the toolbar resizes the webview, and some sites (X) answer the resize
+  // with scroll events of their own. Those are held back for a moment so they can't flip the
+  // toolbar straight back, and the latest one is applied once the cooldown ends, so a scroll
+  // that stops inside the cooldown (back at the top, say) still lands.
+  const handleScroll = (data: { dy?: number; y?: number }) => {
+    if (!isActiveRef.current) {
+      return
+    }
+    const remaining = scrollHeaderBlockedUntil.current - Date.now()
+    if (remaining > 0) {
+      scrollHeaderDeferred.current = data
+      if (!scrollHeaderTimer.current) {
+        scrollHeaderTimer.current = setTimeout(() => {
+          scrollHeaderTimer.current = null
+          const deferred = scrollHeaderDeferred.current
+          scrollHeaderDeferred.current = null
+          if (deferred) {
+            handleScrollRef.current(deferred)
+          }
+        }, remaining)
+      }
+      return
+    }
+    const shown = ui$.headerShown.get()
+    applyScrollHeader({ dy: data.dy, y: data.y, autoHideHeader, hideToolbarWhenScrolled })
+    if (ui$.headerShown.get() !== shown) {
+      scrollHeaderBlockedUntil.current = Date.now() + HEADER_SCROLL_COOLDOWN_MS
+    }
+  }
+  const handleScrollRef = useRef(handleScroll)
+  handleScrollRef.current = handleScroll
+
+  useEffect(
+    () => () => {
+      if (scrollHeaderTimer.current) {
+        clearTimeout(scrollHeaderTimer.current)
+      }
+    },
+    [],
+  )
 
   const refreshCanGoBack = useCallback(async (target?: any) => {
     const webview = target || webviewRef.current || nativeRef.current
@@ -828,7 +873,7 @@ const WebTab: React.FC<NoraTabProps> = ({
         getCurrentWebview()?.saveFile(data.content, data.fileName, data.mimeType)
         break
       case 'scroll':
-        onScroll({ dy: data.dy, y: data.y, autoHideHeader, hideToolbarWhenScrolled })
+        handleScroll({ dy: data.dy, y: data.y })
         break
       case 'find-result':
         setFindResult(tab.id, Number(data?.active) || 0, Number(data?.total) || 0)
