@@ -15,7 +15,8 @@
     "reopenLastClosedTab": "Réouvrir l'onglet fermé récemment",
     "restoreTabs": "Onglets récemment fermés",
     "save": "Enregister",
-    "toggleSidebar": "Afficher/Masquer la barre latérale"
+    "toggleSidebar": "Afficher/Masquer la barre latérale",
+    "done": "Terminé"
   },
   "bookmarks": {
     "label": "Marque-pages",
@@ -44,7 +45,17 @@
     "viewInSplitView": "Voir en mode divisé",
     "zoom": "Zoom",
     "blockAds": "Bloquer les publicités sur ce site",
-    "addToHomeScreen": "Ajouter à l'écran d'accueil"
+    "addToHomeScreen": "Ajouter à l'écran d'accueil",
+    "hideSignInPrompts": "Masquer les invites de connexion sur ce site",
+    "back": "Retour",
+    "forward": "Suivant",
+    "findInPage": "Rechercher dans la page",
+    "findMatches": "{{active}}/{{total}}",
+    "findNoMatches": "Aucun résultat",
+    "findNext": "Résultat suivant",
+    "findPrevious": "Résultat précédent",
+    "reopenInProfile": "Rouvrir dans le profil",
+    "watch": "Suivre {{source}}"
   },
   "settings": {
     "label": "Paramètres",
@@ -79,8 +90,8 @@
       "forYou": "Pour vous",
       "following": "Abonnements"
     },
-    "mentionNotifications": "Notifications des réseaux sociaux",
-    "mentionNotificationsHint": "En raison des limites du système d'exploitation, la notification peut être retardée et n'est pas garantie.",
+    "mentionNotifications": "Citations et messages",
+    "mentionNotificationsHint": "Les notifications pour les nouvelles publications dans le Flux sont configurées dans les paramètres du Flux. En raison des limites de l’OS pour le fonctionnement en arrière-plan, la notification peut être retardée et n’est pas garantie.",
     "sections": {
       "general": "Général",
       "accounts": "Comptes & Données",
@@ -236,7 +247,7 @@
     "zoom": {
       "label": "Zoom de la page",
       "defaultLabel": "Zoom par défaut",
-      "defaultHint": "Définissez le niveau de zoom par défaut pour toutes les pages Web.",
+      "defaultHint": "Définissez le niveau de zoom par défaut pour toutes les pages web et la taille du texte du flux.",
       "siteZoomLabel": "Zoom par site",
       "usingDefault": "Utilisation du zoom par défaut"
     },
@@ -267,14 +278,14 @@
     },
     "doubleTapToToggleHeader": "Double-cliquez sur la page pour masquer ou afficher la barre d'outils",
     "backup": {
-      "description": "Exporter ou restaurer les paramètres, les signets et les styles utilisateur.",
+      "description": "Exporter ou restaurer les paramètres, les favoris, les styles utilisateur et les sources de flux.",
       "export": "Paramètres d'exportation",
-      "exportDescription": "Enregistrez les paramètres, les signets, les styles utilisateurs et les scripts personnalisés sous forme de fichier JSON",
+      "exportDescription": "Enregistrer les paramètres, les favoris, les styles utilisateur, les scripts personnalisés et les sources de flux au format fichier JSON",
       "exportFailed": "Échec de l'exportation : {{message}}",
       "import": "Paramètres d'importation",
       "importDescription": "Rétablir les paramètres à partir d'un fichier de paramètres Nora",
-      "importConfirm": "Ceci remplace vos paramètres actuels, vos signets, vos styles utilisateurs et vos scripts personnalisés. Continuer ?",
-      "importWithScriptsConfirm": "Ce fichier contient {{count}} script(s) personnalisé(s) activé(s), qui peuvent exécuter du code à l'intérieur des sites web. Ne continuez que si vous faites confiance au fichier. Vos paramètres actuels, signets, styles utilisateur et scripts personnalisés seront remplacés.",
+      "importConfirm": "Ceci remplace vos paramètres actuels, vos favoris, vos styles utilisateur et vos scripts personnalisés, et ajoute les sources de flux contenues dans le fichier. Continuer ?",
+      "importWithScriptsConfirm": "Ce fichier contient {{count}} script(s) personnalisé(s), qui peuvent exécuter du code au sein des sites web. Ne continuez que si vous faites confiance au fichier. Vos paramètres actuels, favoris, styles utilisateur et scripts personnalisés seront remplacés, et les sources de flux contenues dans le fichier seront ajoutées.",
       "importDone": "Importé : {{sections}}",
       "importFailed": "Importation échouée : {{message}}"
     },
@@ -287,7 +298,18 @@
     "dynamicColor": {
       "label": "Couleur dynamique",
       "hint": "Utilise votre palette de couleurs système."
-    }
+    },
+    "videoDefaultSpeed": "Vitesse vidéo par défaut",
+    "anonymous": {
+      "title": "Mode anonyme",
+      "enable": "Masquer les invites de connexion",
+      "hint": "Masque les invites de connexion, d’inscription et d’ouverture dans l’application dans le profil anonyme. Fonctionne sur {{sites}}. Instagram s'y ouvre en tant que site de bureau, de sorte qu'un profil continue de charger des publications pendant que vous faites défiler et que les publications sont lues sans compte.",
+      "morePosts": "Trouver plus de publications Instagram",
+      "morePostsHint": "Ajoute un bouton « Continuer la recherche » sous les profils Instagram. Il permet de trouver davantage de publications publiques via DuckDuckGo, qui voit le nom du profil."
+    },
+    "feed": "Flux",
+    "feedHint": "Nouvelles publications des sources que vous suivez",
+    "mentionNotificationsSites": "Depuis vos comptes X et Facebook"
   },
   "changelog": {
     "label": "Journal des modifs",
@@ -354,7 +376,11 @@
     "exportCookies": "Exporter les cookies du site actuel",
     "exportCookiesHint": "Enregistrer les cookies du site actuel dans un fichier cookies.txt.",
     "exportCookiesButton": "Exporter cookies.txt",
-    "clearSiteDataHint": "Effacer les cookies et les données de navigation pour le site et le profil actuels."
+    "clearSiteDataHint": "Effacer les cookies et les données de navigation pour le site et le profil actuels.",
+    "searchTab": "Recherche",
+    "publicSearch": "Rechercher des publications publiques",
+    "publicSearchHint": "Recherche un réseau social via DuckDuckGo. Les résultats s'ouvrent dans le profil Anonyme.",
+    "publicSearchPlaceholder": "Rechercher des publications publiques de {{service}}"
   },
   "native": {
     "menu_saveImage": "Enregistrer l'image",
@@ -392,7 +418,8 @@
     "deleteConfirm": "Supprimer \"{{name}}\" ? Cela effacera ses données de navigation enregistrées et fermera les onglets qui utilisent ce profil.",
     "exportCookies": "Exporter les cookies du profil",
     "exportCookiesConfirm": "Exporter tous les cookies de \"{{name}}\" ? Le fichier peut contenir des sessions de connexion pour tous les sites de ce profil. Gardez-le confidentiel.",
-    "currentProfile": "Profil : {{name}}"
+    "currentProfile": "Profil : {{name}}",
+    "reopenTabInProfile": "Rouvrir l'onglet dans le profil"
   },
   "sync": {
     "label": "Synchro",
@@ -418,7 +445,22 @@
     "legalNotice": "Les abonnements se renouvellent automatiquement à moins que vous ne les annuliez. En souscrivant, vous acceptez les Conditions d'utilisation (EULA) et la Politique de confidentialité.",
     "termsOfUse": "Conditions d'utilisation (EULA)",
     "privacyPolicy": "Politique de confidentialité",
-    "signInRequired": "Se connecter pour continuer."
+    "signInRequired": "Se connecter pour continuer.",
+    "accountChoiceTitle": "Données d'un autre compte",
+    "accountChoiceMessage": "Les favoris, les paramètres, les styles et le flux sur cet appareil ont été synchronisés avec un autre compte Nora. La synchronisation est en pause jusqu'à ce que vous décidiez quoi en faire.",
+    "accountChoiceUseAccount": "Utiliser les données de ce compte",
+    "accountChoiceMerge": "Fusionner cet appareil avec le compte",
+    "accountChoiceLater": "Plus tard",
+    "accountChoiceHint": "L'utilisation des données de ce compte remplace celles présentes sur cet appareil. La fusion ajoute à ce compte les éléments de cet appareil. Dans les deux cas, une sauvegarde de cet appareil est effectuée au préalable.",
+    "accountChoiceToast": "La synchronisation est en pause : cet appareil contient des données d'un autre compte. Choisissez quoi faire dans Paramètres › Synchronisation.",
+    "accountChoiceFailed": "Impossible de basculer les données vers ce compte : {{message}}",
+    "exportSwitchBackup": "Exporter les données d'avant le basculement",
+    "exportSwitchBackupHint": "Enregistré le {{date}}. Importez-le dans Paramètres › Sauvegarde pour le restaurer.",
+    "mergeBackupHint": "Cet appareil et un autre ont modifié les mêmes éléments, et ces modifications ont été conservées. Vous pouvez rétablir l’état précédent de cet appareil.",
+    "restoreMergeBackup": "Restaurer {{name}} depuis {{date}}",
+    "backupSettings": "paramètres",
+    "backupBookmarks": "favoris",
+    "backupUserStyles": "styles et scripts"
   },
   "tabs": {
     "new": "Nouvel onglet",
@@ -428,7 +470,9 @@
     "pausedHint": "Son contenu a été vidé pour économiser des ressources.",
     "resume": "Réactiver",
     "removeFromHistory": "Supprimer de l'historique",
-    "clearRecentlyClosed": "Effacer l'historique"
+    "clearRecentlyClosed": "Effacer l'historique",
+    "open": "Onglets ouverts ({{count}})",
+    "reorder": "Touchez et maintenez, puis faites glisser pour réorganiser"
   },
   "newTab": {
     "presets": {
@@ -455,7 +499,9 @@
     "profileCookieExported": "Cookies du profil exportés",
     "profileCookieExportEmpty": "Aucun cookie trouvé dans ce profil",
     "profileCookieExportFailed": "Échec de l'exportation des cookies du profil",
-    "addToHomeScreenFailed": "Ce lanceur ne prend pas en charge les raccourcis de l'écran d'accueil"
+    "addToHomeScreenFailed": "Ce lanceur ne prend pas en charge les raccourcis de l'écran d'accueil",
+    "profileWatched": "Suivi de {{source}}. Les nouveaux articles apparaissent dans le flux.",
+    "profileUnwatched": "Arrêt du suivi de {{source}}."
   },
   "usageLimits": {
     "label": "Limites d'utilisation",
@@ -517,5 +563,78 @@
     "download": "Ouvrir la page de téléchargement",
     "upToDate": "Nora {{version}} est à jour.",
     "failed": "Impossible de vérifier les mises à jour. Veuillez réessayer."
+  },
+  "morePosts": {
+    "title": "Plus de publications",
+    "more": "Afficher plus",
+    "openPost": "Ouvrir la publication",
+    "note": "Trouvé via DuckDuckGo. Certaines publications peuvent manquer.",
+    "error": "Impossible de charger plus de publications.",
+    "empty": "Aucune autre publication trouvée.",
+    "continue": "Continuer la recherche",
+    "continueHint": "Trouve plus de publications via DuckDuckGo, qui voit le nom du profil.",
+    "searching": "Recherche… Il vous sera peut-être demandé de passer un contrôle DuckDuckGo.",
+    "unavailable": "Cette publication n'est pas disponible.",
+    "retry": "Réessayer"
+  },
+  "feed": {
+    "resetZoom": "Réinitialiser le zoom",
+    "playVideo": "Lire la vidéo",
+    "pauseVideo": "Mettre la vidéo en pause",
+    "seekVideo": "Position de la vidéo",
+    "label": "Flux",
+    "all": "Tout",
+    "allSources": "Toutes les sources",
+    "refresh": "Actualiser",
+    "notify": "Me notifier des nouvelles publications",
+    "unwatch": "Ne plus suivre",
+    "unwatchConfirm": "Arrêter de suivre {{source}} et supprimer ses publications du flux ?",
+    "empty": "Ouvrez un compte sur X, Instagram, Threads, Bluesky, Mastodon ou TikTok, un subreddit, ou une page, un profil ou un groupe sur Facebook, puis choisissez « Suivre » dans le menu. Ses nouvelles publications s’afficheront ici, souvent sans avoir à vous connecter.",
+    "emptyTitle": "Suivez les comptes ici",
+    "emptyDescription": "Ajoutez des profils depuis ces sites et leurs nouvelles publications s’afficheront ici, souvent sans avoir à vous connecter.",
+    "emptyWatchHint": "Vous pouvez également ouvrir un compte dans un onglet et choisir « Suivre » dans le menu.",
+    "noPosts": "Aucun article pour le moment.",
+    "repostOf": "Republié depuis @{{handle}}",
+    "loggedOutSites": "Certaines sources sur {{sites}} sont vérifiées sans connexion, ce qui peut entraîner des retards ou des blocages. Connectez-vous à ces sites dans n’importe quel profil Nora pour des mises à jour plus fiables.",
+    "showSource": "Afficher uniquement {{name}}",
+    "statusLoggedIn": "Vérifié avec le compte {{site}} connecté à votre profil {{profile}}.",
+    "statusLoggedOutInProfile": "Vérifié sans connexion. Connectez-vous à {{site}} avec votre profil {{profile}}, ou choisissez un autre profil dans les paramètres du flux, pour des mises à jour plus fiables.",
+    "statusAccountsOff": "Consulté sans connexion, conformément aux paramètres du flux.",
+    "statusNeedsLoginAccountsOff": "{{site}} vous a demandé de vous connecter. Nora réessaiera plus tard ; activez « Utiliser mes identifiants » dans les paramètres du flux pour maintenir cette source à jour.",
+    "statusLoggedOut": "Vérifié sans connexion. Les mises à jour peuvent être retardées ; connectez-vous à {{site}} pour des mises à jour plus fiables.",
+    "statusNeedsLogin": "{{site}} vous a demandé de vous connecter. Nora réessaiera plus tard ; connectez-vous à {{site}} dans n’importe quel profil Nora pour maintenir cette source à jour.",
+    "statusRateLimited": "{{site}} a demandé de ralentir. Nora réessaiera dans une heure.",
+    "statusFailed": "La dernière vérification a échoué : {{error}}",
+    "statusPending": "Pas encore vérifié.",
+    "showDetails": "Afficher les détails",
+    "detailLastChecked": "Dernière vérification",
+    "detailLastSuccess": "Dernière vérification réussie",
+    "detailNewestPost": "Dernier article",
+    "detailAccount": "Compte",
+    "detailNotify": "Notifications",
+    "ago": "il y a {{age}}",
+    "never": "Jamais",
+    "accountLoggedIn": "Connecté",
+    "accountLoggedInProfile": "Connecté, depuis votre profil {{profile}}",
+    "accountLoggedOut": "Non connecté",
+    "accountsOff": "Non connecté (connexions désactivées dans les paramètres du flux)",
+    "notificationChannel": "Sources surveillées",
+    "notificationPermissionDenied": "Les notifications ne sont pas autorisées pour Nora",
+    "notifyTimeline": "Me notifier des nouvelles publications",
+    "notifyTimelineHint": "Pour les sources de cette chronologie qui n’ont pas de choix propre. Uniquement sur cet appareil.",
+    "notifyFeedHint": "Pour chaque source, sauf si sa chronologie ou la source elle-même décide autrement. Uniquement sur cet appareil.",
+    "notifyOn": "Activé",
+    "notifyOff": "Désactivé",
+    "notifyFrom": "{{state}}, de {{name}}",
+    "notifyDefault": "Utiliser {{name}} ({{state}})",
+    "notifyDefaultState": "Utiliser global ({{state}})",
+    "notifyMenu": "Notifications…",
+    "notifyMuted": "Muet. Plus de notifications de cette source.",
+    "newPost": "Nouvelle publication",
+    "newPosts": "{{count}} nouvelles publications",
+    "checkEvery": "Fréquence de vérification",
+    "checkEveryMenu": "Vérifiez chaque…",
+    "intervalDefault": "Utiliser l'intervalle global ({{interval}})",
+    "intervalDefaultFrom": "Utiliser {{name}} ({{interval}})"
   }
 }

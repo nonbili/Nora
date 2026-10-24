@@ -15,7 +15,9 @@
     "openUrl": "開啟網址",
     "open": "開啟",
     "confirm": "確認",
-    "save": "儲存"
+    "save": "儲存",
+    "reopenLastClosedTab": "開啟最後關閉的分頁",
+    "restoreTabs": "最近關閉分頁"
   },
   "menus": {
     "close": "關閉",
@@ -34,10 +36,20 @@
     "clearSiteData": "清除網站資料",
     "duplicate": "複製分頁",
     "more": "更多",
-    "addToHomeScreen": "新增至主畫面"
+    "addToHomeScreen": "新增至主畫面",
+    "hideSignInPrompts": "隱藏此網站的登入提示",
+    "openInProfile": "在設定檔中開啟"
   },
   "modals": {
-    "downloadVideo": "下載影片"
+    "downloadVideo": "下載影片",
+    "cookiesTab": "網站資料",
+    "searchTab": "搜尋",
+    "publicSearch": "搜尋公開貼文",
+    "publicSearchPlaceholder": "搜尋 {{service}} 公開貼文",
+    "exportCookies": "匯出目前網站cookies",
+    "exportCookiesHint": "將目前網站 cookies 儲存為 cookies.txt 。",
+    "exportCookiesButton": "匯出 cookies.txt",
+    "clearSiteDataHint": "清除目前網站和設定檔的 Cookie 和瀏覽數據。"
   },
   "native": {
     "menu_saveImage": "儲存圖片",
@@ -45,7 +57,11 @@
     "menu_copyLink": "複製連結",
     "toast_downloadStarted": "下載已開始，請查看系統通知",
     "toast_downloadSucceeded": "已儲存至下載資料夾",
-    "toast_downloadFailed": "下載失敗"
+    "toast_downloadFailed": "下載失敗",
+    "menu_openInNewTab": "在新分頁中開啟",
+    "menu_openInProfile": "在設定檔中開啟",
+    "httpBlocked_body": "此網站使用不安全的 HTTP 連線。請在設置中啟用「允許 HTTP 網站」，以載入 HTTP 網站。",
+    "httpBlocked_title": "已阻擋 HTTP 網站"
   },
   "settings": {
     "label": "設定",
@@ -79,10 +95,73 @@
       "importFailed": "匯入CSS失敗",
       "preview": "預覽",
       "previewApplied": "已套用預覽",
-      "copyFailed": "複製CSS失敗"
+      "copyFailed": "複製CSS失敗",
+      "hostGlobs": {
+        "placeholder": "*.reddit.com, x.com (半形逗號分隔)"
+      },
+      "validation": {
+        "css": "新增CSS以儲存"
+      },
+      "builtin": {
+        "hideFacebookFeed": {
+          "label": "隱藏 Facebook 動態消息"
+        },
+        "hideRedditGame": {
+          "label": "隱藏 Reddit 遊戲貼文"
+        }
+      }
     },
     "backup": {
       "importConfirm": "將取代目前的設定、書籤、使用者樣式及自訂腳本。確定繼續嗎？"
+    },
+    "zoom": {
+      "defaultLabel": "預設縮放",
+      "usingDefault": "使用預設縮放"
+    },
+    "redirectToOldReddit": "重新導向至舊版 Reddit",
+    "allowHttpWebsite": "允許 HTTP 網站",
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "避免 WebRTC 洩漏 IP 位址"
+    },
+    "translation": {
+      "notSelected": "選擇語言",
+      "chooseLanguage": "請先選擇翻譯語言",
+      "loading": "翻譯中…",
+      "copy": "複製翻譯",
+      "copySource": "複製原文",
+      "pin": "釘選翻譯",
+      "unpin": "取消釘選翻譯"
+    },
+    "sections": {
+      "notifications": "通知",
+      "advanced": "進階設定",
+      "about": "關於"
+    },
+    "pages": {
+      "browsing": "偏好設定",
+      "appearance": "應用程式外觀",
+      "services": "服務",
+      "profiles": "設定檔與工作階段"
+    },
+    "appearance": {
+      "desktopLayoutOn": "永遠",
+      "desktopLayoutOff": "永不"
+    },
+    "anonymous": {
+      "title": "匿名模式",
+      "enable": "隱藏登入提示"
+    },
+    "showReloadButton": "顯示重新整理按鈕",
+    "oneProfilePerSite": "一站一設定檔",
+    "oneProfilePerSiteHint": "為每個網站自動生成獨立的設定檔。從該網站打開的連結將維持相同設定檔。",
+    "profiles": {
+      "sessionMode": "工作階段模式",
+      "injectCookie": "注入 Cookie"
+    },
+    "pullToRefresh": "向下滑動重新整理頁面",
+    "browsing": {
+      "descriptionWeb": "網路阻擋及進階瀏覽設定。"
     }
   },
   "sync": {
@@ -93,13 +172,26 @@
     "freePlan": "免費方案",
     "privacyPolicy": "隱私權政策",
     "signInRequired": "登入以繼續。",
-    "deleteAccount": "刪除帳號"
+    "deleteAccount": "刪除帳號",
+    "restore": "恢復購買",
+    "manageIos": "在 App Store 中管理",
+    "priceLoading": "載入 App Store 價格中...",
+    "activeViaIos": "透過 App Store 啟用",
+    "restoreConflict": "此 App Store 訂閱已與 {{email}} 綁定。",
+    "signOutSwitch": "登出並切換帳號",
+    "signedInAs": "以 {{email}} 登入"
   },
   "tabs": {
     "new": "新分頁"
   },
   "toast": {
-    "pinned": "已釘選至新分頁"
+    "pinned": "已釘選至新分頁",
+    "profileDataCleared": "已清除設定檔資料",
+    "profileDataClearFailed": "清除設定檔資料失敗",
+    "profileCookieExported": "已匯出設定檔 cookies.txt",
+    "profileCookieExportEmpty": "此設定檔中沒有 cookie",
+    "profileCookieExportFailed": "匯出設定檔 cookies.txt 失敗",
+    "blocklistUpdated": "已更新阻擋清單"
   },
   "upgrade": {
     "check": "檢查更新",
@@ -114,16 +206,31 @@
     "loading": "載入更新日誌中...",
     "error": "載入更新日誌失敗。",
     "retry": "重試",
-    "empty": "無更新日誌。"
+    "empty": "無更新日誌。",
+    "hint": "GitHub 上最新發布版本和修復。",
+    "current": "目前版本",
+    "noNotes": "本版本未提供更新日誌。"
   },
   "common": {
     "about": "關於",
     "edit": "編輯",
-    "theme": "主題"
+    "theme": "主題",
+    "off": "關閉",
+    "on": "開啟",
+    "reset": "重設",
+    "save": "儲存"
   },
   "views": {
     "desktop": {
-      "blankTab": "空白分頁"
+      "blankTab": "空白分頁",
+      "groupNamePlaceholder": "群組名稱",
+      "renameGroup": "重新命名群組",
+      "ungroup": "取消群組",
+      "tabCount": "{{count}} 個分頁",
+      "tabCount_plural": "{{count}} 個分頁",
+      "ungrouped": "已取消群組",
+      "moveToGroup": "移動至 {{name}}",
+      "moveToUngrouped": "移出群組"
     }
   },
   "usageLimits": {
@@ -143,15 +250,87 @@
     },
     "pin": {
       "label": "PIN碼",
-      "hint": "需要設置PIN碼來管理用量限額，當達到限額時則用以解鎖。用量限額會在當地時間午夜重置。"
+      "hint": "需要設置PIN碼來管理用量限額，當達到限額時則用以解鎖。用量限額會在當地時間午夜重置。",
+      "set": "PIN 碼已設置",
+      "notSet": "未設置 PIN 碼",
+      "setAction": "設置 PIN 碼",
+      "change": "變更",
+      "remove": "移除",
+      "currentPlaceholder": "目前 PIN 碼",
+      "newPlaceholder": "新 PIN 碼",
+      "confirmPlaceholder": "確認新 PIN 碼",
+      "errorEmpty": "PIN 碼不能為空",
+      "errorMismatch": "PIN 碼不一致",
+      "errorIncorrect": "PIN 碼錯誤",
+      "requiredFirst": "請先設置 PIN 碼",
+      "confirmEdit": "輸入 PIN 碼以編輯",
+      "confirmDelete": "輸入 PIN 碼以刪除"
     },
     "deleteConfirm": "刪除此用量限額？",
     "scope": {
-      "all": "整個App",
+      "all": "整個應用程式",
       "none": "未選擇服務"
     },
     "empty": "尚未設置用量限額。",
     "emptyHint": "設定限額以追蹤每日瀏覽時間。",
-    "usageLine": "今日用量: {{limit}} 之中的 {{used}}"
+    "usageLine": "今日用量：{{limit}} 之中的 {{used}}",
+    "lockout": {
+      "unlock": "僅今日解鎖",
+      "title": "已達今日限額",
+      "body": "{{name}} 您已使用今日限額 {{limit}} 中的 {{used}}。",
+      "pinPlaceholder": "輸入 PIN 以解鎖",
+      "pinIncorrect": "PIN 碼不正確",
+      "noPinHint": "在「設定 → 用量限額」中設定 PIN 碼以提前解鎖。"
+    },
+    "label": "用量限額",
+    "description": "選擇服務或整個應用程式以設定每日限額。",
+    "limits": "限額"
+  },
+  "blocklist": {
+    "description": "利用 EasyList 和 EasyPrivacy 主機規則阻擋廣告和追蹤器。",
+    "label": "網路阻擋清單",
+    "enable": "開啟網路阻擋清單",
+    "statusFetching": "擷取阻擋清單",
+    "lastUpdated": "最後更新：{{value}}",
+    "refreshNow": "更新阻擋清單"
+  },
+  "morePosts": {
+    "unavailable": "無法存取此貼文。",
+    "retry": "重試",
+    "title": "更多貼文",
+    "more": "顯示更多",
+    "openPost": "開啟貼文",
+    "note": "使用 DuckDuckGo 搜尋。可能缺少部分貼文。",
+    "error": "無法載入更多貼文。",
+    "empty": "未找到更多貼文。",
+    "continue": "使用網頁搜尋加載",
+    "continueHint": "使用 DuckDuckGo 搜尋更多貼文，將會查看個人檔案名稱。",
+    "searching": "搜尋中... 您可能需要通過 DuckDuckGo 驗證。"
+  },
+  "newTab": {
+    "search": {
+      "urlPlaceholder": "輸入URL",
+      "searchPlaceholder": "搜尋網頁"
+    }
+  },
+  "profiles": {
+    "label": "設定檔",
+    "currentProfile": "設定檔：{{name}}",
+    "auto": "自動",
+    "autoProfiles": "自動設定檔",
+    "autoProfilesEmpty": "尚無自動設定檔。",
+    "openLinkInProfile": "在設定檔中開啟連結",
+    "autoProfileLastUsed": "最近使用：{{value}}",
+    "autoProfileLastUsedLabel": "最近使用",
+    "manageAutoProfiles": "管理自動設定檔({{count}})",
+    "deleteAllAutoProfiles": "全部刪除",
+    "deleteStaleAutoProfiles": "刪除14天內未使用",
+    "add": "新增",
+    "edit": "編輯",
+    "save": "儲存",
+    "namePlaceholder": "設定檔名稱",
+    "clearData": "清除資料",
+    "exportCookies": "匯出設定檔 cookies",
+    "exportCookiesConfirm": "要匯出「{{name}}」中所有 cookies嗎? 該檔案，可能包含設定檔中所有網站的登入工作階段。請妥善保管。"
   }
 }

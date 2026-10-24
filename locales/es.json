@@ -43,11 +43,23 @@
     "pause": "Pausar pestaña",
     "resume": "Reanudar pestaña",
     "viewInSplitView": "Ver en vista dividida",
-    "zoom": "Zoom"
+    "zoom": "Zoom",
+    "blockAds": "Bloquear anuncios en este sitio",
+    "hideSignInPrompts": "Ocultar los avisos de inicio de sesión en este sitio",
+    "addToHomeScreen": "Añadir a la pantalla de inicio"
   },
   "modals": {
     "downloadVideo": "Descargar vídeo",
-    "downloadOnCobalt": "Descargar vídeo en cobalt.tools"
+    "downloadOnCobalt": "Descargar vídeo en cobalt.tools",
+    "downloadTab": "Descargar",
+    "cookiesTab": "Datos del sitio",
+    "publicSearch": "Buscar publicaciones públicas",
+    "publicSearchHint": "Busca en una red social a través de DuckDuckGo. Los resultados se abren en el perfil anónimo.",
+    "publicSearchPlaceholder": "Buscar publicaciones públicas de {{service}}",
+    "exportCookies": "Exportar las cookies del sitio actual",
+    "exportCookiesHint": "Guarda las cookies del sitio actual como un archivo cookies.txt.",
+    "exportCookiesButton": "Exportar cookies.txt",
+    "clearSiteDataHint": "Borra las cookies y los datos de navegación del sitio y el perfil actuales."
   },
   "native": {
     "menu_saveImage": "Guardar imagen",
@@ -85,7 +97,8 @@
     "showScrollButton": "Mostrar el deslizamiento para ir arriba",
     "xHomeTimeline": {
       "forYou": "Para ti",
-      "following": "Siguiendo"
+      "following": "Siguiendo",
+      "label": "Cronología de inicio predeterminada"
     },
     "language": {
       "label": "Idioma",
@@ -98,7 +111,8 @@
       "profiles": "Perfiles y Sesiones",
       "bookmarks": "Marcadores",
       "search": "Búsqueda",
-      "browsing": "Preferencias"
+      "browsing": "Preferencias",
+      "backup": "Copia de seguridad"
     },
     "allowHttpWebsite": "Permitir webs HTTP",
     "inspectable": "Hacer que la vista web sea inspeccionable",
@@ -109,7 +123,11 @@
       "theme": "Tema",
       "toolbar": "Barra de herramientas",
       "description": "Configuración del tema y la barra de herramientas.",
-      "deckTabWidthHint": "Actual: {{value}}px"
+      "deckTabWidthHint": "Actual: {{value}}px",
+      "desktopLayout": "Diseño de escritorio",
+      "desktopLayoutAuto": "Automático",
+      "desktopLayoutOn": "Siempre",
+      "desktopLayoutOff": "Nunca"
     },
     "redirectToOldReddit": "Redireccionar al Antiguo Reddit",
     "oneProfilePerSite": "Un perfil por sitio",
@@ -237,11 +255,66 @@
     "showForwardButton": "Mostrar botón de avance",
     "zoom": {
       "label": "Zoom de la página",
-      "defaultLabel": "Zoom por defecto"
+      "defaultLabel": "Zoom por defecto",
+      "defaultHint": "Establece el nivel de zoom predeterminado para todas las páginas web.",
+      "siteZoomLabel": "Zoom por sitio",
+      "usingDefault": "Usando el zoom predeterminado"
     },
     "proxy": {
       "enabled": "Habilitar proxy",
-      "type": "Tipo de proxy"
+      "type": "Tipo de proxy",
+      "label": "Proxy",
+      "host": "Host del proxy",
+      "port": "Puerto del proxy",
+      "hostPlaceholder": "p. ej., 127.0.0.1 o proxy.example.com",
+      "portPlaceholder": "p. ej. 1080"
+    },
+    "webrtc": {
+      "label": "WebRTC",
+      "protectIp": "Evitar fugas de IP mediante WebRTC",
+      "protectIpHint": "Impide que las páginas descubran tu dirección IP real a través de WebRTC, lo cual elude el proxy y la VPN. Las llamadas que utilizan un servidor de retransmisión seguirán funcionando; desactiva esta opción si una videollamada o llamada de voz no logra conectarse. Los cambios surtirán efecto al cargar la siguiente página."
+    },
+    "videoDefaultSpeed": "Velocidad de vídeo predeterminada",
+    "pullToRefresh": "Desliza hacia abajo para recargar la página",
+    "translation": {
+      "enable": "Toca dos veces el texto para traducir",
+      "hint": "Toca dos veces una publicación, un comentario o un párrafo para traducirlo en tu dispositivo.",
+      "targetLanguage": "Traducir a",
+      "appLanguage": "App",
+      "systemLanguage": "Sistema",
+      "notSelected": "Elige un idioma",
+      "chooseLanguage": "Elige primero un idioma de traducción",
+      "loading": "Traduciendo…",
+      "copy": "Copiar traducción",
+      "copySource": "Copiar fuente",
+      "pin": "Anclar traducción",
+      "unpin": "Desanclar traducción",
+      "failed": "No se pudo traducir este texto",
+      "unsupported": "Este par de idiomas no está disponible en este dispositivo"
+    },
+    "doubleTapToToggleHeader": "Toca dos veces la página para ocultar o mostrar la barra de herramientas",
+    "anonymous": {
+      "title": "Modo anónimo",
+      "enable": "Ocultar las solicitudes de inicio de sesión",
+      "hint": "Oculta los avisos para iniciar sesión, registrarse y abrir la aplicación en el perfil anónimo. Funciona en {{sites}}.",
+      "morePosts": "Encuentra más publicaciones de Instagram",
+      "morePostsHint": "Añade un botón de «Continuar con la búsqueda» debajo de los perfiles de Instagram. Localiza más publicaciones públicas a través de DuckDuckGo, que accede al nombre del perfil."
+    },
+    "backup": {
+      "description": "Exportar o restaurar la configuración, los marcadores y los estilos de usuario.",
+      "export": "Exportar configuración",
+      "exportDescription": "Guarda la configuración, los marcadores, los estilos de usuario y los scripts personalizados como un archivo JSON",
+      "exportFailed": "Error al exportar: {{message}}",
+      "import": "Importar configuración",
+      "importDescription": "Restaurar la configuración desde un archivo de configuración de Nora",
+      "importConfirm": "Esto reemplaza tu configuración, marcadores, estilos de usuario y scripts personalizados actuales. ¿Continuar?",
+      "importWithScriptsConfirm": "Este archivo contiene {{count}} script(s) personalizado(s) habilitado(s), que pueden ejecutar código dentro de sitios web. Continúa solo si confías en el archivo. Tu configuración actual, marcadores, estilos de usuario y scripts personalizados serán reemplazados.",
+      "importDone": "Importado: {{secciones}}",
+      "importFailed": "Error al importar: {{message}}"
+    },
+    "dynamicColor": {
+      "label": "Color dinámico",
+      "hint": "Utiliza la paleta de colores del sistema."
     }
   },
   "sync": {
@@ -287,7 +360,13 @@
     "profileDataClearFailed": "No se pudieron borrar los datos del perfil",
     "siteDataCleared": "Datos del sitio borrados",
     "siteDataClearFailed": "No se pudieron borrar los datos del sitio",
-    "pressBackAgainToExit": "Vuelva a pulsar atrás para salir"
+    "pressBackAgainToExit": "Vuelva a pulsar atrás para salir",
+    "cookieExported": "Exportado cookies.txt",
+    "cookieExportEmpty": "No se encontraron cookies para este sitio",
+    "cookieExportFailed": "No se pudo exportar cookies.txt",
+    "cookieExportOpenPage": "Abre una página antes de exportar las cookies",
+    "profileCookieExportEmpty": "No se encontraron cookies en este perfil",
+    "addToHomeScreenFailed": "Este launcher no admite accesos directos en la pantalla de inicio"
   },
   "changelog": {
     "label": "Registro de cambios",
@@ -328,7 +407,12 @@
       "ungrouped": "Sin agrupar",
       "groupNamePlaceholder": "Nombre de grupo",
       "renameGroup": "Renombrar grupo",
-      "newGroupFromTab": "Nuevo grupo desde pestaña"
+      "newGroupFromTab": "Nuevo grupo desde pestaña",
+      "closeGroup": "Cerrar grupo y pestañas",
+      "ungroup": "Desagrupar",
+      "newGroup": "Nuevo grupo",
+      "moveToGroup": "Mover a {{name}}",
+      "moveToUngrouped": "Mover fuera del grupo"
     }
   },
   "profiles": {
@@ -351,7 +435,10 @@
     "deleteStaleAutoProfiles": "Eliminar no utilizados en 14 días",
     "deleteStaleAutoProfilesConfirm": "¿Borrar {{count}} perfiles automáticos que no se hayan utilizado en los últimos 14 días? Esto borrará los datos de navegación almacenados y cerrará las pestañas que los utilicen.",
     "clearDataConfirm": "¿Borrar todos los datos de navegación de \"{{name}}\"? Esto cerrará tu sesión y las pestañas que utilicen este perfil.",
-    "deleteConfirm": "¿Borrar\"{{name}}\"? Esto borra los datos de navegación almacenados y cierra las pestañas que utilizan este perfil."
+    "deleteConfirm": "¿Borrar\"{{name}}\"? Esto borra los datos de navegación almacenados y cierra las pestañas que utilizan este perfil.",
+    "currentProfile": "Perfil: {{name}}",
+    "exportCookies": "Exportar cookies del perfil",
+    "exportCookiesConfirm": "¿Exportar todas las cookies de «{{name}}»? El archivo puede contener sesiones de inicio de sesión de todos los sitios de este perfil. Mantenlo privado."
   },
   "usageLimits": {
     "editor": {
@@ -423,5 +510,26 @@
       "urlPlaceholder": "Introduzca una URL",
       "searchPlaceholder": "Buscar en la web"
     }
+  },
+  "upgrade": {
+    "check": "Buscar actualizaciones",
+    "checking": "Buscando actualizaciones…",
+    "available": "Nora {{version}} está disponible. ¿Abrir la página de la versión para descargar la actualización?",
+    "download": "Abrir la página de descarga",
+    "upToDate": "Nora {{version}} está actualizada.",
+    "failed": "No se pudieron buscar actualizaciones. Por favor, inténtelo de nuevo."
+  },
+  "morePosts": {
+    "title": "Más publicaciones",
+    "more": "Mostrar más",
+    "openPost": "Abrir publicación",
+    "note": "Encontrado a través de DuckDuckGo. Es posible que falten algunas publicaciones.",
+    "error": "No se pudieron cargar más publicaciones.",
+    "empty": "No se encontraron más publicaciones.",
+    "continue": "Continuar con la búsqueda",
+    "continueHint": "Encuentra más publicaciones a través de DuckDuckGo, que ve el nombre del perfil.",
+    "searching": "Buscando… Es posible que se te pida superar una comprobación de DuckDuckGo.",
+    "unavailable": "Esta publicación no está disponible.",
+    "retry": "Intentar otra vez"
   }
 }
