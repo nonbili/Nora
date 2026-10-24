@@ -41,9 +41,10 @@ import { useTwColor } from '@/lib/theme'
 
 const repo = 'https://github.com/nonbili/Nora'
 const donateLinks = [
-  { label: 'GitHub Sponsors', detail: 'github.com/sponsors/rnons', url: 'https://github.com/sponsors/rnons' },
+  { label: 'GitHub Sponsors', detail: 'github.com/sponsors/nonbili', url: 'https://github.com/sponsors/nonbili' },
   { label: 'Liberapay', detail: 'liberapay.com/rnons', url: 'https://liberapay.com/rnons' },
-  { label: 'PayPal', detail: 'paypal.me/rnons', url: 'https://paypal.me/rnons' },
+  { label: 'PayPal', detail: 'paypal.me/nonbili', url: 'https://paypal.me/nonbili' },
+  { label: 'Stripe', detail: 'donate.stripe.com', url: 'https://donate.stripe.com/7sY5kD2XR6WC0oTchX48001' },
 ]
 
 const settingsSymbols = {
