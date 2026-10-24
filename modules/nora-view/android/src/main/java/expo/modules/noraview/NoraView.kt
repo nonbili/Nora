@@ -724,7 +724,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       }
       var dy = distanceY
       if (e1 != null) {
-        dy = e2.y - e1.y
+        // Screen coordinates: showing or hiding the toolbar moves the webview, which shifts
+        // view-relative y by the toolbar height mid-drag and flips the toolbar back.
+        dy = e2.rawY - e1.rawY
       }
       emit("scroll", mapOf("dy" to dy, "y" to webView.scrollY))
       return true

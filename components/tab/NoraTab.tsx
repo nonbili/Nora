@@ -65,7 +65,6 @@ import { closeFindInPage, onFindPageChanged, setFindResult } from '@/lib/find-in
 
 const LOAD_URL_MAX_RETRIES = 5
 const LOAD_URL_RETRY_DELAY = 100
-const HEADER_SCROLL_SETTLE_MS = 180
 const HEADER_SCROLL_COOLDOWN_MS = 250
 
 const getRedirectTo = (str: string) => {
@@ -288,8 +287,6 @@ const WebTab: React.FC<NoraTabProps> = ({
   const nativeMenuItemsRef = useRef<Item[]>([])
   const attachedWebviewsRef = useRef<WeakSet<WebviewTag>>(new WeakSet())
   const webviewListenersRef = useRef<AbortController | null>(null)
-  const scrollHeaderTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const scrollHeaderPending = useRef<{ dy: number; y?: number }>({ dy: 0 })
   const scrollHeaderBlockedUntil = useRef(0)
   const pageUrlRef = useRef('')
   const loadingWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -314,58 +311,19 @@ const WebTab: React.FC<NoraTabProps> = ({
     isActiveRef.current = isActive
   }, [isActive])
 
-  const handleScroll = useCallback(
-    (data: { dy?: number; y?: number }) => {
-      if (!isActiveRef.current || (!autoHideHeader && !hideToolbarWhenScrolled)) {
-        return
-      }
-      if (Date.now() < scrollHeaderBlockedUntil.current) {
-        return
-      }
-
-      const pending = scrollHeaderPending.current
-      if (typeof data.dy === 'number') {
-        pending.dy += data.dy
-      }
-      if (typeof data.y === 'number') {
-        pending.y = data.y
-      }
-
-      if (scrollHeaderTimer.current) {
-        clearTimeout(scrollHeaderTimer.current)
-      }
-      scrollHeaderTimer.current = setTimeout(() => {
-        scrollHeaderTimer.current = null
-        if (!isActiveRef.current) {
-          pending.dy = 0
-          pending.y = undefined
-          return
-        }
-        const shown = ui$.headerShown.get()
-        applyScrollHeader({
-          dy: pending.dy,
-          y: pending.y,
-          autoHideHeader,
-          hideToolbarWhenScrolled,
-        })
-        pending.dy = 0
-        pending.y = undefined
-        if (ui$.headerShown.get() !== shown) {
-          scrollHeaderBlockedUntil.current = Date.now() + HEADER_SCROLL_COOLDOWN_MS
-        }
-      }, HEADER_SCROLL_SETTLE_MS)
-    },
-    [autoHideHeader, hideToolbarWhenScrolled],
-  )
-
-  useEffect(
-    () => () => {
-      if (scrollHeaderTimer.current) {
-        clearTimeout(scrollHeaderTimer.current)
-      }
-    },
-    [],
-  )
+  // Showing or hiding the toolbar resizes the webview, and some sites (X) answer the resize
+  // with scroll events of their own. Those are ignored for a moment so they can't flip the
+  // toolbar straight back.
+  const handleScroll = (data: { dy?: number; y?: number }) => {
+    if (!isActiveRef.current || Date.now() < scrollHeaderBlockedUntil.current) {
+      return
+    }
+    const shown = ui$.headerShown.get()
+    applyScrollHeader({ dy: data.dy, y: data.y, autoHideHeader, hideToolbarWhenScrolled })
+    if (ui$.headerShown.get() !== shown) {
+      scrollHeaderBlockedUntil.current = Date.now() + HEADER_SCROLL_COOLDOWN_MS
+    }
+  }
 
   const refreshCanGoBack = useCallback(async (target?: any) => {
     const webview = target || webviewRef.current || nativeRef.current
