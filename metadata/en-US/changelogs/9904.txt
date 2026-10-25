@@ -1,0 +1,6 @@
+- Apply feed video settings and add timeline and gallery zoom gestures
+- Open feed notifications in Nora timelines
+- Fix Android feed background checks
+- Fix full-screen gallery layout and add option to open failed videos on original site
+- Fix WebView scroll jumping when hiding or showing the toolbar
+- Translation updates
