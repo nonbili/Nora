@@ -552,6 +552,17 @@ export const NouHeader: React.FC<{}> = ({}) => {
                         ]),
                     ...(!desktopLayout ? blocklistMenuItems : []),
                     ...(!desktopLayout ? anonymousMenuItems : []),
+                    // Desktop has this in the tab context menu.
+                    ...(desktopLayout || isFeedTab || !currentTab?.url
+                      ? []
+                      : [
+                          {
+                            label: t('menus.reopenInProfile'),
+                            icon: <MaterialIcons name="switch-account" size={18} color={headerControlColor} />,
+                            systemImage: 'person.crop.circle',
+                            handler: () => ui$.profileTabId.set(currentTab.id),
+                          },
+                        ]),
                     ...watchMenuItems,
                     ...(isFeedTab
                       ? []
