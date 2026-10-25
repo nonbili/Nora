@@ -678,9 +678,17 @@ const syncBackgroundTaskNow = async () => {
   if (!isAvailable || !BackgroundTask || !TaskManager) return
   const interval = wantedTaskInterval()
   if (interval === registeredInterval) return
+  const firstSync = registeredInterval === undefined
   registeredInterval = interval
   try {
-    if (await TaskManager.isTaskRegisteredAsync(WATCH_TASK)) {
+    const registered = await TaskManager.isTaskRegisteredAsync(WATCH_TASK)
+    // Registering again puts the next run a whole interval away, and stops the one going on: a
+    // run the system started in the background loads the app, and with it this, anew.
+    if (firstSync && registered && interval !== null) {
+      const options = await TaskManager.getTaskOptionsAsync<{ minimumInterval?: number }>(WATCH_TASK)
+      if (options?.minimumInterval === interval) return
+    }
+    if (registered) {
       await BackgroundTask.unregisterTaskAsync(WATCH_TASK)
     }
     if (interval !== null) {

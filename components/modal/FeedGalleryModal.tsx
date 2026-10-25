@@ -1,4 +1,4 @@
-import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, View, useWindowDimensions } from 'react-native'
+import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useValue } from '@legendapp/state/react'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -34,7 +34,8 @@ const GalleryItem: React.FC<{
   width: number
   height: number
   onZoomChange: (zoomed: boolean) => void
-}> = ({ post, index, item, active, width, height, onZoomChange }) => {
+  onOpenOriginal: () => void
+}> = ({ post, index, item, active, width, height, onZoomChange, onOpenOriginal }) => {
   const key = mediaKey(post.key, index)
   const kept = useValue(watchMedia$.files[key])
   const [failed, setFailed] = useState(false)
@@ -84,6 +85,21 @@ const GalleryItem: React.FC<{
     )
   }
   const source = item.type === 'video' ? item.thumb || item.url : keptUri || item.url
+  if (item.type === 'video' && failed && !keptUri) {
+    // A video the site won't give, as a reel whose account turned off embedding: its cover, and
+    // the way to watch it there. Not zoomable, as the zoom's gestures would take the button's tap.
+    return (
+      <View style={{ width, height }} className="items-center justify-center">
+        <Image source={source} style={{ width, height }} contentFit="contain" />
+        <View className="absolute items-center rounded-2xl bg-black/60 px-5 py-4">
+          <NouText className="mb-3 text-center text-zinc-300">{t('feed.mediaFailed')}</NouText>
+          <Pressable onPress={onOpenOriginal} className="rounded-full bg-white/15 px-4 py-2">
+            <NouText className="text-white">{t('feed.openOn', { site: watchSiteLabels[post.site] })}</NouText>
+          </Pressable>
+        </View>
+      </View>
+    )
+  }
   return (
     <ZoomableMedia enabled={active} onZoomChange={active ? onZoomChange : undefined} style={{ width, height }}>
       <View style={{ width, height }} className="items-center justify-center">
@@ -92,8 +108,7 @@ const GalleryItem: React.FC<{
           <View className="absolute h-16 w-16 items-center justify-center rounded-full bg-black/50">
             {waiting && active ? <ActivityIndicator color="#fff" /> : <MaterialIcons name="play-arrow" size={40} color="#fff" />}
           </View>
-        ) : null}
-        {failed && !keptUri ? (
+        ) : failed && !keptUri ? (
           <NouText className="absolute bottom-6 text-sm text-zinc-300">{t('feed.mediaFailed')}</NouText>
         ) : null}
       </View>
@@ -254,8 +269,9 @@ export const FeedGalleryModal = () => {
   }
 
   return (
+    // Its own style, not a class name, which this view doesn't take: it would fill only half the screen.
     <GestureHandlerRootView
-      className="absolute inset-0 z-20 bg-black"
+      style={[StyleSheet.absoluteFill, { zIndex: 20, backgroundColor: '#000' }]}
       onLayout={(e) => {
         const { width: w, height: h } = e.nativeEvent.layout
         if (w && h && (w !== size?.width || h !== size?.height)) setSize({ width: w, height: h })
@@ -277,6 +293,7 @@ export const FeedGalleryModal = () => {
             <GalleryItem
               key={`${current.post.key}:${current.index}:${i === pageIndex}`}
               onZoomChange={setZoomed}
+              onOpenOriginal={openOriginal}
               post={current.post}
               index={current.index}
               item={current.item}

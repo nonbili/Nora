@@ -4,7 +4,7 @@
   ],
   "name": "nora",
   "private": true,
-  "main": "expo-router/entry",
+  "main": "index.ts",
   "version": "0.9.0",
   "versionCode": 98,
   "buildNumber": "39",
