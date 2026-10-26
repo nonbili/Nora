@@ -11,6 +11,13 @@ func isMessengerUrl(_ url: URL) -> Bool {
     (path == "/messages" || path.hasPrefix("/messages/"))
 }
 
+// Share links (vm.tiktok.com, vt.tiktok.com) redirect to www.tiktok.com keeping the agent they
+// were loaded with, so they need the desktop one too.
+func isTikTokUrl(_ url: URL) -> Bool {
+  guard url.scheme == "https", let host = url.host else { return false }
+  return host == "tiktok.com" || host.hasSuffix(".tiktok.com")
+}
+
 class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIGestureRecognizerDelegate, WKDownloadDelegate {
   let onLoad = EventDispatcher()
   let onMessage = EventDispatcher()
@@ -465,9 +472,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       // Settle the rule list before the load starts; a change made once a
       // navigation is under way only takes effect on the next one.
       setBlocklistHost(u.host)
-      let urlString = u.absoluteString
-      if isMessengerUrl(u) ||
-        urlString.hasPrefix("https://www.tiktok.com") {
+      if isMessengerUrl(u) || isTikTokUrl(u) {
           webView.customUserAgent = uaMac
       } else {
           webView.customUserAgent = userAgent

@@ -542,10 +542,68 @@ function runBlueskyScript() {
   observer.observe(document.body, { childList: true, subtree: true })
 }
 
+// TikTok's web player has no fullscreen button, and a page can only enter fullscreen from a tap
+// on it, so each video card gets one.
+function runTikTokFullscreenScript() {
+  const BTN_CLASS = '_nora_tiktok_fullscreen'
+  const CARD_SELECTOR = '[data-e2e="feed-video"]'
+
+  // iPhone has no element fullscreen, and WKWebView leaves it off on iPad, but the video's own works.
+  const enterVideoFullscreen = (video: HTMLVideoElement) =>
+    (video as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen?.()
+
+  const enterFullscreen = (video: HTMLVideoElement) => {
+    if (!video.requestFullscreen || !document.fullscreenEnabled) {
+      enterVideoFullscreen(video)
+      return
+    }
+    video.requestFullscreen().catch((e) => {
+      console.warn('[nora] tiktok fullscreen failed', e)
+      enterVideoFullscreen(video)
+    })
+  }
+
+  const ensureButtons = () => {
+    for (const card of document.querySelectorAll<HTMLElement>(CARD_SELECTOR)) {
+      if (card.querySelector(`.${BTN_CLASS}`)) continue
+      const btn = document.createElement('button')
+      btn.className = BTN_CLASS
+      btn.type = 'button'
+      btn.setAttribute('aria-label', 'Fullscreen')
+      btn.style.cssText =
+        'position:absolute;top:16px;left:56px;width:32px;height:32px;padding:0;border:none;border-radius:9999px;background:rgba(0, 0, 0, 0.35);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;'
+      btn.innerHTML = /* HTML */ `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+        </svg>
+      `
+      // Kept from the card, which would pause the video or open it.
+      for (const type of ['pointerdown', 'mousedown', 'touchstart']) {
+        btn.addEventListener(type, (e) => e.stopPropagation())
+      }
+      btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const video = card.querySelector('video')
+        if (video) enterFullscreen(video)
+      })
+      card.appendChild(btn)
+    }
+  }
+
+  ensureButtons()
+  if (!document.body) return
+  const observer = new MutationObserver(() => ensureButtons())
+  observer.observe(document.body, { childList: true, subtree: true })
+}
+
 export function injectScript() {
   runVideoLongPressScript()
 
   const { host } = document.location
+  if (host === 'tiktok.com' || host.endsWith('.tiktok.com')) {
+    runTikTokFullscreenScript()
+  }
   if (host === 'm.facebook.com' || host === 'www.facebook.com') {
     runFacebookFeedController()
   }

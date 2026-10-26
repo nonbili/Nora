@@ -154,6 +154,14 @@ fun isMessengerUrl(url: String): Boolean {
     (path == "/messages" || path.startsWith("/messages/"))
 }
 
+// Share links (vm.tiktok.com, vt.tiktok.com) redirect to www.tiktok.com keeping the agent they
+// were loaded with, so they need the desktop one too.
+fun isTikTokUrl(url: String): Boolean {
+  val uri = Uri.parse(url)
+  val host = uri.host ?: return false
+  return uri.scheme == "https" && (host == "tiktok.com" || host.endsWith(".tiktok.com"))
+}
+
 fun desktopMessengerUrl(url: String): String {
   return url.replaceFirst("https://m.facebook.com", "https://www.facebook.com")
 }
@@ -1283,9 +1291,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
     pageUrl = url
     var ua = userAgent
-    if (isMessengerUrl(url) ||
-      url.startsWith("https://www.tiktok.com")
-    ) {
+    if (isMessengerUrl(url) || isTikTokUrl(url)) {
       ua = uaLinux
     } else if (ua == null) {
       ua = uaAndroid
