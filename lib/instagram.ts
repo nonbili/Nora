@@ -23,3 +23,19 @@ export function getProfileUsername(hostname: string, pathname: string) {
   const match = pathname.match(PROFILE_PATH)
   return match && !reservedPaths.has(match[1].toLowerCase()) ? match[1] : null
 }
+
+const POST_PAGE = new RegExp(`^/(?:${INSTAGRAM_USERNAME_PATTERN}/)?(${INSTAGRAM_POST_KINDS.join('|')})/([A-Za-z0-9_-]{5,})/?$`)
+
+/**
+ * Where a post's own page should be shown instead: its embed page. A visitor without an
+ * account gets the post behind a sign-up dialog; the embed page has the player and needs
+ * nothing. Null for any other page, and for the embed page itself.
+ */
+export function getEmbedUrlForPage(hostname: string, pathname: string) {
+  if (!isInstagramHost(hostname)) {
+    return null
+  }
+  const match = pathname.match(POST_PAGE)
+  // A reel is also linked to under /reels/, which has no embed page of its own.
+  return match ? `https://www.instagram.com/${match[1] === 'reels' ? 'reel' : match[1]}/${match[2]}/embed/` : null
+}

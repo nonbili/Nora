@@ -1,6 +1,7 @@
 import { emit, waitUntil } from './utils'
 import { getFacebookDownloadInfo, getTikTokDownloadUrl } from './download'
 import { getService } from './services/manager'
+import { getEmbedUrlForPage } from '../lib/instagram'
 import {
   createDefaultUserStylesSnapshot,
   type CustomUserScript,
@@ -103,7 +104,8 @@ async function getVideoUrl() {
     const video = document.querySelector('video')
     return video?.currentSrc || video?.src
   })
-  const fileName = slugs.filter(Boolean).at(-1) + '.mp4'
+  // An embed page is named after its post.
+  const fileName = slugs.filter((slug) => slug && slug !== 'embed').at(-1) + '.mp4'
   // if (src?.startsWith('https://')) {
   //   emit('download', { url: src, fileName })
   // } else if (!src || src.startsWith('blob:https://')) {
@@ -171,6 +173,13 @@ async function getVideoUrl() {
       }
       if (src?.startsWith('blob:')) {
         await downloadBlob(src, fileName, 'video/mp4')
+        return
+      }
+      // A visitor without an account gets the post behind a "Continue on web" prompt with no
+      // video; its embed page has the player with a plain mp4.
+      const embedUrl = getEmbedUrlForPage(hostname, pathname)
+      if (embedUrl) {
+        emit('redirect', { url: embedUrl })
         return
       }
       break

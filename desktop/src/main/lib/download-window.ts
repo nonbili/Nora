@@ -109,6 +109,12 @@ export async function openDownloadWindow(url: string) {
           uiClient.showToast('Download failed')
         })
         break
+      case 'redirect':
+        void win?.loadURL(data.url).then(() => {
+          win?.webContents.executeJavaScript(contentJs)
+          win?.webContents.executeJavaScript('window.Nora.getVideoUrl()')
+        })
+        break
     }
   }
 

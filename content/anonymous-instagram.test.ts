@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { getEmbedUrlForPage } from '../lib/instagram'
 import {
-  getEmbedUrlForPage,
   getGridUsername,
   getLinkedPostEmbedUrl,
   getProfileTabPath,

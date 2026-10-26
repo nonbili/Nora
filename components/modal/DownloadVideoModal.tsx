@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { clsx, isIos } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { ui$ } from '@/states/ui'
+import { tabs$ } from '@/states/tabs'
 import { NouButton } from '../button/NouButton'
 import { NoraView } from '@/modules/nora-view'
 import { webRtcGuardScript$ } from '@/lib/webrtc'
@@ -36,6 +37,8 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   const protectWebRtcIp = useValue(settings$.protectWebRtcIp)
   const webRtcGuardScript = useValue(webRtcGuardScript$)
   const youTubeGuardScript = useValue(youTubeGuardScript$)
+  // Parsed with the cookies of the tab it is opened from, as a page may need its login.
+  const profile = useValue(tabs$.currentTab)?.profile || 'default'
   const onClose = () => ui$.downloadVideoModalUrl.set('')
   const [title, setTitle] = useState('')
   const [downloadOptions, setDownloadOptions] = useState<DownloadOption[]>([])
@@ -175,6 +178,12 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         setDownloadOptions(data.options || [])
         setTitle('Choose download quality')
         break
+      case 'redirect':
+        // The page had no video, parsing starts over on the page it points to.
+        parsingStartedRef.current = false
+        setTitle('Loading...')
+        nativeRef.current?.loadUrl(data.url)
+        break
       case 'video-not-found':
         setTitle('Failed to find video url')
         break
@@ -199,6 +208,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
                 onLoad={onLoad}
                 onMessage={onMessage}
                 inspectable={inspectable}
+                profile={profile}
               />
               <View className="mt-3 flex-row justify-end">
                 <NouButton variant="outline" size="1" onPress={() => parseVideoUrl(true)}>

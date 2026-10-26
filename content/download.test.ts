@@ -32,6 +32,9 @@ describe('normalizeDownloadUrl', () => {
       'https://m.facebook.com/RTLplay/videos/la-france-a-un-incroyable-talent-nouveau-sur-plug-rtl-rtlplay/404248063485974/',
       'https://m.facebook.com/reel/404248063485974/',
     ],
+    ['https://www.instagram.com/reels/De2bNIWSZdB/', 'https://www.instagram.com/reel/De2bNIWSZdB/'],
+    ['https://www.instagram.com/reels/', 'https://www.instagram.com/reels/'],
+    ['https://www.instagram.com/reel/De2bNIWSZdB/', 'https://www.instagram.com/reel/De2bNIWSZdB/'],
   ] as const) {
     it(`${url} => ${expected}`, () => {
       expect(normalizeDownloadUrl(url)).toBe(expected)

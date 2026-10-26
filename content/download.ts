@@ -226,6 +226,10 @@ export function normalizeDownloadUrl(url: string) {
       parsed.search = ''
       parsed.hash = ''
     }
+    // A visitor without an account is sent to the login page from /reels/<id>/, but not from /reel/<id>/.
+    if (parsed.hostname === 'www.instagram.com' && slugs[1] === 'reels' && slugs[2]) {
+      parsed.pathname = `/reel/${slugs[2]}/`
+    }
     return parsed.href
   } catch (e) {
     return url
