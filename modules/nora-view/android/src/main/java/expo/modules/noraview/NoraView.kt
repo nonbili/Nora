@@ -1472,11 +1472,19 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       try {
         val bytes = Base64.getDecoder().decode(content)
         var mimeType = _mimeType
+        var detected = true
         if (mimeType == null || mimeType == "application/octet-stream") {
-          val tika = Tika()
-          mimeType = tika.detect(bytes)
+          mimeType = try {
+            Tika().detect(bytes)
+          } catch (e: Throwable) {
+            // Tika's XML detection needs javax.xml.stream, which Android lacks.
+            e.printStackTrace()
+            detected = false
+            val ext = _fileName.substringAfterLast('.', "").lowercase()
+            systemMimeTypes.mimeTypeFor(ext) ?: "application/octet-stream"
+          }
         }
-        val fileName = normalizeFileName(_fileName, mimeType, detected = true)
+        val fileName = normalizeFileName(_fileName, mimeType, detected)
         val contentValues = ContentValues().apply {
           put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
           put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
