@@ -75,25 +75,31 @@ function trackObjectUrls() {
   }
 }
 
-async function resolveBlob(url: string) {
+async function resolveBlob(url: string, init?: RequestInit) {
   const tracked = trackedBlobs.get(url)
   if (tracked) {
     return tracked
   }
-  const res = await fetch(url)
+  const res = await fetch(url, init)
+  // A refused request brings an error page, which must not be saved as the file.
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`)
+  }
   return res.blob()
 }
 
-async function downloadBlob(url: string, fileName?: string, mimeType?: string) {
+async function downloadBlob(url: string, fileName?: string, mimeType?: string, init?: RequestInit) {
   try {
-    const blob = await resolveBlob(url)
+    const blob = await resolveBlob(url, init)
     const content = await blobToBase64(blob)
     if (!fileName) {
       fileName = url.split('/').at(-1)
     }
     emit('save-file', { content, fileName, mimeType: mimeType || blob.type || undefined })
+    return true
   } catch (e) {
     console.error('[nora] failed to save blob', url, e)
+    return false
   }
 }
 
@@ -200,8 +206,8 @@ async function getVideoUrl() {
         ...[...document.querySelectorAll('script[type="application/json"]')].map((script) => script.textContent || ''),
       ].filter(Boolean)
       const tiktokUrl = getTikTokDownloadUrl(scriptSources)
-      if (tiktokUrl) {
-        await downloadBlob(tiktokUrl, fileName, 'video/mp4')
+      // TikTok's video server refuses a request without the page's tt_chain_token cookie.
+      if (tiktokUrl && (await downloadBlob(tiktokUrl, fileName, 'video/mp4', { credentials: 'include' }))) {
         return
       }
       break
