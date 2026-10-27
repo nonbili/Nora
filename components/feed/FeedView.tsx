@@ -29,15 +29,8 @@ import {
 import { NouMenu, type NouMenuHandle } from '../menu/NouMenu'
 import { siteIcon } from '../service/Services'
 import { WatchSites } from './WatchSites'
-import {
-  WATCH_ERROR_NEEDS_LOGIN,
-  WATCH_ERROR_NEEDS_VERIFICATION,
-  WATCH_ERROR_RATE_LIMITED,
-  enableWatchNotifications,
-  imginnBlocked$,
-  refreshWatched,
-  verifyImginn,
-} from '@/lib/watch-feed'
+import { enableWatchNotifications, refreshWatched, verifyImginn } from '@/lib/watch-feed'
+import { WATCH_ERROR_NEEDS_LOGIN, WATCH_ERROR_NEEDS_VERIFICATION, WATCH_ERROR_RATE_LIMITED, imginnBlocked$ } from '@/lib/watch/fetch'
 import { getFeedPosts, getNewestPostTimes, getProfilesWithPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
 import { androidHitSlop, clsx, iosTouchTarget, isIos, isWeb } from '@/lib/utils'

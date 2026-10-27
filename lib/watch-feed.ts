@@ -1,73 +1,37 @@
 import { AppState, Platform } from 'react-native'
-import { observable } from '@legendapp/state'
 import { t } from 'i18next'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { ui$ } from '@/states/ui'
 import { getTimeline, isMediaOnly, profileNotifies, timelineIntervals, watch$, type WatchedProfile } from '@/states/watch'
 import {
-  INSTAGRAM_APP_ID,
-  instagramProfileInfoUrl,
-  isFacebookErrorPage,
   mergeWatchPosts,
-  INSTAGRAM_PAGE_HEADERS,
   backgroundIntervalMinutes,
-  blueskyFeedUrl,
-  blueskyVideoDids,
-  didDocumentUrl,
-  parseDidDocumentPds,
   dueWatchProfiles,
-  imginnProfileUrl,
-  parseFacebookPage,
-  reachesBackTo,
-  mastodonLookupUrl,
-  mastodonStatusesUrl,
-  parseBlueskyFeed,
-  parseImginnProfilePage,
-  parseInstagramProfileInfo,
-  parseInstagramProfilePage,
-  mastodonWebFingerUrl,
-  parseMastodonStatuses,
-  parseMastodonWebFinger,
-  parseRedditCommunityCard,
-  parseRedditListing,
-  parseRedditPosts,
-  parseThreadsProfilePage,
-  parseTikTokChainToken,
-  parseTikTokItemLists,
-  parseXTimeline,
-  TIKTOK_REFERER,
-  redditCommunityCardUrl,
-  redditListingUrl,
-  redditPostsUrl,
-  splitMastodonHandle,
   watchKey,
-  watchProfileUrl,
   watchSiteLabels,
   watchSourceLabel,
-  xTimelineUrl,
-  type WatchFetchResult,
   type WatchPost,
   type WatchSite,
   type WatchTarget,
 } from '@/lib/watch'
+import { WATCH_WEBVIEW_CANCELLED, isWatchWebViewAvailable } from '@/lib/watch-webview'
 import {
-  FACEBOOK_POSTS_MARKER,
-  IMGINN_PAGE_SELECTOR,
-  THREADS_POSTS_MARKER,
-  TIKTOK_POSTS_MARKER,
-  WATCH_WEBVIEW_PROFILE,
-  WATCH_WEBVIEW_CANCELLED,
-  WATCH_WEBVIEW_CHALLENGE,
-  WATCH_WEBVIEW_RATE_LIMITED,
-  isWatchWebViewAvailable,
-  loadInWatchWebView,
-} from '@/lib/watch-webview'
+  REQUEST_GAP_MS,
+  RETRY_AFTER_MS,
+  WATCH_ERROR_NEEDS_VERIFICATION,
+  WatchFetchError,
+  canUseWebView,
+  fetchImginn,
+  fetchers,
+  imginnBlocked$,
+  resumeImginn,
+  sleep,
+  type WatchRunSource,
+} from '@/lib/watch/fetch'
 import { syncWatchMedia } from '@/lib/watch-media'
 import { showActionToast, showToast } from '@/lib/toast'
-import { watchFetch } from '@/lib/watch-fetch'
-import NoraViewModule from '@/modules/nora-view'
-import { accountChoice, findSignedInCookies, parseCookieHeader, siteCookieOrigin, type SiteAccount } from '@/lib/watch-account'
+import { accountChoice, findSignedInCookies, siteCookieOrigin, type SiteAccount } from '@/lib/watch-account'
 import { getProfilePosts, setProfilePosts } from '@/lib/watch-db'
 import { feedTabUrl, isFeedTabUrl } from '@/lib/feed-tab'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
@@ -93,490 +57,16 @@ try {
 
 export const WATCH_TASK = 'nora.watch.poll'
 const NOTIFICATION_CHANNEL_ID = 'watch'
-// After the site said to slow down, or that it wants an account.
-const RETRY_AFTER_MS = 60 * 60 * 1000
 // How often, while Nora is open, it looks for profiles whose interval is up; only those are asked for.
 const FOREGROUND_POLL_MS = 5 * 60 * 1000
 const DESKTOP_FIRST_RUN_DELAY_MS = 10 * 1000
-// Between two requests, so a long list does not arrive at a site as a burst.
-const REQUEST_GAP_MS = 1500
 // How long one run may take. The system stops a background task that runs too long, so a long
 // list is gone through over several runs, the profiles checked longest ago first.
-const RUN_BUDGET_MS = {
+const RUN_BUDGET_MS: Record<WatchRunSource, number> = {
   foreground: 3 * 60 * 1000,
   manual: 3 * 60 * 1000,
   background: Platform.OS === 'ios' ? 25 * 1000 : 5 * 60 * 1000,
 }
-
-export type WatchRunSource = keyof typeof RUN_BUDGET_MS
-
-export const WATCH_ERROR_NEEDS_LOGIN = 'needsLogin'
-export const WATCH_ERROR_RATE_LIMITED = 'rateLimited'
-// Imginn's page was still at Cloudflare's check for a browser, for the user to pass.
-export const WATCH_ERROR_NEEDS_VERIFICATION = 'needsVerification'
-
-const DESKTOP_USER_AGENT =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
-
-class WatchFetchError extends Error {
-  constructor(
-    message: string,
-    readonly retry = false,
-  ) {
-    super(message)
-  }
-}
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const checkStatus = (res: Response, signedIn: boolean) => {
-  if (res.status === 429) {
-    throw new WatchFetchError(WATCH_ERROR_RATE_LIMITED, true)
-  }
-  if ((res.status === 401 || res.status === 403) && !signedIn) {
-    throw new WatchFetchError(WATCH_ERROR_NEEDS_LOGIN, true)
-  }
-  if (!res.ok) {
-    throw new WatchFetchError(`HTTP ${res.status}`)
-  }
-}
-
-// Each request is cancelled at the run's deadline, and in any case after this long: a stalled one
-// would hold up the run, and every refresh after it, for as long as it hangs.
-const REQUEST_TIMEOUT_MS = 30 * 1000
-
-const timeLeft = (deadline: number) => Math.max(0, Math.min(deadline - Date.now(), REQUEST_TIMEOUT_MS))
-
-/** Runs a request, reading its answer included, with a signal that cancels it when its time is up. */
-const withDeadline = async <T>(deadline: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> => {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeLeft(deadline))
-  try {
-    return await run(controller.signal)
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-const fetchX = (handle: string, cookie: string, _source: WatchRunSource, deadline: number): Promise<WatchFetchResult> =>
-  withDeadline(deadline, async (signal) => {
-    const res = await watchFetch(xTimelineUrl(handle), {
-      signal,
-      headers: {
-        'user-agent': DESKTOP_USER_AGENT,
-        accept: 'text/html',
-        'accept-language': 'en-US,en;q=0.9',
-        ...(cookie ? { cookie } : {}),
-      },
-      // Only the cookies of the profile chosen above, never those the app's own requests keep.
-      credentials: 'omit',
-    })
-    checkStatus(res, Boolean(cookie))
-    return parseXTimeline(await res.text(), handle)
-  })
-
-const fetchInstagramApi = (handle: string, cookie: string, deadline: number): Promise<WatchFetchResult> =>
-  withDeadline(deadline, async (signal) => {
-    const csrf = parseCookieHeader(cookie).csrftoken
-    const res = await watchFetch(instagramProfileInfoUrl(handle), {
-      signal,
-      headers: {
-        'user-agent': DESKTOP_USER_AGENT,
-        accept: '*/*',
-        'accept-language': 'en-US,en;q=0.9',
-        'x-ig-app-id': INSTAGRAM_APP_ID,
-        'x-requested-with': 'XMLHttpRequest',
-        referer: `https://www.instagram.com/${handle}/`,
-        cookie,
-        ...(csrf ? { 'x-csrftoken': csrf } : {}),
-      },
-      credentials: 'omit',
-    })
-    checkStatus(res, true)
-    let json: any
-    try {
-      json = await res.json()
-    } catch (e) {
-      if (signal.aborted) throw e
-      throw new WatchFetchError('not JSON')
-    }
-    return parseInstagramProfileInfo(json, handle)
-  })
-
-// The profile's own page, as a browser on a computer would ask for it, without cookies.
-const fetchInstagramPage = (handle: string, deadline: number): Promise<WatchFetchResult> =>
-  withDeadline(deadline, async (signal) => {
-    const res = await watchFetch(watchProfileUrl({ site: 'instagram', handle }), {
-      signal,
-      headers: { 'user-agent': DESKTOP_USER_AGENT, ...INSTAGRAM_PAGE_HEADERS },
-      credentials: 'omit',
-    })
-    checkStatus(res, false)
-    return parseInstagramProfilePage(await res.text(), handle)
-  })
-
-// The hidden webview needs the app's UI, so a background run goes without it.
-// The desktop's webview reads a page with its window minimized too.
-const canUseWebView = (source: WatchRunSource) =>
-  source !== 'background' && (Platform.OS === 'web' || AppState.currentState === 'active') && isWatchWebViewAvailable()
-
-const isRateLimited = (e: unknown) => e instanceof WatchFetchError && e.message === WATCH_ERROR_RATE_LIMITED
-
-const isNeedsVerification = (e: unknown) => e instanceof WatchFetchError && e.message === WATCH_ERROR_NEEDS_VERIFICATION
-
-/**
- * With an account, Instagram's own API for the profile. Without one, or when that fails, the
- * profile's page; and when a plain request for that is not answered with its posts, the page
- * as loaded by a real browser, in a webview out of sight.
- */
-const fetchFromInstagram = async (
-  handle: string,
-  cookie: string,
-  source: WatchRunSource,
-  deadline: number,
-): Promise<WatchFetchResult> => {
-  if (cookie) {
-    try {
-      return await fetchInstagramApi(handle, cookie, deadline)
-    } catch (e) {
-      // A limit on the API is not one on the page, which is asked for next.
-      console.warn('watch instagram api failed', handle, e)
-    }
-  }
-  try {
-    return await fetchInstagramPage(handle, deadline)
-  } catch (e) {
-    if (isRateLimited(e) || !canUseWebView(source) || !timeLeft(deadline)) throw e
-    console.warn('watch instagram page failed, trying the webview', handle, e)
-  }
-  const html = await loadInWatchWebView(watchProfileUrl({ site: 'instagram', handle }), timeLeft(deadline))
-  return parseInstagramProfilePage(html, handle)
-}
-
-/**
- * The profile's page on imginn, in the webview, as a plain request is stopped by Cloudflare's
- * check for a browser. The check often passes by itself there; when it does not, it is for the
- * user to pass, shown the page `visible`.
- */
-const fetchImginn = async (handle: string, timeoutMs: number, visible = false): Promise<WatchFetchResult> => {
-  try {
-    const html = await loadInWatchWebView(imginnProfileUrl(handle), timeoutMs, {
-      selector: IMGINN_PAGE_SELECTOR,
-      visible,
-      ownUserAgent: true,
-    })
-    return parseImginnProfilePage(html, handle)
-  } catch (e) {
-    if (e instanceof Error && e.message === WATCH_WEBVIEW_CHALLENGE) throw new WatchFetchError(WATCH_ERROR_NEEDS_VERIFICATION, true)
-    throw e
-  }
-}
-
-// The handle imginn's check last stopped, for the user to pass the check on; empty while none did.
-export const imginnBlocked$ = observable('')
-// Until when imginn is not asked after its check stopped it, as each page waits for the check a while.
-let imginnPausedUntil = 0
-
-watch$.imginnMode.onChange(({ value }) => {
-  if (value === 'off') imginnBlocked$.set('')
-})
-
-const canUseImginn = (source: WatchRunSource, deadline: number) =>
-  watch$.imginnMode.peek() !== 'off' && canUseWebView(source) && Date.now() >= imginnPausedUntil && Boolean(timeLeft(deadline))
-
-const readImginn = async (handle: string, deadline: number) => {
-  try {
-    const result = await fetchImginn(handle, timeLeft(deadline))
-    imginnBlocked$.set('')
-    return result
-  } catch (e) {
-    if (isNeedsVerification(e)) {
-      imginnBlocked$.set(handle)
-      imginnPausedUntil = Date.now() + RETRY_AFTER_MS
-    }
-    console.warn('watch imginn failed', handle, e)
-    throw e
-  }
-}
-
-/**
- * As the user chose: as Instagram shows the profile, and as imginn does when Instagram does not;
- * or as imginn does first, and as Instagram does when imginn can't, as in the background.
- */
-const fetchInstagram = async (
-  handle: string,
-  cookie: string,
-  source: WatchRunSource,
-  deadline: number,
-): Promise<WatchFetchResult> => {
-  const mode = watch$.imginnMode.peek()
-  if (mode === 'first' && canUseImginn(source, deadline)) {
-    try {
-      return await readImginn(handle, deadline)
-    } catch {}
-  }
-  try {
-    return await fetchFromInstagram(handle, cookie, source, deadline)
-  } catch (e) {
-    if (mode === 'fallback' && canUseImginn(source, deadline)) {
-      console.warn('watch instagram failed, trying imginn', handle, e)
-      try {
-        return await readImginn(handle, deadline)
-      } catch {}
-    }
-    // What Instagram said, unless what is left to do is to pass imginn's check.
-    throw mode !== 'off' && imginnBlocked$.peek() ? new WatchFetchError(WATCH_ERROR_NEEDS_VERIFICATION, true) : e
-  }
-}
-
-/** A page or an API's answer from a site that is read without an account, as text. */
-const fetchText = (url: string, headers: Record<string, string>, deadline: number): Promise<string> =>
-  withDeadline(deadline, async (signal) => {
-    const res = await watchFetch(url, { signal, headers: { 'user-agent': DESKTOP_USER_AGENT, ...headers }, credentials: 'omit' })
-    // An account would not help: a 401 or 403 is a failure like any other.
-    checkStatus(res, true)
-    return res.text()
-  })
-
-const fetchJson = async (url: string, deadline: number): Promise<any> => {
-  const text = await fetchText(url, { accept: 'application/json' }, deadline)
-  try {
-    return JSON.parse(text)
-  } catch {
-    throw new WatchFetchError('not JSON')
-  }
-}
-
-/** The profile's page, as for Instagram: by a plain request, or else as loaded by the hidden webview. */
-const fetchThreads = async (handle: string, _cookie: string, source: WatchRunSource, deadline: number): Promise<WatchFetchResult> => {
-  const url = watchProfileUrl({ site: 'threads', handle })
-  try {
-    return parseThreadsProfilePage(await fetchText(url, INSTAGRAM_PAGE_HEADERS, deadline), handle)
-  } catch (e) {
-    if (isRateLimited(e) || !canUseWebView(source) || !timeLeft(deadline)) throw e
-    console.warn('watch threads page failed, trying the webview', handle, e)
-  }
-  return parseThreadsProfilePage(await loadInWatchWebView(url, timeLeft(deadline), { marker: THREADS_POSTS_MARKER }), handle)
-}
-
-// The server each Bluesky account with a video is on, where its videos are kept.
-const blueskyServers = new Map<string, string>()
-
-const fetchBluesky = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number) => {
-  const json = await fetchJson(blueskyFeedUrl(handle), deadline)
-  for (const did of blueskyVideoDids(json)) {
-    const url = didDocumentUrl(did)
-    if (blueskyServers.has(did) || !url || !timeLeft(deadline)) continue
-    try {
-      const pds = parseDidDocumentPds(await fetchJson(url, deadline))
-      if (pds) blueskyServers.set(did, pds)
-    } catch (e) {
-      // Bluesky's own server is asked instead, which has the videos of the accounts it hosts.
-      if (isRateLimited(e)) break
-      console.warn('watch bluesky server lookup failed', did, e)
-    }
-  }
-  return parseBlueskyFeed(json, handle, (did) => blueskyServers.get(did))
-}
-
-// The server each handle was found on, when that is not its domain.
-const mastodonServers = new Map<string, string>()
-
-const lookUpMastodon = async (handle: string, server: string, deadline: number) => {
-  const account = await fetchJson(mastodonLookupUrl(handle, server), deadline)
-  if (!account?.id) throw new WatchFetchError(account?.error || 'no account')
-  return account
-}
-
-// Asked of the profile's own server; one that only answers with an account fails.
-const fetchMastodon = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number) => {
-  let server = mastodonServers.get(handle) || splitMastodonHandle(handle).host
-  let account: any
-  try {
-    account = await lookUpMastodon(handle, server, deadline)
-  } catch (e) {
-    if (isRateLimited(e) || mastodonServers.has(handle)) throw e
-    // The handle's domain may not be the server the account is on.
-    server = parseMastodonWebFinger(await fetchJson(mastodonWebFingerUrl(handle), deadline))
-    if (server === splitMastodonHandle(handle).host) throw e
-    account = await lookUpMastodon(handle, server, deadline)
-    mastodonServers.set(handle, server)
-  }
-  return parseMastodonStatuses(account, await fetchJson(mastodonStatusesUrl(server, account.id), deadline), handle, server)
-}
-
-const fetchRedditListing = (handle: string, cookie: string, deadline: number): Promise<WatchFetchResult> =>
-  withDeadline(deadline, async (signal) => {
-    const res = await watchFetch(redditListingUrl(handle), {
-      signal,
-      headers: { 'user-agent': DESKTOP_USER_AGENT, accept: 'application/json', cookie },
-      credentials: 'omit',
-    })
-    checkStatus(res, true)
-    let json: any
-    try {
-      json = await res.json()
-    } catch (e) {
-      if (signal.aborted) throw e
-      throw new WatchFetchError('not JSON')
-    }
-    return parseRedditListing(json, handle)
-  })
-
-const hasAvatar = (site: WatchSite, handle: string) =>
-  watch$.profiles.peek().some((profile) => profile.site === site && profile.handle === handle && profile.avatar)
-
-/**
- * With an account, Reddit's data for the subreddit or user; without one, or when that fails, the
- * posts as Reddit's own page loads them. A subreddit's picture is not among those, and is read
- * from its card, once.
- */
-const fetchReddit = async (handle: string, cookie: string, _source: WatchRunSource, deadline: number): Promise<WatchFetchResult> => {
-  if (cookie) {
-    try {
-      return await fetchRedditListing(handle, cookie, deadline)
-    } catch (e) {
-      console.warn('watch reddit listing failed', handle, e)
-    }
-  }
-  const result = parseRedditPosts(await fetchText(redditPostsUrl(handle), { accept: 'text/html' }, deadline), handle)
-  if (result.info.avatar || !handle.startsWith('r/') || hasAvatar('reddit', handle) || !timeLeft(deadline)) return result
-  try {
-    await sleep(REQUEST_GAP_MS)
-    return { ...result, info: { ...result.info, avatar: parseRedditCommunityCard(await fetchText(redditCommunityCardUrl(handle), { accept: 'text/html' }, deadline)) } }
-  } catch (e) {
-    console.warn('watch reddit community card failed', handle, e)
-    return result
-  }
-}
-
-// How many of the parts a Facebook page brings its posts in to wait for, scrolled in the webview
-// before the first check, when there is no post kept to read back to.
-const FACEBOOK_WEBVIEW_PARTS = 20
-
-// Until when the webview is not used for Facebook, after it was told to slow down there.
-let facebookWebViewPausedUntil = 0
-
-/**
- * The page, profile or group's own page, by a plain request: it comes with its newest post or
- * two. With an account, when those do not reach back to the newest post kept, or to where an
- * earlier check could not read back to, posts may have been missed, and the page is loaded in the
- * hidden webview with the cookies of the Nora profile the account is from, and scrolled back to
- * there, or for more before the first check, while Nora is open. What a check could not read back
- * to as it could not scroll is read back to by a later one; what one scroll does not reach back to
- * is given up, as every scroll starts from the newest post again. Without an account Facebook
- * shows no more than a few posts before it asks to log in, and soon stops answering the page at
- * all, so it is not scrolled. Most profiles and all groups show their posts only to an account.
- */
-const fetchFacebook = async (
-  handle: string,
-  cookie: string,
-  source: WatchRunSource,
-  deadline: number,
-  account: SiteAccount | null,
-): Promise<WatchFetchResult> => {
-  // A group shows the posts it thinks most relevant first, unless asked for the newest.
-  const url = watchProfileUrl({ site: 'facebook', handle }) + (handle.startsWith('groups/') ? '?sorting_setting=CHRONOLOGICAL' : '')
-  const key = watchKey({ site: 'facebook', handle })
-  const kept = getProfilePosts(key)
-  const newestKept = kept.reduce<number | undefined>((newest, post) => Math.max(newest ?? 0, post.createdAtMs), undefined)
-  const target = watch$.profiles.peek().find((profile) => profile.key === key)?.reachBackTo ?? newestKept
-  const reaches = (read: WatchFetchResult) => reachesBackTo(read.posts, target, read.pinnedIds)
-  // Scrolling the page in the webview, for more than the plain request brings.
-  const canScroll = () =>
-    Boolean(cookie && account) && canUseWebView(source) && Date.now() >= facebookWebViewPausedUntil && Boolean(timeLeft(deadline))
-  let result: WatchFetchResult | undefined
-  try {
-    const html = await withDeadline(deadline, async (signal) => {
-      const res = await watchFetch(url, {
-        signal,
-        headers: { 'user-agent': DESKTOP_USER_AGENT, ...INSTAGRAM_PAGE_HEADERS, ...(cookie ? { cookie } : {}) },
-        credentials: 'omit',
-      })
-      checkStatus(res, Boolean(cookie))
-      return res.text()
-    })
-    if (isFacebookErrorPage(html)) {
-      throw new WatchFetchError(cookie ? 'not found' : WATCH_ERROR_NEEDS_LOGIN, !cookie)
-    }
-    result = parseFacebookPage(html, handle)
-  } catch (e) {
-    if (isRateLimited(e) || !canScroll()) throw e
-    console.warn('watch facebook page failed, trying the webview', handle, e)
-  }
-  if (result && (reaches(result) || !canScroll())) {
-    // Nothing to read back to before the first check.
-    return { ...result, reachBackTo: target === undefined || reaches(result) ? null : target }
-  }
-  try {
-    // Scrolling takes longer than any one request is given: the webview keeps to its own limit.
-    const html = await loadInWatchWebView(url, Math.max(0, deadline - Date.now()), {
-      marker: FACEBOOK_POSTS_MARKER,
-      more: FACEBOOK_WEBVIEW_PARTS,
-      until: target === undefined ? undefined : Math.floor(target / 1000),
-      profile: account?.profileId,
-    })
-    const more = parseFacebookPage(html, handle)
-    // The webview sends only the data of the posts, not that of the page's header.
-    return {
-      info: { name: result?.info.name || more.info.name, avatar: result?.info.avatar || more.info.avatar },
-      posts: more.posts,
-      pinnedIds: more.pinnedIds,
-      reachBackTo: null,
-    }
-  } catch (e) {
-    if (e instanceof Error && e.message === WATCH_WEBVIEW_RATE_LIMITED) {
-      facebookWebViewPausedUntil = Date.now() + RETRY_AFTER_MS
-      if (!result) throw new WatchFetchError(WATCH_ERROR_RATE_LIMITED, true)
-    }
-    if (result) {
-      console.warn('watch facebook webview failed', handle, e)
-      return { ...result, reachBackTo: target ?? null }
-    }
-    throw e
-  }
-}
-
-/**
- * The profile's page, as loaded by the hidden webview, which asks TikTok for its posts as a
- * browser does: a plain request can't, as the page signs what it asks with. Its videos work only
- * with the cookie the webview has, which they are kept with.
- */
-const fetchTikTok = async (handle: string, _cookie: string, _source: WatchRunSource, deadline: number): Promise<WatchFetchResult> => {
-  const html = await loadInWatchWebView(watchProfileUrl({ site: 'tiktok', handle }), timeLeft(deadline), {
-    marker: TIKTOK_POSTS_MARKER,
-    // Its posts come after the page, in an answer the script waits for.
-    more: 1,
-  })
-  let chainToken: string | undefined
-  try {
-    chainToken = parseTikTokChainToken(await NoraViewModule.getCookies(TIKTOK_REFERER, WATCH_WEBVIEW_PROFILE))
-  } catch (e) {
-    console.warn('watch tiktok getCookies failed', e)
-  }
-  return parseTikTokItemLists(html, handle, chainToken)
-}
-
-const fetchers: Record<
-  WatchSite,
-  (
-    handle: string,
-    cookie: string,
-    source: WatchRunSource,
-    deadline: number,
-    account: SiteAccount | null,
-  ) => Promise<WatchFetchResult>
-> = {
-  x: fetchX,
-  instagram: fetchInstagram,
-  threads: fetchThreads,
-  bluesky: fetchBluesky,
-  mastodon: fetchMastodon,
-  reddit: fetchReddit,
-  facebook: fetchFacebook,
-  tiktok: fetchTikTok,
-}
-
 const isStillWatched = (key: string) => watch$.profiles.peek().some((profile) => profile.key === key)
 
 const checkProfile = async (
@@ -722,8 +212,7 @@ const verifyImginnNow = async () => {
     if (!(e instanceof Error && e.message === WATCH_WEBVIEW_CANCELLED)) showToast(t('feed.verifyFailed'))
     return
   }
-  imginnBlocked$.set('')
-  imginnPausedUntil = 0
+  resumeImginn()
   const waiting = waitingForVerification()
   if (waiting.length) {
     void refreshWatched(
