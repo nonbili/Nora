@@ -70,7 +70,9 @@ export interface WatchProfileInfo {
 
 export interface WatchFetchResult {
   info: WatchProfileInfo
-  posts: Omit<WatchPost, 'key' | 'firstSeenAt'>[]
+  // In the order the site shows them: newest first, but for pinned posts. `repostedAtUnknown` when
+  // a repost's time is the post it shares, as a site that knows no other tells it.
+  posts: (Omit<WatchPost, 'key' | 'firstSeenAt'> & { repostedAtUnknown?: boolean })[]
   // How far back the next check has to read to have missed nothing (see the profile's reachBackTo),
   // or null when nothing was missed; not told by sites whose every check reads far enough.
   reachBackTo?: number | null

@@ -48,7 +48,7 @@ describe('parseXTimeline', () => {
             full_text: 'RT @esa: hello',
             permalink: '/NASA/status/1',
             user: nasa,
-            retweeted_status: { full_text: 'hello', user: { screen_name: 'esa' } },
+            retweeted_status: { id_str: '0', full_text: 'hello', user: { screen_name: 'esa' } },
           },
         },
       },
@@ -63,7 +63,14 @@ describe('parseXTimeline', () => {
       image: 'https://pbs.twimg.com/m.jpg',
       createdAtMs: Date.parse('2026-10-16T19:42:20Z'),
     })
-    expect(posts[1]).toMatchObject({ id: '1', text: 'hello', repostOf: 'esa' })
+    // A repost by the post it shares, as Nitter tells it; but when it was reposted.
+    expect(posts[1]).toMatchObject({
+      id: '0',
+      url: 'https://x.com/esa/status/0',
+      text: 'hello',
+      repostOf: 'esa',
+      createdAtMs: Date.parse('2026-10-15T20:03:45Z'),
+    })
   })
 
   it('reads the post a post quotes, without the link to it at the end of the text', () => {

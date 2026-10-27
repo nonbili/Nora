@@ -49,6 +49,8 @@ export interface WatchedProfile {
 
 export type ImginnMode = 'off' | 'fallback' | 'first'
 
+export type NitterMode = 'off' | 'fallback' | 'first'
+
 interface Store {
   profiles: WatchedProfile[]
   // When a tab showed the whole feed, before each profile had a time of its own.
@@ -76,6 +78,11 @@ interface Store {
   // Whether Instagram profiles are read from imginn, while Nora is open: when Instagram does not
   // show them, or first, and from Instagram when imginn does not.
   imginnMode: ImginnMode
+  // Whether X profiles are read from the RSS of the Nitter instances below, tried in turn: when X
+  // does not show them, or first, and from X when none does.
+  nitterMode: NitterMode
+  // Each an address as https://nitter.example.com.
+  nitterInstances: string[]
   // Whether the whole feed shows only the posts with photos or videos, as a timeline can.
   feedMediaOnly: boolean
   // Whether the sources of each timeline notify of new posts, unless one chooses otherwise; as the whole
@@ -128,6 +135,8 @@ export const watch$: Observable<Store> = observable<Store>({
   useAccounts: true,
   accountProfiles: {},
   imginnMode: 'off',
+  nitterMode: 'off',
+  nitterInstances: [],
   feedMediaOnly: false,
   timelineNotify: {},
   feedNotify: false,

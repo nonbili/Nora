@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, View, useColorScheme } from 'react-native'
+import { Pressable, ScrollView, TextInput, View, useColorScheme } from 'react-native'
+import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { useValue } from '@legendapp/state/react'
 import { BottomSheet, RNHostView } from '@expo/ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -11,7 +12,7 @@ import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { ChoicePicker, formatInterval, getLoggedOutSites } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
-import { watch$, type ImginnMode } from '@/states/watch'
+import { watch$, type ImginnMode, type NitterMode } from '@/states/watch'
 import { settings$ } from '@/states/settings'
 import { enableTimelineNotifications } from '@/lib/watch-feed'
 import { showToast } from '@/lib/toast'
@@ -20,13 +21,14 @@ import {
   POSTS_PER_SOURCE_OPTIONS,
   WATCH_ACCOUNT_SITES,
   WATCH_INTERVAL_OPTIONS,
+  normalizeNitterInstance,
   watchSiteLabels,
 } from '@/lib/watch'
 import { isAnonymousProfile } from '@/lib/anonymous'
 import { clearWatchMedia, watchMedia$ } from '@/lib/watch-media'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
-import { clsx, isWeb } from '@/lib/utils'
+import { androidHitSlop, clsx, iosTouchTarget, isWeb } from '@/lib/utils'
 
 const MEDIA_LIMIT_OPTIONS_MB = [250, 500, 1024, 2048, 5120]
 
@@ -37,6 +39,70 @@ const imginnModeLabels = {
   fallback: 'feed.imginnModeFallback',
   first: 'feed.imginnModeFirst',
 } as const
+
+const NITTER_MODES: NitterMode[] = ['off', 'fallback', 'first']
+
+const nitterModeLabels = {
+  off: 'feed.nitterModeOff',
+  fallback: 'feed.nitterModeFallback',
+  first: 'feed.nitterModeFirst',
+} as const
+
+/** The Nitter instances to read X from, tried in this order, and a field to add one. */
+const NitterInstances: React.FC<{ iconColor: string }> = ({ iconColor }) => {
+  const tw = useTwColor()
+  const instances = useValue(watch$.nitterInstances)
+  const [draft, setDraft] = useState('')
+
+  const add = () => {
+    const instance = normalizeNitterInstance(draft)
+    if (!instance) {
+      showToast(t('feed.nitterInstanceInvalid'))
+      return
+    }
+    if (!instances.includes(instance)) watch$.nitterInstances.set([...instances, instance])
+    setDraft('')
+  }
+
+  return (
+    <View className="mt-2 gap-1">
+      {instances.map((instance) => (
+        <View key={instance} className="flex-row items-center">
+          <NouText className="flex-1 text-sm" numberOfLines={1}>
+            {instance.replace(/^https:\/\//, '')}
+          </NouText>
+          <Pressable
+            onPress={() => watch$.nitterInstances.set(instances.filter((current) => current !== instance))}
+            accessibilityRole="button"
+            accessibilityLabel={t('feed.nitterInstanceRemove', { instance })}
+            hitSlop={androidHitSlop}
+            style={iosTouchTarget}
+            className="h-9 w-9 items-center justify-center"
+          >
+            <MaterialIcons name="close" size={18} color={iconColor} />
+          </Pressable>
+        </View>
+      ))}
+      <View className="flex-row items-center gap-2">
+        <TextInput
+          className="flex-1 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          value={draft}
+          onChangeText={setDraft}
+          onSubmitEditing={add}
+          placeholder={t('feed.nitterInstancePlaceholder')}
+          placeholderTextColor={tw('#9ca3af')}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          returnKeyType="done"
+        />
+        <NouButton size="1" variant="outline" disabled={!draft.trim()} onPress={add}>
+          {t('feed.nitterInstanceAdd')}
+        </NouButton>
+      </View>
+    </View>
+  )
+}
 
 const formatMegabytes = (mb: number) => (mb >= 1024 ? `${+(mb / 1024).toFixed(1)} GB` : `${Math.round(mb)} MB`)
 
@@ -58,6 +124,7 @@ export const FeedSettingsModal = () => {
   const postsPerSource = useValue(watch$.postsPerSource)
   const useAccounts = useValue(watch$.useAccounts)
   const imginnMode = useValue(watch$.imginnMode)
+  const nitterMode = useValue(watch$.nitterMode)
   const feedPinned = useValue(watch$.feedPinned)
   const feedEmoji = useValue(watch$.feedEmoji)
   const feedNotify = useValue(watch$.feedNotify)
@@ -183,6 +250,18 @@ export const FeedSettingsModal = () => {
           iconColor={iconColor}
         />
         <Hint>{t('feed.imginnModeHint')}</Hint>
+      </View>
+      <Divider />
+      <View className="py-3">
+        <ChoicePicker
+          label={t('feed.nitterMode')}
+          value={t(nitterModeLabels[nitterMode])}
+          options={NITTER_MODES.map((mode) => ({ label: t(nitterModeLabels[mode]), choice: mode }))}
+          onSelect={(mode) => watch$.nitterMode.set(mode)}
+          iconColor={iconColor}
+        />
+        <Hint>{t('feed.nitterModeHint')}</Hint>
+        {nitterMode !== 'off' ? <NitterInstances iconColor={iconColor} /> : null}
       </View>
       <Divider />
       <NouSwitch

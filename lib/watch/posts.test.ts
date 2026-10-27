@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { formatPostAge, mergeWatchPosts, postKey } from './posts'
-import type { WatchPost } from './types'
+import type { WatchMedia, WatchPost } from './types'
 
 const fetched = (id: string, createdAtMs: number) => ({
   id,
@@ -50,6 +50,92 @@ describe('mergeWatchPosts', () => {
     const { posts, fresh } = mergeWatchPosts([kept('1', 0, 5)], [{ ...fetched('1', 10), text: 'edited' }], { now: 99, initial: false })
     expect(posts).toEqual([{ ...kept('1', 10, 5), text: 'edited' }])
     expect(fresh).toEqual([])
+  })
+
+  it('takes a repost kept by its own id for the same one told by the post it shares, once', () => {
+    // As kept before: by the repost's own id, linked to it on the profile that reposted, when it was
+    // reposted, after the post it shares was made.
+    const at = Date.UTC(2026, 0, 1)
+    const old = { ...kept('9', at, 5), repostOf: 'esa', text: 'hello', url: 'https://x.com/nasa/status/9' }
+    const now = { ...fetched('1', at), repostOf: 'esa', text: 'hello', url: 'https://x.com/esa/status/1' }
+    const first = mergeWatchPosts([old], [now], { now: 99, initial: false })
+    expect(first.posts.map((post) => [post.key, post.id, post.firstSeenAt])).toEqual([[old.key, '1', 5]])
+    expect(first.fresh).toEqual([])
+    // Then by the id it has now, though its text changed.
+    const again = mergeWatchPosts(first.posts, [{ ...now, text: 'edited' }], { now: 100, initial: false })
+    expect(again.posts.map((post) => [post.key, post.text])).toEqual([[old.key, 'edited']])
+    expect(again.fresh).toEqual([])
+  })
+
+  it('takes a repost of photos only kept by its own id for the same one', () => {
+    const at = Date.UTC(2026, 0, 1)
+    const photo = { type: 'image' as const, url: 'https://pbs.twimg.com/media/A.jpg?name=large', thumb: 'https://pbs.twimg.com/media/A.jpg' }
+    const old = { ...kept('9', at, 5), repostOf: 'esa', text: '', media: [photo], url: 'https://x.com/nasa/status/9' }
+    const now = { ...fetched('1', at), repostOf: 'esa', text: '', media: [photo], url: 'https://x.com/esa/status/1' }
+    const { posts, fresh } = mergeWatchPosts([old], [now], { now: 99, initial: false })
+    expect(posts.map((post) => [post.key, post.id])).toEqual([[old.key, '1']])
+    expect(fresh).toEqual([])
+  })
+
+  it('takes no repost kept by its own id for one of a post made since, or with other photos', () => {
+    const at = Date.UTC(2026, 0, 1)
+    const old = { ...kept('9', at, 5), repostOf: 'esa', text: 'hello', url: 'https://x.com/nasa/status/9' }
+    const repost = (id: string, media: WatchMedia[] = []) => ({ ...fetched(id, at), repostOf: 'esa', text: 'hello', url: `https://x.com/esa/status/${id}`, media })
+    // Made after the repost kept was.
+    const since = '2114801524358406570'
+    expect(mergeWatchPosts([old], [repost(since)], { now: 99, initial: false }).fresh.map((post) => post.id)).toEqual([since])
+    const photo = { type: 'image' as const, url: 'https://pbs.twimg.com/media/A.jpg?name=large', thumb: 'https://pbs.twimg.com/media/A.jpg' }
+    expect(mergeWatchPosts([old], [repost('1', [photo])], { now: 99, initial: false }).fresh.map((post) => post.id)).toEqual(['1'])
+  })
+
+  it('takes no repost kept by its own id for one of two fetched alike', () => {
+    const old = { ...kept('9', 20, 5), repostOf: 'esa', text: 'hello', url: 'https://x.com/nasa/status/9' }
+    const alike = (id: string, at: number) => ({ ...fetched(id, at), repostOf: 'esa', text: 'hello', url: `https://x.com/esa/status/${id}` })
+    const { posts } = mergeWatchPosts([old], [alike('2', 30), alike('1', 20)], { now: 99, initial: false })
+    expect(posts.map((post) => post.key).sort()).toEqual([old.key, kept('1', 0).key, kept('2', 0).key].sort())
+  })
+
+  it('tells a repost of unknown time as made no sooner than what comes after it, or as it was kept', () => {
+    const repost = (id: string, at: number) => ({ ...fetched(id, at), repostOf: 'esa', url: `https://x.com/esa/status/${id}`, repostedAtUnknown: true })
+    // An own post at 10, a repost kept at 20 as X told its time, and a repost since of a post from 1.
+    const existing = [{ ...kept('2', 20), repostOf: 'esa', url: 'https://x.com/esa/status/2' }, kept('1', 10)]
+    const { posts, fresh } = mergeWatchPosts(existing, [repost('3', 1), repost('2', 2), fetched('1', 10)], { now: 99, initial: false })
+    expect(posts.map((post) => [post.id, post.createdAtMs])).toEqual([
+      ['3', 21],
+      ['2', 20],
+      ['1', 10],
+    ])
+    expect(fresh.map((post) => post.id)).toEqual(['3'])
+    expect(posts.every((post) => !('repostedAtUnknown' in post))).toBe(true)
+  })
+
+  it('tells a repost of unknown time as after the time kept of what comes after it, if more exact', () => {
+    const repost = { ...fetched('3', 1), repostOf: 'esa', url: 'https://x.com/esa/status/3', repostedAtUnknown: true }
+    // Kept to the millisecond; fetched again to the second.
+    const { fresh } = mergeWatchPosts([kept('1', 10_500)], [repost, fetched('1', 10_000)], { now: 99, initial: false })
+    expect(fresh.map((post) => [post.id, post.createdAtMs])).toEqual([['3', 10_501]])
+  })
+
+  it('keeps reposts of unknown time in the order fetched, and the newest of them when the oldest go', () => {
+    const repost = (id: string) => ({ ...fetched(id, 1), repostOf: 'esa', url: `https://x.com/esa/status/${id}`, repostedAtUnknown: true })
+    const { posts, fresh } = mergeWatchPosts([kept('1', 10)], [repost('4'), repost('3'), repost('2'), fetched('1', 10)], {
+      now: 99,
+      initial: false,
+      max: 3,
+    })
+    expect(posts.map((post) => post.id)).toEqual(['4', '3', '2'])
+    expect(fresh.map((post) => post.id)).toEqual(['4', '3', '2'])
+  })
+
+  it('takes a repost of a post with the same text as another for a post of its own', () => {
+    const repost = { repostOf: 'esa', text: 'hello' }
+    const existing = [{ ...kept('1', 20, 5), ...repost, url: 'https://x.com/esa/status/1' }]
+    const { posts, fresh } = mergeWatchPosts(existing, [{ ...fetched('2', 30), ...repost, url: 'https://x.com/esa/status/2' }], {
+      now: 99,
+      initial: false,
+    })
+    expect(posts.map((post) => post.id)).toEqual(['2', '1'])
+    expect(fresh.map((post) => post.id)).toEqual(['2'])
   })
 
   it('keeps the media read from the embed page over a fetch that only knows the cover', () => {

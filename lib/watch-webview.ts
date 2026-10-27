@@ -67,6 +67,9 @@ export const WATCH_WEBVIEW_CANCELLED = 'page closed'
 // What imginn's profile page is sent of: the profile's name and picture, and its grid of posts.
 export const IMGINN_PAGE_SELECTOR = '.userinfo, .items'
 
+// And a Nitter instance's: the profile's card, and its posts, or that it has none.
+export const NITTER_PAGE_SELECTOR = '.profile-card, .timeline-item, .timeline-none'
+
 /**
  * The script run in the page. It sends back the page's preview tags and the data its posts are
  * drawn from, told by `marker`, as a small page of their own, or nothing when the posts never come.

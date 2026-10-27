@@ -1,5 +1,17 @@
 import type { WatchFetchResult, WatchMedia, WatchProfileInfo, WatchQuote } from '../types'
 
+// When X began counting its ids from: the first bits of a post's id are the milliseconds since then.
+const X_EPOCH_MS = 1288834974657
+
+/** When a post on X was made, told by its id. */
+export const xPostTime = (id: string) => {
+  try {
+    return Number(BigInt(id) / BigInt(4194304)) + X_EPOCH_MS
+  } catch {
+    return 0
+  }
+}
+
 /** The page that embeds a profile's timeline; it needs no account, but may be behind. */
 export const xTimelineUrl = (handle: string) =>
   `https://syndication.twitter.com/srv/timeline-profile/screen-name/${encodeURIComponent(handle)}`
@@ -115,11 +127,16 @@ export function parseXTimeline(html: string, handle: string): WatchFetchResult {
     }
     const shown = tweet.retweeted_status || tweet
     const quoted = shown.quoted_status
+    // A repost is told by the post it shares, as a Nitter instance tells it, which knows no other id:
+    // the same repost read from either is one post. When it was reposted is its own.
+    const reposted = tweet.retweeted_status?.id_str ? shown : undefined
     posts.push({
-      id: tweet.id_str,
+      id: reposted ? reposted.id_str : tweet.id_str,
       site: 'x',
       handle,
-      url: `https://x.com${tweet.permalink || `/${user?.screen_name || handle}/status/${tweet.id_str}`}`,
+      url: reposted
+        ? `https://x.com/${reposted.user?.screen_name || 'i'}/status/${reposted.id_str}`
+        : `https://x.com${tweet.permalink || `/${user?.screen_name || handle}/status/${tweet.id_str}`}`,
       text: quoted?.id_str ? withoutXQuoteLink(xText(shown), quoted.id_str) : xText(shown),
       quote: quoted?.id_str ? xQuote(quoted) : undefined,
       image: xImage(shown),
