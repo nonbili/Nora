@@ -46,7 +46,15 @@
     "zoom": "Zoom",
     "blockAds": "Bloquear anuncios en este sitio",
     "hideSignInPrompts": "Ocultar los avisos de inicio de sesión en este sitio",
-    "addToHomeScreen": "Añadir a la pantalla de inicio"
+    "addToHomeScreen": "Añadir a la pantalla de inicio",
+    "back": "Atrás",
+    "forward": "Adelante",
+    "findInPage": "Buscar en página",
+    "findMatches": "{{active}}/{{total}}",
+    "findNoMatches": "Sin coincidencias",
+    "findNext": "Siguiente coincidencia",
+    "findPrevious": "Coincidencia anterior",
+    "reopenInProfile": "Reabrir en perfil"
   },
   "modals": {
     "downloadVideo": "Descargar vídeo",
@@ -315,7 +323,9 @@
     "dynamicColor": {
       "label": "Color dinámico",
       "hint": "Utiliza la paleta de colores del sistema."
-    }
+    },
+    "feedHint": "Nuevas publicaciones de las fuentes que sigues",
+    "mentionNotificationsSites": "Desde tus cuentas de X y Facebook"
   },
   "sync": {
     "label": "Sincronizar",
@@ -341,7 +351,22 @@
     "legalNotice": "Las suscripciones se renuevan automáticamente a menos que se cancelen. Al suscribirse, acepta los Términos de uso (EULA) y la Política de privacidad.",
     "termsOfUse": "Términos de Uso (EULA)",
     "privacyPolicy": "Política de Privacidad",
-    "signInRequired": "Inicia sesión para continuar."
+    "signInRequired": "Inicia sesión para continuar.",
+    "accountChoiceTitle": "Datos de otra cuenta",
+    "accountChoiceMessage": "Los marcadores, configuración, estilos y el feed de este dispositivo se sincronizaron con otra cuenta de Nora. La sincronización está en pausa hasta que decidas qué hacer con ellos.",
+    "accountChoiceUseAccount": "Utiliza los datos de esta cuenta",
+    "accountChoiceMerge": "Vincular este dispositivo a la cuenta",
+    "accountChoiceLater": "Más tarde",
+    "accountChoiceHint": "El uso de los datos de esta cuenta reemplaza el contenido de este dispositivo. La fusión añade a esta cuenta los elementos que solo se encuentran en este dispositivo. En ambos casos, primero se realiza una copia de seguridad de este dispositivo.",
+    "accountChoiceToast": "Sincronización en pausa: este dispositivo contiene datos de otra cuenta. Elige qué hacer en Configuración › Sincronización.",
+    "accountChoiceFailed": "No se pudieron transferir los datos a esta cuenta: {{message}}",
+    "exportSwitchBackup": "Exportar datos anteriores al cambio",
+    "exportSwitchBackupHint": "Guardado {{date}}. Impórtalo en Configuración › Copia de seguridad para recuperarlo.",
+    "mergeBackupHint": "Otro dispositivo modificó algunos de los mismos elementos que este, y dichos cambios se conservaron. Puedes restaurar lo que este dispositivo tenía anteriormente.",
+    "restoreMergeBackup": "Restaurar {{name}} a partir del {{date}}",
+    "backupSettings": "ajustes",
+    "backupBookmarks": "marcadores",
+    "backupUserStyles": "estilos y scripts"
   },
   "tabs": {
     "new": "Nueva pestaña",
@@ -351,7 +376,9 @@
     "paused": "La pestaña está en pausa",
     "pausedHint": "Su contenido se descargó para ahorrar recursos.",
     "removeFromHistory": "Eliminar del historial",
-    "clearRecentlyClosed": "Limpiar historial"
+    "clearRecentlyClosed": "Limpiar historial",
+    "open": "Pestañas abiertas ({{count}})",
+    "reorder": "Mantén presionado y luego arrastra para reordenar"
   },
   "toast": {
     "pinned": "Anclado a la página de nueva pestaña",
@@ -438,7 +465,8 @@
     "deleteConfirm": "¿Borrar\"{{name}}\"? Esto borra los datos de navegación almacenados y cierra las pestañas que utilizan este perfil.",
     "currentProfile": "Perfil: {{name}}",
     "exportCookies": "Exportar cookies del perfil",
-    "exportCookiesConfirm": "¿Exportar todas las cookies de «{{name}}»? El archivo puede contener sesiones de inicio de sesión de todos los sitios de este perfil. Mantenlo privado."
+    "exportCookiesConfirm": "¿Exportar todas las cookies de «{{name}}»? El archivo puede contener sesiones de inicio de sesión de todos los sitios de este perfil. Mantenlo privado.",
+    "reopenTabInProfile": "Reabrir pestaña en perfil"
   },
   "usageLimits": {
     "editor": {
@@ -531,5 +559,11 @@
     "searching": "Buscando… Es posible que se te pida superar una comprobación de DuckDuckGo.",
     "unavailable": "Esta publicación no está disponible.",
     "retry": "Intentar otra vez"
+  },
+  "feed": {
+    "resetZoom": "Restablecer zoom",
+    "playVideo": "Reproducir vídeo",
+    "pauseVideo": "Pausar vídeo",
+    "allSources": "Todas las fuentes"
   }
 }
