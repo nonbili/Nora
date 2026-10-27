@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import React, { act } from 'react'
 import TestRenderer from 'react-test-renderer'
 import { noraViewLoads, noraViewMountCount, resetNoraViewEvents } from '../../test/component'
@@ -9,7 +9,14 @@ import type { Tab } from '@/states/tabs'
 // so this file selects the desktop branch however the suite is ordered.
 const utils = await import('@/lib/utils')
 mock.module('@/lib/utils', () => ({ ...utils, isWeb: true, isIos: false, isAndroid: false }))
+// Reanimated takes any window for a browser and sets up the DOM when it first loads, so load
+// it before the stub below, as the other files do without one.
+await import('react-native-reanimated')
 ;(globalThis as { window?: unknown }).window = { electron: { process: { platform: 'darwin' } } }
+// Other files would take this stub for a browser.
+afterAll(() => {
+  delete (globalThis as { window?: unknown }).window
+})
 
 const { NoraTab } = await import('./NoraTab')
 const { tabs$ } = await import('@/states/tabs')
