@@ -31,9 +31,12 @@ import { siteIcon } from '../service/Services'
 import { WatchSites } from './WatchSites'
 import {
   WATCH_ERROR_NEEDS_LOGIN,
+  WATCH_ERROR_NEEDS_VERIFICATION,
   WATCH_ERROR_RATE_LIMITED,
   enableWatchNotifications,
+  imginnBlocked$,
   refreshWatched,
+  verifyImginn,
 } from '@/lib/watch-feed'
 import { getFeedPosts, getNewestPostTimes, getProfilesWithPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
@@ -86,6 +89,28 @@ export const ChoicePicker = <T,>({
   </View>
 )
 
+/** A hint above the feed, tapped to act on it, or closed. */
+const FeedHint: React.FC<{ text: string; onPress: () => void; onDismiss: () => void }> = ({ text, onPress, onDismiss }) => {
+  const tw = useTwColor()
+  return (
+    <View className="mx-4 mb-3 flex-row items-start rounded-2xl bg-amber-50 py-1 pl-4 pr-1 dark:bg-amber-500/10">
+      <Pressable onPress={onPress} accessibilityRole="button" className="flex-1 py-2">
+        <NouText className="text-sm text-amber-800 dark:text-amber-300">{text}</NouText>
+      </Pressable>
+      <Pressable
+        onPress={onDismiss}
+        accessibilityRole="button"
+        accessibilityLabel={t('menus.close')}
+        hitSlop={androidHitSlop}
+        style={iosTouchTarget}
+        className="h-9 w-9 items-center justify-center"
+      >
+        <MaterialIcons name="close" size={18} color={tw('#b45309')} />
+      </Pressable>
+    </View>
+  )
+}
+
 /** What to tell about how a profile is being checked; null when all is well. */
 /** The sites some of these profiles are checked on without an account, and so less reliably; none when the user turned accounts off. */
 export const getLoggedOutSites = (profiles: WatchedProfile[], useAccounts: boolean): WatchSite[] =>
@@ -115,6 +140,7 @@ export const profileStatus = (profile: WatchedProfile): { text: string; warn: bo
     return { text: t(useAccounts ? 'feed.statusNeedsLogin' : 'feed.statusNeedsLoginAccountsOff', { site }), warn: true }
   }
   if (profile.error === WATCH_ERROR_RATE_LIMITED) return { text: t('feed.statusRateLimited', { site }), warn: true }
+  if (profile.error === WATCH_ERROR_NEEDS_VERIFICATION) return { text: t('feed.statusNeedsVerification'), warn: true }
   if (profile.error) return { text: t('feed.statusFailed', { error: profile.error }), warn: true }
   if (profile.mode === 'loggedOut') {
     if (!useAccounts) return { text: t('feed.statusAccountsOff'), warn: false }
@@ -644,6 +670,15 @@ export const FeedView: React.FC<{
   const showLoginHint = loggedOutSites.some((site) => !loginHintDismissedSites.includes(site))
   const dismissLoginHint = () =>
     watch$.loginHintDismissedSites.set(Array.from(new Set([...loginHintDismissedSites, ...loggedOutSites])))
+  // Imginn's check stopped it, or a source it left unread, as before Nora was last closed: told
+  // even with a source chosen, whose status points here, and instead of the login hint.
+  const imginnBlocked = useValue(imginnBlocked$)
+  const imginnMode = useValue(watch$.imginnMode)
+  const verifyHintDismissed = useValue(ui$.verifyHintDismissed)
+  const showVerifyHint =
+    imginnMode !== 'off' &&
+    !verifyHintDismissed &&
+    (Boolean(imginnBlocked) || allProfiles.some((profile) => profile.error === WATCH_ERROR_NEEDS_VERIFICATION))
 
   const iconColor = isDark ? tw('#f8fafc') : tw('#334155')
 
@@ -880,6 +915,13 @@ export const FeedView: React.FC<{
         </ScrollView>
       ) : null}
 
+      {showVerifyHint ? (
+        <FeedHint
+          text={t('feed.verifyHint')}
+          onPress={() => void verifyImginn()}
+          onDismiss={() => ui$.verifyHintDismissed.set(true)}
+        />
+      ) : null}
       {selected ? (
         <View className="mx-4 mb-3 gap-2 rounded-2xl bg-zinc-50 py-2 pl-4 pr-1 dark:bg-zinc-900">
           <View className="flex-row items-center gap-1">
@@ -969,7 +1011,12 @@ export const FeedView: React.FC<{
           </View>
           {detailsOpen ? (
             <View className="gap-1 pb-1 pr-3">
-              {selectedStatus?.warn ? (
+              {selectedStatus?.warn && selected.error === WATCH_ERROR_NEEDS_VERIFICATION ? (
+                // Passed from here too, as the hint above the feed can be closed.
+                <Pressable onPress={() => void verifyImginn()} accessibilityRole="button" className="mb-1">
+                  <NouText className="text-sm text-amber-700 dark:text-amber-400">{selectedStatus.text}</NouText>
+                </Pressable>
+              ) : selectedStatus?.warn ? (
                 <NouText className="mb-1 text-sm text-amber-700 dark:text-amber-400">{selectedStatus.text}</NouText>
               ) : null}
               <View className="flex-row gap-3">
@@ -991,25 +1038,13 @@ export const FeedView: React.FC<{
             </View>
           ) : null}
         </View>
-      ) : !timeline && showLoginHint ? (
-        <View className="mx-4 mb-3 flex-row items-start rounded-2xl bg-amber-50 py-1 pl-4 pr-1 dark:bg-amber-500/10">
-          {/* What it asks for is chosen in Feed settings, where it is told again. */}
-          <Pressable onPress={() => ui$.feedSettingsModalOpen.set(true)} accessibilityRole="button" className="flex-1 py-2">
-            <NouText className="text-sm text-amber-800 dark:text-amber-300">
-              {t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
-            </NouText>
-          </Pressable>
-          <Pressable
-            onPress={dismissLoginHint}
-            accessibilityRole="button"
-            accessibilityLabel={t('menus.close')}
-            hitSlop={androidHitSlop}
-            style={iosTouchTarget}
-            className="h-9 w-9 items-center justify-center"
-          >
-            <MaterialIcons name="close" size={18} color={tw('#b45309')} />
-          </Pressable>
-        </View>
+      ) : !timeline && showLoginHint && !showVerifyHint ? (
+        // What it asks for is chosen in Feed settings, where it is told again.
+        <FeedHint
+          text={t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
+          onPress={() => ui$.feedSettingsModalOpen.set(true)}
+          onDismiss={dismissLoginHint}
+        />
       ) : null}
     </View>
   )

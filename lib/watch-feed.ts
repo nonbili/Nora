@@ -1,6 +1,9 @@
 import { AppState, Platform } from 'react-native'
+import { observable } from '@legendapp/state'
 import { t } from 'i18next'
 import { settings$ } from '@/states/settings'
+import { tabs$ } from '@/states/tabs'
+import { ui$ } from '@/states/ui'
 import { getTimeline, isMediaOnly, profileNotifies, timelineIntervals, watch$, type WatchedProfile } from '@/states/watch'
 import {
   INSTAGRAM_APP_ID,
@@ -14,11 +17,13 @@ import {
   didDocumentUrl,
   parseDidDocumentPds,
   dueWatchProfiles,
+  imginnProfileUrl,
   parseFacebookPage,
   reachesBackTo,
   mastodonLookupUrl,
   mastodonStatusesUrl,
   parseBlueskyFeed,
+  parseImginnProfilePage,
   parseInstagramProfileInfo,
   parseInstagramProfilePage,
   mastodonWebFingerUrl,
@@ -48,20 +53,23 @@ import {
 } from '@/lib/watch'
 import {
   FACEBOOK_POSTS_MARKER,
+  IMGINN_PAGE_SELECTOR,
   THREADS_POSTS_MARKER,
   TIKTOK_POSTS_MARKER,
   WATCH_WEBVIEW_PROFILE,
+  WATCH_WEBVIEW_CANCELLED,
+  WATCH_WEBVIEW_CHALLENGE,
   WATCH_WEBVIEW_RATE_LIMITED,
   isWatchWebViewAvailable,
   loadInWatchWebView,
 } from '@/lib/watch-webview'
 import { syncWatchMedia } from '@/lib/watch-media'
-import { showToast } from '@/lib/toast'
+import { showActionToast, showToast } from '@/lib/toast'
 import { watchFetch } from '@/lib/watch-fetch'
 import NoraViewModule from '@/modules/nora-view'
 import { accountChoice, findSignedInCookies, parseCookieHeader, siteCookieOrigin, type SiteAccount } from '@/lib/watch-account'
 import { getProfilePosts, setProfilePosts } from '@/lib/watch-db'
-import { feedTabUrl } from '@/lib/feed-tab'
+import { feedTabUrl, isFeedTabUrl } from '@/lib/feed-tab'
 import { BACKGROUND_POLL_MIN_INTERVAL_MINUTES as MENTION_POLL_INTERVAL_MINUTES } from '@/lib/mention-notifications'
 
 import {
@@ -104,6 +112,8 @@ export type WatchRunSource = keyof typeof RUN_BUDGET_MS
 
 export const WATCH_ERROR_NEEDS_LOGIN = 'needsLogin'
 export const WATCH_ERROR_RATE_LIMITED = 'rateLimited'
+// Imginn's page was still at Cloudflare's check for a browser, for the user to pass.
+export const WATCH_ERROR_NEEDS_VERIFICATION = 'needsVerification'
 
 const DESKTOP_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
@@ -212,12 +222,14 @@ const canUseWebView = (source: WatchRunSource) =>
 
 const isRateLimited = (e: unknown) => e instanceof WatchFetchError && e.message === WATCH_ERROR_RATE_LIMITED
 
+const isNeedsVerification = (e: unknown) => e instanceof WatchFetchError && e.message === WATCH_ERROR_NEEDS_VERIFICATION
+
 /**
  * With an account, Instagram's own API for the profile. Without one, or when that fails, the
  * profile's page; and when a plain request for that is not answered with its posts, the page
  * as loaded by a real browser, in a webview out of sight.
  */
-const fetchInstagram = async (
+const fetchFromInstagram = async (
   handle: string,
   cookie: string,
   source: WatchRunSource,
@@ -239,6 +251,82 @@ const fetchInstagram = async (
   }
   const html = await loadInWatchWebView(watchProfileUrl({ site: 'instagram', handle }), timeLeft(deadline))
   return parseInstagramProfilePage(html, handle)
+}
+
+/**
+ * The profile's page on imginn, in the webview, as a plain request is stopped by Cloudflare's
+ * check for a browser. The check often passes by itself there; when it does not, it is for the
+ * user to pass, shown the page `visible`.
+ */
+const fetchImginn = async (handle: string, timeoutMs: number, visible = false): Promise<WatchFetchResult> => {
+  try {
+    const html = await loadInWatchWebView(imginnProfileUrl(handle), timeoutMs, {
+      selector: IMGINN_PAGE_SELECTOR,
+      visible,
+      ownUserAgent: true,
+    })
+    return parseImginnProfilePage(html, handle)
+  } catch (e) {
+    if (e instanceof Error && e.message === WATCH_WEBVIEW_CHALLENGE) throw new WatchFetchError(WATCH_ERROR_NEEDS_VERIFICATION, true)
+    throw e
+  }
+}
+
+// The handle imginn's check last stopped, for the user to pass the check on; empty while none did.
+export const imginnBlocked$ = observable('')
+// Until when imginn is not asked after its check stopped it, as each page waits for the check a while.
+let imginnPausedUntil = 0
+
+watch$.imginnMode.onChange(({ value }) => {
+  if (value === 'off') imginnBlocked$.set('')
+})
+
+const canUseImginn = (source: WatchRunSource, deadline: number) =>
+  watch$.imginnMode.peek() !== 'off' && canUseWebView(source) && Date.now() >= imginnPausedUntil && Boolean(timeLeft(deadline))
+
+const readImginn = async (handle: string, deadline: number) => {
+  try {
+    const result = await fetchImginn(handle, timeLeft(deadline))
+    imginnBlocked$.set('')
+    return result
+  } catch (e) {
+    if (isNeedsVerification(e)) {
+      imginnBlocked$.set(handle)
+      imginnPausedUntil = Date.now() + RETRY_AFTER_MS
+    }
+    console.warn('watch imginn failed', handle, e)
+    throw e
+  }
+}
+
+/**
+ * As the user chose: as Instagram shows the profile, and as imginn does when Instagram does not;
+ * or as imginn does first, and as Instagram does when imginn can't, as in the background.
+ */
+const fetchInstagram = async (
+  handle: string,
+  cookie: string,
+  source: WatchRunSource,
+  deadline: number,
+): Promise<WatchFetchResult> => {
+  const mode = watch$.imginnMode.peek()
+  if (mode === 'first' && canUseImginn(source, deadline)) {
+    try {
+      return await readImginn(handle, deadline)
+    } catch {}
+  }
+  try {
+    return await fetchFromInstagram(handle, cookie, source, deadline)
+  } catch (e) {
+    if (mode === 'fallback' && canUseImginn(source, deadline)) {
+      console.warn('watch instagram failed, trying imginn', handle, e)
+      try {
+        return await readImginn(handle, deadline)
+      } catch {}
+    }
+    // What Instagram said, unless what is left to do is to pass imginn's check.
+    throw mode !== 'off' && imginnBlocked$.peek() ? new WatchFetchError(WATCH_ERROR_NEEDS_VERIFICATION, true) : e
+  }
 }
 
 /** A page or an API's answer from a site that is read without an account, as text. */
@@ -573,15 +661,15 @@ let running: Promise<number> | null = null
  * as the run may take; by hand, only those of `keys` when given. Resolves to how many new
  * posts were found.
  */
-export const refreshWatched = (source: WatchRunSource, keys?: string[]): Promise<number> => {
+export const refreshWatched = (source: WatchRunSource, keys?: string[], force = false): Promise<number> => {
   if (!settings$.feedEnabled.peek()) return Promise.resolve(0)
   if (running) {
     // A run on its own is done by the one going on. One by hand waits for it, and then asks
     // for what that one did not just check.
     if (source !== 'manual') return running
-    return running.then(() => refreshWatched(source, keys))
+    return running.then(() => refreshWatched(source, keys, force))
   }
-  running = runRefresh(source, keys).finally(() => {
+  running = runRefresh(source, keys, force).finally(() => {
     running = null
   })
   return running
@@ -602,10 +690,70 @@ export const toggleWatched = (target: WatchTarget) => {
   void refreshWatched('manual', [key])
 }
 
-const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
+const waitingForVerification = () => watch$.profiles.peek().filter((profile) => profile.error === WATCH_ERROR_NEEDS_VERIFICATION)
+
+// How long the user is given to pass imginn's check.
+const VERIFY_TIMEOUT_MS = 3 * 60 * 1000
+
+// The profile to pass imginn's check on: the one it stopped, or one it left unread before Nora was last closed.
+const imginnVerifyHandle = () =>
+  watch$.imginnMode.peek() === 'off' ? '' : imginnBlocked$.peek() || waitingForVerification()[0]?.handle || ''
+
+// The check being passed: another tap waits for it, not to be shown the page again after.
+let verifying: Promise<void> | null = null
+
+/**
+ * Shows imginn's page of the profile its check stopped, for the user to pass the check, and then
+ * checks again the sources that could not be read without it, which the webview then reads.
+ */
+export const verifyImginn = () => {
+  verifying ??= verifyImginnNow().finally(() => {
+    verifying = null
+  })
+  return verifying
+}
+
+const verifyImginnNow = async () => {
+  const handle = imginnVerifyHandle()
+  if (!handle || !isWatchWebViewAvailable()) return
+  try {
+    await fetchImginn(handle, VERIFY_TIMEOUT_MS, true)
+  } catch (e) {
+    if (!(e instanceof Error && e.message === WATCH_WEBVIEW_CANCELLED)) showToast(t('feed.verifyFailed'))
+    return
+  }
+  imginnBlocked$.set('')
+  imginnPausedUntil = 0
+  const waiting = waitingForVerification()
+  if (waiting.length) {
+    void refreshWatched(
+      'manual',
+      waiting.map((profile) => profile.key),
+      true,
+    )
+  }
+}
+
+/**
+ * Tells, once, that imginn's check stopped it, with a toast to pass it from, wherever the user is;
+ * but in the feed, which tells it itself. Once imginn reads again, it is told again next time.
+ */
+const promptVerification = (source: WatchRunSource, blockedBefore: boolean) => {
+  if (!imginnVerifyHandle()) {
+    ui$.verifyHintDismissed.set(false)
+    return
+  }
+  if (blockedBefore || source === 'background' || ui$.verifyHintDismissed.peek() || AppState.currentState !== 'active') return
+  if (isFeedTabUrl(tabs$.currentTab()?.url)) return
+  showActionToast(t('feed.verifyToast'), () => void verifyImginn())
+}
+
+const runRefresh = async (source: WatchRunSource, keys?: string[], force = false) => {
   const start = Date.now()
+  const blockedBefore = Boolean(imginnVerifyHandle())
   const due = dueWatchProfiles(watch$.profiles.peek(), {
     manual: source === 'manual',
+    force,
     keys,
     now: start,
     defaultMinutes: watch$.checkIntervalMinutes.peek(),
@@ -636,6 +784,7 @@ const runRefresh = async (source: WatchRunSource, keys?: string[]) => {
       await notifyFresh(profile, fresh)
     }
   }
+  promptVerification(source, blockedBefore)
   // The media of what was found, kept for the feed within its own time and storage limits. The
   // background task has to wait for it to be done; in the app the posts are shown without waiting.
   if (!settings$.feedEnabled.peek()) return found

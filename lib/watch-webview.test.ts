@@ -1,8 +1,12 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import {
+  IMGINN_PAGE_SELECTOR,
   TIKTOK_POSTS_MARKER,
+  WATCH_WEBVIEW_CANCELLED,
+  WATCH_WEBVIEW_CHALLENGE,
   WATCH_WEBVIEW_RATE_LIMITED,
   buildWatchPageScript,
+  cancelWatchWebView,
   loadInWatchWebView,
   onWatchWebViewError,
   onWatchWebViewMessage,
@@ -210,6 +214,34 @@ describe('buildWatchPageScript told to slow down', () => {
   })
 })
 
+describe('buildWatchPageScript with a selector', () => {
+  it('sends those parts of the page', () => {
+    const sent: string[] = []
+    const document = {
+      readyState: 'complete',
+      querySelectorAll: (selector: string) =>
+        selector === IMGINN_PAGE_SELECTOR ? [{ outerHTML: '<div class="userinfo"></div>' }, { outerHTML: '<div class="items"></div>' }] : [],
+    }
+    const window = { NoraI: { onMessage: (payload: string) => sent.push(payload) } } as any
+    new Function('window', 'document', buildWatchPageScript(6, undefined, 0, 0, IMGINN_PAGE_SELECTOR))(window, document)
+    expect(JSON.parse(sent[0]).data).toMatchObject({ id: 6, html: '<div class="userinfo"></div>\n<div class="items"></div>', challenge: false })
+  })
+
+  it("tells Cloudflare's check for a browser, and sends nothing more from its page", () => {
+    const sent: string[] = []
+    const timers: (() => void)[] = []
+    const document = { readyState: 'complete', querySelectorAll: () => [] }
+    const window = { _cf_chl_opt: {}, NoraI: { onMessage: (payload: string) => sent.push(payload) } } as any
+    new Function('window', 'document', 'setTimeout', buildWatchPageScript(6, undefined, 0, 0, IMGINN_PAGE_SELECTOR))(
+      window,
+      document,
+      (callback: () => void) => timers.push(callback),
+    )
+    expect(sent.map((payload) => JSON.parse(payload).data)).toEqual([{ id: 6, html: '', rateLimited: false, challenge: true }])
+    expect(timers).toHaveLength(0)
+  })
+})
+
 describe('loadInWatchWebView', () => {
   it('fails at once when there is no webview to load in', async () => {
     await expect(loadInWatchWebView('https://www.instagram.com/nasa/')).rejects.toThrow('no webview host')
@@ -250,5 +282,30 @@ describe('loadInWatchWebView', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
     onWatchWebViewMessage(watchWebView$.job.peek()!.id, '<script type="application/json">{"post_id":"1"}</script>', true)
     await expect(result).rejects.toThrow(WATCH_WEBVIEW_RATE_LIMITED)
+  })
+
+  it("waits past Cloudflare's check for the page, and tells the check when it never passed", async () => {
+    watchWebView$.hostMounted.set(true)
+    const passed = loadInWatchWebView('https://imginn.com/a/', 50, { selector: IMGINN_PAGE_SELECTOR })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    const id = watchWebView$.job.peek()!.id
+    onWatchWebViewMessage(id, '', false, true)
+    onWatchWebViewMessage(id, '<div class="userinfo"></div>')
+    expect(await passed).toBe('<div class="userinfo"></div>')
+
+    const stuck = loadInWatchWebView('https://imginn.com/a/', 50, { selector: IMGINN_PAGE_SELECTOR })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    onWatchWebViewMessage(watchWebView$.job.peek()!.id, '', false, true)
+    await expect(stuck).rejects.toThrow(WATCH_WEBVIEW_CHALLENGE)
+  })
+
+  it('shows a visible page for all of its time, until the user closes it', async () => {
+    watchWebView$.hostMounted.set(true)
+    const result = loadInWatchWebView('https://imginn.com/a/', 60 * 60 * 1000, { selector: IMGINN_PAGE_SELECTOR, visible: true })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    const job = watchWebView$.job.peek()!
+    expect(job.visible).toBe(true)
+    cancelWatchWebView(job.id)
+    await expect(result).rejects.toThrow(WATCH_WEBVIEW_CANCELLED)
   })
 })

@@ -25,6 +25,7 @@ import { AddSourcesModal } from '../modal/AddSourcesModal'
 import { FeedSettingsModal } from '../modal/FeedSettingsModal'
 import { SourcesModal } from '../modal/SourcesModal'
 import { WatchWebViewHost } from '../watch/WatchWebViewHost'
+import { ActionToast } from '../ActionToast'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
 import { useLocales } from 'expo-localization'
 import i18n from 'i18next'
@@ -109,6 +110,7 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <TimelineModal />
         <SourcePickerModal />
         <WatchWebViewHost />
+        {nIf(!isWeb, <ActionToast />)}
         {nIf(!isWeb, <TranslationCard />)}
         {nIf(
           !isWeb,

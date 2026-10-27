@@ -47,6 +47,8 @@ export interface WatchedProfile {
   error?: string
 }
 
+export type ImginnMode = 'off' | 'fallback' | 'first'
+
 interface Store {
   profiles: WatchedProfile[]
   // When a tab showed the whole feed, before each profile had a time of its own.
@@ -71,6 +73,9 @@ interface Store {
   useAccounts: boolean
   // The Nora profile to take each site's account from; any profile logged in to it when not set.
   accountProfiles: Partial<Record<WatchSite, string>>
+  // Whether Instagram profiles are read from imginn, while Nora is open: when Instagram does not
+  // show them, or first, and from Instagram when imginn does not.
+  imginnMode: ImginnMode
   // Whether the whole feed shows only the posts with photos or videos, as a timeline can.
   feedMediaOnly: boolean
   // Whether the sources of each timeline notify of new posts, unless one chooses otherwise; as the whole
@@ -122,6 +127,7 @@ export const watch$: Observable<Store> = observable<Store>({
   sourcesSortReversed: false,
   useAccounts: true,
   accountProfiles: {},
+  imginnMode: 'off',
   feedMediaOnly: false,
   timelineNotify: {},
   feedNotify: false,

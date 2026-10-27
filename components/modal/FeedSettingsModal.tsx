@@ -11,7 +11,7 @@ import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { ChoicePicker, formatInterval, getLoggedOutSites } from '../feed/FeedView'
 import { ui$ } from '@/states/ui'
-import { watch$ } from '@/states/watch'
+import { watch$, type ImginnMode } from '@/states/watch'
 import { settings$ } from '@/states/settings'
 import { enableTimelineNotifications } from '@/lib/watch-feed'
 import { showToast } from '@/lib/toast'
@@ -29,6 +29,14 @@ import { useTwColor } from '@/lib/theme'
 import { clsx, isWeb } from '@/lib/utils'
 
 const MEDIA_LIMIT_OPTIONS_MB = [250, 500, 1024, 2048, 5120]
+
+const IMGINN_MODES: ImginnMode[] = ['off', 'fallback', 'first']
+
+const imginnModeLabels = {
+  off: 'feed.imginnModeOff',
+  fallback: 'feed.imginnModeFallback',
+  first: 'feed.imginnModeFirst',
+} as const
 
 const formatMegabytes = (mb: number) => (mb >= 1024 ? `${+(mb / 1024).toFixed(1)} GB` : `${Math.round(mb)} MB`)
 
@@ -49,6 +57,7 @@ export const FeedSettingsModal = () => {
   const mediaLimitMB = useValue(watch$.mediaLimitMB)
   const postsPerSource = useValue(watch$.postsPerSource)
   const useAccounts = useValue(watch$.useAccounts)
+  const imginnMode = useValue(watch$.imginnMode)
   const feedPinned = useValue(watch$.feedPinned)
   const feedEmoji = useValue(watch$.feedEmoji)
   const feedNotify = useValue(watch$.feedNotify)
@@ -164,6 +173,17 @@ export const FeedSettingsModal = () => {
             )
           })
         : null}
+      <Divider />
+      <View className="py-3">
+        <ChoicePicker
+          label={t('feed.imginnMode')}
+          value={t(imginnModeLabels[imginnMode])}
+          options={IMGINN_MODES.map((mode) => ({ label: t(imginnModeLabels[mode]), choice: mode }))}
+          onSelect={(mode) => watch$.imginnMode.set(mode)}
+          iconColor={iconColor}
+        />
+        <Hint>{t('feed.imginnModeHint')}</Hint>
+      </View>
       <Divider />
       <NouSwitch
         className="py-3"

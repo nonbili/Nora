@@ -32,6 +32,9 @@ import {
   parseRedditPosts,
   parseThreadsProfilePage,
   instagramPostTime,
+  instagramShortcodePk,
+  imginnImageUrl,
+  parseImginnProfilePage,
   parseInstagramEmbed,
   parseInstagramProfilePage,
   pickXVideoVariant,
@@ -1157,6 +1160,56 @@ const instagramPage = (connection: unknown) => `<html><head>
 })}</script>
 </body></html>`
 
+describe('instagramShortcodePk', () => {
+  it("reads a post's id from its code, which is the id in 64 letters", () => {
+    expect(instagramShortcodePk('B')).toBe('1')
+    expect(instagramShortcodePk('BA')).toBe('64')
+    expect(instagramShortcodePk('_')).toBe('63')
+    // Made on October 20, 2026.
+    expect(new Date(instagramPostTime(instagramShortcodePk('DeuOR-CjKE9'))).toISOString().slice(0, 10)).toBe('2026-10-20')
+    expect(instagramShortcodePk('not a code')).toBe('')
+  })
+})
+
+describe('imginnImageUrl', () => {
+  it("takes Instagram's address for a picture out of imginn's", () => {
+    expect(
+      imginnImageUrl('https://s5.imginn.com/1_n.jpg?t51.82787-15/1_n.jpg?stp=dst-jpg_s640x640&_nc_ht=scontent-atl3-1.cdninstagram.com&oh=00_A&oe=6A&cache=1'),
+    ).toBe('https://scontent-atl3-1.cdninstagram.com/v/t51.82787-15/1_n.jpg?stp=dst-jpg_s640x640&_nc_ht=scontent-atl3-1.cdninstagram.com&oh=00_A&oe=6A')
+  })
+
+  it('takes none that is not on a server of Instagram', () => {
+    expect(imginnImageUrl('https://s5.imginn.com/1_n.jpg?t51/1_n.jpg?_nc_ht=example.com')).toBeUndefined()
+    expect(imginnImageUrl('https://s5.imginn.com/1_n.jpg')).toBeUndefined()
+  })
+})
+
+describe('parseImginnProfilePage', () => {
+  const img = (path: string) => `https://s5.imginn.com/${path}?t51.82787-15/${path}?stp=s640x640&amp;_nc_ht=scontent-iad3-2.cdninstagram.com&amp;oe=6A`
+  const html = `<div class="userinfo" data-name="natgeo"><div class="user-hd"><div class="img"><a href="/natgeo/"><img width="77" height="77" src="${img('avatar.jpg')}&amp;cache=1" alt="avatar"> </a></div><div class="user-meta"><div class="name"><a href="/natgeo/"><h1>National Geographic</h1></a></div></div></div></div>
+<div class="items">  <div class="item"><div class="img"><a href="/p/DeuOR-CjKE9/" aria-label=""><img loading="lazy" src="${img('a.jpg')}" alt="Best of the World &amp; more
+#travel"> </a></div></div>  <div class="item"><div class="img"><a href="/p/De-T1-ZiKeQ/" aria-label=""><img loading="lazy" src="${img('b.jpg')}" alt=""> </a></div></div></div>`
+
+  it("reads the profile's name, picture and grid, each post's time from its code", () => {
+    const result = parseImginnProfilePage(html, 'natgeo')
+    expect(result.info).toEqual({ name: 'National Geographic', avatar: 'https://scontent-iad3-2.cdninstagram.com/v/t51.82787-15/avatar.jpg?stp=s640x640&_nc_ht=scontent-iad3-2.cdninstagram.com&oe=6A' })
+    expect(result.posts.map((post) => post.id)).toEqual(['DeuOR-CjKE9', 'De-T1-ZiKeQ'])
+    expect(result.posts[0]).toMatchObject({
+      site: 'instagram',
+      handle: 'natgeo',
+      url: 'https://www.instagram.com/p/DeuOR-CjKE9/',
+      text: 'Best of the World & more\n#travel',
+      image: 'https://scontent-iad3-2.cdninstagram.com/v/t51.82787-15/a.jpg?stp=s640x640&_nc_ht=scontent-iad3-2.cdninstagram.com&oe=6A',
+      mediaComplete: false,
+      createdAtMs: instagramPostTime(instagramShortcodePk('DeuOR-CjKE9')),
+    })
+  })
+
+  it('fails on a page that is not a profile', () => {
+    expect(() => parseImginnProfilePage('<title>Just a moment...</title>', 'natgeo')).toThrow('no posts in the page')
+  })
+})
+
 describe('parseInstagramProfilePage', () => {
   it('reads the posts the page comes with, and the profile from its preview tags', () => {
     const { info, posts } = parseInstagramProfilePage(
@@ -1525,6 +1578,10 @@ describe('dueWatchProfiles', () => {
     const keys = ['x:recent', 'x:fresh']
     expect(keysOf(dueWatchProfiles(profiles, { manual: true, keys, now, defaultMinutes: 60 }))).toEqual(['x:recent'])
     expect(dueWatchProfiles(profiles, { manual: false, keys, now, defaultMinutes: 60 })).toEqual([])
+  })
+
+  it('checks by hand, when forced, even those just checked', () => {
+    expect(keysOf(dueWatchProfiles(profiles, { manual: true, keys: ['x:fresh'], now, defaultMinutes: 60, force: true }))).toEqual(['x:fresh'])
   })
 
   it('waits as long as the timeline of a profile chose', () => {

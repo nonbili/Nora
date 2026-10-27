@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { View } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import { NoraView } from '@/modules/nora-view'
 import { getUserAgent } from '@/lib/useragent'
+import { isIos } from '@/lib/utils'
 import {
   WATCH_WEBVIEW_PROFILE,
   buildWatchPageScript,
@@ -10,11 +10,12 @@ import {
   onWatchWebViewMessage,
   watchWebView$,
 } from '@/lib/watch-webview'
+import { WatchWebViewFrame } from './WatchWebViewFrame'
 
 const LOAD_URL_RETRY_DELAY = 100
 const LOAD_URL_MAX_RETRIES = 20
 
-/** The webview that reads a watched profile's page out of sight; there only while it has a page to read. */
+/** The webview that reads a watched profile's page, out of sight but for a check to pass; there only while it has a page to read. */
 export const WatchWebViewHost = () => {
   const job = useValue(watchWebView$.job)
   const nativeRef = useRef<any>(null)
@@ -74,12 +75,13 @@ export const WatchWebViewHost = () => {
         message.data.id,
         typeof message.data.html === 'string' ? message.data.html : '',
         message.data.rateLimited === true,
+        message.data.challenge === true,
       )
     }
   }
 
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', left: -2000, top: 0, width: 1280, height: 900, opacity: 0 }}>
+    <WatchWebViewFrame job={job}>
       <NoraView
         // A new view for each page, so nothing of the last one is left over.
         key={job.id}
@@ -87,13 +89,13 @@ export const WatchWebViewHost = () => {
         style={{ flex: 1 }}
         profile={job.profile || WATCH_WEBVIEW_PROFILE}
         // The desktop site, as Anonymous mode uses for Instagram: its profile page comes with its posts.
-        useragent={getUserAgent('win32', true)}
+        useragent={job.ownUserAgent ? getUserAgent(isIos ? 'ios' : 'android') : getUserAgent('win32', true)}
         // Before the page's own scripts, so the answers it asks for as it loads are kept too.
-        scriptOnDocumentStart={buildWatchPageScript(job.id, job.marker, job.more, job.until)}
+        scriptOnDocumentStart={buildWatchPageScript(job.id, job.marker, job.more, job.until, job.selector)}
         onMessage={onMessage}
         active
         visible
       />
-    </View>
+    </WatchWebViewFrame>
   )
 }

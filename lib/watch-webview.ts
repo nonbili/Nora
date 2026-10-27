@@ -29,6 +29,12 @@ export interface WatchWebViewJob {
   until?: number
   // The Nora profile whose cookies the page is loaded with; the webview's own, without an account, if none.
   profile?: string
+  // The parts of the page to send, as HTML, for a site whose posts are in the page itself, not in data it carries.
+  selector?: string
+  // Shown to the user, who is to pass the check of the site the page is on, as imginn's.
+  visible?: boolean
+  // As the browser it is, not one on a computer: a check for a browser fails one that says it is another.
+  ownUserAgent?: boolean
 }
 
 export const watchWebView$ = observable<{ job: WatchWebViewJob | null; hostMounted: boolean }>({
@@ -38,7 +44,7 @@ export const watchWebView$ = observable<{ job: WatchWebViewJob | null; hostMount
 
 let nextId = 1
 let queue: Promise<unknown> = Promise.resolve()
-let current: { id: number; resolve: (html: string) => void; reject: (error: Error) => void } | null = null
+let current: { id: number; resolve: (html: string) => void; reject: (error: Error) => void; challenged?: boolean } | null = null
 
 export const isWatchWebViewAvailable = () => watchWebView$.hostMounted.peek()
 
@@ -53,6 +59,13 @@ export const TIKTOK_POSTS_MARKER = '"itemList":[{'
 
 // What a page is rejected with when one of the answers it asked for said to slow down: what it has then is no more than its first posts.
 export const WATCH_WEBVIEW_RATE_LIMITED = 'rate limited in the page'
+// And when it was still at Cloudflare's check for a browser when its time was up.
+export const WATCH_WEBVIEW_CHALLENGE = 'challenge in the page'
+// And when the user closed the page they were shown.
+export const WATCH_WEBVIEW_CANCELLED = 'page closed'
+
+// What imginn's profile page is sent of: the profile's name and picture, and its grid of posts.
+export const IMGINN_PAGE_SELECTOR = '.userinfo, .items'
 
 /**
  * The script run in the page. It sends back the page's preview tags and the data its posts are
@@ -61,13 +74,16 @@ export const WATCH_WEBVIEW_RATE_LIMITED = 'rate limited in the page'
  * as Facebook brings the posts after its first, and TikTok all of them, until that many parts
  * with posts are there or no more come; with `until`, until a post as old as that has come
  * instead: a post of the page, as Facebook has them, not one it shares, one pinned to its top,
- * nor an ad. It tells when one of those answers said to slow down, as Facebook's do.
+ * nor an ad. It tells when one of those answers said to slow down, as Facebook's do. With
+ * `selector`, it sends those parts of the page instead. It tells too when the page is Cloudflare's
+ * check for a browser, which loads the page asked for in a document of its own once passed.
  */
-export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER, more = 0, until = 0) => `(function () {
+export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER, more = 0, until = 0, selector = '') => `(function () {
   // Run at the start of every document of the page: only the page itself answers.
   if (window.__noraWatchStarted || (window.top && window.top !== window)) return;
   window.__noraWatchStarted = true;
   var marker = ${JSON.stringify(marker)};
+  var selector = ${JSON.stringify(selector)};
   var tries = 0;
   var idle = 0;
   var last = 0;
@@ -135,13 +151,27 @@ export const buildWatchPageScript = (id: number, marker = INSTAGRAM_POSTS_MARKER
       });
     };
   }
-  function send(html) {
-    var data = { id: ${id}, html: html, rateLimited: rateLimited };
+  function send(html, challenge) {
+    var data = { id: ${id}, html: html, rateLimited: rateLimited, challenge: Boolean(challenge) };
     if (window.NoraI) window.NoraI.onMessage(JSON.stringify({ type: 'watch-page', data: data }));
     // On desktop, the webview's host hears it.
     else if (window.electron) window.electron.ipcRenderer.sendToHost('watch-page', data);
   }
   function collect() {
+    // Set by Cloudflare's check for a browser, in its page, before the page's own.
+    if (window._cf_chl_opt) {
+      send('', true);
+      return;
+    }
+    if (selector) {
+      var nodes = document.querySelectorAll(selector);
+      if (nodes.length || ++tries > ${SCRIPT_MAX_TRIES}) {
+        send(Array.prototype.map.call(nodes, function (node) { return node.outerHTML; }).join('\\n'));
+        return;
+      }
+      setTimeout(collect, ${SCRIPT_POLL_MS});
+      return;
+    }
     var parts = [];
     var found = 0;
     document.querySelectorAll('meta[property^="og:"]').forEach(function (meta) { parts.push(meta.outerHTML); });
@@ -179,15 +209,26 @@ const finish = (id: number, result: { html: string } | { error: Error }) => {
   else reject(result.error)
 }
 
-/** Called by the host with what the page's script sent. */
-export const onWatchWebViewMessage = (id: number, html: string, rateLimited = false) => {
-  if (rateLimited) finish(id, { error: new Error(WATCH_WEBVIEW_RATE_LIMITED) })
+/**
+ * Called by the host with what the page's script sent. At Cloudflare's check, the page is waited
+ * for still: the check can pass by itself, or be passed by the user in a page they are shown.
+ */
+export const onWatchWebViewMessage = (id: number, html: string, rateLimited = false, challenge = false) => {
+  if (challenge) {
+    if (current?.id === id) current.challenged = true
+  } else if (rateLimited) finish(id, { error: new Error(WATCH_WEBVIEW_RATE_LIMITED) })
   else finish(id, html ? { html } : { error: new Error('no posts in the page') })
 }
 
 export const onWatchWebViewError = (id: number, error: Error) => finish(id, { error })
 
-/** The page's preview tags and post data, read by the hidden webview; one page at a time. */
+/** When the user closes a page they were shown. */
+export const cancelWatchWebView = (id: number) => finish(id, { error: new Error(WATCH_WEBVIEW_CANCELLED) })
+
+/**
+ * The page's preview tags and post data, read by the hidden webview; one page at a time. A page
+ * `visible` to the user is given all of `timeoutMs`, as they may take a while over it.
+ */
 export const loadInWatchWebView = (
   url: string,
   timeoutMs = PAGE_TIMEOUT_MS,
@@ -196,7 +237,18 @@ export const loadInWatchWebView = (
     more = 0,
     until,
     profile,
-  }: { marker?: string; more?: number; until?: number; profile?: string } = {},
+    selector,
+    visible,
+    ownUserAgent,
+  }: {
+    marker?: string
+    more?: number
+    until?: number
+    profile?: string
+    selector?: string
+    visible?: boolean
+    ownUserAgent?: boolean
+  } = {},
 ): Promise<string> => {
   const run = () =>
     new Promise<string>((resolve, reject) => {
@@ -206,8 +258,12 @@ export const loadInWatchWebView = (
       }
       const id = nextId++
       current = { id, resolve, reject }
-      watchWebView$.job.set({ id, url, marker, more, until, profile })
-      setTimeout(() => finish(id, { error: new Error('page timed out') }), Math.min(timeoutMs, more > 0 ? MORE_PAGE_TIMEOUT_MS : PAGE_TIMEOUT_MS))
+      watchWebView$.job.set({ id, url, marker, more, until, profile, selector, visible, ownUserAgent })
+      const timeout = visible ? timeoutMs : Math.min(timeoutMs, more > 0 ? MORE_PAGE_TIMEOUT_MS : PAGE_TIMEOUT_MS)
+      setTimeout(() => {
+        const challenged = current?.id === id && current.challenged
+        finish(id, { error: new Error(challenged ? WATCH_WEBVIEW_CHALLENGE : 'page timed out') })
+      }, timeout)
     })
   const result = queue.then(run, run)
   queue = result.catch(() => {})

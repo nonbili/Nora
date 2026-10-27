@@ -551,6 +551,68 @@ export function parseInstagramProfilePage(html: string, handle: string): WatchFe
   return { info: { name: name || undefined, avatar: metaContent(html, 'og:image') }, posts }
 }
 
+/** A profile on imginn, a site that shows Instagram profiles to anyone, behind Cloudflare's check for a browser. */
+export const imginnProfileUrl = (handle: string) => `https://imginn.com/${encodeURIComponent(handle)}/`
+
+const SHORTCODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+
+/** The id of a post from the code in its address, which is that id written in 64 letters. */
+export const instagramShortcodePk = (code: string) => {
+  let pk = BigInt(0)
+  for (const char of code) {
+    const digit = SHORTCODE_ALPHABET.indexOf(char)
+    if (digit === -1) return ''
+    pk = pk * BigInt(64) + BigInt(digit)
+  }
+  return pk.toString()
+}
+
+/**
+ * Imginn's own address for a picture is behind its check too, but carries Instagram's: the path
+ * and query of the picture on the server the query names, which needs no browser.
+ */
+export const imginnImageUrl = (src: string) => {
+  const [, path, query] = src.split('?')
+  const host = query && new URLSearchParams(query).get('_nc_ht')
+  if (!path || !host || !/^[a-z0-9.-]+\.(?:cdninstagram\.com|fbcdn\.net)$/.test(host)) return undefined
+  return `https://${host}/v/${path}?${query.replace(/&cache=1$/, '')}`
+}
+
+/**
+ * Reads the posts of a profile's page on imginn: the first of its grid, the profile's pinned
+ * posts among them. It tells neither when a post was made, which is read from its code, nor
+ * whether it is a video, which the post's embed page tells with the rest of its media.
+ */
+export function parseImginnProfilePage(html: string, handle: string): WatchFetchResult {
+  const userinfo = html.match(/<div class="userinfo"[\s\S]*?<\/h1>/)?.[0]
+  if (!userinfo) {
+    throw new Error('no posts in the page')
+  }
+  const posts: WatchFetchResult['posts'] = []
+  for (const [, code, img] of html.matchAll(/<div class="item"><div class="img"><a href="\/p\/([A-Za-z0-9_-]+)\/"[^>]*>(<img[^>]*>)/g)) {
+    const src = htmlAttribute(img, 'src')
+    const image = src ? imginnImageUrl(src) : undefined
+    const pk = instagramShortcodePk(code)
+    posts.push({
+      id: code,
+      site: 'instagram',
+      handle,
+      url: `https://www.instagram.com/p/${code}/`,
+      text: htmlAttribute(img, 'alt') || '',
+      image,
+      media: image ? [{ type: 'image', url: image, thumb: image }] : [],
+      mediaComplete: false,
+      createdAtMs: pk ? instagramPostTime(pk) : 0,
+    })
+  }
+  const avatar = htmlAttribute(userinfo.match(/<img[^>]*>/)?.[0] || '', 'src')
+  const name = userinfo.match(/<h1>([^<]*)<\/h1>/)?.[1]
+  return {
+    info: { name: name ? decodeEntities(name).trim() || undefined : undefined, avatar: avatar ? imginnImageUrl(avatar) : undefined },
+    posts,
+  }
+}
+
 /** The text of a post given as HTML: paragraphs and line breaks kept, a link as its address, made whole with `origin`. */
 export const htmlToText = (html: string, origin = '') =>
   decodeEntities(
@@ -1542,7 +1604,8 @@ export function dueWatchProfiles<T extends DueProfile>(
     now,
     defaultMinutes,
     timelineMinutes,
-  }: { manual: boolean; keys?: string[]; now: number; defaultMinutes: number; timelineMinutes?: TimelineIntervals },
+    force,
+  }: { manual: boolean; keys?: string[]; now: number; defaultMinutes: number; timelineMinutes?: TimelineIntervals; force?: boolean },
 ): T[] {
   return (
     profiles
@@ -1552,7 +1615,8 @@ export function dueWatchProfiles<T extends DueProfile>(
       .filter((profile) => {
         if (!profile.lastCheckedAt) return true
         const since = now - profile.lastCheckedAt
-        return manual ? since >= MANUAL_REFRESH_COOLDOWN_MS : since >= watchIntervalMinutes(profile, defaultMinutes, timelineMinutes) * 60000
+        // Unless forced, as just after imginn's check was passed for profiles it stopped.
+        return manual ? force || since >= MANUAL_REFRESH_COOLDOWN_MS : since >= watchIntervalMinutes(profile, defaultMinutes, timelineMinutes) * 60000
       })
       .sort((a, b) => (a.lastCheckedAt || 0) - (b.lastCheckedAt || 0))
   )

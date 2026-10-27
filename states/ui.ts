@@ -31,6 +31,8 @@ interface Store {
   // Adding sources by their links or from a file: into the timeline it was opened from, if any.
   addSourcesModal: { timelineId?: string } | null
   feedSettingsModalOpen: boolean
+  // The hint that imginn wants its check passed was closed, until no source waits for it.
+  verifyHintDismissed: boolean
   navModalOpen: boolean
   profileLinkUrl: string
   // A tab to reopen in another profile, picked in the same modal as a link.
@@ -90,6 +92,7 @@ export const ui$ = observable<Store>({
   feedSelection: null,
   addSourcesModal: null,
   feedSettingsModalOpen: false,
+  verifyHintDismissed: false,
   navModalOpen: false,
   profileLinkUrl: '',
   profileTabId: null,

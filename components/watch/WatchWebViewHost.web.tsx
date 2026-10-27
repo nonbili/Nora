@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { View } from 'react-native'
 import { useValue } from '@legendapp/state/react'
 import type { WebviewTag } from 'electron'
 import { NoraView } from '@/modules/nora-view'
@@ -12,6 +11,7 @@ import {
   onWatchWebViewMessage,
   watchWebView$,
 } from '@/lib/watch-webview'
+import { WatchWebViewFrame } from './WatchWebViewFrame'
 
 // What a webview says of a load the next one replaced, which is not a failure.
 const ERR_ABORTED = -3
@@ -52,7 +52,7 @@ export const WatchWebViewHost = () => {
           webview.setAudioMuted(true)
           await mainClient.setWatchPageScript(
             webview.getWebContentsId(),
-            buildWatchPageScript(job.id, job.marker, job.more, job.until),
+            buildWatchPageScript(job.id, job.marker, job.more, job.until, job.selector),
           )
           if (controller.signal.aborted) return
           await webview.loadURL(job.url)
@@ -62,9 +62,9 @@ export const WatchWebViewHost = () => {
         }
       })
       on<Electron.IpcMessageEvent>('ipc-message', (e) => {
-        const data = e.args?.[0] as { id?: unknown; html?: unknown; rateLimited?: unknown } | undefined
+        const data = e.args?.[0] as { id?: unknown; html?: unknown; rateLimited?: unknown; challenge?: unknown } | undefined
         if (e.channel !== 'watch-page' || typeof data?.id !== 'number') return
-        onWatchWebViewMessage(data.id, typeof data.html === 'string' ? data.html : '', data.rateLimited === true)
+        onWatchWebViewMessage(data.id, typeof data.html === 'string' ? data.html : '', data.rateLimited === true, data.challenge === true)
       })
       on<Electron.DidFailLoadEvent>('did-fail-load', (e) => {
         if (!e.isMainFrame || e.errorCode === ERR_ABORTED || !started) return
@@ -79,20 +79,17 @@ export const WatchWebViewHost = () => {
   }
 
   return (
-    <View
-      pointerEvents="none"
-      style={{ position: 'absolute', left: -2000, top: 0, width: 1280, height: 900, opacity: 0 }}
-    >
+    <WatchWebViewFrame job={job}>
       <NoraView
         // A new view for each page, so nothing of the last one is left over.
         key={job.id}
         ref={ref}
-        style={{ width: 1280, height: 900 }}
+        style={job.visible ? { flex: 1 } : { width: 1280, height: 900 }}
         partition={`persist:${job.profile || WATCH_WEBVIEW_PROFILE}`}
         // The desktop site, as Anonymous mode uses for Instagram: its profile page comes with its posts.
-        useragent={getUserAgent('win32', true)}
+        useragent={getUserAgent(job.ownUserAgent ? window.electron.process.platform : 'win32', true)}
         src="about:blank"
       />
-    </View>
+    </WatchWebViewFrame>
   )
 }
