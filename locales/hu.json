@@ -134,7 +134,9 @@
     "toast_downloadSucceeded": "Mentve a letöltések mappába",
     "toast_downloadFailed": "Nem sikerült letölteni",
     "httpBlocked_title": "HTTP-webhely tiltva",
-    "httpBlocked_body": "Ez a webhely nem biztonságos HTTP-kapcsolatot használ. A HTTP-webhelyek betöltésének engedélyezéséhez kapcsolja be a „HTTP-webhelyek engedélyezése” beállítást a beállításokban."
+    "httpBlocked_body": "Ez a webhely nem biztonságos HTTP-kapcsolatot használ. A HTTP-webhelyek betöltésének engedélyezéséhez kapcsolja be a „HTTP-webhelyek engedélyezése” beállítást a beállításokban.",
+    "toast_savingFile": "Fájl mentése…",
+    "toast_fileSaved": "Fájl mentve"
   },
   "profiles": {
     "label": "Profilok",
@@ -414,7 +416,9 @@
     },
     "feed": "Hírfolyam",
     "feedHint": "Új bejegyzések a figyelt forrásokból",
-    "mentionNotificationsSites": "Az X- és Facebook-fiókjából"
+    "mentionNotificationsSites": "Az X- és Facebook-fiókjából",
+    "downloads": "Letöltések",
+    "askDownloadDestination": "Kérdezzen rá, hogy hova mentse az egyes letöltéseket"
   },
   "sync": {
     "label": "Szinkronizálás",
@@ -732,6 +736,25 @@
     "lastPost": "Utolsó hozzászólás {{age}}",
     "noPostsYet": "Még nincsenek bejegyzések",
     "syncedAgo": "szinkronizálva {{age}}",
-    "neverSynced": "még nem szinkronizált"
+    "neverSynced": "még nem szinkronizált",
+    "statusNeedsVerification": "Az Instagram nem jelenítette meg ezt a profilt, az imginn pedig egy gyors ellenőrzést kér annak megerősítésére, hogy Ön nem robot. Koppintson ide az ellenőrzés elvégzéséhez.",
+    "imginnMode": "Instagram megtekintése az imginn oldalán",
+    "imginnModeOff": "Ki",
+    "imginnModeFallback": "Ha az Instagram nem működik",
+    "imginnModeFirst": "Először, majd az Instagram",
+    "imginnModeHint": "Csak a Nora megnyitott állapotában működik, és az imginn kérheti annak gyors ellenőrzését, hogy Ön nem robot.",
+    "nitterMode": "X megtekintése a Nitter oldalán",
+    "nitterModeOff": "Ki",
+    "nitterModeFallback": "Ha az X nem működik",
+    "nitterModeFirst": "Először, majd az X",
+    "nitterModeHint": "Az alábbi Nitter példányok segítségével olvassa be az X-profilokat, sorban megpróbálva mindegyiket. Azok a példányok, amelyek ellenőrzik a böngészőt, csak a Nora megnyitott állapotában olvashatók.",
+    "nitterInstancePlaceholder": "nitter.valami.com",
+    "nitterInstanceAdd": "Hozzáadás",
+    "nitterInstanceRemove": "A(z) {{instance}} eltávolítása",
+    "nitterInstanceInvalid": "Adja meg egy Nitter példány címét, például: nitter.valami.com",
+    "verifyHint": "Az imginn gyors ellenőrzést kér annak megerősítésére, hogy Ön nem robot, mielőtt a Nora beolvashatná az Instagramot. Koppintson az ellenőrzés elvégzéséhez.",
+    "verifyToast": "Az imginn gyors ellenőrzést kér az Instagram-hírfolyam frissítésének fenntartásához. Koppintson az ellenőrzés elvégzéséhez.",
+    "verifyTitle": "Végezze el az ellenőrzést az Instagram-hírfolyam frissítésének fenntartásához",
+    "verifyFailed": "Az ellenőrzés nem fejeződött be. A Nora később újra kérni fogja."
   }
 }
