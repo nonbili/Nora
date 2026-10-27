@@ -138,6 +138,8 @@
     "menu_openImageInNewTab": "Open image in new tab",
     "toast_downloadStarted": "Download started, check the system notification",
     "toast_downloadSucceeded": "Saved to the Downloads folder",
+    "toast_savingFile": "Saving file…",
+    "toast_fileSaved": "File saved",
     "toast_downloadFailed": "Failed to download",
     "httpBlocked_title": "HTTP website blocked",
     "httpBlocked_body": "This website uses an insecure HTTP connection. To allow loading HTTP websites, enable \"Allow HTTP websites\" in Settings."
@@ -180,6 +182,8 @@
     "openExternalLink": "Open external link in system browser",
     "redirectToOldReddit": "Redirect to Old Reddit",
     "allowHttpWebsite": "Allow HTTP websites",
+    "downloads": "Downloads",
+    "askDownloadDestination": "Ask where to save each download",
     "inspectable": "Make webview inspectable",
     "webrtc": {
       "label": "WebRTC",

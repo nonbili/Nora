@@ -21,6 +21,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.DocumentsContract
 import android.util.AttributeSet
 import android.util.Log
 import android.view.ContextMenu
@@ -62,12 +63,15 @@ import expo.modules.kotlin.views.ExpoView
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.charset.Charset
 import java.util.Base64
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONArray
 import org.json.JSONObject
@@ -1150,7 +1154,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
                 null
               )
             } else {
-              download(url, fileName, null)
+              download(url, fileName, mimeType)
             }
           }
         }
@@ -1405,6 +1409,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
 
+    if (nouController.settings.askDownloadDestination) {
+      downloadToDocument(activity, url, fileName, mimeType)
+      return
+    }
+
     CoroutineScope(Dispatchers.IO).launch {
       try {
         val uri = Uri.parse(url)
@@ -1426,16 +1435,62 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
   }
 
-  // DownloadManager posts its own notification, files written straight to MediaStore
-  // need one so the save is more than a toast the user has to act on immediately.
+  private fun downloadToDocument(activity: Activity, url: String, fileName: String?, mimeType: String?) {
+    CoroutineScope(Dispatchers.Main).launch {
+      var destination: Uri? = null
+      try {
+        val name = fileName ?: normalizeFileName(Uri.parse(url).lastPathSegment ?: "download", mimeType)
+        val type = systemMimeTypes.mimeTypeFor(name.substringAfterLast('.', "").lowercase()) ?: mimeType
+          ?: "application/octet-stream"
+        val userAgent = webView.settings.userAgentString
+        val referer = webView.url
+        val cookies = if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+          WebViewCompat.getProfile(webView).cookieManager
+        } else {
+          CookieManager.getInstance()
+        }
+        val uri = nouController.downloadPicker.createDocument(activity, name, type) ?: return@launch
+        destination = uri
+        Toast.makeText(context, nouController.t("toast_savingFile"), Toast.LENGTH_LONG).show()
+        withContext(Dispatchers.IO) {
+          copyDownload(url, userAgent, referer, cookies::getCookie) {
+            context.contentResolver.openOutputStream(uri, "w")
+              ?: throw IOException("Cannot open download destination")
+          }
+        }
+        Toast.makeText(context, nouController.t("toast_fileSaved"), Toast.LENGTH_LONG).show()
+        notifySaved(uri, name, type)
+      } catch (error: Exception) {
+        destination?.let { uri -> withContext(Dispatchers.IO) { deleteDownloadDocument(uri) } }
+        if (error is CancellationException) throw error
+        log("Download failed: ${error.message}")
+        Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
+      }
+    }
+  }
+
+  private fun deleteDownloadDocument(uri: Uri) {
+    try {
+      DocumentsContract.deleteDocument(context.contentResolver, uri)
+    } catch (error: Exception) {
+      log("Could not remove incomplete download: ${error.message}")
+    }
+  }
+
+  // DownloadManager posts its own notification; other saves need one as well.
   private fun notifySaved(uri: Uri, fileName: String, mimeType: String?) {
     try {
+      if (DocumentsContract.isDocumentUri(context, uri)) {
+        // The notification can outlive the activity's temporary URI grant. If a
+        // provider cannot persist read access, keep the save but skip the notification.
+        context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      }
       val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         manager.createNotificationChannel(
           NotificationChannel(
             SAVED_FILE_CHANNEL_ID,
-            nouController.t("toast_downloadSucceeded"),
+            nouController.t("toast_fileSaved"),
             NotificationManager.IMPORTANCE_LOW
           )
         )
@@ -1454,7 +1509,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
       val notification = NotificationCompat.Builder(context, SAVED_FILE_CHANNEL_ID)
         .setSmallIcon(android.R.drawable.stat_sys_download_done)
-        .setContentTitle(nouController.t("toast_downloadSucceeded"))
+        .setContentTitle(nouController.t("toast_fileSaved"))
         .setContentText(fileName)
         .setContentIntent(pendingIntent)
         .setAutoCancel(true)
@@ -1472,6 +1527,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
 
+    val askDestination = nouController.settings.askDownloadDestination
     CoroutineScope(Dispatchers.IO).launch {
       val resolver = context.contentResolver
       var uri: Uri? = null
@@ -1491,6 +1547,20 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           }
         }
         val fileName = normalizeFileName(_fileName, mimeType, detected)
+        if (askDestination) {
+          val destination = nouController.downloadPicker.createDocument(
+            activity, fileName, mimeType ?: "application/octet-stream"
+          ) ?: return@launch
+          uri = destination
+          val output = resolver.openOutputStream(destination, "w")
+            ?: throw IOException("Cannot open download destination")
+          output.use { it.write(bytes) }
+          activity.runOnUiThread {
+            Toast.makeText(context, nouController.t("toast_fileSaved"), Toast.LENGTH_LONG).show()
+          }
+          notifySaved(destination, fileName, mimeType)
+          return@launch
+        }
         val contentValues = ContentValues().apply {
           put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
           put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
@@ -1509,7 +1579,10 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         uri?.let { notifySaved(it, fileName, mimeType) }
       } catch (e: Exception) {
         e.printStackTrace()
-        uri?.let { resolver.delete(it, null, null) }
+        uri?.let {
+          if (askDestination) deleteDownloadDocument(it) else resolver.delete(it, null, null)
+        }
+        if (e is CancellationException) throw e
         activity.runOnUiThread {
           Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
         }

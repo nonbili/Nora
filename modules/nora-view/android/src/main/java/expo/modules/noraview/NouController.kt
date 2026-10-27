@@ -31,6 +31,9 @@ class NoraSettings : Record {
   val allowHttpWebsite: Boolean = false
 
   @Field
+  val askDownloadDestination: Boolean = false
+
+  @Field
   val internalHosts: List<String> = emptyList()
 
   @Field
@@ -63,6 +66,7 @@ class NoraBlocklist : Record {
 typealias LogFn = (String) -> Unit
 
 class NouController {
+  internal val downloadPicker = NoraDownloadPicker()
   private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
   internal var settings = NoraSettings()
   internal var i18nStrings = mutableMapOf<String, String>()
@@ -103,6 +107,8 @@ class NouController {
   }
 
   fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    if (downloadPicker.onActivityResult(requestCode, resultCode, data)) return
+    if (requestCode != 0) return
     if (resultCode == Activity.RESULT_OK) {
       val clipData = data?.getClipData()
       if (clipData != null) {

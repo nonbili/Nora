@@ -74,7 +74,10 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         return
       }
       if (!isWeb) {
-        const strings = i18n.t('native', { returnObjects: true })
+        const strings = {
+          ...i18n.t('native', { lng: 'en', returnObjects: true }),
+          ...i18n.t('native', { returnObjects: true }),
+        }
         NoraViewModule.setLocaleStrings(strings)
       }
       setLanguageRevision((v) => v + 1)

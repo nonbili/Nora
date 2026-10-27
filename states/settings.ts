@@ -64,6 +64,7 @@ export interface Settings {
   xDefaultHomeTimeline: XHomeTimeline
   hideXHomeTimelineTabs: boolean
   allowHttpWebsite: boolean
+  askDownloadDestination: boolean
   inspectable: boolean
   videoEdgeLongPressTo2x: boolean
   videoDefaultSpeed: number
@@ -180,6 +181,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     xDefaultHomeTimeline: normalizeXHomeTimeline(value?.xDefaultHomeTimeline),
     hideXHomeTimelineTabs: bool(value?.hideXHomeTimelineTabs),
     allowHttpWebsite: bool(value?.allowHttpWebsite, true),
+    askDownloadDestination: bool(value?.askDownloadDestination),
     inspectable: bool(value?.inspectable),
     videoEdgeLongPressTo2x: bool(value?.videoEdgeLongPressTo2x, true),
     videoDefaultSpeed: normalizeVideoSpeed(value?.videoDefaultSpeed),
@@ -291,6 +293,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
     data.sidebarCollapsed = false
   }
   data.desktopLayout = normalizeDesktopLayout(data.desktopLayout)
+  if (typeof data.askDownloadDestination !== 'boolean') {
+    data.askDownloadDestination = false
+  }
   if (typeof data.oneProfilePerSite !== 'boolean') {
     data.oneProfilePerSite = false
   }
@@ -337,6 +342,7 @@ export const settings$: Observable<Store> = observable<Store>({
   xDefaultHomeTimeline: 'for-you',
   hideXHomeTimelineTabs: false,
   allowHttpWebsite: true,
+  askDownloadDestination: false,
   inspectable: false,
   videoEdgeLongPressTo2x: true,
   videoDefaultSpeed: 1,

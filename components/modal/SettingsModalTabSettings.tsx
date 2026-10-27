@@ -279,6 +279,21 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
         </View>,
       )}
 
+      {isAndroid ? (
+        <View className="mt-10">
+          <NouText className={subheaderCls}>{t('settings.downloads')}</NouText>
+          <SettingsSurface>
+            <SettingsRow isLast>
+              <NouSwitch
+                label={<NouText>{t('settings.askDownloadDestination')}</NouText>}
+                value={settings.askDownloadDestination}
+                onPress={() => settings$.askDownloadDestination.toggle()}
+              />
+            </SettingsRow>
+          </SettingsSurface>
+        </View>
+      ) : null}
+
       <View className="mt-10">
         <NouText className={subheaderCls}>{t('blocklist.label')}</NouText>
         <View className={surfaceCls}>

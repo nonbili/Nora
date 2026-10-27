@@ -51,8 +51,17 @@ describe('settings transfer', () => {
     expect(parsed.settings?.headerPosition).toBe('bottom')
     expect(parsed.settings?.defaultZoom).toBe(100)
     expect(parsed.settings?.allowHttpWebsite).toBe(true)
+    expect(parsed.settings?.askDownloadDestination).toBe(false)
     expect(parsed.settings?.selectedSearchProviderId).toBe('url')
     expect(parsed.settings?.profiles.some((profile) => profile.id === 'default')).toBe(true)
+  })
+
+  it('preserves the download destination preference and rejects non-boolean values', () => {
+    const parsed = parseSettingsBackup(backupOf({ settings: { askDownloadDestination: true } }))
+    expect(parsed.settings?.askDownloadDestination).toBe(true)
+
+    const invalid = parseSettingsBackup(backupOf({ settings: { askDownloadDestination: 'yes' } }))
+    expect(invalid.settings?.askDownloadDestination).toBe(false)
   })
 
   it('keeps the anonymous mode off and the public search service default for a file without them', () => {

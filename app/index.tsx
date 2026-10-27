@@ -55,6 +55,7 @@ const syncNativeSettings = () => {
     openExternalLinkInSystemBrowser: value?.openExternalLinkInSystemBrowser,
     redirectToOldReddit: value?.redirectToOldReddit,
     allowHttpWebsite: value?.allowHttpWebsite,
+    askDownloadDestination: value?.askDownloadDestination,
     internalHosts: getInternalHosts(),
     proxyEnabled: value?.proxyEnabled,
     proxyType: value?.proxyType,

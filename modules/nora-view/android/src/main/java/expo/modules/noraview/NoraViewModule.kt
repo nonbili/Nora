@@ -127,6 +127,10 @@ class NoraViewModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("NoraView")
 
+    OnDestroy {
+      nouController.downloadPicker.cancelAll()
+    }
+
     OnActivityResult { activity, payload ->
       nouController.onActivityResult(payload.requestCode, payload.resultCode, payload.data)
     }
