@@ -1,0 +1,7 @@
+- Read Instagram feeds from imginn and X feeds from Nitter instances (opt-in)
+- Allow choosing where to save downloads on Android
+- Add Reopen in profile to the header menu
+- Add fullscreen button on TikTok
+- Fix Instagram and TikTok video downloads
+- Fix saving downloads when MIME type detection fails on Android
+- Translation updates
