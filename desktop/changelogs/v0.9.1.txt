@@ -1,0 +1,7 @@
+- Read Instagram feeds from imginn and X feeds from Nitter instances (opt-in)
+- Apply feed video settings and add timeline and gallery zoom gestures
+- Open feed notifications in Nora timelines
+- Add fullscreen button on TikTok
+- Fix Instagram and TikTok video downloads
+- Fix full-screen gallery layout and add option to open failed videos on original site
+- Translation updates

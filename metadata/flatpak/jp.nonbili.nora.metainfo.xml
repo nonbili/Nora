@@ -60,6 +60,19 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.9.1" date="2026-10-28">
+      <description>
+        <ul>
+          <li>Read Instagram feeds from imginn and X feeds from Nitter instances (opt-in)</li>
+          <li>Apply feed video settings and add timeline and gallery zoom gestures</li>
+          <li>Open feed notifications in Nora timelines</li>
+          <li>Add fullscreen button on TikTok</li>
+          <li>Fix Instagram and TikTok video downloads</li>
+          <li>Fix full-screen gallery layout and add option to open failed videos on original site</li>
+          <li>Translation updates</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.9.0" date="2026-10-22">
       <description>
         <ul>
