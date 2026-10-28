@@ -3,6 +3,7 @@ import { useValue } from '@legendapp/state/react'
 import { NoraView } from '@/modules/nora-view'
 import { getUserAgent } from '@/lib/useragent'
 import { isIos } from '@/lib/utils'
+import { isViewNotFoundError } from '@/lib/webview'
 import {
   WATCH_WEBVIEW_PROFILE,
   buildWatchPageScript,
@@ -47,7 +48,7 @@ export const WatchWebViewHost = () => {
       }
       void Promise.resolve(native.loadUrl(job.url)).catch((error) => {
         if (cancelled) return
-        if (error?.code === 'ERR_VIEW_NOT_FOUND') retry()
+        if (isViewNotFoundError(error)) retry()
         else onWatchWebViewError(job.id, error instanceof Error ? error : new Error(String(error)))
       })
     }

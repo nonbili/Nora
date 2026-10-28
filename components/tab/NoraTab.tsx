@@ -41,6 +41,7 @@ import { openUrlInDesktopTab } from '@/lib/desktop-view-actions'
 import {
   executeWebviewJavaScript,
   executeWebviewJavaScriptQuietly,
+  isViewNotFoundError,
   registerTabWebview,
   reloadWebview,
 } from '@/lib/webview'
@@ -670,7 +671,7 @@ const WebTab: React.FC<NoraTabProps> = ({
     // The native view is addressed by tag across the bridge, and that tag can go
     // stale between scheduling and dispatching the call (the view is remounted, or
     // the JS thread stalls long enough for the registry entry to be replaced). The
-    // call then rejects with ERR_VIEW_NOT_FOUND and the tab stays blank forever,
+    // call then rejects with a view-not-found error and the tab stays blank forever,
     // because tab.url never changes again to re-trigger this effect. So re-resolve
     // nativeRef on every attempt and retry a stale-view rejection.
     let cancelled = false
@@ -694,7 +695,7 @@ const WebTab: React.FC<NoraTabProps> = ({
         if (cancelled || tab.url === pageUrlRef.current) {
           return
         }
-        if (error?.code === 'ERR_VIEW_NOT_FOUND' && retriesLeft > 0) {
+        if (isViewNotFoundError(error) && retriesLeft > 0) {
           timer = setTimeout(() => attempt(retriesLeft - 1), LOAD_URL_RETRY_DELAY)
           return
         }

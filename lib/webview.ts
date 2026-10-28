@@ -15,6 +15,16 @@ type ReloadableWebview = ScriptableWebview & {
 
 const tabWebviews = new Map<string, PausableWebview>()
 
+// A native view call addressed by a tag whose view is gone (remounted, or not yet
+// registered) rejects with a FunctionCallException wrapping ArgumentCastException
+// wrapping ViewNotFoundException. The top-level code is the wrapper's, and in a minified
+// release build every code is derived from an R8-renamed class (e.g. `ERR_S4`), so
+// match the message the inner exception puts into the chain instead.
+export function isViewNotFoundError(error: unknown) {
+  const { code, message } = (error ?? {}) as { code?: unknown; message?: unknown }
+  return code === 'ERR_VIEW_NOT_FOUND' || (typeof message === 'string' && /Unable to find the class .* view with tag/.test(message))
+}
+
 export function executeWebviewJavaScript(webview: ScriptableWebview | null | undefined, script: string) {
   if (!webview?.executeJavaScript) {
     return Promise.resolve(undefined)
