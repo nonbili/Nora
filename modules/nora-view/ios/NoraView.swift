@@ -18,6 +18,21 @@ func isTikTokUrl(_ url: URL) -> Bool {
   return host == "tiktok.com" || host.hasSuffix(".tiktok.com")
 }
 
+/// WKUserContentController holds its message handlers strongly, so adding the view itself
+/// closed a cycle (view -> webView -> configuration -> controller -> view) and a closed
+/// tab's view, webview and page were never freed. Forward through a weak reference instead.
+private final class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+  private weak var handler: WKScriptMessageHandler?
+
+  init(_ handler: WKScriptMessageHandler) {
+    self.handler = handler
+  }
+
+  func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    handler?.userContentController(userContentController, didReceive: message)
+  }
+}
+
 class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIGestureRecognizerDelegate, WKDownloadDelegate {
   let onLoad = EventDispatcher()
   let onMessage = EventDispatcher()
@@ -186,7 +201,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
   private func createConfig(profile: String) -> WKWebViewConfiguration {
     let config = WKWebViewConfiguration()
-    config.userContentController.add(self, name: "NoraI")
+    config.userContentController.add(WeakScriptMessageHandler(self), name: "NoraI")
 
     installUserScripts(config.userContentController)
 

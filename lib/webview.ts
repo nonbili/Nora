@@ -19,10 +19,11 @@ const tabWebviews = new Map<string, PausableWebview>()
 // registered) rejects with a FunctionCallException wrapping ArgumentCastException
 // wrapping ViewNotFoundException. The top-level code is the wrapper's, and in a minified
 // release build every code is derived from an R8-renamed class (e.g. `ERR_S4`), so
-// match the message the inner exception puts into the chain instead.
+// match the message the inner exception puts into the chain instead. iOS words it
+// `Unable to find the 'NoraView' view with tag '840'`.
 export function isViewNotFoundError(error: unknown) {
   const { code, message } = (error ?? {}) as { code?: unknown; message?: unknown }
-  return code === 'ERR_VIEW_NOT_FOUND' || (typeof message === 'string' && /Unable to find the class .* view with tag/.test(message))
+  return code === 'ERR_VIEW_NOT_FOUND' || (typeof message === 'string' && /Unable to find the .+ view with tag/.test(message))
 }
 
 export function executeWebviewJavaScript(webview: ScriptableWebview | null | undefined, script: string) {

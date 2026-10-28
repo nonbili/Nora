@@ -21,6 +21,7 @@ it('recognizes a stale native view rejection in debug and minified release build
   expect(isViewNotFoundError({ code: 'ERR_S4', message })).toBe(true)
   expect(isViewNotFoundError({ code: 'ERR_FUNCTION_CALL', message })).toBe(true)
   expect(isViewNotFoundError({ code: 'ERR_VIEW_NOT_FOUND' })).toBe(true)
+  expect(isViewNotFoundError({ message: "Unable to find the 'NoraView' view with tag '840'" })).toBe(true)
   expect(isViewNotFoundError({ code: 'ERR_S4', message: 'net::ERR_FAILED' })).toBe(false)
   expect(isViewNotFoundError(undefined)).toBe(false)
 })
