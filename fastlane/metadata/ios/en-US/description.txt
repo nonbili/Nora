@@ -1,0 +1,31 @@
+Nora puts Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky and more in one private, ad-free app. Stay logged in to several accounts at once, and follow people in your own timelines, often without logging in.
+
+YOUR OWN FEED
+• Watch accounts on X, Instagram, Threads, Bluesky, Mastodon and TikTok, subreddits, and Facebook pages and groups
+• New posts in chronological timelines, with no algorithm
+• Many sources are checked without logging in
+• Photo and video gallery view
+• Notifications for new posts
+• Import your sources, export them as OPML
+
+PRIVATE AND AD-FREE
+• Block ads and trackers with EasyList and EasyPrivacy
+• Remove tracking parameters from links
+• Anonymous mode hides sign-in and open-in-app prompts
+• Search public posts without signing in
+
+MULTIPLE ACCOUNTS
+• Profiles with separate cookie storage, for several accounts on the same site
+• Tabs to keep many pages open
+
+DOWNLOAD AND MORE
+• Save images and videos from Instagram, Facebook, TikTok and X
+• Usage limits to spend less time scrolling
+• Select text, zoom and custom CSS
+
+SUPPORTED SITES
+Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK and X (Twitter).
+
+Nora shows each site's own web pages, with ads and trackers blocked. It is open source, and also available for Linux, macOS and Windows.
+
+Terms of Use (EULA): https://www.apple.com/legal/macapps/stdeula/

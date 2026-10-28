@@ -1,3 +1,7 @@
-<h2>Caratteristiche</h2><ul><li>Account multipli con archiviazione separata dei cookie</li><li>Lista di blocco (EasyList e EasyPrivacy)</li><li>Scarica immagine</li><li>Scarica reel fb/ig</li><li>Seleziona testo</li><li>Zoom</li><li>Rimuovi parametri di tracciamento URL</li></ul>
-<h2>SNS supportati</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
-<h2>Come funziona</h2><ul><li>Incorpora i siti web SNS in Android webview</li><li>Inietta codice per bloccare gli annunci</li></ul>
+<p>Nora riunisce Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky e altri in un'unica app privata e senza pubblicità. Resta connesso a più account contemporaneamente e segui chi vuoi nelle tue timeline, spesso senza accedere.</p>
+<h2>Il tuo feed</h2><ul><li>Segui account su X, Instagram, Threads, Bluesky, Mastodon e TikTok, subreddit, e pagine e gruppi Facebook</li><li>Nuovi post in ordine cronologico, senza algoritmo</li><li>Molte fonti vengono controllate senza accedere</li><li>Vista galleria di foto e video</li><li>Notifiche per i nuovi post</li><li>Importa le tue fonti ed esportale in OPML</li></ul>
+<h2>Privato e senza pubblicità</h2><ul><li>Blocca pubblicità e tracker con EasyList ed EasyPrivacy</li><li>Rimuove i parametri di tracciamento dai link</li><li>La modalità anonima nasconde gli inviti ad accedere e ad aprire l'app</li><li>Cerca post pubblici senza accedere</li></ul>
+<h2>Più account</h2><ul><li>Profili con cookie separati, per più account sullo stesso sito</li><li>Schede per tenere aperte molte pagine</li></ul>
+<h2>Download e altro</h2><ul><li>Salva immagini e video da Instagram, Facebook, TikTok e X</li><li>Limiti di utilizzo per passare meno tempo a scorrere</li><li>Selezione del testo, zoom e CSS personalizzato</li></ul>
+<h2>Siti supportati</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK e X (Twitter).</p>
+<p>Nora mostra le pagine web di ogni sito, con pubblicità e tracker bloccati. È open source ed è disponibile anche per Linux, macOS e Windows.</p>

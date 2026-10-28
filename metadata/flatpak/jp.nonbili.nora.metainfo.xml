@@ -3,7 +3,7 @@
   <id>jp.nonbili.nora</id>
 
   <name>Nora</name>
-  <summary>SNS browser</summary>
+  <summary>Private, ad-free social media</summary>
 
   <developer id="jp.nonbili">
     <name>Nonbili Inc.</name>
@@ -18,10 +18,15 @@
   </branding>
 
   <description>
+    <p>
+      Nora puts Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky and more in one private, ad-free app.
+      Stay logged in to several accounts at once, and follow people in your own timelines, often without logging in.
+    </p>
     <ul>
+      <li>Watch accounts and read their new posts in chronological timelines</li>
+      <li>Deck/Split/Grid view to browse multiple timelines</li>
       <li>Block ads and trackers</li>
       <li>Vertical tabs</li>
-      <li>Deck/Split/Grid view to browse multiple timelines</li>
       <li>Download fb/ig/tiktok/x video</li>
       <li>Multiple accounts with separate cookie storage</li>
       <li>Customize with CSS</li>
@@ -30,11 +35,20 @@
 
   <keywords>
     <keyword>sns</keyword>
+    <keyword>social media</keyword>
     <keyword>browser</keyword>
+    <keyword>feed</keyword>
+    <keyword>timeline</keyword>
+    <keyword>multiple accounts</keyword>
+    <keyword>ad blocker</keyword>
     <keyword>instagram</keyword>
     <keyword>reddit</keyword>
     <keyword>facebook</keyword>
     <keyword>x</keyword>
+    <keyword>tiktok</keyword>
+    <keyword>bluesky</keyword>
+    <keyword>mastodon</keyword>
+    <keyword>threads</keyword>
   </keywords>
 
   <launchable type="desktop-id">jp.nonbili.nora.desktop</launchable>

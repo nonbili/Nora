@@ -1,3 +1,7 @@
-<h2>Funktioner</h2><ul><li>Flera konton med separat lagring av kakor</li><li>Blockeringslista (EasyList och EasyPrivacy)</li><li>Ladda ner bild</li><li>Ladda ner fb/ig reel</li><li>Markera text</li><li>Zooma</li><li>Ta bort spårningsparametrar i URL:er</li></ul>
-<h2>SNS som stöds</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
-<h2>Så fungerar det</h2><ul><li>Bäddar in SNS-webbplatser i Android webview</li><li>Injekterar kod för att blockera annonser</li></ul>
+<p>Nora samlar Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky med mera i en privat, reklamfri app. Var inloggad på flera konton samtidigt och följ personer i dina egna tidslinjer, ofta utan att logga in.</p>
+<h2>Ditt eget flöde</h2><ul><li>Bevaka konton på X, Instagram, Threads, Bluesky, Mastodon och TikTok, subreddits samt Facebook-sidor och grupper</li><li>Nya inlägg i kronologisk ordning, utan algoritm</li><li>Många källor hämtas utan inloggning</li><li>Galleri för foton och videor</li><li>Aviseringar om nya inlägg</li><li>Importera dina källor och exportera dem som OPML</li></ul>
+<h2>Privat och reklamfritt</h2><ul><li>Blockera annonser och spårare med EasyList och EasyPrivacy</li><li>Ta bort spårningsparametrar från länkar</li><li>Anonymt läge döljer uppmaningar att logga in och öppna i appen</li><li>Sök bland offentliga inlägg utan att logga in</li></ul>
+<h2>Flera konton</h2><ul><li>Profiler med separata cookies, för flera konton på samma webbplats</li><li>Flikar för att hålla många sidor öppna</li></ul>
+<h2>Nedladdningar med mera</h2><ul><li>Spara bilder och videor från Instagram, Facebook, TikTok och X</li><li>Användningsgränser för mindre tid med scrollande</li><li>Markera text, zooma och egen CSS</li></ul>
+<h2>Webbplatser som stöds</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK och X (Twitter).</p>
+<p>Nora visar varje webbplats egna sidor, med annonser och spårare blockerade. Appen har öppen källkod och finns även för Linux, macOS och Windows.</p>

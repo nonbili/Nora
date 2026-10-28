@@ -1,0 +1,7 @@
+<p>Nora menghadirkan Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky, dan lainnya dalam satu aplikasi pribadi tanpa iklan. Tetap masuk ke beberapa akun sekaligus, dan ikuti siapa saja di linimasa Anda sendiri, sering kali tanpa login.</p>
+<h2>Feed Anda sendiri</h2><ul><li>Pantau akun di X, Instagram, Threads, Bluesky, Mastodon, dan TikTok, subreddit, serta halaman dan grup Facebook</li><li>Postingan baru secara kronologis, tanpa algoritme</li><li>Banyak sumber diperiksa tanpa login</li><li>Tampilan galeri foto dan video</li><li>Notifikasi postingan baru</li><li>Impor sumber Anda, ekspor sebagai OPML</li></ul>
+<h2>Pribadi dan tanpa iklan</h2><ul><li>Blokir iklan dan pelacak dengan EasyList dan EasyPrivacy</li><li>Hapus parameter pelacakan dari tautan</li><li>Mode anonim menyembunyikan ajakan login dan buka di aplikasi</li><li>Cari postingan publik tanpa login</li></ul>
+<h2>Banyak akun</h2><ul><li>Profil dengan cookie terpisah, untuk beberapa akun di situs yang sama</li><li>Tab untuk membuka banyak halaman sekaligus</li></ul>
+<h2>Unduhan dan lainnya</h2><ul><li>Simpan gambar dan video dari Instagram, Facebook, TikTok, dan X</li><li>Batas penggunaan agar tidak terlalu lama menggulir</li><li>Pilih teks, zoom, dan CSS kustom</li></ul>
+<h2>Situs yang didukung</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK, dan X (Twitter).</p>
+<p>Nora menampilkan halaman web asli setiap situs, dengan iklan dan pelacak diblokir. Nora bersifat sumber terbuka dan juga tersedia untuk Linux, macOS, dan Windows.</p>

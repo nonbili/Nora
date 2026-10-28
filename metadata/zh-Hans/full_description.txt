@@ -1,3 +1,7 @@
-<h2>功能</h2><ul><li>多账号登录，独立 Cookie 存储</li><li>屏蔽列表 (EasyList 和 EasyPrivacy)</li><li>下载图片</li><li>下载 Facebook/Instagram 视频</li><li>选择文本</li><li>缩放</li><li>移除 URL 追踪参数</li></ul>
-<h2>支持的社交网络</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
-<h2>工作原理</h2><ul><li>在 Android WebView 中封装社交网络网站</li><li>注入代码以屏蔽广告</li></ul>
+<p>Nora 将 Instagram、X、Facebook、Reddit、TikTok、Threads、Bluesky 等汇集到一个私密、无广告的应用中。同时登录多个账号，并在自己的时间线中关注任何人，很多时候无需登录。</p>
+<h2>你自己的信息流</h2><ul><li>关注 X、Instagram、Threads、Bluesky、Mastodon 和 TikTok 账号、Reddit 版块，以及 Facebook 主页和小组</li><li>按时间顺序显示新帖子，没有算法推荐</li><li>许多来源无需登录即可获取</li><li>照片和视频画廊视图</li><li>新帖子通知</li><li>导入来源，并导出为 OPML</li></ul>
+<h2>私密无广告</h2><ul><li>使用 EasyList 和 EasyPrivacy 拦截广告和跟踪器</li><li>移除链接中的跟踪参数</li><li>匿名模式隐藏登录和“在应用中打开”提示</li><li>无需登录即可搜索公开帖子</li></ul>
+<h2>多账号</h2><ul><li>Cookie 相互隔离的配置文件，可在同一网站使用多个账号</li><li>用标签页同时打开多个页面</li></ul>
+<h2>下载及更多</h2><ul><li>保存 Instagram、Facebook、TikTok 和 X 的图片与视频</li><li>使用时长限制，减少刷屏时间</li><li>文本选择、缩放和自定义 CSS</li></ul>
+<h2>支持的网站</h2><p>Bluesky、Facebook、Instagram、LinkedIn、Mastodon、Reddit、Threads、TikTok、Tumblr、VK 和 X（Twitter）。</p>
+<p>Nora 直接显示各网站的网页，并拦截广告和跟踪器。它是开源软件，也提供 Linux、macOS 和 Windows 版本。</p>

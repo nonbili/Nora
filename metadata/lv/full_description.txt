@@ -1,0 +1,7 @@
+<p>Nora apvieno Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky un citus vienā privātā lietotnē bez reklāmām. Esi pieteicies vairākos kontos vienlaikus un seko cilvēkiem savās laika joslās, bieži bez pieteikšanās.</p>
+<h2>Tava plūsma</h2><ul><li>Seko kontiem X, Instagram, Threads, Bluesky, Mastodon un TikTok, subredditiem, kā arī Facebook lapām un grupām</li><li>Jaunas ziņas hronoloģiskā secībā, bez algoritma</li><li>Daudzi avoti tiek pārbaudīti bez pieteikšanās</li><li>Foto un video galerijas skats</li><li>Paziņojumi par jaunām ziņām</li><li>Importē avotus un eksportē tos OPML formātā</li></ul>
+<h2>Privāti un bez reklāmām</h2><ul><li>Bloķē reklāmas un izsekotājus ar EasyList un EasyPrivacy</li><li>Noņem izsekošanas parametrus no saitēm</li><li>Anonīmais režīms paslēpj aicinājumus pieteikties un atvērt lietotnē</li><li>Meklē publiskas ziņas bez pieteikšanās</li></ul>
+<h2>Vairāki konti</h2><ul><li>Profili ar atsevišķām sīkdatnēm vairākiem kontiem vienā vietnē</li><li>Cilnes, lai turētu atvērtas daudzas lapas</li></ul>
+<h2>Lejupielādes un citi</h2><ul><li>Saglabā attēlus un video no Instagram, Facebook, TikTok un X</li><li>Lietošanas ierobežojumi, lai mazāk ritinātu</li><li>Teksta atlase, tālummaiņa un pielāgots CSS</li></ul>
+<h2>Atbalstītās vietnes</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK un X (Twitter).</p>
+<p>Nora rāda katras vietnes oriģinālās tīmekļa lapas, bloķējot reklāmas un izsekotājus. Tā ir atvērtā pirmkoda lietotne, pieejama arī Linux, macOS un Windows.</p>

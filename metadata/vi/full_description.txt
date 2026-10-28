@@ -1,0 +1,7 @@
+<p>Nora gom Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky và nhiều mạng khác vào một ứng dụng riêng tư, không quảng cáo. Đăng nhập nhiều tài khoản cùng lúc và theo dõi bất kỳ ai trong dòng thời gian của riêng bạn, thường không cần đăng nhập.</p>
+<h2>Bảng tin của riêng bạn</h2><ul><li>Theo dõi tài khoản trên X, Instagram, Threads, Bluesky, Mastodon và TikTok, các subreddit, trang và nhóm Facebook</li><li>Bài đăng mới theo thứ tự thời gian, không có thuật toán</li><li>Nhiều nguồn được kiểm tra mà không cần đăng nhập</li><li>Chế độ xem thư viện ảnh và video</li><li>Thông báo khi có bài đăng mới</li><li>Nhập nguồn và xuất ra OPML</li></ul>
+<h2>Riêng tư, không quảng cáo</h2><ul><li>Chặn quảng cáo và trình theo dõi bằng EasyList và EasyPrivacy</li><li>Xóa tham số theo dõi khỏi liên kết</li><li>Chế độ ẩn danh ẩn lời nhắc đăng nhập và mở trong ứng dụng</li><li>Tìm bài đăng công khai mà không cần đăng nhập</li></ul>
+<h2>Nhiều tài khoản</h2><ul><li>Hồ sơ với cookie riêng biệt, cho nhiều tài khoản trên cùng một trang</li><li>Thẻ để mở nhiều trang cùng lúc</li></ul>
+<h2>Tải xuống và hơn nữa</h2><ul><li>Lưu ảnh và video từ Instagram, Facebook, TikTok và X</li><li>Giới hạn sử dụng để bớt thời gian lướt</li><li>Chọn văn bản, thu phóng và CSS tùy chỉnh</li></ul>
+<h2>Trang được hỗ trợ</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK và X (Twitter).</p>
+<p>Nora hiển thị trang web gốc của từng mạng, với quảng cáo và trình theo dõi bị chặn. Ứng dụng mã nguồn mở, có cả phiên bản cho Linux, macOS và Windows.</p>

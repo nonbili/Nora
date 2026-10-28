@@ -1,3 +1,7 @@
-<h2>Features</h2><ul><li>Multiple accounts with separate cookie storage</li><li>Blocklist (EasyList and EasyPrivacy)</li><li>Download image</li><li>Download fb/ig reel</li><li>Usage limits</li><li>Select text</li><li>Zoom</li><li>Remove tracking url query params</li></ul>
-<h2>Supported SNS</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
-<h2>How it works</h2><ul><li>Wrap the SNS websites in Android webview</li><li>Inject code to block ads</li></ul>
+<p>Nora puts Instagram, X, Facebook, Reddit, TikTok, Threads, Bluesky and more in one private, ad-free app. Stay logged in to several accounts at once, and follow people in your own timelines, often without logging in.</p>
+<h2>Your own feed</h2><ul><li>Watch accounts on X, Instagram, Threads, Bluesky, Mastodon and TikTok, subreddits, and Facebook pages and groups</li><li>New posts in chronological timelines, with no algorithm</li><li>Many sources are checked without logging in</li><li>Photo and video gallery view</li><li>Notifications for new posts</li><li>Import your sources, export them as OPML</li></ul>
+<h2>Private and ad-free</h2><ul><li>Block ads and trackers with EasyList and EasyPrivacy</li><li>Remove tracking parameters from links</li><li>Anonymous mode hides sign-in and open-in-app prompts</li><li>Search public posts without signing in</li></ul>
+<h2>Multiple accounts</h2><ul><li>Profiles with separate cookie storage, for several accounts on the same site</li><li>Tabs to keep many pages open</li></ul>
+<h2>Download and more</h2><ul><li>Save images and videos from Instagram, Facebook, TikTok and X</li><li>Usage limits to spend less time scrolling</li><li>Select text, zoom and custom CSS</li></ul>
+<h2>Supported sites</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK and X (Twitter).</p>
+<p>Nora shows each site's own web pages, with ads and trackers blocked. It is open source, and also available for Linux, macOS and Windows.</p>

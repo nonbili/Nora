@@ -1,3 +1,7 @@
-<h2>主な機能</h2><ul><li>複数のアカウントを個別のCookieストレージで管理</li><li>ブロックリスト（EasyList、EasyPrivacy）による広告ブロック</li><li>画像のダウンロード</li><li>Facebook/Instagramのリール動画のダウンロード</li><li>テキスト選択</li><li>ズーム</li><li>URLのトラッキングパラメータを自動削除</li></ul>
-<h2>対応SNS</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
-<h2>仕組み</h2><ul><li>SNSのウェブサイトをAndroid WebViewで表示</li><li>広告をブロックするためのコードを注入</li></ul>
+<p>Noraは、Instagram、X、Facebook、Reddit、TikTok、Threads、Blueskyなどを、プライベートで広告のない一つのアプリにまとめます。複数のアカウントに同時にログインしたまま、自分だけのタイムラインで好きなアカウントをフォローできます。多くの場合ログインは不要です。</p>
+<h2>自分だけのフィード</h2><ul><li>X、Instagram、Threads、Bluesky、Mastodon、TikTokのアカウント、サブレディット、Facebookのページやグループをウォッチ</li><li>新しい投稿をアルゴリズムなしの時系列で表示</li><li>多くのソースはログインせずに取得</li><li>写真と動画のギャラリー表示</li><li>新しい投稿の通知</li><li>ソースのインポートとOPMLでのエクスポート</li></ul>
+<h2>プライバシーと広告ブロック</h2><ul><li>EasyListとEasyPrivacyで広告とトラッカーをブロック</li><li>リンクからトラッキングパラメータを削除</li><li>匿名モードでログインやアプリで開くよう促す表示を非表示</li><li>ログインせずに公開投稿を検索</li></ul>
+<h2>複数アカウント</h2><ul><li>Cookieを分けたプロフィールで、同じサイトの複数アカウントを利用</li><li>タブでたくさんのページを開いたまま</li></ul>
+<h2>ダウンロードなど</h2><ul><li>Instagram、Facebook、TikTok、Xの画像と動画を保存</li><li>使用時間の制限でスクロールしすぎを防止</li><li>テキスト選択、ズーム、カスタムCSS</li></ul>
+<h2>対応サイト</h2><p>Bluesky、Facebook、Instagram、LinkedIn、Mastodon、Reddit、Threads、TikTok、Tumblr、VK、X（Twitter）</p>
+<p>Noraは各サイトのWebページをそのまま表示し、広告とトラッカーをブロックします。オープンソースで、Linux、macOS、Windows版もあります。</p>

@@ -1,5 +1,9 @@
 # Store screenshots
 
+Both capture scripts frame each raw screen with a headline from
+`scripts/store_caption.py`. Edit the `CAPTIONS` there and capture again to
+change them; captioning an already-captioned image frames it twice.
+
 ## Google Play and README
 
 The six Android captures in `../../metadata/en-US/images/phoneScreenshots/`

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture English App Store screenshots from the dedicated Nora preview simulators.
+"""Capture captioned English App Store screenshots from the dedicated Nora preview simulators.
 
 Requires Xcode, Maestro, Pillow, and a seeded NoraPreview.app installation.
 The preview entry clears demo app data on launch. Never run on a personal app install.
@@ -14,6 +14,8 @@ import tempfile
 import time
 
 from PIL import Image, ImageChops, ImageStat
+
+from store_caption import CAPTIONS, caption
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / 'fastlane' / 'metadata' / 'ios' / 'en-US'
@@ -119,6 +121,7 @@ def capture(target, device):
                     image = settled_snapshot(device)
                 if image.size != size:
                     raise RuntimeError(f'{target}: expected {size}, captured {image.size}')
+                image = caption(image, CAPTIONS[label.split('-', 1)[1]])
                 image.save(staging/f'{target}-{label}.png', optimize=True)
                 print(f'Captured {target}-{label}: {size[0]}×{size[1]} RGB', flush=True)
             for path in staging.glob('*.png'):

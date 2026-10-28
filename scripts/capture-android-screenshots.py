@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture six Google Play / README screenshots in an isolated Android emulator.
+"""Capture six captioned Google Play / README screenshots in an isolated Android emulator.
 
 Install a compatible debuggable Nora APK first. Use a read-only AVD session;
 this script replaces demo data in the emulator, and refuses physical devices.
@@ -21,6 +21,8 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 from PIL import Image, ImageChops, ImageStat
+
+from store_caption import CAPTIONS, caption
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT/'metadata'/'en-US'/'images'/'phoneScreenshots'
@@ -167,6 +169,7 @@ def main():
                 image = device.settled()
                 if image.size != (1080, 1920):
                     raise RuntimeError(f'Unexpected Android screenshot dimensions: {image.size}')
+                image = caption(image, CAPTIONS[name])
                 image.save(work/f'{index}.png', optimize=True)
                 print(f'Captured Android {index}/6: {name}', flush=True)
             for path in sorted(work.glob('*.png')):

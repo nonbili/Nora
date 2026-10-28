@@ -1,3 +1,7 @@
-<h2>功能</h2><ul><li>多帳號登入，獨立 Cookie 儲存</li><li>封鎖清單 (EasyList 和 EasyPrivacy)</li><li>下載圖片</li><li>下載 FB/IG 影片</li><li>選擇文字</li><li>縮放</li><li>移除網址追蹤參數</li></ul>
-<h2>支援的社群網路</h2><ul><li>Bluesky</li><li>Facebook</li><li>Instagram</li><li>LinkedIn</li><li>Reddit</li><li>Threads</li><li>TikTok</li><li>Tumblr</li><li>VK</li><li>X (Twitter)</li></ul>
-<h2>工作原理</h2><ul><li>在 Android WebView 中封裝社群網路網站</li><li>插入程式碼以封鎖廣告</li></ul>
+<p>Nora 將 Instagram、X、Facebook、Reddit、TikTok、Threads、Bluesky 等匯集到一個私密、無廣告的應用程式中。同時登入多個帳號，並在自己的時間軸中追蹤任何人，很多時候無須登入。</p>
+<h2>你自己的動態</h2><ul><li>追蹤 X、Instagram、Threads、Bluesky、Mastodon 和 TikTok 帳號、Reddit 看板，以及 Facebook 粉絲專頁和社團</li><li>依時間順序顯示新貼文，沒有演算法推薦</li><li>許多來源無須登入即可取得</li><li>相片與影片圖庫檢視</li><li>新貼文通知</li><li>匯入來源，並匯出為 OPML</li></ul>
+<h2>私密無廣告</h2><ul><li>使用 EasyList 和 EasyPrivacy 封鎖廣告和追蹤器</li><li>移除連結中的追蹤參數</li><li>匿名模式隱藏登入和「在應用程式中開啟」提示</li><li>無須登入即可搜尋公開貼文</li></ul>
+<h2>多帳號</h2><ul><li>Cookie 互相隔離的設定檔，可在同一網站使用多個帳號</li><li>用分頁同時開啟多個頁面</li></ul>
+<h2>下載及更多</h2><ul><li>儲存 Instagram、Facebook、TikTok 和 X 的圖片與影片</li><li>使用時間限制，減少滑手機的時間</li><li>文字選取、縮放和自訂 CSS</li></ul>
+<h2>支援的網站</h2><p>Bluesky、Facebook、Instagram、LinkedIn、Mastodon、Reddit、Threads、TikTok、Tumblr、VK 和 X（Twitter）。</p>
+<p>Nora 直接顯示各網站的網頁，並封鎖廣告和追蹤器。它是開放原始碼軟體，也提供 Linux、macOS 和 Windows 版本。</p>
