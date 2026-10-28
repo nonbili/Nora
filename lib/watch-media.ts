@@ -2,7 +2,9 @@ import { Platform } from 'react-native'
 import { observable } from '@legendapp/state'
 import { syncObservable } from '@legendapp/state/sync'
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv'
+import { t } from 'i18next'
 import NoraViewModule from '@/modules/nora-view'
+import { showActionToast, showButtonToast, showToast } from '@/lib/toast'
 import { SharedRequests } from '@/lib/shared-request'
 import { watchFetch } from '@/lib/watch-fetch'
 import { clearMediaFiles, deleteMediaFile, downloadMediaFile, listMediaFiles, mediaFileExists, mediaFileUri } from '@/lib/watch-media-files'
@@ -391,10 +393,12 @@ export const savesToDownloads =
   (Platform.OS === 'web' || (Platform.OS === 'android' && Number(Platform.Version) >= 29)) &&
   Boolean(NoraViewModule.saveFileToDownloads)
 
-export const saveWatchPostMedia = async (post: WatchPost, only?: number): Promise<number> => {
+export const saveWatchPostMedia = async (post: WatchPost, only?: number): Promise<{ saved: number; path?: string }> => {
   post = currentPost(post)
   const media = await ensurePostMedia(post)
   let saved = 0
+  // Where the last file written to Downloads went.
+  let path: string | undefined
   for (const [index, item] of media.entries()) {
     if (only !== undefined && index !== only) continue
     // Held from before it is kept until it is copied out, so pruning can't take it in between.
@@ -403,7 +407,11 @@ export const saveWatchPostMedia = async (post: WatchPost, only?: number): Promis
       const uri = await keepPostMediaItem(post, index)
       if (!uri) continue
       if (savesToDownloads && NoraViewModule.saveFileToDownloads) {
-        if (await NoraViewModule.saveFileToDownloads(uri, mediaFileName(post, index, item), mediaMimeType(item))) saved += 1
+        const result = await NoraViewModule.saveFileToDownloads(uri, mediaFileName(post, index, item), mediaMimeType(item))
+        if (result) {
+          saved += 1
+          path = result
+        }
       } else if (Sharing && (await Sharing.isAvailableAsync())) {
         await Sharing.shareAsync(uri, { mimeType: mediaMimeType(item) })
         saved += 1
@@ -413,7 +421,22 @@ export const saveWatchPostMedia = async (post: WatchPost, only?: number): Promis
     }
   }
   pruneWatchMedia()
-  return saved
+  return { saved, path }
+}
+
+/**
+ * Tells how many files went to Downloads, with a button to show them: their folder on desktop,
+ * and on Android the file itself, when it is just one.
+ */
+export const showMediaSavedToast = (saved: number, path?: string) => {
+  const msg = t('feed.mediaSaved', { count: saved })
+  if (path && NoraViewModule.showItemInFolder) {
+    showButtonToast(msg, t('native.toast_openFolder'), () => void NoraViewModule.showItemInFolder?.(path))
+  } else if (path && saved === 1 && NoraViewModule.openFile) {
+    showActionToast(msg, () => void NoraViewModule.openFile?.(path), t('native.toast_open'))
+  } else {
+    showToast(msg)
+  }
 }
 
 // The media of a post that is no longer kept goes with it.

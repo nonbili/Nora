@@ -88,7 +88,7 @@ export async function openDownloadWindow(url: string) {
     const name = fileName || 'download'
     const outputPath = path.join(app.getPath('downloads'), name)
     await fs.writeFile(outputPath, Buffer.from(content, 'base64'))
-    uiClient.showToast(`Download finished: ${outputPath}`)
+    uiClient.showDownloadToast(`Download finished: ${outputPath}`, outputPath)
     if (win) {
       win.close()
       win = undefined

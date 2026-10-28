@@ -1,9 +1,11 @@
 package expo.modules.noraview
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -264,15 +266,16 @@ class NoraViewModule : Module() {
     }
 
     // Copies a file the app already has, like media kept for the feed, to the shared
-    // Downloads, where the user's other apps can see it. Android 10 and later only: before
-    // that it takes a storage permission, and the app shares the file instead.
+    // Downloads, where the user's other apps can see it, and resolves to its content URI.
+    // Android 10 and later only: before that it takes a storage permission, and the app
+    // shares the file instead.
     AsyncFunction("saveFileToDownloads") Coroutine { sourceUri: String, fileName: String, mimeType: String? ->
-      val context = appContext.reactContext ?: return@Coroutine false
+      val context = appContext.reactContext ?: return@Coroutine null
       withContext(Dispatchers.IO) {
-        val source = File(Uri.parse(sourceUri).path ?: return@withContext false)
-        if (!source.exists()) return@withContext false
+        val source = File(Uri.parse(sourceUri).path ?: return@withContext null)
+        if (!source.exists()) return@withContext null
         val type = mimeType ?: "application/octet-stream"
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) return@withContext false
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) return@withContext null
         try {
           val values = android.content.ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
@@ -280,16 +283,36 @@ class NoraViewModule : Module() {
             put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
           }
           val resolver = context.contentResolver
-          val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return@withContext false
+          val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return@withContext null
           try {
             resolver.openOutputStream(uri)?.use { output -> source.inputStream().use { it.copyTo(output) } }
           } catch (e: Exception) {
             resolver.delete(uri, null, null)
             throw e
           }
-          true
+          uri.toString()
         } catch (e: Exception) {
           log("saveFileToDownloads failed: ${e.message}")
+          null
+        }
+      }
+    }
+
+    // Opens a file saved to Downloads in the app the user picks for its type.
+    AsyncFunction("openFile") { uri: String ->
+      val context = appContext.reactContext
+      if (context == null) {
+        false
+      } else {
+        val data = Uri.parse(uri)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+          setDataAndType(data, context.contentResolver.getType(data) ?: "*/*")
+          addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+          context.startActivity(intent)
+          true
+        } catch (e: ActivityNotFoundException) {
           false
         }
       }

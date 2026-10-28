@@ -25,7 +25,7 @@ export function attachDownloadHandler(ses: Session) {
       const savePath = item.getSavePath()
       if (state === 'completed') {
         if (savePath) setPref('lastDownloadDir', path.dirname(savePath))
-        uiClient.showToast(`Download finished: ${savePath}`)
+        uiClient.showDownloadToast(`Download finished: ${savePath}`, savePath)
       } else if (state === 'interrupted') {
         uiClient.showToast(`Download failed: ${savePath}`)
       }

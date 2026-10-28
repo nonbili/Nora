@@ -18,8 +18,13 @@ declare class NoraViewModule extends NativeModule {
     profile: string,
     userAgent: string,
   ): Promise<boolean>
-  // Android only: iOS saves through the share sheet instead.
-  saveFileToDownloads?(sourceUri: string, fileName: string, mimeType: string | null): Promise<boolean>
+  // Android and desktop: iOS saves through the share sheet instead. Resolves to where the file
+  // went, a content URI on Android and a path on desktop, or nothing when it failed.
+  saveFileToDownloads?(sourceUri: string, fileName: string, mimeType: string | null): Promise<string | null | false>
+  // Android only: opens a file saved to Downloads, by the content URI it was saved to.
+  openFile?(uri: string): Promise<boolean>
+  // Desktop only: reveals a saved file in the system file manager.
+  showItemInFolder?(path: string): Promise<void>
   // Android only: notifications without expo-notifications, which the F-Droid build lacks.
   areNotificationsEnabled?(): boolean
   requestNotificationPermission?(): Promise<boolean>

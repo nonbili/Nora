@@ -8,6 +8,7 @@ import { showImagePreview, updateImagePreview } from '../lib/image-preview'
 import { UI_CHANNEL } from 'main/ipc/constants.js'
 import { handleShortcuts } from '../lib/shortcuts'
 import { activateNotificationTabById } from '../lib/notifications'
+import { showDownloadToast } from '../lib/download-toast'
 
 function openLinkInProfile(url: string) {
   ui$.profileLinkUrl.set(url)
@@ -38,6 +39,7 @@ const interfaces = {
   openLinkInProfile,
   openTab,
   showToast,
+  showDownloadToast,
 }
 
 export type UiInterface = typeof interfaces

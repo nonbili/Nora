@@ -1,7 +1,7 @@
 import { openDownloadWindow } from 'main/lib/download-window.js'
 import { mainWindow } from '../lib/main-window.js'
 import { MAIN_CHANNEL } from './constants.js'
-import { ipcMain, session } from 'electron'
+import { ipcMain, session, shell } from 'electron'
 import { setLinkHandlingSettings } from '../lib/link-handling.js'
 import { setWebRtcProtection } from '../lib/webrtc.js'
 import { supportsUpdateChecks } from '../lib/update-support.js'
@@ -147,6 +147,7 @@ const interfaces = {
   downloadWatchMedia,
   saveWatchMediaToDownloads,
   setWatchPageScript,
+  showItemInFolder: (filePath: string) => shell.showItemInFolder(filePath),
   // A notification of Nora's own was clicked.
   showMainWindow: () => {
     if (!mainWindow || mainWindow.isDestroyed()) return

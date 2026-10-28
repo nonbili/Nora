@@ -154,13 +154,13 @@ export const downloadWatchMedia = async (
 }
 
 /** Puts a copy of a kept file in Downloads, under a name not already there. */
-export const saveWatchMediaToDownloads = async (name: string, fileName: string) => {
+export const saveWatchMediaToDownloads = async (name: string, fileName: string): Promise<string> => {
   const downloads = app.getPath('downloads')
   const { name: base, ext } = path.parse(path.basename(fileName))
   let target = path.join(downloads, `${base}${ext}`)
   for (let i = 1; fs.existsSync(target); i++) target = path.join(downloads, `${base} (${i})${ext}`)
   await fs.promises.copyFile(mediaPath(name), target)
-  return true
+  return target
 }
 
 type MediaFilesOp = 'exists' | 'delete' | 'list' | 'clear'

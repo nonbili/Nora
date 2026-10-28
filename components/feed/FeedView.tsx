@@ -38,7 +38,7 @@ import { showToast } from '@/lib/toast'
 import { confirmDestructiveAction } from '@/lib/confirm'
 import { useTwColor } from '@/lib/theme'
 import { share } from '@/lib/share'
-import { ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, watchMedia$ } from '@/lib/watch-media'
+import { ensurePostMedia, keptMediaUri, saveWatchPostMedia, savesToDownloads, showMediaSavedToast, watchMedia$ } from '@/lib/watch-media'
 import { feedTabActions, feedTabUrl } from '@/lib/feed-tab'
 import { openFeedTab } from '@/lib/page'
 
@@ -384,10 +384,10 @@ const PostRow: React.FC<{
 
   const save = async () => {
     try {
-      const saved = await saveWatchPostMedia(post)
+      const { saved, path } = await saveWatchPostMedia(post)
       // The share sheet tells for itself what became of the files.
       if (!saved) showToast(t('feed.mediaSaveFailed'))
-      else if (savesToDownloads) showToast(t('feed.mediaSaved', { count: saved }))
+      else if (savesToDownloads) showMediaSavedToast(saved, path)
     } catch {
       showToast(t('feed.mediaSaveFailed'))
     }

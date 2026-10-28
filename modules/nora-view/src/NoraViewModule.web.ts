@@ -38,6 +38,10 @@ class NoraViewModule extends NativeModule {
     const name = decodeURIComponent(new URL(sourceUri).pathname.slice(1))
     return mainClient.saveWatchMediaToDownloads(name, fileName)
   }
+
+  async showItemInFolder(path: string) {
+    await mainClient.showItemInFolder(path)
+  }
 }
 
 export default registerWebModule(NoraViewModule, 'NoraViewModule')

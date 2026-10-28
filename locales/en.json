@@ -141,6 +141,8 @@
     "toast_savingFile": "Saving file…",
     "toast_fileSaved": "File saved",
     "toast_downloadFailed": "Failed to download",
+    "toast_open": "Open",
+    "toast_openFolder": "Open folder",
     "httpBlocked_title": "HTTP website blocked",
     "httpBlocked_body": "This website uses an insecure HTTP connection. To allow loading HTTP websites, enable \"Allow HTTP websites\" in Settings."
   },

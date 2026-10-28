@@ -17,7 +17,7 @@ import { tabs$ } from '@/states/tabs'
 import { mediaKey, refreshesMedia, watchKey, watchSiteLabels, watchSourceLabel, type WatchMedia, type WatchPost } from '@/lib/watch'
 import { findWatchPosts } from '@/lib/watch-db'
 import { useWatchPosts } from '@/lib/use-watch-posts'
-import { ensurePostMedia, holdMedia, keepPostMediaItem, keptMediaUri, saveWatchPostMedia, savesToDownloads, touchMedia, watchMedia$ } from '@/lib/watch-media'
+import { ensurePostMedia, holdMedia, keepPostMediaItem, keptMediaUri, saveWatchPostMedia, savesToDownloads, showMediaSavedToast, touchMedia, watchMedia$ } from '@/lib/watch-media'
 import { showToast } from '@/lib/toast'
 import { share } from '@/lib/share'
 import { isWeb } from '@/lib/utils'
@@ -245,10 +245,10 @@ export const FeedGalleryModal = () => {
 
   const save = async () => {
     try {
-      const saved = await saveWatchPostMedia(post, page.index)
+      const { saved, path } = await saveWatchPostMedia(post, page.index)
       // The share sheet tells for itself what became of the files.
       if (!saved) showToast(t('feed.mediaSaveFailed'))
-      else if (savesToDownloads) showToast(t('feed.mediaSaved', { count: saved }))
+      else if (savesToDownloads) showMediaSavedToast(saved, path)
     } catch {
       showToast(t('feed.mediaSaveFailed'))
     }
