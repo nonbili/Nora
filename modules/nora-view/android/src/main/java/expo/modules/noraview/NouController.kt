@@ -137,6 +137,10 @@ class NouController {
     registeredViews.add(view)
   }
 
+  fun unregister(view: NoraView) {
+    registeredViews.remove(view)
+  }
+
   fun setBlocklistExcludedHosts(hosts: String) {
     blocklistExcludedHosts = decodeHosts(hosts)
     // Every view has to be carrying the new list before the reload that follows

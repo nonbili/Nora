@@ -547,6 +547,14 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     popupWebView = popup
   }
 
+  // A popup that was never shown is never attached to a window, and View.post holds its
+  // runnable until the view is attached, so destroying it through popup.post never ran and
+  // leaked the WebView. Go through the main looper instead, still deferred so the popup is
+  // not destroyed from inside its own WebViewClient callback.
+  private fun destroyDetachedPopup(popup: WebView) {
+    Handler(Looper.getMainLooper()).post { popup.destroy() }
+  }
+
   private fun dismissPopup() {
     popupContainer?.let { removeView(it) }
     popupWebView?.destroy()
@@ -1009,16 +1017,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         }
 
         override fun onHideCustomView() {
-          val activity = currentActivity
-          if (activity == null || customView == null) {
-            return
-          }
-          val window = activity.window
-          (window.decorView as FrameLayout).removeView(customView)
-          customView = null
-          updateSwipeRefreshEnabled()
-          val controller = WindowCompat.getInsetsController(window, window.decorView)
-          controller.show(WindowInsetsCompat.Type.systemBars())
+          hideCustomView()
         }
 
         override fun onShowFileChooser(
@@ -1078,7 +1077,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             }
             decided = true
             popup.stopLoading()
-            if (popupWebView === popup) dismissPopup() else popup.post { popup.destroy() }
+            if (popupWebView === popup) dismissPopup() else destroyDetachedPopup(popup)
             openInSystemBrowser(popup.context, uri)
             return true
           }
@@ -1102,7 +1101,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
                 if (popupWebView !== popup) showPopup(popup)
               } else {
                 popup.stopLoading()
-                if (popupWebView === popup) dismissPopup() else popup.post { popup.destroy() }
+                if (popupWebView === popup) dismissPopup() else destroyDetachedPopup(popup)
                 log("new-tab: $url")
                 emit("new-tab", mapOf("url" to url))
               }
@@ -1360,6 +1359,37 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
     documentStartScript = script
     refreshDocumentStartScript()
+  }
+
+  private fun hideCustomView() {
+    val activity = currentActivity
+    if (activity == null || customView == null) {
+      return
+    }
+    val window = activity.window
+    (window.decorView as FrameLayout).removeView(customView)
+    customView = null
+    updateSwipeRefreshEnabled()
+    val controller = WindowCompat.getInsetsController(window, window.decorView)
+    controller.show(WindowInsetsCompat.Type.systemBars())
+  }
+
+  /**
+   * Called when React drops the view, i.e. the tab is closed or remounted. Without this the
+   * WebView, whose JS bridge points back at this view, keeps the page alive and running
+   * until the GC happens to collect it, which can take minutes or never happen.
+   */
+  internal fun destroy() {
+    cancelContextMenuPrewarm()
+    hideCustomView()
+    dismissPopup()
+    nouController.unregister(this)
+    documentStartScriptHandler?.remove()
+    documentStartScriptHandler = null
+    webView.stopLoading()
+    webView.removeJavascriptInterface("NoraI")
+    swipeRefresh.removeView(webView)
+    webView.destroy()
   }
 
   /** Re-installs the document start script, picking up the current exceptions. */

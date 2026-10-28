@@ -441,6 +441,8 @@ class NoraViewModule : Module() {
         }
       }
 
+      OnViewDestroys { view: NoraView -> view.destroy() }
+
       AsyncFunction("loadUrl") { view: NoraView, url: String -> view.load(url) }
 
       AsyncFunction("findInPage") { view: NoraView, text: String -> view.webView.findAllAsync(text) }
