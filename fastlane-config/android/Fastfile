@@ -54,6 +54,54 @@ platform :android do
     end
   end
 
+  # F-Droid locale directories in metadata/ and their Google Play language codes
+  PLAY_LOCALES = {
+    "ar" => "ar", "de" => "de-DE", "el" => "el-GR", "en-US" => "en-US", "es" => "es-ES",
+    "et" => "et", "fr" => "fr-FR", "hu" => "hu-HU", "id" => "id", "it" => "it-IT",
+    "ja" => "ja-JP", "ko" => "ko-KR", "lv" => "lv", "pl" => "pl-PL", "pt-BR" => "pt-BR",
+    "pt-PT" => "pt-PT", "ru" => "ru-RU", "sv" => "sv-SE", "tr" => "tr-TR", "uk" => "uk",
+    "vi" => "vi", "zh-Hans" => "zh-CN", "zh-Hant" => "zh-TW"
+  }
+
+  desc "Upload the title, short and full descriptions from metadata/ to Google Play"
+  lane :upload_listing do
+    source = File.expand_path("../../metadata", __dir__)
+    en_title = File.read(File.join(source, "en-US", "title.txt")).strip
+    # The shared F-Droid tree uses HTML and locale names Play does not accept.
+    # Stage plain text under Play language codes instead.
+    Dir.mktmpdir("nora-play-listing-") do |metadata_path|
+      PLAY_LOCALES.each do |locale, language|
+        full_path = File.join(source, locale, "full_description.txt")
+        next unless File.exist?(full_path)
+        target = File.join(metadata_path, language)
+        FileUtils.mkdir_p(target)
+        title_path = File.join(source, locale, "title.txt")
+        File.write(File.join(target, "title.txt"), File.exist?(title_path) ? File.read(title_path).strip : en_title)
+        File.write(File.join(target, "short_description.txt"), File.read(File.join(source, locale, "short_description.txt")).strip)
+        full = File.read(full_path)
+          .gsub(%r{<h2>(.*?)</h2>}) { "\n#{$1}\n" }
+          .gsub(%r{<li>(.*?)</li>}) { "• #{$1}\n" }
+          .gsub(%r{<p>(.*?)</p>}) { "#{$1}\n" }
+          .gsub(%r{</?ul>}, "")
+          .gsub(/\n{3,}/, "\n\n")
+          .strip
+        File.write(File.join(target, "full_description.txt"), full)
+      end
+      upload_to_play_store(
+        package_name: ENV["ANDROID_PACKAGE_NAME"] || "jp.nonbili.nora",
+        json_key: ENV["GOOGLE_PLAY_JSON_KEY"] || ENV["SUPPLY_JSON_KEY"],
+        json_key_data: ENV["GOOGLE_PLAY_JSON_KEY_DATA"] || ENV["SUPPLY_JSON_KEY_DATA"],
+        skip_upload_apk: true,
+        skip_upload_aab: true,
+        skip_upload_metadata: false,
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        metadata_path: metadata_path
+      )
+    end
+  end
+
   desc "Upload screenshots to Google Play Store"
   lane :upload_screenshots do
     # The shared F-Droid tree includes locale names Play does not accept.
