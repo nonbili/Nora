@@ -49,7 +49,6 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.webkit.ScriptHandler
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewCompat
@@ -788,7 +787,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   // Set by the page while a gesture of its own (holding a video to speed it up) owns the
   // touch; the refresh layout would otherwise steal it on a slight downward drift.
   private var pullToRefreshSuspended = false
-  private val swipeRefresh = SwipeRefreshLayout(context)
+  private val swipeRefresh = NoraSwipeRefreshLayout(context)
 
   // The refresh layout only sees the WebView's own scroll position, which stays at 0 on
   // pages that scroll an inner element instead of the document. The page reports where
