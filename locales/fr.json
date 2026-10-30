@@ -309,7 +309,9 @@
     },
     "feed": "Flux",
     "feedHint": "Nouvelles publications des sources que vous suivez",
-    "mentionNotificationsSites": "Depuis vos comptes X et Facebook"
+    "mentionNotificationsSites": "Depuis vos comptes X et Facebook",
+    "downloads": "Téléchargements",
+    "askDownloadDestination": "Demandez où enregistrer chaque téléchargement"
   },
   "changelog": {
     "label": "Journal des modifs",
@@ -393,7 +395,11 @@
     "toast_downloadSucceeded": "Enregistré dans le dossier Téléchargements",
     "toast_downloadFailed": "Échec du téléchargement",
     "httpBlocked_title": "Site Web HTTP bloqué",
-    "httpBlocked_body": "Ce site Web utilise une connexion HTTP non sécurisée. Pour permettre le chargement de sites Web HTTP, activez \"Autoriser les sites Web HTTP\" dans les paramètres."
+    "httpBlocked_body": "Ce site Web utilise une connexion HTTP non sécurisée. Pour permettre le chargement de sites Web HTTP, activez \"Autoriser les sites Web HTTP\" dans les paramètres.",
+    "toast_savingFile": "Enregistrement du fichier…",
+    "toast_fileSaved": "Fichier enregistré",
+    "toast_open": "Ouvrir",
+    "toast_openFolder": "Ouvrir le dossier"
   },
   "profiles": {
     "label": "Profils",
@@ -737,6 +743,25 @@
     "lastPost": "Dernier post {{age}}",
     "noPostsYet": "Aucun article pour le moment",
     "syncedAgo": "synchronisé {{age}}",
-    "neverSynced": "jamais synchronisé"
+    "neverSynced": "jamais synchronisé",
+    "statusNeedsVerification": "Instagram n'a pas affiché ce profil et imginn souhaite vérifier rapidement que vous n'êtes pas un robot. Appuyez ici pour le faire.",
+    "imginnMode": "Lire Instagram sur imginn",
+    "imginnModeOff": "Désactivé",
+    "imginnModeFallback": "Quand Instagram échoue",
+    "imginnModeFirst": "D’abord, puis Instagram",
+    "imginnModeHint": "Fonctionne uniquement lorsque Nora est ouverte, et imginn peut demander une vérification rapide pour vérifier que vous n'êtes pas un robot.",
+    "nitterMode": "Lire X depuis Nitter",
+    "nitterModeOff": "Désactivé",
+    "nitterModeFallback": "Quand X échoue",
+    "nitterModeFirst": "D'abord, puis X",
+    "nitterModeHint": "Lit les profils X des instances Nitter ci-dessous, en les essayant tour à tour. Une instance qui recherche un navigateur ne peut être lue que lorsque Nora est ouverte.",
+    "nitterInstancePlaceholder": "nitter.example.com",
+    "nitterInstanceAdd": "Ajouter",
+    "nitterInstanceRemove": "Supprimer {{instance}}",
+    "nitterInstanceInvalid": "Entrez l'adresse d'une instance Nitter, comme nitter.example.com",
+    "verifyHint": "imginn veut vérifier rapidement que vous n'êtes pas un robot avant que Nora puisse lire Instagram à partir de celui-ci. Appuyez pour le faire.",
+    "verifyToast": "imginn souhaite une vérification rapide pour maintenir votre flux Instagram à jour. Appuyez pour le faire.",
+    "verifyTitle": "Complétez la vérification pour garder votre flux Instagram à jour",
+    "verifyFailed": "Le contrôle n'a pas été complété. Nora redemandera plus tard."
   }
 }
