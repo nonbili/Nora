@@ -103,6 +103,9 @@ val uaLinux = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like G
 class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
   WebView(context, attrs, defStyleAttr) {
 
+  private var pageActive = true
+  private var appForeground = false
+
   init {
     settings.run {
       javaScriptEnabled = true
@@ -126,6 +129,32 @@ class NouWebView @JvmOverloads constructor(context: Context, attrs: AttributeSet
     setFocusableInTouchMode(true)
 
     // setWebContentsDebuggingEnabled(true)
+    NoraWebViewLifecycle.register(this)
+  }
+
+  // Preserve a tab's own paused state across a whole-app background/foreground cycle.
+  override fun onPause() {
+    pageActive = false
+    applyLifecycle()
+  }
+
+  override fun onResume() {
+    pageActive = true
+    applyLifecycle()
+  }
+
+  internal fun setAppForeground(value: Boolean) {
+    appForeground = value
+    applyLifecycle()
+  }
+
+  private fun applyLifecycle() {
+    if (pageActive && appForeground) super.onResume() else super.onPause()
+  }
+
+  override fun destroy() {
+    NoraWebViewLifecycle.unregister(this)
+    super.destroy()
   }
 
   suspend fun eval(script: String): String? = suspendCancellableCoroutine { cont ->

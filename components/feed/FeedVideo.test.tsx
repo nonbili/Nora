@@ -8,8 +8,12 @@ import type { TestGesture } from '../../test/gestures'
 import { testVideoPlayers } from '../../test/video'
 
 const actualZoomable = { ...await import('./ZoomableMedia') }
+let zoomed = false
 mock.module('./ZoomableMedia', () => ({
-  ZoomableMedia: ({ children }: { children: (zoomed: boolean) => React.ReactNode }) => children(false),
+  ZoomableMedia: ({ children, overlay }: {
+    children: (zoomed: boolean) => React.ReactNode
+    overlay?: (zoomed: boolean, reset: () => void) => React.ReactNode
+  }) => <>{children(zoomed)}{overlay?.(zoomed, () => {})}</>,
 }))
 
 const player = () => testVideoPlayers[testVideoPlayers.length - 1]
@@ -19,6 +23,7 @@ let savedSettings: { speed: number; edge: boolean }
 beforeEach(() => {
   savedSettings = { speed: settings$.videoDefaultSpeed.get(), edge: settings$.videoEdgeLongPressTo2x.get() }
   testVideoPlayers.length = 0
+  zoomed = false
 })
 afterEach(async () => {
   await act(async () => {
@@ -34,16 +39,34 @@ const mount = async (speed: number) => {
   settings$.videoDefaultSpeed.set(speed)
   settings$.videoEdgeLongPressTo2x.set(true)
   let renderer!: TestRenderer.ReactTestRenderer
+  const video = () => <FeedVideo uri="https://example.com/video.mp4" width={390} height={844} onError={() => {}} />
   await act(async () => {
-    renderer = TestRenderer.create(<FeedVideo uri="https://example.com/video.mp4" width={390} height={844} onError={() => {}} />)
+    renderer = TestRenderer.create(video())
   })
   return {
     edge: () => renderer.root.findAllByType('GestureDetector' as never)[0].props.gesture as TestGesture,
+    zoom: async (value: boolean) => {
+      zoomed = value
+      await act(async () => renderer.update(video()))
+    },
     unmount: async () => { await act(async () => renderer.unmount()) },
   }
 }
 
 describe('feed video playback gestures', () => {
+  it('only requests progress updates while zoomed controls are showing', async () => {
+    const view = await mount(1)
+    expect(player().timeUpdateEventInterval).toBe(0)
+    await view.zoom(true)
+    expect(player().timeUpdateEventInterval).toBe(0.25)
+    await view.zoom(false)
+    expect(player().timeUpdateEventInterval).toBe(0)
+    await view.zoom(true)
+    const currentPlayer = player()
+    await view.unmount()
+    expect(currentPlayer.timeUpdateEventInterval).toBe(0)
+  })
+
   it('uses the saved speed, temporarily accelerates, and restores on cancellation', async () => {
     const view = await mount(1.25)
     expect(player().playbackRate).toBe(1.25)

@@ -20,7 +20,9 @@ export function ZoomedVideoControls({ player, onReset }: { player: VideoPlayer; 
       setDuration(player.duration)
     })
     const playListener = player.addListener('playingChange', ({ isPlaying }) => setPlaying(isPlaying))
+    player.timeUpdateEventInterval = 0.25
     return () => {
+      player.timeUpdateEventInterval = 0
       timeListener.remove()
       playListener.remove()
     }

@@ -29,7 +29,6 @@ export function FeedVideo({ uri, headers, width, height, onError, onZoomChange }
   const anchor = useRef({ x: 0, index: 0 })
   const player = useVideoPlayer(headers ? { uri, headers } : uri, (p) => {
     p.loop = true
-    p.timeUpdateEventInterval = 0.25
     p.playbackRate = defaultSpeed
     p.play()
   })
