@@ -19,7 +19,8 @@
     "reopenLastClosedTab": "Reabrir la última pestaña cerrada",
     "restoreTabs": "Pestañas cerradas recientemente",
     "save": "Guardar",
-    "toggleSidebar": "Alternar barra lateral"
+    "toggleSidebar": "Alternar barra lateral",
+    "done": "Hecho"
   },
   "menus": {
     "close": "Cerrar",
@@ -54,7 +55,8 @@
     "findNoMatches": "Sin coincidencias",
     "findNext": "Siguiente coincidencia",
     "findPrevious": "Coincidencia anterior",
-    "reopenInProfile": "Reabrir en perfil"
+    "reopenInProfile": "Reabrir en perfil",
+    "watch": "Ver {{source}}"
   },
   "modals": {
     "downloadVideo": "Descargar vídeo",
@@ -67,7 +69,8 @@
     "exportCookies": "Exportar las cookies del sitio actual",
     "exportCookiesHint": "Guarda las cookies del sitio actual como un archivo cookies.txt.",
     "exportCookiesButton": "Exportar cookies.txt",
-    "clearSiteDataHint": "Borra las cookies y los datos de navegación del sitio y el perfil actuales."
+    "clearSiteDataHint": "Borra las cookies y los datos de navegación del sitio y el perfil actuales.",
+    "searchTab": "Buscar"
   },
   "native": {
     "menu_saveImage": "Guardar imagen",
@@ -80,7 +83,11 @@
     "menu_openInNewTab": "Abrir en nueva pestaña",
     "menu_openInProfile": "Abrir en perfil",
     "httpBlocked_title": "Web HTTP bloqueada",
-    "httpBlocked_body": "Esta web utiliza una conexión HTTP no segura. Para permitir la carga de sitios web HTTP, active la opción \"Permitir sitios web HTTP\" en la configuración."
+    "httpBlocked_body": "Esta web utiliza una conexión HTTP no segura. Para permitir la carga de sitios web HTTP, active la opción \"Permitir sitios web HTTP\" en la configuración.",
+    "toast_savingFile": "Guardando archivo…",
+    "toast_fileSaved": "Archivo guardado",
+    "toast_open": "Abrir",
+    "toast_openFolder": "Abrir carpeta"
   },
   "settings": {
     "label": "Ajustes",
@@ -325,7 +332,9 @@
       "hint": "Utiliza la paleta de colores del sistema."
     },
     "feedHint": "Nuevas publicaciones de las fuentes que sigues",
-    "mentionNotificationsSites": "Desde tus cuentas de X y Facebook"
+    "mentionNotificationsSites": "Desde tus cuentas de X y Facebook",
+    "downloads": "Descargas",
+    "askDownloadDestination": "Preguntar dónde guardar cada descarga"
   },
   "sync": {
     "label": "Sincronizar",
@@ -564,6 +573,8 @@
     "resetZoom": "Restablecer zoom",
     "playVideo": "Reproducir vídeo",
     "pauseVideo": "Pausar vídeo",
-    "allSources": "Todas las fuentes"
+    "allSources": "Todas las fuentes",
+    "refresh": "Recargar",
+    "notify": "Notificarme sobre nuevas publicaciones"
   }
 }

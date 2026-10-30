@@ -19,7 +19,8 @@
     "confirm": "Επιβεβαίωση",
     "reopenLastClosedTab": "Επαναφορά τελευταίας κλειστής καρτέλας",
     "restoreTabs": "Πρόσφατα κλεισμένες καρτέλες",
-    "toggleSidebar": "Εμφάνιση/Απόκρυψη πλαϊνής μπάρας"
+    "toggleSidebar": "Εμφάνιση/Απόκρυψη πλαϊνής μπάρας",
+    "done": "Ολοκληρώθηκε"
   },
   "menus": {
     "close": "Κλείσιμο",
@@ -45,7 +46,14 @@
     "zoom": "Μεγέθυνση",
     "viewInSplitView": "Άνοιγμα σε διαιρεμένη προβολή",
     "blockAds": "Αποκλεισμός διαφημίσεων σε αυτόν τον ιστότοπο",
-    "addToHomeScreen": "Προσθήκη στην αρχική οθόνη"
+    "addToHomeScreen": "Προσθήκη στην αρχική οθόνη",
+    "back": "Πίσω",
+    "forward": "Προώθηση",
+    "findInPage": "Εύρεση στη σελίδα",
+    "findNoMatches": "Δεν βρέθηκαν αποτελέσματα",
+    "findNext": "Επόμενη αντιστοιχία",
+    "findPrevious": "Προηγούμενη αντιστοιχία",
+    "reopenInProfile": "Άνοιγμα ξανά στο προφίλ"
   },
   "modals": {
     "downloadVideo": "Λήψη βίντεο",
@@ -55,7 +63,9 @@
     "exportCookies": "Εξαγωγή cookies τρέχοντος ιστότοπου",
     "exportCookiesHint": "Αποθήκευση των cookies του τρέχοντος ιστότοπου ως cookies.txt αρχείο.",
     "exportCookiesButton": "Εξαγωγή cookies.txt",
-    "clearSiteDataHint": "Διαγραφή cookies και δεδομένων περιήγησης για τον τρέχοντα ιστότοπο και το προφίλ."
+    "clearSiteDataHint": "Διαγραφή cookies και δεδομένων περιήγησης για τον τρέχοντα ιστότοπο και το προφίλ.",
+    "searchTab": "Αναζήτηση",
+    "publicSearch": "Αναζήτηση δημόσιων δημοσιεύσεων"
   },
   "native": {
     "menu_saveImage": "Αποθήκευση εικόνας",
@@ -68,7 +78,11 @@
     "httpBlocked_body": "Αυτή η ιστοσελίδα χρησιμοποιεί μη ασφαλή σύνδεση HTTP. Για να επιτραπεί η φόρτωση ιστοσελίδων HTTP, ενεργοποιήστε την επιλογή “Να επιτρέπονται οι ιστοσελίδες HTTP” στις Ρυθμίσεις.",
     "menu_openInProfile": "Άνοιγμα σε προφίλ",
     "menu_openInNewTab": "Άνοιγμα σε νέα καρτέλα",
-    "menu_openImageInNewTab": "Άνοιγμα εικόνας σε νέα καρτέλα"
+    "menu_openImageInNewTab": "Άνοιγμα εικόνας σε νέα καρτέλα",
+    "toast_savingFile": "Αποθήκευση φακέλου…",
+    "toast_fileSaved": "Ο φάκελος αποθηκεύτηκε",
+    "toast_open": "Άνοιγμα",
+    "toast_openFolder": "Άνοιγμα φακέλου"
   },
   "settings": {
     "label": "Ρυθμίσεις",
@@ -144,7 +158,7 @@
       "port": "Διακομιστής μεσολάβησης (port)"
     },
     "videoEdgeLongPressTo2x": "Πατήστε παρατεταμένα στην άκρη για αναπαραγωγή σε 2x ταχύτητα",
-    "mentionNotifications": "Ειδοποιήσεις κοινωνικής δικτύωσης",
+    "mentionNotifications": "Επισημάνσεις και μηνύματα",
     "profiles": {
       "sessionMode": "Λειτουργία συνεδρίας",
       "injectCookie": "Εισαγωγή Cookie",
@@ -295,19 +309,30 @@
     "enterInsertsNewline": "Enter για νέα γραμμή (Shift+Enter)",
     "doubleTapToToggleHeader": "Διπλό πάτημα σελίδας για απόκρυψη/εμφάνιση γραμμής εργαλείων",
     "backup": {
-      "description": "Εξαγωγή/επαναφορά ρυθμίσεων, σελιδοδεικτών και προσαρμοσμένων στυλ.",
+      "description": "Εξαγωγή/επαναφορά ρυθμίσεων, σελιδοδεικτών, προσαρμοσμένων στυλ και πηγών ροής περιεχομένου.",
       "export": "Εξαγωγή ρυθμίσεων",
-      "exportDescription": "Αποθήκευση ρυθμίσεων, σελιδοδεικτών, προσαρμοσμένων στυλ και προσαρμοσμένων script ως αρχείο JSON",
+      "exportDescription": "Αποθήκευση ρυθμίσεων, σελιδοδεικτών, προσαρμοσμένων στυλ, προσαρμοσμένων script και πηγών ροής περιεχομένου ως αρχείο JSON",
       "import": "Εισαγωγή ρυθμίσεων",
       "importDescription": "Επαναφορά ρυθμίσεων από αρχείο Nora",
       "exportFailed": "Η εξαγωγή απέτυχε: {{message}}",
       "importDone": "Έγινε εισαγωγή: {{sections}}",
       "importFailed": "Η εισαγωγή απέτυχε: {{message}}",
-      "importConfirm": "Αυτό θα αντικαταστήσει τις τρέχουσες ρυθμίσεις, τους σελιδοδείκτες, τα προσαρμοσμένα στυλ και τα προσαρμοσμένα script. Συνέχεια;",
-      "importWithScriptsConfirm": "Αυτό το αρχείο περιέχει {{count}} ενεργοποιημένα προσαρμοσμένα script, τα οποία μπορούν να εκτελούν κώδικα μέσα σε ιστότοπους. Συνεχίστε μόνο αν εμπιστεύεστε το αρχείο. Οι τρέχουσες ρυθμίσεις, οι σελιδοδείκτες, τα προσαρμοσμένα στυλ και τα προσαρμοσμένα script θα αντικατασταθούν."
+      "importConfirm": "Αυτό θα αντικαταστήσει τις τρέχουσες ρυθμίσεις, τους σελιδοδείκτες, τα προσαρμοσμένα στυλ και τα προσαρμοσμένα script, ενώ θα προσθέσει και τις πηγές ροής περιεχομένου από το αρχείο. Συνέχεια;",
+      "importWithScriptsConfirm": "Αυτό το αρχείο περιέχει {{count}} ενεργοποιημένα προσαρμοσμένα script, τα οποία μπορούν να εκτελούν κώδικα μέσα σε ιστότοπους. Συνεχίστε μόνο αν εμπιστεύεστε το αρχείο. Οι τρέχουσες ρυθμίσεις, οι σελιδοδείκτες, τα προσαρμοσμένα στυλ και τα προσαρμοσμένα script θα αντικατασταθούν, ενώ και οι πηγές ροής περιεχομένου από το αρχείο θα προστεθούν."
     },
     "mentionNotificationsHint": "Λόγω των περιορισμών λειτουργίας στο παρασκήνιο του λειτουργικού συστήματος, η παράδοση ενδέχεται να καθυστερήσει και δεν είναι εγγυημένη.",
-    "pullToRefresh": "Σύρετε προς τα κάτω για επαναφόρτωση της σελίδας"
+    "pullToRefresh": "Σύρετε προς τα κάτω για επαναφόρτωση της σελίδας",
+    "downloads": "Λήψεις",
+    "videoDefaultSpeed": "Προεπιλεγμένη ταχύτητα αναπαραγωγής βίντεο",
+    "feed": "Ροή",
+    "anonymous": {
+      "title": "Ανώνυμη λειτουργία",
+      "enable": "Απόκρυψη προτροπών σύνδεσης"
+    },
+    "dynamicColor": {
+      "label": "Δυναμικό χρώμα",
+      "hint": "Χρήση της χρωματικής παλέτας του συστήματος."
+    }
   },
   "sync": {
     "label": "Συγχρονισμός",
@@ -333,7 +358,14 @@
     "productUnavailable": "Το προϊόν του App Store δεν είναι ακόμη διαθέσιμο.",
     "restoreConflict": "Αυτή η συνδρομή στο App Store είναι ήδη συνδεδεμένη με τον λογαριασμό {{email}}.",
     "purchaseConfirm": "Αυτή η συνδρομή θα συνδεθεί με το {{email}} και θα ενεργοποιήσει τον συγχρονισμό σε κάθε συσκευή όπου συνδέεστε σε αυτόν τον λογαριασμό Nora.",
-    "expiresAt": "Ανανέωση ή λήξη: {{value}}"
+    "expiresAt": "Ανανέωση ή λήξη: {{value}}",
+    "accountChoiceTitle": "Δεδομένα από άλλον λογαριασμό",
+    "accountChoiceUseAccount": "Χρήση δεδομένων αυτού του λογαριασμού",
+    "accountChoiceLater": "Αργότερα",
+    "restoreMergeBackup": "Επαναφορά του {{name}} από τις {{date}}",
+    "backupSettings": "ρυθμίσεις",
+    "backupBookmarks": "σελιδοδείκτες",
+    "backupUserStyles": "στυλ και σκριπτ"
   },
   "tabs": {
     "new": "Νέα καρτέλα",
@@ -343,7 +375,8 @@
     "removeFromHistory": "Αφαίρεση από το ιστορικό",
     "clearRecentlyClosed": "Εκκαθάριση ιστορικού",
     "pausedHint": "Το περιεχόμενό του αποφορτώθηκε για εξοικονόμηση πόρων.",
-    "resume": "Συνέχιση"
+    "resume": "Συνέχιση",
+    "open": "Ανοιχτές καρτέλες ({{count}})"
   },
   "toast": {
     "pinned": "Καρφιτσώθηκε σε νέα καρτέλα",
@@ -360,7 +393,8 @@
     "profileCookieExported": "Η εξαγωγή του cookies.txt του προφίλ ολοκληρώθηκε",
     "profileCookieExportEmpty": "Δεν βρέθηκαν cookies σε αυτό το προφίλ",
     "profileCookieExportFailed": "Η εξαγωγή του cookies.txt του προφίλ απέτυχε",
-    "addToHomeScreenFailed": "Αυτό το πρόγραμμα εκκίνησης δεν υποστηρίζει συντομεύσεις στην αρχική οθόνη"
+    "addToHomeScreenFailed": "Αυτό το πρόγραμμα εκκίνησης δεν υποστηρίζει συντομεύσεις στην αρχική οθόνη",
+    "profileUnwatched": "Σταμάτησε η παρακολούθηση του {{source}}."
   },
   "profiles": {
     "label": "Προφίλ",
@@ -385,7 +419,8 @@
     "deleteAllAutoProfilesConfirm": "Διαγραφή και των {{count}} αυτόματων προφίλ; Αυτό θα διαγράψει τα αποθηκευμένα δεδομένα περιήγησής τους και θα κλείσει τις καρτέλες που τα χρησιμοποιούν.",
     "deleteStaleAutoProfilesConfirm": "Διαγραφή των {{count}} αυτόματων προφίλ που δεν έχουν χρησιμοποιηθεί τις τελευταίες 14 ημέρες; Αυτό θα διαγράψει τα αποθηκευμένα δεδομένα περιήγησής τους και θα κλείσει τις καρτέλες που τα χρησιμοποιούν.",
     "exportCookiesConfirm": "Εξαγωγή όλων των cookies από το «{{name}}»; Το αρχείο ενδέχεται να περιέχει ενεργές συνδέσεις για κάθε ιστότοπο σε αυτό το προφίλ. Διατηρήστε το ιδιωτικό.",
-    "currentProfile": "Προφίλ: {{name}}"
+    "currentProfile": "Προφίλ: {{name}}",
+    "reopenTabInProfile": "Άνοιγμα καρτέλας ξανά στο προφίλ"
   },
   "common": {
     "about": "Σχετικά με",
@@ -514,5 +549,98 @@
     "download": "Άνοιγμα σελίδας λήψης",
     "upToDate": "Nora {{version}} είναι ενημερωμένη.",
     "failed": "Δεν ήταν δυνατός ο έλεγχος για ενημερώσεις. Δοκιμάστε ξανά."
+  },
+  "feed": {
+    "resetZoom": "Επαναφορά ζουμ",
+    "playVideo": "Αναπαραγωγή βίντεο",
+    "pauseVideo": "Παύση βίντεο",
+    "seekVideo": "Θέση βίντεο",
+    "label": "Ροή",
+    "all": "Όλα",
+    "allSources": "Όλες οι πηγές",
+    "refresh": "Ανανέωση",
+    "emptyTitle": "Ακολούθηση λογαριασμών εδώ",
+    "noPosts": "Καμία δημοσίευση ακόμη.",
+    "repostOf": "Αναδημοσιεύτηκε από @{{handle}}",
+    "showSource": "Εμφάνιση μόνο {{name}}",
+    "statusFailed": "Ο τελευταίος έλεγχος απέτυχε: {{error}}",
+    "statusPending": "Δεν ελέγχθηκε ακόμη.",
+    "showDetails": "Εμφάνιση λεπτομερειών",
+    "detailLastChecked": "Τελευταίος έλεγχος",
+    "detailLastSuccess": "Τελευταίος επιτυχημένος έλεγχος",
+    "detailNewestPost": "Νεότερη δημοσίευση",
+    "detailAccount": "Λογαριασμός",
+    "detailNotify": "Ειδοποιήσεις",
+    "ago": "{{age}} πριν από",
+    "never": "Ποτέ",
+    "notifyTimeline": "Ειδοποίησέ με για νέες δημοσιεύσεις",
+    "notifyDefaultState": "Χρήση καθολικής ({{state}})",
+    "notifyMenu": "Ειδοποιήσεις…",
+    "newPost": "Νέα δημοσίευση",
+    "newPosts": "{{count}} νέες δημοσιεύσεις",
+    "intervalDefault": "Χρήση καθολικής ({{interval}})",
+    "intervalMinutes_one": "{{count}} λεπτό",
+    "intervalMinutes_other": "{{count}} λεπτά",
+    "intervalHours_one": "{{count}} ώρα",
+    "intervalHours_other": "{{count}} ώρες",
+    "intervalDays_one": "{{count}} ημέρα",
+    "intervalDays_other": "{{count}} ημέρες",
+    "openOn": "Άνοιγμα σε {{site}}",
+    "saveMedia": "Αποθήκευση μέσου",
+    "useAccounts": "Χρήση των στοιχείων σύνδεσής μου",
+    "nitterInstanceAdd": "Προσθήκη",
+    "nitterInstanceRemove": "Αφαίρεση {{instance}}",
+    "accountFrom": "{{site}} λογαριασμός",
+    "accountAnyProfile": "Αποιοδήποτε προφίλ",
+    "mediaWifiOnly": "Λήψη πολυμέσων μόνο μέσω Wi-Fi",
+    "mediaClear": "Εκκαθάριση πολυμέσων",
+    "timeline": "Χρονολόγιο",
+    "timelineMenu": "Μεταφορά στο χρονολόγιο…",
+    "newTimeline": "Νέο χρονολόγιο",
+    "editTimeline": "Ρυθμίσεις χρονολογίου",
+    "showMediaOnly": "Εμφάνιση μόνο φωτογραφιών και βίντεο",
+    "showAllPosts": "Εμφάνιση όλων των δημοσιεύσεων",
+    "mediaOnly": "Μόνο φωτογραφίες και βίντεο",
+    "deleteTimeline": "Διαγραφή χρονολογίου",
+    "timelineNamePlaceholder": "π.χ. Φίλοι",
+    "emoji": "Εμότζι",
+    "emojiPicker": "Επιλογή εμότζι",
+    "showOnNewTab": "Εμφάνιση Ροής σε σελίδα νέας καρτέλας",
+    "timelineEmpty": "Καμία πηγή ακόμη σε αυτό το χρονολόγιο.",
+    "chooseSources": "Επιλογή πηγών",
+    "timelineThis": "αυτό το χρονολόγιο",
+    "emojiSearch": "Αναζήτηση εμότζι",
+    "emojiNoMatch": "Δεν βρέθηκε εμότζι",
+    "emojiCategories": {
+      "suggested": "Προτεινόμενα",
+      "animals_nature": "Ζώα & φύση",
+      "food_drink": "Φαγητό & ποτό",
+      "travel_places": "Ταξίδια & μέρη",
+      "activities": "Δραστηριότητες",
+      "objects": "Αντικείμενα",
+      "symbols": "Σύμβολα",
+      "flags": "Σημαίες"
+    },
+    "openInNewTab": "Άνοιγμα σε νέα καρτέλα",
+    "settings": "Ρυθμίσεις καθολικής ροής",
+    "addSources": "Προσθήκη πηγών",
+    "addSourcesPlaceholder": "https://bsky.app/profile/…",
+    "addSourcesAlready": "Έχει ήδη προστεθεί",
+    "add": "Προσθήκη",
+    "addSourcesSubmit": "Προσθήκη {{count}}",
+    "importSources": "Εισαγωγή πηγών…",
+    "exportSources": "Εξαγωγή πηγών…",
+    "importSourcesFailed": "Η εισαγωγή απέτυχε: {{message}}",
+    "manageSources": "Διαχείριση πηγών",
+    "sourcesCount_one": "{{count}} πηγή",
+    "sourcesCount_other": "{{count}} πηγές",
+    "sourcesShown_one": "{{shown}} από {{count}} πηγή",
+    "sourcesShown_other": "{{shown}} από {{count}} πηγές",
+    "clearFilter": "Καθάρισμα φίλτρων",
+    "chooseSource": "Επιλογή μιας πηγής",
+    "moreSources": "{{count}} περισσότερες",
+    "sortBy": "Ταξινόμηση κατά",
+    "sortName": "Όνομα (Α–Ω)",
+    "lastPost": "Τελευταία δημοσίευση {{age}}"
   }
 }

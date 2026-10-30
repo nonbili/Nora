@@ -136,7 +136,9 @@
     "httpBlocked_title": "HTTP-webhely tiltva",
     "httpBlocked_body": "Ez a webhely nem biztonságos HTTP-kapcsolatot használ. A HTTP-webhelyek betöltésének engedélyezéséhez kapcsolja be a „HTTP-webhelyek engedélyezése” beállítást a beállításokban.",
     "toast_savingFile": "Fájl mentése…",
-    "toast_fileSaved": "Fájl mentve"
+    "toast_fileSaved": "Fájl mentve",
+    "toast_open": "Megnyitás",
+    "toast_openFolder": "Mappa megnyitása"
   },
   "profiles": {
     "label": "Profilok",
