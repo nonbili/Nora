@@ -103,8 +103,8 @@ android {
         applicationId 'jp.nonbili.nora'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 98
-        versionName "0.9.0"
+        versionCode 101
+        versionName "0.9.3"
 // @generated begin expo-localization-supported-locales - expo prebuild (DO NOT MODIFY) sync-b769dc2d3ca706e1171958cccaefcfcc947c34f9
         resourceConfigurations += ["b+ar", "b+de", "b+el", "b+en", "b+es", "b+et", "b+fr", "b+hu", "b+in", "b+it", "b+ko", "b+lv", "b+pl", "b+pt", "b+pt+BR", "b+ru", "b+sv", "b+tr", "b+uk", "b+vi", "b+zh+Hans", "zh-rCN", "b+zh+Hant", "zh-rTW", "zh-rHK"]
 // @generated end expo-localization-supported-locales

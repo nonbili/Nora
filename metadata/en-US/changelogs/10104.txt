@@ -1,0 +1,6 @@
+- Add Open and Open folder buttons to download toasts
+- Allow sideways swipes on carousels without triggering pull to refresh
+- Pause background WebView timers to reduce battery and CPU usage
+- Fix blank tab when opening a link in a new tab
+- Clean up closed tabs and popups to free memory
+- Translation updates
