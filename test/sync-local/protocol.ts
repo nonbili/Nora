@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import type { Settings } from '@/states/settings'
 import type { WatchedProfile } from '@/states/watch'
 import type { WatchSite } from '@/lib/watch'
@@ -36,11 +39,21 @@ export interface Snapshot {
   needsAccountChoice: boolean
 }
 
+// Written by `bun scripts/sync-stack.ts start` in Inks.
+function stackConnection(): { url?: string; anonKey?: string; serviceKey?: string } {
+  try {
+    return JSON.parse(readFileSync(join(homedir(), '.inks-sync-stack.json'), 'utf8'))
+  } catch {
+    return {}
+  }
+}
+
 export function localConfig() {
-  const url = process.env.NORA_SYNC_URL
-  const anonKey = process.env.NORA_SYNC_ANON_KEY
-  const serviceKey = process.env.NORA_SYNC_SERVICE_ROLE_KEY
-  if (!url || !anonKey || !serviceKey) throw new Error('Local sync tests require NORA_SYNC_URL, NORA_SYNC_ANON_KEY, and NORA_SYNC_SERVICE_ROLE_KEY')
+  const stack = stackConnection()
+  const url = process.env.NORA_SYNC_URL ?? stack.url
+  const anonKey = process.env.NORA_SYNC_ANON_KEY ?? stack.anonKey
+  const serviceKey = process.env.NORA_SYNC_SERVICE_ROLE_KEY ?? stack.serviceKey
+  if (!url || !anonKey || !serviceKey) throw new Error('Local sync tests need a stack: run `bun scripts/sync-stack.ts start` in Inks, or set NORA_SYNC_URL, NORA_SYNC_ANON_KEY, and NORA_SYNC_SERVICE_ROLE_KEY')
   const parsed = new URL(url)
   if (parsed.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(parsed.hostname)) {
     throw new Error('Local sync tests require a loopback HTTP Supabase URL')
