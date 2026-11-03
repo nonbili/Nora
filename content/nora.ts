@@ -1,5 +1,6 @@
 import { emit, waitUntil } from './utils'
 import { getFacebookDownloadInfo, getTikTokDownloadUrl } from './download'
+import { sanitizeDownloadName, trackBlobDownloadNames } from './blob-download'
 import { getService } from './services/manager'
 import { getEmbedUrlForPage } from '../lib/instagram'
 import {
@@ -55,6 +56,7 @@ const trackedBlobs = new Map<string, Blob>()
 const maxTrackedBlobs = 8
 
 let objectUrlsTracked = false
+let getBlobDownloadName: ((url: string) => string | undefined) | undefined
 
 function trackObjectUrls() {
   const createObjectURL = URL.createObjectURL
@@ -92,9 +94,9 @@ async function downloadBlob(url: string, fileName?: string, mimeType?: string, i
   try {
     const blob = await resolveBlob(url, init)
     const content = await blobToBase64(blob)
-    if (!fileName) {
-      fileName = url.split('/').at(-1)
-    }
+    fileName =
+      getBlobDownloadName?.(url) || fileName || (blob instanceof File ? blob.name : '') || url.split('/').at(-1)
+    fileName = sanitizeDownloadName(fileName || 'download')
     emit('save-file', { content, fileName, mimeType: mimeType || blob.type || undefined })
     return true
   } catch (e) {
@@ -250,6 +252,7 @@ function setUserScripts(next?: CustomUserScript[]) {
 
 export function initNora() {
   trackObjectUrls()
+  getBlobDownloadName ??= trackBlobDownloadNames(window, document)
   return {
     getMeta,
     downloadBlob,
