@@ -1,0 +1,4 @@
+- Strip X share tokens when copying and sharing tweet links
+- Fix video downloads getting stuck on Parsing
+- Fix TikTok fullscreen controls not appearing
+- Preserve filenames for blob downloads
