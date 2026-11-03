@@ -48,9 +48,24 @@ const trackingParams = [
 export function removeTrackingParams(v: string) {
   try {
     const url = new URL(v)
-    trackingParams.forEach((x) => url.searchParams.delete(x))
-    return url.href
-  } catch (e) {
+    let removed = false
+    const remove = (key: string) => {
+      if (url.searchParams.has(key)) {
+        url.searchParams.delete(key)
+        removed = true
+      }
+    }
+    trackingParams.forEach(remove)
+    // X adds account/share tokens to post links. Restrict these short names to
+    // actual tweet URLs; they can have functional meanings on other pages.
+    if (
+      ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com', 'mobile.twitter.com'].includes(url.hostname) &&
+      /^\/(?:[^/]+\/status|i\/web\/status)\/\d+(?:\/(?:photo|video)\/\d+)?\/?$/.test(url.pathname)
+    ) {
+      for (const key of ['a', 's', 't']) remove(key)
+    }
+    return removed ? url.href : v
+  } catch {
     return v
   }
 }
