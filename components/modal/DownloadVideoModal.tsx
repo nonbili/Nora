@@ -45,6 +45,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   const [fileName, setFileName] = useState('')
   const nativeRef = useRef<DownloadWebview | null>(null)
   const parsingStartedRef = useRef(false)
+  const parsingTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const loadRequestRef = useRef(0)
   const loadedUrlRef = useRef('')
 
@@ -58,6 +59,11 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
 
     parsingStartedRef.current = true
     setTitle('Parsing...')
+    clearTimeout(parsingTimerRef.current)
+    parsingTimerRef.current = setTimeout(() => {
+      setTitle('Failed to find video url')
+      parsingStartedRef.current = false
+    }, 20000)
     void executeWebviewJavaScriptQuietly(
       webview,
       `
@@ -78,6 +84,8 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
       `,
     )
   }, [])
+
+  useEffect(() => () => clearTimeout(parsingTimerRef.current), [])
 
   const loadDownloadUrl = useCallback(
     (webview: DownloadWebview, targetUrl: string) => {
@@ -107,6 +115,7 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
 
   useEffect(() => {
     if (!downloadVideoModalOpen) {
+      clearTimeout(parsingTimerRef.current)
       loadRequestRef.current += 1
       nativeRef.current = null
       setTitle('Loading...')
@@ -139,7 +148,6 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
   }
 
   const onLoad = async (e: { nativeEvent: any }) => {
-    setTitle('Parsing...')
     const value = e.nativeEvent.url
     if (value) {
       loadedUrlRef.current = value
@@ -161,12 +169,14 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         }
         break
       case 'download':
+        clearTimeout(parsingTimerRef.current)
         setTitle('Downloading...')
         nativeRef.current?.download(data.url, data.fileName)
         await delay(500)
         onClose()
         break
       case 'save-file':
+        clearTimeout(parsingTimerRef.current)
         setTitle('Downloading...')
         await ensureDownloadNotificationPermission()
         nativeRef.current?.saveFile(data.content, data.fileName, data.mimeType || 'video/mp4')
@@ -174,17 +184,27 @@ export const DownloadVideoModal: React.FC<{ contentJs: string }> = ({ contentJs 
         onClose()
         break
       case 'download-options':
+        clearTimeout(parsingTimerRef.current)
         setFileName(data.fileName || '')
         setDownloadOptions(data.options || [])
         setTitle('Choose download quality')
         break
       case 'redirect':
+        clearTimeout(parsingTimerRef.current)
         // The page had no video, parsing starts over on the page it points to.
         parsingStartedRef.current = false
         setTitle('Loading...')
         nativeRef.current?.loadUrl(data.url)
         break
       case 'video-not-found':
+        // Native history/load events can precede injection. Don't lock out the
+        // later content-script onload event when Nora wasn't available yet.
+        if (data?.reason === 'nora-not-ready') {
+          parsingStartedRef.current = false
+          setTitle('Loading...')
+          break
+        }
+        clearTimeout(parsingTimerRef.current)
         setTitle('Failed to find video url')
         break
     }
