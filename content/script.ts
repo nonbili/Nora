@@ -544,7 +544,7 @@ function runBlueskyScript() {
 
 // TikTok's web player has no fullscreen button, and a page can only enter fullscreen from a tap
 // on it, so each video card gets one.
-function runTikTokFullscreenScript() {
+export function runTikTokFullscreenScript(doc: Document = document, Observer = MutationObserver) {
   const BTN_CLASS = '_nora_tiktok_fullscreen'
   const CARD_SELECTOR = '[data-e2e="feed-video"]'
 
@@ -553,7 +553,7 @@ function runTikTokFullscreenScript() {
     (video as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen?.()
 
   const enterFullscreen = (video: HTMLVideoElement) => {
-    if (!video.requestFullscreen || !document.fullscreenEnabled) {
+    if (!video.requestFullscreen || !doc.fullscreenEnabled) {
       enterVideoFullscreen(video)
       return
     }
@@ -564,9 +564,9 @@ function runTikTokFullscreenScript() {
   }
 
   const ensureButtons = () => {
-    for (const card of document.querySelectorAll<HTMLElement>(CARD_SELECTOR)) {
+    for (const card of doc.querySelectorAll<HTMLElement>(CARD_SELECTOR)) {
       if (card.querySelector(`.${BTN_CLASS}`)) continue
-      const btn = document.createElement('button')
+      const btn = doc.createElement('button')
       btn.className = BTN_CLASS
       btn.type = 'button'
       btn.setAttribute('aria-label', 'Fullscreen')
@@ -592,9 +592,10 @@ function runTikTokFullscreenScript() {
   }
 
   ensureButtons()
-  if (!document.body) return
-  const observer = new MutationObserver(() => ensureButtons())
-  observer.observe(document.body, { childList: true, subtree: true })
+  // Injected at document start: <html> can exist before <body>. Observing the
+  // document also survives TikTok replacing its body during hydration.
+  const observer = new Observer(() => ensureButtons())
+  observer.observe(doc, { childList: true, subtree: true })
 }
 
 export function injectScript() {
