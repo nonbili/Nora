@@ -160,6 +160,7 @@ const ProxyTextInput = ({ field, ...props }: TextInputProps & { field: ProxyFiel
 export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = ({ onFocusInput }) => {
   const tw = useTwColor()
   const settings = useValue(settings$)
+  const supportsProxyAuthentication = isAndroid || (isIos && Number.parseInt(String(Platform.Version), 10) >= 17)
   const builtinScripts = useValue(userStyles$.builtinScripts)
 
   return (
@@ -381,6 +382,11 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                 onPress={() => settings$.proxyEnabled.toggle()}
               />
             </View>
+            {isIos && !supportsProxyAuthentication && (
+              <NouText className="px-4 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
+                {t('settings.proxy.iosRequires17')}
+              </NouText>
+            )}
             {settings.proxyEnabled && (
               <>
                 <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
@@ -389,7 +395,13 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     options={['HTTP', 'SOCKS']}
                     selectedIndex={settings.proxyType === 'socks' ? 1 : 0}
                     size={1}
-                    onChange={(index) => settings$.proxyType.set(index === 1 ? 'socks' : 'http')}
+                    onChange={(index) => {
+                      if (index === 1 && !supportsProxyAuthentication) {
+                        showToast(t('settings.proxy.iosRequires17'))
+                        return
+                      }
+                      settings$.proxyType.set(index === 1 ? 'socks' : 'http')
+                    }}
                   />
                 </View>
                 <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
@@ -416,7 +428,7 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     onFocus={onFocusInput}
                   />
                 </View>
-                {isAndroid && (['proxyUsername', 'proxyPassword'] as const).map((field) => (
+                {supportsProxyAuthentication && (['proxyUsername', 'proxyPassword'] as const).map((field) => (
                   <View key={field} className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
                     <NouText className="w-24">
                       {t(field === 'proxyUsername' ? 'settings.proxy.username' : 'settings.proxy.password')}
@@ -432,8 +444,8 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     />
                   </View>
                 ))}
-                {isAndroid && <NouText className="px-4 py-4 text-sm text-zinc-600 dark:text-zinc-400">
-                  {t('settings.proxy.credentialsHint')}
+                {supportsProxyAuthentication && <NouText className="px-4 py-4 text-sm text-zinc-600 dark:text-zinc-400">
+                  {t(isIos ? 'settings.proxy.credentialsHintIos' : 'settings.proxy.credentialsHint')}
                 </NouText>}
               </>
             )}

@@ -101,6 +101,26 @@ public class NoraViewModule: Module {
       NouController.shared.settings = settings
     }
 
+    AsyncFunction("watchFetch") {
+      (id: Int, url: String, method: String, headers: [String: String], body: String?, proxy: NoraSettings, promise: Promise) in
+      do {
+        // Background tasks can run before HomeScreen has synchronized native settings.
+        NoraProxy.shared.update(proxy.proxySnapshot)
+        try NoraFeedRequests.shared.start(id: id, url: url, method: method, headers: headers, body: body) { result in
+          switch result {
+          case .success(let answer): promise.resolve(answer)
+          case .failure: promise.reject("feed_request_failed", "Could not complete the feed request.")
+          }
+        }
+      } catch {
+        promise.reject("feed_request_failed", "Could not complete the feed request.")
+      }
+    }.runOnQueue(.main)
+
+    AsyncFunction("abortWatchFetch") { (id: Int) in
+      NoraFeedRequests.shared.cancel(id: id)
+    }.runOnQueue(.main)
+
     // On the main queue, and awaited by the caller: the per-site switch reloads
     // the page as soon as this resolves, and the reload must not outrun the
     // document start scripts the new exceptions are reinstalled into.

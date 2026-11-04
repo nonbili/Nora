@@ -23,6 +23,22 @@ struct NoraSettings: Record {
 
   @Field
   var proxyPort: String = ""
+
+  @Field
+  var proxyUsername: String = ""
+
+  @Field
+  var proxyPassword: String = ""
+
+  var proxySnapshot: NoraProxySettings {
+    var host = proxyHost.trimmingCharacters(in: .whitespacesAndNewlines)
+    if host.hasPrefix("["), host.hasSuffix("]") { host = String(host.dropFirst().dropLast()) }
+    return NoraProxySettings(
+      enabled: proxyEnabled, type: proxyType, host: host,
+      port: proxyPort.trimmingCharacters(in: .whitespacesAndNewlines),
+      username: proxyUsername, password: proxyPassword
+    )
+  }
 }
 
 struct NoraBlocklist: Record {
@@ -87,29 +103,8 @@ class NouController {
     }
   }
 
-  private var lastProxyKey: String?
-
   private func applyProxy() {
-    if #available(iOS 17.0, *) {
-      let proxyKey = "\(settings.proxyEnabled)|\(settings.proxyType)|\(settings.proxyHost)|\(settings.proxyPort)"
-      if proxyKey == lastProxyKey {
-        return
-      }
-      lastProxyKey = proxyKey
-      runOnMain { [weak self] in
-        guard let self = self else { return }
-        var stores = Set<WKWebsiteDataStore>()
-        for view in self.registeredViews.allObjects {
-          if let store = view.webView?.configuration.websiteDataStore {
-            stores.insert(store)
-          }
-        }
-        stores.insert(WKWebsiteDataStore.default())
-        for store in stores {
-          NoraView.applyProxy(to: store)
-        }
-      }
-    }
+    NoraProxy.shared.update(settings.proxySnapshot)
   }
 
   var blocklist = NoraBlocklist()

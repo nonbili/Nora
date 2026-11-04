@@ -50,6 +50,9 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   private var popupContainer: UIView?
   private var popupWebView: WKWebView?
   private var popupCommittedToGoogleOAuth = false
+  private var proxyObserver: NSObjectProtocol?
+  private var proxyRetryURL: URL?
+  private var proxyErrorShown = false
   /// Pull down from the top of the page to reload, like Safari and Firefox do. Off unless
   /// the setting turns it on, so pages with their own overscroll gestures are untouched.
   private var pullToRefreshEnabled = false
@@ -128,27 +131,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
   @available(iOS 17.0, *)
   static func applyProxy(to store: WKWebsiteDataStore) {
-    let settings = NouController.shared.settings
-    if settings.proxyEnabled && !settings.proxyHost.isEmpty {
-      let portValue = UInt16(settings.proxyPort) ?? 0
-      guard let port = NWEndpoint.Port(rawValue: portValue) else {
-        NouController.shared.log("iOS Proxy error: Invalid port \(settings.proxyPort)")
-        return
-      }
-      let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(settings.proxyHost), port: port)
-      let proxyConfig: ProxyConfiguration
-      if settings.proxyType == "socks" {
-        proxyConfig = ProxyConfiguration(socksv5Proxy: endpoint)
-      } else {
-        proxyConfig = ProxyConfiguration(httpCONNECTProxy: endpoint)
-      }
-
-      store.proxyConfigurations = [proxyConfig]
-      NouController.shared.log("iOS Proxy applied: \(settings.proxyType)://\(settings.proxyHost):\(settings.proxyPort)")
-    } else {
-      store.proxyConfigurations = []
-      NouController.shared.log("iOS Proxy cleared")
-    }
+    NoraProxy.shared.apply(to: store)
   }
 
   static func clearProfileData(_ profile: String, promise: Promise) {
@@ -197,6 +180,30 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
     super.init(appContext: appContext)
     NouController.shared.register(self)
     setupWebView(profile: "default")
+    proxyObserver = NotificationCenter.default.addObserver(
+      forName: NoraProxy.didChange, object: nil, queue: .main
+    ) { [weak self] _ in self?.proxySettingsChanged() }
+  }
+
+  private func proxySettingsChanged() {
+    do {
+      try NoraProxy.shared.snapshot().validateBrowsing()
+      proxyErrorShown = false
+      if let url = proxyRetryURL {
+        proxyRetryURL = nil
+        webView.load(URLRequest(url: url))
+      }
+    } catch {
+      proxyRetryURL = webView.url ?? proxyRetryURL
+      webView.stopLoading()
+      popupWebView?.stopLoading()
+    }
+  }
+
+  private func reportProxyError() {
+    guard !proxyErrorShown else { return }
+    proxyErrorShown = true
+    emitCustomEvent(type: "proxy-error", data: "")
   }
 
   private func createConfig(profile: String) -> WKWebViewConfiguration {
@@ -391,6 +398,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   }
 
   deinit {
+      if let observer = proxyObserver { NotificationCenter.default.removeObserver(observer) }
       NouController.shared.unregister(self)
       dismissPopup()
       webView.removeObserver(self, forKeyPath: "title")
@@ -484,6 +492,12 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
           targetUrl = url.replacingOccurrences(of: "https://m.facebook.com", with: "https://www.facebook.com", options: .anchored)
       }
       guard let u = URL(string: targetUrl) else { return }
+      do { try NoraProxy.shared.snapshot().validateBrowsing() }
+      catch {
+          proxyRetryURL = u
+          reportProxyError()
+          return
+      }
       // Settle the rule list before the load starts; a change made once a
       // navigation is under way only takes effect on the next one.
       setBlocklistHost(u.host)
@@ -521,6 +535,15 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
   // MARK: - WKNavigationDelegate
   func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+      do { try NoraProxy.shared.snapshot().validateBrowsing() }
+      catch {
+          if navigationAction.targetFrame?.isMainFrame != false {
+              if webView == self.webView { proxyRetryURL = navigationAction.request.url }
+              reportProxyError()
+          }
+          decisionHandler(.cancel)
+          return
+      }
       guard let url = navigationAction.request.url else {
           decisionHandler(.allow)
           return
@@ -635,6 +658,8 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       }
 
       refreshControl.endRefreshing()
+      proxyErrorShown = false
+      proxyRetryURL = nil
 
       let url = webView.url?.absoluteString ?? ""
       let title = webView.title ?? ""
@@ -650,11 +675,21 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
   }
 
   func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-      refreshControl.endRefreshing()
+      handleProxyLoadError(webView, error: error)
   }
 
   func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+      handleProxyLoadError(webView, error: error)
+  }
+
+  private func handleProxyLoadError(_ failedView: WKWebView, error: Error) {
       refreshControl.endRefreshing()
+      guard NoraProxy.shared.snapshot().enabled, (error as NSError).code != NSURLErrorCancelled else { return }
+      if failedView == webView {
+          let failingURL = (error as NSError).userInfo[NSURLErrorFailingURLErrorKey] as? URL
+          proxyRetryURL = failingURL ?? failedView.url ?? proxyRetryURL
+      }
+      reportProxyError()
   }
 
   func download(url: String, fileName: String?, mimeType: String?) {

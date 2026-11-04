@@ -35,6 +35,7 @@ import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 import { useTabAnimation } from './tab-animation'
 import { t } from 'i18next'
+import { showToast } from '@/lib/toast'
 import { getProfileColor } from '@/lib/profile'
 import { getProfileViewKey } from '@/lib/profile-view'
 import { openUrlInDesktopTab } from '@/lib/desktop-view-actions'
@@ -835,6 +836,9 @@ const WebTab: React.FC<NoraTabProps> = ({
     const { payload } = e.nativeEvent
     const { type, data } = typeof payload == 'string' ? JSON.parse(payload) : payload
     switch (type) {
+      case 'proxy-error':
+        showToast(t('settings.proxy.applyFailed'))
+        break
       case '[content]':
       case '[kotlin]':
         console.log(type, data)
