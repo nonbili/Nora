@@ -47,6 +47,37 @@ export const isFacebookSponsoredText = (value?: string | null) => {
   return normalized ? fbNormalizedSponsored.has(normalized) : false
 }
 
+// The mobile site renders the label as a text block of its own in the post header, "広告: " or
+// "Sponsored · " followed by icon-font glyphs (private use characters). Looking for a label
+// anywhere in a post's text hid ordinary posts that mention "Administration" or 広告, including a
+// long post as soon as "See more" put its full text in.
+export const isFacebookMobileSponsoredLabel = (value?: string | null) => {
+  if (!value || value.length > 40) {
+    return false
+  }
+  return isFacebookSponsoredText(value.replace(/[:：·•\p{Co}]/gu, ''))
+}
+
+// Only the header's meta block is tested. Every post starts with an author block followed
+// directly by a meta block, the timestamp on a post and the label on an ad, and that pair comes
+// before the body and the comments. A label word anywhere else, an author named "Ad" or a
+// comment saying "Sponsored", does not count; a layout that puts another pair first misses the
+// ad rather than hiding a post.
+type FacebookMobileTextBlock = Pick<Element, 'textContent'> & {
+  previousElementSibling: Pick<Element, 'getAttribute'> | null
+}
+
+export const hasFacebookMobileSponsoredLabel = (post: {
+  querySelectorAll(selector: string): Iterable<FacebookMobileTextBlock>
+}) => {
+  for (const block of post.querySelectorAll('[data-mcomponent="TextArea"]')) {
+    if (block.previousElementSibling?.getAttribute('data-mcomponent') === 'TextArea') {
+      return isFacebookMobileSponsoredLabel(block.textContent)
+    }
+  }
+  return false
+}
+
 export const isFacebookMessagesPath = (pathname: string) => pathname === '/messages' || pathname.startsWith('/messages/')
 
 // Reel routes render a full-screen pager rather than a feed, so the candidate

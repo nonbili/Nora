@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'bun:test'
+import * as cheerio from 'cheerio'
 import {
   facebookDesktopAdContainerSelector,
+  hasFacebookMobileSponsoredLabel,
   invalidateFacebookDesktopAdVerdict,
   isFacebookDesktopSponsoredPost,
   isFacebookHomePath,
   isFacebookMessagesPath,
+  isFacebookMobileSponsoredLabel,
   isFacebookReelPagerAdCandidate,
   isFacebookReelsPath,
   isFacebookSponsoredText,
@@ -21,6 +24,60 @@ describe('isFacebookSponsoredText', () => {
   it('handles split text with whitespace and zero-width characters', () => {
     expect(isFacebookSponsoredText('S p o n s o r e d')).toBe(true)
     expect(isFacebookSponsoredText('S\u200bp\u200bo\u200bn\u200bs\u200bo\u200br\u200be\u200bd')).toBe(true)
+  })
+})
+
+describe('isFacebookMobileSponsoredLabel', () => {
+  it('matches the label with its punctuation and icon glyphs', () => {
+    expect(isFacebookMobileSponsoredLabel('広告: ')).toBe(true)
+    expect(isFacebookMobileSponsoredLabel('広告: \u{f078b}\u{f1677}')).toBe(true)
+    expect(isFacebookMobileSponsoredLabel('Sponsored · ')).toBe(true)
+    expect(isFacebookMobileSponsoredLabel('Ad')).toBe(true)
+  })
+
+  it('does not match post text that only contains a label', () => {
+    expect(isFacebookMobileSponsoredLabel('NASA - National Aeronautics and Space Administration')).toBe(false)
+    expect(isFacebookMobileSponsoredLabel('Adobe')).toBe(false)
+    expect(isFacebookMobileSponsoredLabel('この広告について')).toBe(false)
+    expect(isFacebookMobileSponsoredLabel(`Additionally, ${'long post text '.repeat(10)}`)).toBe(false)
+  })
+})
+
+describe('hasFacebookMobileSponsoredLabel', () => {
+  const textArea = (inner: string) => `<div data-mcomponent="TextArea" data-type="text"><div class="native-text">${inner}</div></div>`
+  const container = (inner: string) => `<div data-mcomponent="MContainer" data-type="container">${inner}</div>`
+  // As rendered on m.facebook.com, 2026-11-04: an avatar, the author and meta pair, then the menu.
+  const header = (author: string, meta: string) =>
+    container(container('') + container(textArea(`<span class="f2">${author}</span>`) + textArea(`<span class="f5">${meta}</span>`)) + container(''))
+  const body = (text: string) => container(textArea(`<span class="f1">${text}</span>`))
+  const comment = (name: string, text: string) => container(textArea(name) + textArea(text))
+  const post = (html: string) => {
+    const $ = cheerio.load(`<div data-tracking-duration-id="1">${html}</div>`)
+    return {
+      querySelectorAll: (selector: string) =>
+        $(selector)
+          .toArray()
+          .map((element) => {
+            const previous = $(element).prev()
+            return {
+              textContent: $(element).text(),
+              previousElementSibling: previous.length ? { getAttribute: (name: string) => previous.attr(name) ?? null } : null,
+            }
+          }),
+    }
+  }
+
+  it('matches the label in the header of a mobile ad', () => {
+    expect(hasFacebookMobileSponsoredLabel(post(header('Muse from Meta', '広告: \u{f078b}\u{f1677}') + body('Museがあなたのカレンダーを管理し…')))).toBe(true)
+  })
+
+  it('ignores label words outside the header meta block', () => {
+    const timestamp = '20時間前'
+    expect(hasFacebookMobileSponsoredLabel(post(header('NASA - National Aeronautics and Space Administration', timestamp)))).toBe(false)
+    expect(hasFacebookMobileSponsoredLabel(post(header('Ad', timestamp)))).toBe(false)
+    expect(hasFacebookMobileSponsoredLabel(post(header('Claude', timestamp) + body('広告')))).toBe(false)
+    expect(hasFacebookMobileSponsoredLabel(post(header('Claude', timestamp) + body('We need to discuss <strong>広告</strong> today. <a href="#">Ad</a> spend is up.')))).toBe(false)
+    expect(hasFacebookMobileSponsoredLabel(post(header('Claude', timestamp) + comment('Federico', 'Sponsored')))).toBe(false)
   })
 })
 

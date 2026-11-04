@@ -1,6 +1,6 @@
 import {
   facebookDesktopAdContainerSelector,
-  fbL10nSponsored,
+  hasFacebookMobileSponsoredLabel,
   invalidateFacebookDesktopAdVerdict,
   isFacebookDesktopSponsoredPost,
   isFacebookMessagesPath,
@@ -382,10 +382,8 @@ export function hideAds(mutations: MutationRecord[]) {
         for (const node of mutation.addedNodes.values()) {
           const el = node as HTMLElement
           if (el.dataset?.trackingDurationId) {
-            // facebook server rendered ads. Read the subtree text once: it is an
-            // O(subtree) allocation, and there are ~30 labels to test against it.
-            const text = el.textContent
-            if (text && fbL10nSponsored.some((sponsored) => text.includes(sponsored))) {
+            // facebook server rendered ads
+            if (hasFacebookMobileSponsoredLabel(el)) {
               hideFacebookMobileAd(el)
             }
           }
