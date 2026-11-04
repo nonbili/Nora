@@ -225,6 +225,7 @@
       "unsupported": "This language pair is unavailable on this device"
     },
     "enterInsertsNewline": "Enter inserts a new line (Shift+Enter)",
+    "xDefaultSearchLatest": "Default search to Latest",
     "doubleBackToExitApp": "Double back to exit app",
     "oneProfilePerSite": "One profile per site",
     "oneProfilePerSiteHint": "Use a separate automatic session for each site. Links opened from a site keep that site's profile.",
@@ -373,6 +374,15 @@
         },
         "hideXHomeTabs": {
           "label": "Hide X home timeline tabs"
+        },
+        "hideXGrok": {
+          "label": "Hide X Grok UI"
+        },
+        "hideXRecommendations": {
+          "label": "Hide X recommendations (Who to follow, trends, Discover more)"
+        },
+        "hideXEngagementCounts": {
+          "label": "Hide X engagement counts"
         }
       },
       "custom": {

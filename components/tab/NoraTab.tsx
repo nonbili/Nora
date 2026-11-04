@@ -263,6 +263,7 @@ const WebTab: React.FC<NoraTabProps> = ({
   const translateOnDoubleTap = useValue(settings$.translateOnDoubleTap)
   const translationTargetLanguage = useValue(settings$.translationTargetLanguage)
   const xDefaultHomeTimeline = useValue(settings$.xDefaultHomeTimeline)
+  const xDefaultSearchLatest = useValue(settings$.xDefaultSearchLatest)
   const theme = useValue(settings$.theme)
   const colorScheme = useColorScheme()
   const host = tab.url ? getHostFromUrl(tab.url) : ''
@@ -445,6 +446,7 @@ const WebTab: React.FC<NoraTabProps> = ({
         videoDefaultSpeed,
         translateOnDoubleTap: !isWeb && translateOnDoubleTap && Boolean(translationTargetLanguage),
         xDefaultHomeTimeline,
+        xDefaultSearchLatest,
         cosmeticCss: getCosmeticCssForHost(currentHost),
         // Also switches off the built-in ad blocking in the content script, so the
         // per-site switch covers every kind of blocking and not just the lists.
@@ -469,6 +471,7 @@ const WebTab: React.FC<NoraTabProps> = ({
       translateOnDoubleTap,
       translationTargetLanguage,
       xDefaultHomeTimeline,
+      xDefaultSearchLatest,
     ],
   )
   const applyContentStateRef = useRef(applyContentState)

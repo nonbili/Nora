@@ -21,6 +21,7 @@ const defaultSettings = {
   videoDefaultSpeed: 1,
   translateOnDoubleTap: false,
   xDefaultHomeTimeline: 'for-you',
+  xDefaultSearchLatest: false,
   hideXHomeTimelineTabs: false,
   cosmeticCss: '',
   // Turned off by the per-site "Block ads" switch. Resolved here as well as in

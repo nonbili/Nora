@@ -7,6 +7,9 @@ export const builtinUserStyleIds = [
   'hide-reddit-game',
   'hide-x-bottom-nav',
   'hide-x-home-tabs',
+  'hide-x-grok',
+  'hide-x-recommendations',
+  'hide-x-engagement-counts',
 ] as const
 
 export type BuiltinUserStyleId = (typeof builtinUserStyleIds)[number]
@@ -146,6 +149,73 @@ export const builtinUserStyleDefinitions: BuiltinUserStyleDefinition[] = [
       }
     `,
   },
+  // Target UI, not posts mentioning Grok, trends, or recommendations.
+  {
+    id: 'hide-x-grok',
+    labelKey: 'settings.userStyles.builtin.hideXGrok.label',
+    hostGlobs: ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com', 'mobile.twitter.com'],
+    css: css`
+      [data-testid='AppTabBar_Grok_Link'],
+      header a[href='/i/grok'],
+      nav a[href='/i/grok'],
+      [role='navigation'] a[href='/i/grok'],
+      [data-testid='GrokDrawer'],
+      [data-testid='grok-drawer'],
+      [data-testid='grok-button'],
+      [data-testid='grokActions'],
+      [data-testid='tweet'] button[aria-label='Grok actions'],
+      [data-testid='tweet'] [role='button'][aria-label='Grok actions'] {
+        display: none !important;
+      }
+    `,
+  },
+  {
+    id: 'hide-x-recommendations',
+    labelKey: 'settings.userStyles.builtin.hideXRecommendations.label',
+    hostGlobs: ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com', 'mobile.twitter.com'],
+    css: css`
+      /* Markers cover heading-identified mobile modules, including Discover more cells.
+         Never hide a timeline merely because it contains a recommendation or follow button. */
+      [data-nora-x-recommendation],
+      [data-testid='whoToFollow'],
+      [data-testid='WhoToFollow'],
+      [data-testid='sidebarColumn'] [data-testid='trend'],
+      [data-testid='sidebarColumn'] [data-testid='trends'],
+      [data-testid='discoverMore'],
+      [data-testid='DiscoverMore'],
+      aside[aria-label='Who to follow'],
+      [role='complementary'][aria-label='Who to follow'],
+      [data-testid='sidebarColumn'] [aria-label='Timeline: Trending now'],
+      [aria-label='Timeline: Who to follow'],
+      [aria-label='Timeline: Discover more'] {
+        display: none !important;
+      }
+    `,
+  },
+  {
+    id: 'hide-x-engagement-counts',
+    labelKey: 'settings.userStyles.builtin.hideXEngagementCounts.label',
+    hostGlobs: ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com', 'mobile.twitter.com'],
+    css: css`
+      /* Hide only count text. Keep buttons, icons, layout, and accessible labels intact. */
+      [data-testid='tweet'] :is(
+          [data-testid='reply'],
+          [data-testid='retweet'],
+          [data-testid='unretweet'],
+          [data-testid='like'],
+          [data-testid='unlike'],
+          [data-testid='bookmark'],
+          [data-testid='removeBookmark']
+        ) [data-testid='app-text-transition-container'],
+      [data-testid='tweet'] a[href*='/status/'][href$='/analytics']:not([data-testid='tweetText'] *) span,
+      [data-testid='tweet'] a[href*='/status/'][href$='/retweets']:not([data-testid='tweetText'] *) span,
+      [data-testid='tweet'] a[href*='/status/'][href$='/retweets/with_comments']:not([data-testid='tweetText'] *) span,
+      [data-testid='tweet'] a[href*='/status/'][href$='/likes']:not([data-testid='tweetText'] *) span,
+      [data-testid='tweet'] a[href*='/status/'][href$='/quotes']:not([data-testid='tweetText'] *) span {
+        visibility: hidden !important;
+      }
+    `,
+  },
 ]
 
 export const builtinUserStyleDefinitionById = builtinUserStyleDefinitions.reduce(
@@ -161,6 +231,9 @@ export const createDefaultBuiltinUserStyles = (): Record<BuiltinUserStyleId, Bui
   'hide-reddit-game': { enabled: false },
   'hide-x-bottom-nav': { enabled: true },
   'hide-x-home-tabs': { enabled: false },
+  'hide-x-grok': { enabled: false },
+  'hide-x-recommendations': { enabled: false },
+  'hide-x-engagement-counts': { enabled: false },
 })
 
 export const builtinUserScriptDefinitions: BuiltinUserScriptDefinition[] = [
@@ -301,7 +374,10 @@ export const getEnabledUserStyleCss = (host: string, snapshot?: UserStylesSnapsh
   const normalizedHost = host.trim().toLowerCase()
   const userStyles = snapshot || createDefaultUserStylesSnapshot()
   const builtinCss = builtinUserStyleDefinitions
-    .filter((definition) => userStyles.builtins[definition.id]?.enabled !== false)
+    .filter(
+      (definition) =>
+        (userStyles.builtins[definition.id]?.enabled ?? createDefaultBuiltinUserStyles()[definition.id].enabled) === true,
+    )
     .filter((definition) => matchesAnyHostGlob(normalizedHost, definition.hostGlobs))
     .map((definition) => definition.css.trim())
     .filter(Boolean)

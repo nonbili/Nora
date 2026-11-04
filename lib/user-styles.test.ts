@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test'
+import { load } from 'cheerio'
 import { getInjectedCss } from '../content/css'
 import {
   buildUserScriptExecutionSource,
+  builtinUserStyleDefinitionById,
+  type BuiltinUserStyleId,
   getEnabledUserScripts,
   getEnabledUserStyleCss,
   matchesAnyHostGlob,
@@ -11,7 +14,7 @@ import {
   stripUserscriptMetadata,
 } from './user-styles'
 
-const withBuiltinEnabled = (id: 'hide-facebook-feed' | 'hide-reddit-game' | 'hide-x-bottom-nav' | 'hide-x-home-tabs') =>
+const withBuiltinEnabled = (id: BuiltinUserStyleId) =>
   normalizeUserStyles({
     builtins: {
       [id]: { enabled: true },
@@ -197,6 +200,9 @@ describe('user style css composition', () => {
         'hide-reddit-game': { enabled: false },
         'hide-x-bottom-nav': { enabled: false },
         'hide-x-home-tabs': { enabled: false },
+        'hide-x-grok': { enabled: false },
+        'hide-x-recommendations': { enabled: false },
+        'hide-x-engagement-counts': { enabled: false },
       },
       customStyles: [],
     })
@@ -223,6 +229,88 @@ describe('user style css composition', () => {
     expect(getEnabledUserStyleCss('m.facebook.com', on)).toContain("[data-type='vscroller']")
     expect(getEnabledUserStyleCss('www.facebook.com', on)).toContain("[role='feed']")
     expect(getEnabledUserStyleCss('messenger.com', on)).not.toContain("[role='feed']")
+  })
+})
+
+describe('optional X controls', () => {
+  const ids = ['hide-x-grok', 'hide-x-recommendations', 'hide-x-engagement-counts'] as const
+  const selectorFor = (id: (typeof ids)[number]) =>
+    builtinUserStyleDefinitionById[id].css.replace(/\/\*[\s\S]*?\*\//g, '').split('{')[0].trim()
+
+  it('keeps new and legacy snapshots opted out, and preserves explicit choices', () => {
+    for (const id of ids) {
+      expect(normalizeUserStyles({}).builtins[id].enabled).toBe(false)
+      expect(withBuiltinEnabled(id).builtins[id].enabled).toBe(true)
+      expect(getEnabledUserStyleCss('x.com')).not.toContain(builtinUserStyleDefinitionById[id].css.trim())
+      // Old callers may inject a snapshot before normalization during startup.
+      const legacy = normalizeUserStyles({})
+      delete (legacy.builtins as any)[id]
+      expect(getEnabledUserStyleCss('x.com', legacy)).not.toContain(builtinUserStyleDefinitionById[id].css.trim())
+    }
+  })
+
+  it('supports X and legacy Twitter hosts without affecting other sites', () => {
+    for (const id of ids) {
+      const css = builtinUserStyleDefinitionById[id].css.trim()
+      for (const host of ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com', 'mobile.twitter.com']) {
+        expect(getEnabledUserStyleCss(host, withBuiltinEnabled(id))).toContain(css)
+      }
+      expect(getEnabledUserStyleCss('example.com', withBuiltinEnabled(id))).not.toContain(css)
+    }
+  })
+
+  it('selects Grok controls without selecting tweet text or links to Grok in posts', () => {
+    const $ = load(`<header><a id="grok-nav" href="/i/grok">Grok</a></header>
+      <article data-testid="tweet"><div data-testid="tweetText" id="text">Grok
+        <a id="post-link" href="/i/grok">link</a></div>
+        <button id="grok-action" aria-label="Grok actions"><svg></svg></button>
+        <button id="reply" data-testid="reply">Reply</button></article>`)
+    expect($(selectorFor('hide-x-grok')).map((_, node) => $(node).attr('id')).get()).toEqual([
+      'grok-nav', 'grok-action',
+    ])
+  })
+
+  it('selects mobile recommendation modules and marked Discover more cells, not followed posts or their timeline', () => {
+    const $ = load(`<main><div aria-label="Timeline: Your Home Timeline" id="timeline">
+      <div id="followed"><article data-testid="tweet"><div data-testid="tweetText">Who to follow</div>
+        <button data-testid="123-follow">Follow</button></article></div>
+      <aside id="who" aria-label="Who to follow"><button data-testid="456-follow">Follow</button></aside>
+      <div data-testid="sidebarColumn"><div id="trend" data-testid="trend">Trending</div></div>
+      <div id="discover-heading" data-nora-x-recommendation>Discover more</div>
+      <div id="discover-post" data-nora-x-recommendation><article data-testid="tweet">Suggested post</article></div>
+      </div></main>`)
+    expect($(selectorFor('hide-x-recommendations')).map((_, node) => $(node).attr('id')).get()).toEqual([
+      'who', 'trend', 'discover-heading', 'discover-post',
+    ])
+  })
+
+  it('preserves intentional Explore trends while hiding sidebar trends', () => {
+    const $ = load(`<main data-testid="primaryColumn">
+      <section aria-label="Timeline: Trending now" id="explore"><div data-testid="trend" id="explore-trend">Trend</div></section>
+      <div data-testid="trends" id="explore-trends">Trends</div></main>
+      <aside data-testid="sidebarColumn"><section aria-label="Timeline: Trending now" id="sidebar-timeline">
+      <div data-testid="trend" id="sidebar-trend">Trend</div></section>
+      <div data-testid="trends" id="sidebar-trends">Trends</div></aside>`)
+    expect($(selectorFor('hide-x-recommendations')).map((_, node) => $(node).attr('id')).get()).toEqual([
+      'sidebar-timeline', 'sidebar-trend', 'sidebar-trends',
+    ])
+  })
+
+  it('hides count text while preserving action buttons, SVG icons, and ordinary tweet links', () => {
+    const $ = load(`<article data-testid="tweet"><div data-testid="tweetText" id="text">
+      <a href="/someone/status/123/likes"><span id="post-link">a link in a post</span></a></div>
+      <div role="group"><button data-testid="like" id="like" aria-label="2 Likes. Like">
+      <svg id="icon"></svg><span id="count" data-testid="app-text-transition-container">2</span></button>
+      <button data-testid="reply" id="reply"><svg></svg><span id="replies" data-testid="app-text-transition-container">3</span></button>
+      <a href="/someone/status/123/analytics" id="views"><svg></svg><span id="view-count">40</span></a></div>
+      <a href="/someone/status/123/retweets" id="reposts"><span id="repost-count">4 Reposts</span></a></article>`)
+    const selected = $(selectorFor('hide-x-engagement-counts'))
+    expect(selected.map((_, node) => $(node).attr('id')).get()).toEqual([
+      'count', 'replies', 'view-count', 'repost-count',
+    ])
+    expect(selected.is('button, [role="button"], svg, a')).toBe(false)
+    expect(builtinUserStyleDefinitionById['hide-x-engagement-counts'].css).toContain('visibility: hidden')
+    expect(builtinUserStyleDefinitionById['hide-x-engagement-counts'].css).not.toContain('display: none')
   })
 })
 

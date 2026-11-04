@@ -985,6 +985,15 @@ export const SettingsServicesContent = () => {
                       </View>
                     ) : null}
                     {hasXSettings ? (
+                      <View className={clsx(rowCls, nextRowBorderClass())}>
+                        <NouSwitch
+                          label={<NouText>{t('settings.xDefaultSearchLatest')}</NouText>}
+                          value={settings.xDefaultSearchLatest}
+                          onPress={() => settings$.xDefaultSearchLatest.toggle()}
+                        />
+                      </View>
+                    ) : null}
+                    {hasXSettings ? (
                       <View className={clsx(rowCls, nextRowBorderClass(), 'flex-row items-center justify-between gap-3')}>
                         <NouText className="flex-1">{t('settings.xHomeTimeline.label')}</NouText>
                         <Segemented

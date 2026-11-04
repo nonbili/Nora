@@ -3,6 +3,8 @@ import { noraSettingsEvent } from './nora'
 import { normalizeVideoSpeed, videoLongPressSpeeds } from '../lib/video-speed'
 import { runFacebookFeedController } from './services/facebook'
 import { runXHomeTabsController } from './services/twitter/home-tabs'
+import { runXSearchController } from './services/twitter/search'
+import { runXRecommendationsController } from './services/twitter/recommendations'
 
 function runVideoLongPressScript() {
   const root = window as Window & typeof globalThis & { __noraVideoEdgeLongPressInit?: boolean }
@@ -615,6 +617,8 @@ export function injectScript() {
       break
     case 'x':
       runXHomeTabsController()
+      runXSearchController()
+      runXRecommendationsController()
       break
   }
 }

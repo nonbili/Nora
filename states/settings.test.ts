@@ -9,6 +9,19 @@ beforeEach(() => {
   settings$.proxyPassword.set('')
 })
 
+describe('X Latest search preference', () => {
+  it('defaults to off for old or malformed settings', () => {
+    expect(getSettingsSnapshot({}).xDefaultSearchLatest).toBe(false)
+    expect(normalizeSettings({} as Partial<import('./settings').Settings>).xDefaultSearchLatest).toBe(false)
+    expect(normalizeSettings({ xDefaultSearchLatest: 'true' } as any).xDefaultSearchLatest).toBe(false)
+  })
+
+  it('preserves the option in backup snapshots and restored settings', () => {
+    expect(getSettingsSnapshot({ xDefaultSearchLatest: true }).xDefaultSearchLatest).toBe(true)
+    expect(normalizeSettings({ xDefaultSearchLatest: true }).xDefaultSearchLatest).toBe(true)
+  })
+})
+
 describe('device-local proxy credentials', () => {
   it('defaults credentials to empty strings', () => {
     expect(settings$.proxyUsername.get()).toBe('')

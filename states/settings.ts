@@ -62,6 +62,7 @@ export interface Settings {
   openExternalLinkInSystemBrowser: boolean
   redirectToOldReddit: boolean
   xDefaultHomeTimeline: XHomeTimeline
+  xDefaultSearchLatest: boolean
   hideXHomeTimelineTabs: boolean
   allowHttpWebsite: boolean
   askDownloadDestination: boolean
@@ -182,6 +183,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     openExternalLinkInSystemBrowser: bool(value?.openExternalLinkInSystemBrowser),
     redirectToOldReddit: bool(value?.redirectToOldReddit),
     xDefaultHomeTimeline: normalizeXHomeTimeline(value?.xDefaultHomeTimeline),
+    xDefaultSearchLatest: bool(value?.xDefaultSearchLatest),
     hideXHomeTimelineTabs: bool(value?.hideXHomeTimelineTabs),
     allowHttpWebsite: bool(value?.allowHttpWebsite, true),
     askDownloadDestination: bool(value?.askDownloadDestination),
@@ -277,6 +279,9 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
     data.feedEnabled = true
   }
   data.xDefaultHomeTimeline = normalizeXHomeTimeline(data.xDefaultHomeTimeline)
+  if (typeof data.xDefaultSearchLatest !== 'boolean') {
+    data.xDefaultSearchLatest = false
+  }
   if (typeof data.hideXHomeTimelineTabs !== 'boolean') {
     data.hideXHomeTimelineTabs = false
   }
@@ -343,6 +348,7 @@ export const settings$: Observable<Store> = observable<Store>({
   openExternalLinkInSystemBrowser: false,
   redirectToOldReddit: false,
   xDefaultHomeTimeline: 'for-you',
+  xDefaultSearchLatest: false,
   hideXHomeTimelineTabs: false,
   allowHttpWebsite: true,
   askDownloadDestination: false,
