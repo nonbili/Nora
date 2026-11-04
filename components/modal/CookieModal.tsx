@@ -16,6 +16,7 @@ import { BaseCenterModal } from './BaseCenterModal'
 import { executeWebviewJavaScript, reloadWebview } from '@/lib/webview'
 import { ProfileSelectorChips } from '../profile/ProfileSelectorChips'
 import { useTwColor } from '@/lib/theme'
+import { buildCookieScript } from '@/lib/cookies'
 
 type InjectionRequest = {
   id: number
@@ -56,14 +57,6 @@ const getCookieEntries = (value: string) =>
         .map((entry) => entry.trim())
         .filter((entry) => entry.includes('='))
     })
-
-const buildCookieScript = (entries: string[]) => `(() => {
-  const entries = ${JSON.stringify(entries)};
-  for (const entry of entries) {
-    document.cookie = entry + '; path=/; max-age=31536000';
-  }
-  return document.cookie;
-})()`
 
 const loadInjectorUrl = (injector: any, url: string) => {
   if (injector && 'src' in injector) {

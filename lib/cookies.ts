@@ -16,6 +16,17 @@ export interface ProfileCookie {
 
 const cleanCookieField = (value: string) => value.replace(/[\t\r\n]/g, '')
 
+export const buildCookieScript = (entries: string[]) => `(() => {
+  const entries = ${JSON.stringify(entries)};
+  for (const entry of entries) {
+    const name = entry.split('=')[0].toLowerCase();
+    // Both prefixes require Secure; __Host- also requires Path=/ and no Domain.
+    const secure = name.startsWith('__secure-') || name.startsWith('__host-') ? '; Secure' : '';
+    document.cookie = entry + '; path=/; max-age=31536000' + secure;
+  }
+  return document.cookie;
+})()`
+
 export function formatProfileCookiesTxt(cookies: ProfileCookie[]) {
   const rows = cookies.flatMap((cookie) => {
     const rawDomain = cleanCookieField(cookie.domain.trim())

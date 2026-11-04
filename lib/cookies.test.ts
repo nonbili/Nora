@@ -1,5 +1,38 @@
 import { describe, expect, it } from 'bun:test'
-import { formatCookiesTxt, formatProfileCookiesTxt } from './cookies'
+import { buildCookieScript, formatCookiesTxt, formatProfileCookiesTxt } from './cookies'
+
+describe('buildCookieScript', () => {
+  const inject = (entries: string[]) => {
+    const writes: string[] = []
+    const document = {
+      set cookie(value: string) { writes.push(value) },
+      get cookie() { return '' },
+    }
+    new Function('document', `return ${buildCookieScript(entries)}`)(document)
+    return writes
+  }
+
+  it('sets the attributes required for secure and host-prefixed cookies', () => {
+    expect(inject(['__Secure-session=a=b', '__Host-session=host-value'])).toEqual([
+      '__Secure-session=a=b; path=/; max-age=31536000; Secure',
+      '__Host-session=host-value; path=/; max-age=31536000; Secure',
+    ])
+  })
+
+  it('handles case variants without changing cookie names', () => {
+    expect(inject(['__secure-session=lowercase', '__hOsT-session=mixed'])).toEqual([
+      '__secure-session=lowercase; path=/; max-age=31536000; Secure',
+      '__hOsT-session=mixed; path=/; max-age=31536000; Secure',
+    ])
+  })
+
+  it('keeps ordinary cookies usable on HTTP', () => {
+    expect(inject(['session=ordinary', '__SecureX=ordinary'])).toEqual([
+      'session=ordinary; path=/; max-age=31536000',
+      '__SecureX=ordinary; path=/; max-age=31536000',
+    ])
+  })
+})
 
 describe('formatCookiesTxt', () => {
   it('formats multiple HTTPS cookies as Netscape rows', () => {
