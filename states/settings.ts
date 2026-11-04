@@ -109,6 +109,9 @@ export interface Settings {
 }
 
 interface Store extends Settings {
+  // Device-local credentials: intentionally absent from backup and sync snapshots.
+  proxyUsername: string
+  proxyPassword: string
   setLanguage: (language: SupportedI18nLanguage | null) => void
   toggleService: (service: string) => void
   toggleSearchProvider: (providerId: string) => void
@@ -358,6 +361,8 @@ export const settings$: Observable<Store> = observable<Store>({
   proxyType: 'http',
   proxyHost: '',
   proxyPort: '',
+  proxyUsername: '',
+  proxyPassword: '',
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,

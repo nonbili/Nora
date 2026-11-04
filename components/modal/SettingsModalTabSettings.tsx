@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { Alert, Pressable, ScrollView, View, TextInput, useColorScheme, Platform } from 'react-native'
+import { useState, useEffect, useMemo } from 'react'
+import { Alert, Pressable, ScrollView, View, TextInput, useColorScheme, Platform, type TextInputProps } from 'react-native'
+import { debounce } from 'es-toolkit'
 import { NouButton } from '../button/NouButton'
 import { ui$ } from '@/states/ui'
 import { services } from '../service/Services'
@@ -133,6 +134,27 @@ const findSupportedTranslationLanguage = (language: string | undefined, availabl
   const normalized = language.replace('_', '-').toLowerCase()
   return available.find((candidate) => candidate.toLowerCase() === normalized)
     || available.find((candidate) => candidate.split('-')[0].toLowerCase() === normalized.split('-')[0])
+}
+
+type ProxyField = 'proxyHost' | 'proxyPort' | 'proxyUsername' | 'proxyPassword'
+
+// Batch keystrokes to avoid restarting proxy connections after every character.
+// Flush on blur or dismissal so closing settings never loses the last edit.
+const ProxyTextInput = ({ field, ...props }: TextInputProps & { field: ProxyField }) => {
+  const saved = useValue(settings$[field])
+  const [draft, setDraft] = useState(saved)
+  const commit = useMemo(() => debounce((text: string) => settings$[field].set(text), 500), [field])
+  useEffect(() => setDraft(saved), [saved])
+  useEffect(() => () => commit.flush(), [commit])
+  return (
+    <TextInput
+      {...props}
+      value={draft}
+      onChangeText={(text) => { setDraft(text); commit(text) }}
+      onBlur={() => commit.flush()}
+      onEndEditing={({ nativeEvent }) => { commit(nativeEvent.text); commit.flush() }}
+    />
+  )
 }
 
 export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = ({ onFocusInput }) => {
@@ -372,10 +394,9 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                 </View>
                 <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
                   <NouText className="w-24">{t('settings.proxy.host')}</NouText>
-                  <TextInput
+                  <ProxyTextInput
                     className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white text-right"
-                    value={settings.proxyHost}
-                    onChangeText={(text) => settings$.proxyHost.set(text)}
+                    field="proxyHost"
                     placeholder={t('settings.proxy.hostPlaceholder')}
                     placeholderTextColor={tw('#71717a')}
                     autoCapitalize="none"
@@ -383,12 +404,11 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     onFocus={onFocusInput}
                   />
                 </View>
-                <View className={clsx(rowCls, 'flex-row items-center justify-between gap-3')}>
+                <View className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
                   <NouText className="w-24">{t('settings.proxy.port')}</NouText>
-                  <TextInput
+                  <ProxyTextInput
                     className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white w-32 text-right"
-                    value={settings.proxyPort}
-                    onChangeText={(text) => settings$.proxyPort.set(text)}
+                    field="proxyPort"
                     placeholder={t('settings.proxy.portPlaceholder')}
                     placeholderTextColor={tw('#71717a')}
                     keyboardType="numeric"
@@ -396,6 +416,25 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
                     onFocus={onFocusInput}
                   />
                 </View>
+                {isAndroid && (['proxyUsername', 'proxyPassword'] as const).map((field) => (
+                  <View key={field} className={clsx(rowCls, rowBorderCls, 'flex-row items-center justify-between gap-3')}>
+                    <NouText className="w-24">
+                      {t(field === 'proxyUsername' ? 'settings.proxy.username' : 'settings.proxy.password')}
+                    </NouText>
+                    <ProxyTextInput
+                      className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white text-right"
+                      accessibilityLabel={t(field === 'proxyUsername' ? 'settings.proxy.username' : 'settings.proxy.password')}
+                      field={field}
+                      secureTextEntry={field === 'proxyPassword'}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      onFocus={onFocusInput}
+                    />
+                  </View>
+                ))}
+                {isAndroid && <NouText className="px-4 py-4 text-sm text-zinc-600 dark:text-zinc-400">
+                  {t('settings.proxy.credentialsHint')}
+                </NouText>}
               </>
             )}
           </View>

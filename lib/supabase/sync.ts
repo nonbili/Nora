@@ -13,8 +13,8 @@ const logger = createLogger('sync', { devOnly: true })
 
 
 const getSettingsSnapshot = (value: any = settings$.get()) => {
-  // siteZoom is device-local and intentionally excluded from sync.
-  const { toggleService, addProfile, updateProfile, deleteProfile, siteZoom, ...data } = value
+  // Zoom overrides and proxy credentials are device-local and never trigger sync.
+  const { toggleService, addProfile, updateProfile, deleteProfile, siteZoom, proxyUsername, proxyPassword, ...data } = value
   return data
 }
 

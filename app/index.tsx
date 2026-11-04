@@ -51,17 +51,23 @@ const getInternalHosts = () => {
 
 const syncNativeSettings = () => {
   const value = settings$.get()
-  NoraViewModule.setSettings({
-    openExternalLinkInSystemBrowser: value?.openExternalLinkInSystemBrowser,
-    redirectToOldReddit: value?.redirectToOldReddit,
-    allowHttpWebsite: value?.allowHttpWebsite,
-    askDownloadDestination: value?.askDownloadDestination,
-    internalHosts: getInternalHosts(),
-    proxyEnabled: value?.proxyEnabled,
-    proxyType: value?.proxyType,
-    proxyHost: value?.proxyHost,
-    proxyPort: value?.proxyPort,
-  })
+  try {
+    NoraViewModule.setSettings({
+      openExternalLinkInSystemBrowser: value?.openExternalLinkInSystemBrowser,
+      redirectToOldReddit: value?.redirectToOldReddit,
+      allowHttpWebsite: value?.allowHttpWebsite,
+      askDownloadDestination: value?.askDownloadDestination,
+      internalHosts: getInternalHosts(),
+      proxyEnabled: value?.proxyEnabled,
+      proxyType: value?.proxyType,
+      proxyHost: value?.proxyHost,
+      proxyPort: value?.proxyPort,
+      proxyUsername: value?.proxyUsername,
+      proxyPassword: value?.proxyPassword,
+    })
+  } catch {
+    showToast(t('settings.proxy.applyFailed'))
+  }
 }
 
 const EXIT_DOUBLE_BACK_WINDOW_MS = 2000

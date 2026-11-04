@@ -47,6 +47,12 @@ class NoraSettings : Record {
 
   @Field
   val proxyPort: String = ""
+
+  @Field
+  val proxyUsername: String = ""
+
+  @Field
+  val proxyPassword: String = ""
 }
 
 class NoraBlocklist : Record {

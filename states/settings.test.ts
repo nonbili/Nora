@@ -5,6 +5,40 @@ beforeEach(() => {
   settings$.profiles.set([{ id: 'default', name: 'Default', color: '#6366f1', isDefault: true }])
   settings$.anonymousMode.set(false)
   settings$.anonymousDisabledHosts.set([])
+  settings$.proxyUsername.set('')
+  settings$.proxyPassword.set('')
+})
+
+describe('device-local proxy credentials', () => {
+  it('defaults credentials to empty strings', () => {
+    expect(settings$.proxyUsername.get()).toBe('')
+    expect(settings$.proxyPassword.get()).toBe('')
+  })
+
+  it('excludes credentials from an explicit backup snapshot', () => {
+    const snapshot = getSettingsSnapshot({
+      proxyEnabled: true,
+      proxyHost: 'proxy.example.com',
+      proxyUsername: 'device user',
+      proxyPassword: 'päss:@/% word',
+    })
+    expect(snapshot.proxyEnabled).toBe(true)
+    expect(snapshot.proxyHost).toBe('proxy.example.com')
+    expect(snapshot).not.toHaveProperty('proxyUsername')
+    expect(snapshot).not.toHaveProperty('proxyPassword')
+  })
+
+  it('excludes stored credentials from the default snapshot and preserves them on restore', () => {
+    settings$.proxyUsername.set('device user')
+    settings$.proxyPassword.set('device password')
+    const snapshot = getSettingsSnapshot()
+    expect(snapshot).not.toHaveProperty('proxyUsername')
+    expect(snapshot).not.toHaveProperty('proxyPassword')
+
+    settings$.assign(snapshot)
+    expect(settings$.proxyUsername.get()).toBe('device user')
+    expect(settings$.proxyPassword.get()).toBe('device password')
+  })
 })
 
 describe('Anonymous profile', () => {

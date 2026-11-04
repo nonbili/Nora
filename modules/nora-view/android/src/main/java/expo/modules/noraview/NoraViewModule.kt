@@ -38,6 +38,8 @@ class NoraViewModule : Module() {
   }
 
   private var lastProxyKey: String? = null
+  private var proxyEndpoint: ProxyEndpoint? = null
+  private var proxyRelay: ProxyRelay? = null
 
   // "www.example.com" -> www.example.com, .www.example.com, example.com,
   // .example.com. Stops at two labels so we never walk up to a bare TLD, and
@@ -63,31 +65,51 @@ class NoraViewModule : Module() {
 
   private fun applyProxy(settings: NoraSettings) {
     if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) {
-      val proxyKey = "${settings.proxyEnabled}|${settings.proxyType}|${settings.proxyHost}|${settings.proxyPort}"
+      val next = if (settings.proxyEnabled && settings.proxyHost.isNotBlank()) {
+        ProxyEndpoint(settings.proxyType, settings.proxyHost.trim(),
+          if (settings.proxyPort.isBlank()) {
+            if (settings.proxyType == "socks") 1080 else 80
+          } else settings.proxyPort.toIntOrNull()?.takeIf { it in 1..65535 }
+            ?: throw IllegalArgumentException("Invalid proxy port"),
+          settings.proxyUsername, settings.proxyPassword)
+      } else null
+      if (next != proxyEndpoint || proxyRelay?.isClosed == true) {
+        val replacement = next?.takeIf { it.username.isNotEmpty() || it.password.isNotEmpty() }?.let {
+          ProxyRelay(it) { log("Proxy relay stopped; reapply proxy settings to retry") }
+        }
+        val previous = proxyRelay
+        proxyRelay = replacement
+        proxyEndpoint = next
+        previous?.close()
+      }
+      val rule = proxyRelay?.let { "socks://127.0.0.1:${it.port}" } ?: next?.let {
+        val scheme = if (it.type == "socks") "socks" else "http"
+        val host = if (it.host.contains(':') && !it.host.startsWith('[')) "[${it.host}]" else it.host
+        "$scheme://$host:${it.port}"
+      }
+      val proxyKey = rule ?: ""
       if (proxyKey == lastProxyKey) {
         return
       }
-      lastProxyKey = proxyKey
       val executor = java.util.concurrent.Executor { command -> command.run() }
-      if (settings.proxyEnabled && settings.proxyHost.isNotEmpty()) {
-        val type = if (settings.proxyType == "socks") "socks" else "http"
-        val portStr = if (settings.proxyPort.isNotEmpty()) ":${settings.proxyPort}" else ""
-        val proxyRule = "$type://${settings.proxyHost}$portStr"
+      if (rule != null) {
         val proxyConfig = ProxyConfig.Builder()
-          .addProxyRule(proxyRule)
+          .addProxyRule(rule)
           .build()
         try {
           ProxyController.getInstance().setProxyOverride(proxyConfig, executor, Runnable {
-            log("proxy override applied: $proxyRule")
+            log("proxy override applied")
           })
+          lastProxyKey = proxyKey
         } catch (e: Exception) {
-          log("setProxyOverride failed: ${e.message}")
+          log("Could not apply proxy settings")
         }
       } else {
         try {
           ProxyController.getInstance().clearProxyOverride(executor, Runnable {
             log("proxy override cleared")
           })
+          lastProxyKey = proxyKey
         } catch (e: Exception) {
           log("clearProxyOverride failed: ${e.message}")
         }
@@ -130,6 +152,10 @@ class NoraViewModule : Module() {
     Name("NoraView")
 
     OnDestroy {
+      proxyRelay?.close()
+      proxyRelay = null
+      proxyEndpoint = null
+      lastProxyKey = null
       nouController.downloadPicker.cancelAll()
     }
 

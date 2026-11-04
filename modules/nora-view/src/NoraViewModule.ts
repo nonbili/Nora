@@ -39,7 +39,19 @@ declare class NoraViewModule extends NativeModule {
   ): boolean
   reloadBlocklistFromDisk?(enabled: boolean, revision: number): Promise<boolean>
   reloadBlocklistFromSourceFiles?(enabled: boolean, revision: number): Promise<boolean>
-  setSettings(settings: object): void
+  setSettings(settings: {
+    openExternalLinkInSystemBrowser?: boolean
+    redirectToOldReddit?: boolean
+    allowHttpWebsite?: boolean
+    askDownloadDestination?: boolean
+    internalHosts?: string[]
+    proxyEnabled?: boolean
+    proxyType?: 'http' | 'socks'
+    proxyHost?: string
+    proxyPort?: string
+    proxyUsername?: string
+    proxyPassword?: string
+  }): void
   setBlocklist(blocklist: object): void
   // Newline-encoded host keys; optional so older native builds keep working.
   setBlocklistExcludedHosts?(hosts: string): Promise<void>
