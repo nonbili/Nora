@@ -1,7 +1,8 @@
+import 'react-native-get-random-values'
+import { nanoid } from 'nanoid'
 import NoraViewModule from '@/modules/nora-view/src/NoraViewModule'
 import { settings$ } from '@/states/settings'
 
-let nextId = 1
 const abortError = () => new DOMException('The operation was aborted.', 'AbortError')
 
 /** Feed pages and JSON use a native session with the current proxy and no shared cookies. */
@@ -13,7 +14,7 @@ export const watchFetch = async (url: string, init: RequestInit = {}): Promise<R
     if (settings$.proxyEnabled.peek()) throw new Error('Proxy feed requests require an updated iOS build.')
     return fetch(url, init)
   }
-  const id = nextId++
+  const id = nanoid()
   const onAbort = () => { void NoraViewModule.abortWatchFetch?.(id).catch(() => {}) }
   signal?.addEventListener('abort', onAbort)
   try {

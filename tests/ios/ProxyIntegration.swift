@@ -105,9 +105,8 @@ private struct ProxyIntegration {
     return String(decoding: data, as: UTF8.self)
   }
 
-  @MainActor private static var requestID = 0
   @MainActor private static func fetchFeed(_ url: URL) async throws -> String {
-    requestID += 1
+    let requestID = UUID().uuidString
     return try await withCheckedThrowingContinuation { continuation in
       do {
         try NoraFeedRequests.shared.start(id: requestID, url: url.absoluteString, method: "GET", headers: [:], body: nil) { result in
@@ -149,8 +148,7 @@ private struct ProxyIntegration {
       try expect(try await fetch(url) == "proxy works", "URLSession did not use authenticated \(type)")
       try expect(try await fetchFeed(url) == "proxy works", "Native feed transport did not use authenticated \(type)")
       // Cancellation goes through the same request registry as the Expo bridge.
-      requestID += 1
-      let cancelledID = requestID
+      let cancelledID = UUID().uuidString
       let cancelled = await withCheckedContinuation { continuation in
         do {
           try NoraFeedRequests.shared.start(id: cancelledID, url: url.absoluteString, method: "GET", headers: [:], body: nil) { result in
@@ -161,6 +159,26 @@ private struct ProxyIntegration {
         } catch { continuation.resume(returning: false) }
       }
       try expect(cancelled, "Native feed cancellation did not finish")
+      let namespaceA = "foreground-" + UUID().uuidString
+      let namespaceB = "headless-" + UUID().uuidString
+      let isolation = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
+        do {
+          try NoraFeedRequests.shared.start(id: namespaceB, url: "http://proxy-verification.invalid/slow", method: "GET", headers: [:], body: nil) { result in
+            if case .failure(let error) = result { continuation.resume(returning: (error as? URLError)?.code == .cancelled) }
+            else { continuation.resume(returning: false) }
+          }
+          // A duplicate cannot overwrite the outstanding request's cancellation handle.
+          do {
+            try NoraFeedRequests.shared.start(id: namespaceB, url: url.absoluteString, method: "GET", headers: [:], body: nil) { _ in }
+            throw TestFailure(message: "Duplicate request ID replaced a live request")
+          } catch is URLError {}
+          try NoraFeedRequests.shared.start(id: namespaceA, url: url.absoluteString, method: "GET", headers: [:], body: nil) { _ in
+            // Completion of one runtime must leave the other runtime cancellable.
+            NoraFeedRequests.shared.cancel(id: namespaceB)
+          }
+        } catch { continuation.resume(throwing: error) }
+      }
+      try expect(isolation, "Completion removed another runtime's cancellation handle")
       let newProfile = PageProbe(store: .nonPersistent())
       try expect(!newProfile.webView.configuration.websiteDataStore.proxyConfigurations.isEmpty, "New profile missed current proxy")
       trace("\(type): starting WebKit success check")

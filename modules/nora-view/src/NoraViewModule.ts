@@ -7,13 +7,13 @@ declare class NoraViewModule extends NativeModule {
   getCookies(url: string, profile?: string | null): Promise<string>
   getProfileCookies(profile: string): Promise<ProfileCookie[]>
   // iOS feed traffic uses the same proxy settings as WebKit.
-  watchFetch?(id: number, url: string, method: string, headers: Record<string, string>, body: string | null, proxy: {
+  watchFetch?(id: string, url: string, method: string, headers: Record<string, string>, body: string | null, proxy: {
     proxyEnabled: boolean; proxyType: 'http' | 'socks'; proxyHost: string; proxyPort: string
     proxyUsername: string; proxyPassword: string
   }): Promise<{
     status: number; url: string; headers: Record<string, string>; body: string
   }>
-  abortWatchFetch?(id: number): Promise<void>
+  abortWatchFetch?(id: string): Promise<void>
   openExternalUrl(url: string): Promise<boolean>
   // Android only: the iOS module has no equivalent, so both are optional.
   isPinShortcutSupported?(): boolean

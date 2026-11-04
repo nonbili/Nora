@@ -37,7 +37,7 @@ app bundle with the same transport exception, sign ad hoc, and install/launch vi
 
 Coverage: authenticated HTTP CONNECT and SOCKS5 for both networking APIs and the production feed transport, separate profile stores, changed
 wrong credentials, invalid endpoint rejection, and removal of proxy configuration
-when disabled. WebKit applies changes asynchronously; the changed-credential test
+when disabled, duplicate-ID rejection, and cancellation isolation across foreground/headless request IDs. WebKit applies changes asynchronously; the changed-credential test
 waits one second before checking rejection on a new origin, which forces a fresh
 tunnel. Existing authenticated connections can outlive a credential change.
 iOS 16 legacy HTTP-feed behavior needs

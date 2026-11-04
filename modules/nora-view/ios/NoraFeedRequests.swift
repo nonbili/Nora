@@ -5,15 +5,18 @@ import Foundation
 // the server has answered. The URLSession's cookie and credential jars stay empty.
 internal final class NoraFeedRequests: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
   static let shared = NoraFeedRequests()
-  private var requests: [Int: (task: URLSessionDataTask, session: URLSession)] = [:]
+  private var requests: [String: (token: UUID, task: URLSessionDataTask, session: URLSession)] = [:]
 
   func start(
-    id: Int, url: String, method: String, headers: [String: String], body: String?,
+    id: String, url: String, method: String, headers: [String: String], body: String?,
     completion: @escaping (Result<[String: Any], Error>) -> Void
   ) throws {
     guard let target = URL(string: url), ["http", "https"].contains(target.scheme?.lowercased() ?? "") else {
       throw URLError(.unsupportedURL)
     }
+    // Never replace a live request, even if a caller supplies a duplicate ID.
+    guard requests[id] == nil else { throw URLError(.resourceUnavailable) }
+    let token = UUID()
     let configuration = try NoraProxy.shared.sessionConfiguration()
     configuration.httpShouldSetCookies = false
     configuration.httpCookieStorage = nil
@@ -26,7 +29,9 @@ internal final class NoraFeedRequests: NSObject, URLSessionTaskDelegate, @unchec
     request.timeoutInterval = 30
     let task = session.dataTask(with: request) { data, response, error in
       DispatchQueue.main.async {
-        self.requests.removeValue(forKey: id)
+        if self.requests[id]?.token == token {
+          self.requests.removeValue(forKey: id)
+        }
         defer { session.finishTasksAndInvalidate() }
         if let error { completion(.failure(error)); return }
         guard let response = response as? HTTPURLResponse else {
@@ -43,11 +48,11 @@ internal final class NoraFeedRequests: NSObject, URLSessionTaskDelegate, @unchec
         ]))
       }
     }
-    requests[id] = (task, session)
+    requests[id] = (token, task, session)
     task.resume()
   }
 
-  func cancel(id: Int) {
+  func cancel(id: String) {
     requests[id]?.task.cancel()
   }
 

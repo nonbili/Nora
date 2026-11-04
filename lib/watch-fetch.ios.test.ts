@@ -31,6 +31,17 @@ describe('iOS feed transport', () => {
     expect(response.headers.get('Content-Type')).toBe('application/json')
   })
 
+  it('uses independent request IDs after a JS runtime reload', async () => {
+    const ids: string[] = []
+    NoraViewModule.watchFetch = mock(async (id: string) => { ids.push(id); return answer })
+    const runtimePath = './watch-fetch.ios.ts?second-runtime'
+    const otherRuntime = await import(runtimePath)
+    await Promise.all([watchFetch('https://feed.example'), otherRuntime.watchFetch('https://feed.example')])
+    expect(ids).toHaveLength(2)
+    expect(ids[0]).not.toBe(ids[1])
+    expect(ids.every(id => typeof id === 'string' && id.length >= 21)).toBe(true)
+  })
+
   it('cancels native work and rejects an aborted response', async () => {
     let finish!: (value: typeof answer) => void
     NoraViewModule.watchFetch = mock(() => new Promise(resolve => { finish = resolve }))

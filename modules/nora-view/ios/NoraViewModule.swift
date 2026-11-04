@@ -102,7 +102,7 @@ public class NoraViewModule: Module {
     }
 
     AsyncFunction("watchFetch") {
-      (id: Int, url: String, method: String, headers: [String: String], body: String?, proxy: NoraSettings, promise: Promise) in
+      (id: String, url: String, method: String, headers: [String: String], body: String?, proxy: NoraSettings, promise: Promise) in
       do {
         // Background tasks can run before HomeScreen has synchronized native settings.
         NoraProxy.shared.update(proxy.proxySnapshot)
@@ -117,7 +117,7 @@ public class NoraViewModule: Module {
       }
     }.runOnQueue(.main)
 
-    AsyncFunction("abortWatchFetch") { (id: Int) in
+    AsyncFunction("abortWatchFetch") { (id: String) in
       NoraFeedRequests.shared.cancel(id: id)
     }.runOnQueue(.main)
 

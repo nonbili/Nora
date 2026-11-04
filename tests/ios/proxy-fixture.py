@@ -5,6 +5,7 @@ import select
 import socket
 import socketserver
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 USER, PASSWORD = b'nora-test', b'p@ss:/ test'
@@ -92,7 +93,9 @@ class Handler(socketserver.BaseRequestHandler):
             print(json.dumps({'type': self.server.kind, 'host': host, 'port': port}), flush=True)
             if host == 'proxy-verification.invalid' or host.endswith('.proxy-verification.invalid'):
                 sock.sendall(connected)
-                headers(sock)
+                request_headers = headers(sock)
+                if request_headers.startswith(b'GET /slow'):
+                    time.sleep(2)
                 sock.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 11\r\nCache-Control: no-store\r\nConnection: close\r\n\r\nproxy works')
                 return
             with socket.create_connection((host, port), 15) as remote:
