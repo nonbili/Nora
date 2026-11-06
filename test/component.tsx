@@ -38,6 +38,8 @@ mock.module('react-hot-toast', () => {
   })
   return { default: toast, toast, Toaster: () => null, useToaster: () => ({ toasts: [] }) }
 })
+// Tab-lifecycle tests do not render feed dialogs or their Expo UI native hosts.
+mock.module('@/components/feed/FeedOverlays', () => ({ FeedOverlays: () => null }))
 mock.module('expo-image', () => ({
   Image: 'ExpoImage',
   ImageBackground: 'ExpoImageBackground',

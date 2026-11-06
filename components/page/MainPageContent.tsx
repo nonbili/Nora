@@ -26,10 +26,11 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
   const headerPosition = useValue(settings$.headerPosition)
   const settingsModalOpen = useValue(ui$.settingsModalOpen)
   const sourcesScreen = useValue(ui$.sourcesScreen)
+  const globalSourcesScreen = !!sourcesScreen && (!isWeb || !sourcesScreen.tabId)
   const workspaceRef = useRef<ViewInstance>(null)
 
   useEffect(() => {
-    if (!isWeb || !sourcesScreen || !workspaceRef.current) return
+    if (!isWeb || !globalSourcesScreen || !workspaceRef.current) return
     const workspace = workspaceRef.current as unknown as HTMLElement
     workspace.inert = true
     workspace.setAttribute('aria-hidden', 'true')
@@ -37,7 +38,7 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
       workspace.inert = false
       workspace.removeAttribute('aria-hidden')
     }
-  }, [sourcesScreen])
+  }, [globalSourcesScreen])
 
   const tabs = useValue(tabs$.tabs)
   const desktopLayout = useDesktopLayout()
@@ -84,8 +85,8 @@ export const MainPageContent: React.FC<{ contentJs: string }> = ({ contentJs }) 
     <View
       ref={workspaceRef}
       collapsable={false}
-      accessibilityElementsHidden={Boolean(sourcesScreen)}
-      importantForAccessibility={sourcesScreen || (isAndroid && settingsModalOpen) ? 'no-hide-descendants' : 'auto'}
+      accessibilityElementsHidden={globalSourcesScreen}
+      importantForAccessibility={globalSourcesScreen || (isAndroid && settingsModalOpen) ? 'no-hide-descendants' : 'auto'}
       className={clsx(
         'flex-1 h-full overflow-hidden bg-zinc-100 dark:bg-zinc-950',
         !nativeDesktop && headerPosition === 'bottom' && 'flex-col-reverse',

@@ -116,7 +116,7 @@ const Hint: React.FC<{ children: string }> = ({ children }) => (
 export const FeedSettingsModal = () => {
   const tw = useTwColor()
   const isDark = useColorScheme() === 'dark'
-  const open = useValue(ui$.feedSettingsModalOpen)
+  const open = !!useValue(ui$.feedSettingsModal)
   const insets = useSafeAreaInsets()
   const defaultInterval = useValue(watch$.checkIntervalMinutes)
   const mediaWifiOnly = useValue(watch$.mediaWifiOnly)
@@ -139,7 +139,7 @@ export const FeedSettingsModal = () => {
     Object.values(watchMedia$.files.get()).reduce((sum, kept) => sum + (kept?.bytes || 0), 0),
   )
 
-  const onClose = () => ui$.feedSettingsModalOpen.set(false)
+  const onClose = () => ui$.feedSettingsModal.set(null)
 
   // A phone's sheet stays there while it slides away; the desktop's dialog goes at once.
   if (!open && isWeb) {
@@ -166,139 +166,144 @@ export const FeedSettingsModal = () => {
   )
 
   const list = (
-    <ScrollView style={{ flexShrink: 1 }} contentContainerClassName="rounded-xl bg-white px-4 dark:bg-zinc-900">
-      <NouSwitch
-        className="py-3"
-        label={t('feed.showOnNewTab')}
-        value={feedPinned}
-        onPress={() => watch$.feedPinned.set(!feedPinned)}
-      />
-      <Divider />
-      {emojiRow}
-      <Divider />
-      <View className="py-3">
-        <NouSwitch label={t('feed.notifyTimeline')} value={feedNotify} onPress={() => void toggleFeedNotify()} />
-        <Hint>{t('feed.notifyFeedHint')}</Hint>
-      </View>
-      <Divider />
-      <View className="py-3">
-        <ChoicePicker
-          label={t('feed.checkEvery')}
-          value={formatInterval(defaultInterval)}
-          options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), choice: minutes }))}
-          onSelect={(minutes) => watch$.checkIntervalMinutes.set(minutes)}
-          iconColor={iconColor}
-        />
-        <Hint>{t('feed.intervalHint')}</Hint>
-      </View>
-      <Divider />
-      <View className="py-3">
-        <ChoicePicker
-          label={t('feed.postsPerSource')}
-          value={String(postsPerSource)}
-          options={POSTS_PER_SOURCE_OPTIONS.map((count) => ({ label: String(count), choice: count }))}
-          onSelect={(count) => watch$.postsPerSource.set(count)}
-          iconColor={iconColor}
-        />
-        <Hint>{t('feed.postsPerSourceHint')}</Hint>
-      </View>
-      <Divider />
-      <View className="py-3">
+    <ScrollView
+      style={{ flexShrink: 1, ...(isWeb ? { marginHorizontal: -16 } : {}) }}
+      contentContainerClassName={isWeb ? 'px-4' : undefined}
+    >
+      <View className="rounded-xl bg-white px-4 dark:bg-zinc-900">
         <NouSwitch
-          label={t('feed.useAccounts')}
-          value={useAccounts}
-          onPress={() => watch$.useAccounts.set(!useAccounts)}
+          className="py-3"
+          label={t('feed.showOnNewTab')}
+          value={feedPinned}
+          onPress={() => watch$.feedPinned.set(!feedPinned)}
         />
-        <Hint>
-          {t('feed.useAccountsHint', {
-            sites: WATCH_ACCOUNT_SITES.map((site) => watchSiteLabels[site]).join(', '),
-          })}
-        </Hint>
-        {loggedOutSites.length ? (
-          <NouText className="mt-2 text-sm leading-5 text-amber-700 dark:text-amber-400">
-            {t('feed.loggedOutSites', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
-          </NouText>
-        ) : null}
-      </View>
-      {useAccounts && profiles.length > 1
-        ? WATCH_ACCOUNT_SITES.map((site) => {
-            // The menu gives back a number: the place of the profile in the list, or none for any.
-            const chosen = profiles.find((profile) => profile.id === accountProfiles[site])
-            return (
-              <View key={site} className="pb-3">
-                <ChoicePicker
-                  label={t('feed.accountFrom', { site: watchSiteLabels[site] })}
-                  value={chosen?.name ?? t('feed.accountAnyProfile')}
-                  options={[
-                    { label: t('feed.accountAnyProfile'), choice: undefined as string | undefined },
-                    ...profiles.map((profile) => ({ label: profile.name, choice: profile.id })),
-                  ]}
-                  onSelect={(id) => watch$.accountProfiles[site].set(id)}
-                  iconColor={iconColor}
-                />
-              </View>
-            )
-          })
-        : null}
-      <Divider />
-      <View className="py-3">
-        <ChoicePicker
-          label={t('feed.imginnMode')}
-          value={t(imginnModeLabels[imginnMode])}
-          options={IMGINN_MODES.map((mode) => ({ label: t(imginnModeLabels[mode]), choice: mode }))}
-          onSelect={(mode) => watch$.imginnMode.set(mode)}
-          iconColor={iconColor}
-        />
-        <Hint>{t('feed.imginnModeHint')}</Hint>
-      </View>
-      <Divider />
-      <View className="py-3">
-        <ChoicePicker
-          label={t('feed.nitterMode')}
-          value={t(nitterModeLabels[nitterMode])}
-          options={NITTER_MODES.map((mode) => ({ label: t(nitterModeLabels[mode]), choice: mode }))}
-          onSelect={(mode) => watch$.nitterMode.set(mode)}
-          iconColor={iconColor}
-        />
-        <Hint>{t('feed.nitterModeHint')}</Hint>
-        {nitterMode !== 'off' ? <NitterInstances iconColor={iconColor} /> : null}
-      </View>
-      <Divider />
-      <NouSwitch
-        className="py-3"
-        label={t('feed.mediaWifiOnly')}
-        value={mediaWifiOnly}
-        onPress={() => watch$.mediaWifiOnly.set(!mediaWifiOnly)}
-      />
-      <Divider />
-      <View className="py-3">
-        <ChoicePicker
-          label={t('feed.mediaLimit')}
-          value={formatMegabytes(mediaLimitMB)}
-          options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), choice: mb }))}
-          onSelect={(mb) => watch$.mediaLimitMB.set(mb)}
-          iconColor={iconColor}
-        />
-        <Hint>
-          {t('feed.mediaUsage', {
-            used: formatMegabytes(mediaUsedBytes / 1024 / 1024),
-            limit: formatMegabytes(mediaLimitMB),
-          })}
-        </Hint>
-      </View>
-      <Divider />
-      <Pressable onPress={clearMedia} disabled={!mediaUsedBytes} accessibilityRole="button">
-        <View className="py-4">
-          <NouText
-            className={clsx(
-              'font-medium',
-              mediaUsedBytes ? 'text-red-600 dark:text-red-400' : 'text-zinc-400 dark:text-zinc-600',
-            )}
-          >
-            {t('feed.mediaClear')}
-          </NouText>
+        <Divider />
+        {emojiRow}
+        <Divider />
+        <View className="py-3">
+          <NouSwitch label={t('feed.notifyTimeline')} value={feedNotify} onPress={() => void toggleFeedNotify()} />
+          <Hint>{t('feed.notifyFeedHint')}</Hint>
         </View>
-      </Pressable>
+        <Divider />
+        <View className="py-3">
+          <ChoicePicker
+            label={t('feed.checkEvery')}
+            value={formatInterval(defaultInterval)}
+            options={WATCH_INTERVAL_OPTIONS.map((minutes) => ({ label: formatInterval(minutes), choice: minutes }))}
+            onSelect={(minutes) => watch$.checkIntervalMinutes.set(minutes)}
+            iconColor={iconColor}
+          />
+          <Hint>{t('feed.intervalHint')}</Hint>
+        </View>
+        <Divider />
+        <View className="py-3">
+          <ChoicePicker
+            label={t('feed.postsPerSource')}
+            value={String(postsPerSource)}
+            options={POSTS_PER_SOURCE_OPTIONS.map((count) => ({ label: String(count), choice: count }))}
+            onSelect={(count) => watch$.postsPerSource.set(count)}
+            iconColor={iconColor}
+          />
+          <Hint>{t('feed.postsPerSourceHint')}</Hint>
+        </View>
+        <Divider />
+        <View className="py-3">
+          <NouSwitch
+            label={t('feed.useAccounts')}
+            value={useAccounts}
+            onPress={() => watch$.useAccounts.set(!useAccounts)}
+          />
+          <Hint>
+            {t('feed.useAccountsHint', {
+              sites: WATCH_ACCOUNT_SITES.map((site) => watchSiteLabels[site]).join(', '),
+            })}
+          </Hint>
+          {loggedOutSites.length ? (
+            <NouText className="mt-2 text-sm leading-5 text-amber-700 dark:text-amber-400">
+              {t('feed.loggedOutSites', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
+            </NouText>
+          ) : null}
+        </View>
+        {useAccounts && profiles.length > 1
+          ? WATCH_ACCOUNT_SITES.map((site) => {
+              // The menu gives back a number: the place of the profile in the list, or none for any.
+              const chosen = profiles.find((profile) => profile.id === accountProfiles[site])
+              return (
+                <View key={site} className="pb-3">
+                  <ChoicePicker
+                    label={t('feed.accountFrom', { site: watchSiteLabels[site] })}
+                    value={chosen?.name ?? t('feed.accountAnyProfile')}
+                    options={[
+                      { label: t('feed.accountAnyProfile'), choice: undefined as string | undefined },
+                      ...profiles.map((profile) => ({ label: profile.name, choice: profile.id })),
+                    ]}
+                    onSelect={(id) => watch$.accountProfiles[site].set(id)}
+                    iconColor={iconColor}
+                  />
+                </View>
+              )
+            })
+          : null}
+        <Divider />
+        <View className="py-3">
+          <ChoicePicker
+            label={t('feed.imginnMode')}
+            value={t(imginnModeLabels[imginnMode])}
+            options={IMGINN_MODES.map((mode) => ({ label: t(imginnModeLabels[mode]), choice: mode }))}
+            onSelect={(mode) => watch$.imginnMode.set(mode)}
+            iconColor={iconColor}
+          />
+          <Hint>{t('feed.imginnModeHint')}</Hint>
+        </View>
+        <Divider />
+        <View className="py-3">
+          <ChoicePicker
+            label={t('feed.nitterMode')}
+            value={t(nitterModeLabels[nitterMode])}
+            options={NITTER_MODES.map((mode) => ({ label: t(nitterModeLabels[mode]), choice: mode }))}
+            onSelect={(mode) => watch$.nitterMode.set(mode)}
+            iconColor={iconColor}
+          />
+          <Hint>{t('feed.nitterModeHint')}</Hint>
+          {nitterMode !== 'off' ? <NitterInstances iconColor={iconColor} /> : null}
+        </View>
+        <Divider />
+        <NouSwitch
+          className="py-3"
+          label={t('feed.mediaWifiOnly')}
+          value={mediaWifiOnly}
+          onPress={() => watch$.mediaWifiOnly.set(!mediaWifiOnly)}
+        />
+        <Divider />
+        <View className="py-3">
+          <ChoicePicker
+            label={t('feed.mediaLimit')}
+            value={formatMegabytes(mediaLimitMB)}
+            options={MEDIA_LIMIT_OPTIONS_MB.map((mb) => ({ label: formatMegabytes(mb), choice: mb }))}
+            onSelect={(mb) => watch$.mediaLimitMB.set(mb)}
+            iconColor={iconColor}
+          />
+          <Hint>
+            {t('feed.mediaUsage', {
+              used: formatMegabytes(mediaUsedBytes / 1024 / 1024),
+              limit: formatMegabytes(mediaLimitMB),
+            })}
+          </Hint>
+        </View>
+        <Divider />
+        <Pressable onPress={clearMedia} disabled={!mediaUsedBytes} accessibilityRole="button">
+          <View className="py-4">
+            <NouText
+              className={clsx(
+                'font-medium',
+                mediaUsedBytes ? 'text-red-600 dark:text-red-400' : 'text-zinc-400 dark:text-zinc-600',
+              )}
+            >
+              {t('feed.mediaClear')}
+            </NouText>
+          </View>
+        </Pressable>
+      </View>
     </ScrollView>
   )
 

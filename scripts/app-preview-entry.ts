@@ -261,7 +261,7 @@ function seedAppPreviewData() {
     sourcesScreen: override.sourcesScreen ? { tabId: targetTabId } : null,
     tabModalOpen: false,
     settingsModalOpen: false,
-    feedSettingsModalOpen: false,
+    feedSettingsModal: null,
     feedGallery: null,
   })
 
@@ -270,9 +270,10 @@ function seedAppPreviewData() {
       ui$.assign({
         tabModalOpen: Boolean(override.tabModalOpen),
         settingsModalOpen: Boolean(override.settingsModalOpen),
-        feedSettingsModalOpen: Boolean(override.feedSettingsModalOpen),
+        feedSettingsModal: override.feedSettingsModalOpen ? { tabId: targetTabId } : null,
         feedGallery: override.feedGallery
           ? {
+              tabId: targetTabId,
               postKey: 'bluesky:lena.studio:post-101',
               profileKey: 'bluesky:lena.studio',
               index: 0,

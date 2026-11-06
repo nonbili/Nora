@@ -1,4 +1,4 @@
-import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
+import { ActivityIndicator, BackHandler, FlatList, Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type ViewInstance } from 'react-native'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useValue } from '@legendapp/state/react'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -11,6 +11,7 @@ import { t } from 'i18next'
 import { NouText } from '../NouText'
 import { NouMenu } from '../menu/NouMenu'
 import { Avatar } from '../feed/FeedView'
+import { feedOverlayHandlesKey } from '@/lib/feed-overlays'
 import { ui$ } from '@/states/ui'
 import { watch$ } from '@/states/watch'
 import { tabs$ } from '@/states/tabs'
@@ -135,6 +136,7 @@ const galleryPages = (posts: WatchPost[]): GalleryPage[] =>
 
 export const FeedGalleryModal = () => {
   const gallery = useValue(ui$.feedGallery)
+  const galleryRef = useRef<ViewInstance>(null)
   const window = useWindowDimensions()
   // The room the gallery has, which the safe area can make smaller than the window: a video given
   // the window's height would have its controls cut off at the bottom.
@@ -207,10 +209,19 @@ export const FeedGalleryModal = () => {
     }
   })
 
+  const galleryVisible = !!(gallery && post && page)
+  useEffect(() => {
+    if (isWeb && galleryVisible) {
+      (galleryRef.current as unknown as HTMLElement | null)?.focus()
+    }
+  }, [gallery, galleryVisible])
+
   // On desktop, Escape closes it, and the arrow keys go through it as a swipe does.
   useEffect(() => {
     if (!gallery || !isWeb) return
     const onKeyDown = (e: KeyboardEvent) => {
+      const activeTabId = tabs$.tabs.peek()[tabs$.activeTabIndex.peek()]?.id
+      if (!feedOverlayHandlesKey(gallery.tabId, activeTabId, galleryRef.current as unknown as HTMLElement | null, e.target)) return
       const step = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0
       if (e.key === 'Escape') {
         ui$.feedGallery.set(null)
@@ -256,7 +267,7 @@ export const FeedGalleryModal = () => {
 
   const openOriginal = () => {
     // The gallery is opened from the feed tab, and back in the opened tab comes back to it.
-    tabs$.openTab(post.url, { source: 'child', parentTabId: tabs$.currentTab()?.id })
+    tabs$.openTab(post.url, { source: 'child', parentTabId: gallery.tabId ?? tabs$.currentTab()?.id })
     ui$.feedGallery.set(null)
   }
 
@@ -270,8 +281,9 @@ export const FeedGalleryModal = () => {
 
   return (
     // Its own style, not a class name, which this view doesn't take: it would fill only half the screen.
+    <View ref={galleryRef} tabIndex={isWeb ? 0 : undefined} style={[StyleSheet.absoluteFill, { zIndex: 20, backgroundColor: '#000' }]}>
     <GestureHandlerRootView
-      style={[StyleSheet.absoluteFill, { zIndex: 20, backgroundColor: '#000' }]}
+      style={{ flex: 1 }}
       onLayout={(e) => {
         const { width: w, height: h } = e.nativeEvent.layout
         if (w && h && (w !== size?.width || h !== size?.height)) setSize({ width: w, height: h })
@@ -387,5 +399,6 @@ export const FeedGalleryModal = () => {
         </SafeAreaView>
       ) : null}
     </GestureHandlerRootView>
+    </View>
   )
 }

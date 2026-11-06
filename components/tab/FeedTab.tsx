@@ -11,6 +11,8 @@ import { FeedTabIcon, FeedTabIndicator } from '@/components/service/Services'
 import { clsx, isAndroid, isWeb, nIf } from '@/lib/utils'
 import { NouText } from '../NouText'
 import { MaterialButton } from '../button/IconButtons'
+import { FeedTabScope } from '../feed/FeedTabScope'
+import { FeedOverlays } from '../feed/FeedOverlays'
 import { FeedView } from '../feed/FeedView'
 import { useTabAnimation } from './tab-animation'
 import type { NoraTabProps } from './NoraTab'
@@ -109,7 +111,9 @@ export const FeedTab: React.FC<NoraTabProps> = ({
         style={desktopVariant === 'deck' ? { width: deckTabWidth } : undefined}
       >
         {chrome}
-        <FeedView tabId={tab.id} timelineId={timelineId} active={shown} focused={isActive} />
+        <FeedTabScope tabId={tab.id} overlays={<FeedOverlays tabId={tab.id} />}>
+          <FeedView tabId={tab.id} timelineId={timelineId} active={shown} focused={isActive} />
+        </FeedTabScope>
       </View>
     )
   }

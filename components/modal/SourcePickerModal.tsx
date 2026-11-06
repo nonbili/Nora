@@ -6,6 +6,7 @@ import { BaseCenterModal } from './BaseCenterModal'
 import { NouButton } from '../button/NouButton'
 import { NouText } from '../NouText'
 import { formatInterval } from '../feed/FeedView'
+import { openFeedOverlay } from '@/lib/open-feed-overlay'
 import { ui$ } from '@/states/ui'
 import { inheritedInterval, notifyChoice, watch$ } from '@/states/watch'
 import { enableWatchNotifications } from '@/lib/watch-feed'
@@ -101,7 +102,7 @@ export const SourcePickerModal = () => {
                 role="button"
                 onPress={() => {
                   onClose()
-                  ui$.timelineModal.set({ profileKey: profile.key })
+                  openFeedOverlay('timelineModal', { tabId: picker.tabId, profileKey: profile.key, keepCurrentTimeline: true })
                 }}
               />
             </>

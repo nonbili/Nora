@@ -1,3 +1,4 @@
+import { useFeedTabScope } from '../feed/FeedTabScope'
 import { clsx, isAndroid, isIos, isWeb } from '@/lib/utils'
 import { ReactNode, useEffect, useState } from 'react'
 import { Keyboard, KeyboardAvoidingView, Modal, Pressable, View, useWindowDimensions } from 'react-native'
@@ -12,6 +13,7 @@ export const BaseCenterModal: React.FC<{
   children: ReactNode
   onClose: () => void
 }> = ({ className, keyboardAvoidingClassName, containerClassName, align = 'keyboard', children, onClose }) => {
+  const scope = useFeedTabScope()
   const insets = useSafeAreaInsets()
   const { height, width } = useWindowDimensions()
   const [keyboardVisible, setKeyboardVisible] = useState(false)
@@ -64,9 +66,17 @@ export const BaseCenterModal: React.FC<{
         behavior={isIos ? 'padding' : 'height'}
         pointerEvents="box-none"
         className={keyboardAvoidingClassName}
+        style={scope ? { flexShrink: 1, maxWidth: '100%' } : undefined}
       >
         {/* No taller than what the screen shows above the keyboard; a dialog lets its list shrink to fit. */}
-        <View className={innerCls} style={{ maxHeight: (keyboardTop ?? height - insets.bottom) - insets.top - 24, ...(isAndroid ? { maxWidth: width - 48 } : {}) }}>
+        <View
+          className={innerCls}
+          style={{
+            ...(scope ? { width: Math.min(800, Math.max(0, scope.width - 32)), maxWidth: '100%' } : {}),
+            maxHeight: scope ? Math.max(0, scope.height - 24) : (keyboardTop ?? height - insets.bottom) - insets.top - 24,
+            ...(isAndroid ? { maxWidth: width - 48 } : {}),
+          }}
+        >
           {children}
         </View>
       </KeyboardAvoidingView>
@@ -74,7 +84,7 @@ export const BaseCenterModal: React.FC<{
   )
 
   if (isWeb) {
-    return createPortal(body, document.body)
+    return scope ? body : createPortal(body, document.body)
   }
 
   return (

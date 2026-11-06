@@ -1,3 +1,5 @@
+import { FeedOverlayLifecycle } from '../feed/FeedOverlayLifecycle'
+import { FeedOverlays } from '../feed/FeedOverlays'
 import { View } from 'react-native'
 import { SourcesScreen } from './SourcesScreen'
 import { useValue } from '@legendapp/state/react'
@@ -18,12 +20,6 @@ import { ProfileLinkModal } from '../modal/ProfileLinkModal'
 import { RenameViewModal } from '../modal/RenameViewModal'
 import { RenameGroupModal } from '../modal/RenameGroupModal'
 import { ZoomModal } from '../modal/ZoomModal'
-import { FeedGalleryModal } from '../modal/FeedGalleryModal'
-import { TimelineModal } from '../modal/TimelineModal'
-import { SourcePickerModal } from '../modal/SourcePickerModal'
-import { AddSourcesModal } from '../modal/AddSourcesModal'
-import { FeedSettingsModal } from '../modal/FeedSettingsModal'
-import { SourcesModal } from '../modal/SourcesModal'
 import { WatchWebViewHost } from '../watch/WatchWebViewHost'
 import { ActionToast } from '../ActionToast'
 import { ContentJsContext } from '@/lib/hooks/useContentJs'
@@ -106,12 +102,8 @@ export const MainPage: React.FC<{ contentJs: string }> = ({ contentJs }) => {
         <RenameGroupModal />
         <RenameViewModal />
         <ZoomModal />
-        <AddSourcesModal />
-        <FeedSettingsModal />
-        <SourcesModal />
-        <FeedGalleryModal />
-        <TimelineModal />
-        <SourcePickerModal />
+        <FeedOverlayLifecycle dismissOnBlur={!isWeb} />
+        <FeedOverlays />
         <WatchWebViewHost />
         {nIf(!isWeb, <ActionToast />)}
         {nIf(!isWeb, <TranslationCard />)}

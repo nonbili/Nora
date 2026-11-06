@@ -1,5 +1,7 @@
 import { DropdownMenu } from '@radix-ui/themes'
 import { forwardRef, ReactNode, useImperativeHandle, useRef } from 'react'
+import { tabs$ } from '@/states/tabs'
+import { useFeedTabScope } from '../feed/FeedTabScope'
 import { clsx } from '@/lib/utils'
 
 export interface Item {
@@ -22,6 +24,7 @@ export interface NouMenuHandle {
 }
 
 export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerLabel?: string; items: Item[]; triggerColor?: string; triggerSize?: number; hideTrigger?: boolean }>(function NouMenu({ trigger, triggerLabel, items, triggerSize, hideTrigger }, ref) {
+  const scope = useFeedTabScope()
   const triggerRef = useRef<HTMLButtonElement>(null)
   useImperativeHandle(ref, () => ({
     openAt: () => {},
@@ -91,7 +94,15 @@ export const NouMenu = forwardRef<NouMenuHandle, { trigger?: ReactNode; triggerL
       </DropdownMenu.Trigger>
       <DropdownMenu.Content
         variant="soft"
-        // Menus portal to the body, above the dialogs' z-10 layer.
+        container={scope?.container ?? undefined}
+        onPointerDown={scope ? (event) => {
+          tabs$.setActiveTabById(scope.tabId, 'user')
+          event.stopPropagation()
+        } : undefined}
+        onMouseDown={scope ? (event) => event.stopPropagation() : undefined}
+        collisionBoundary={scope?.container ?? undefined}
+        style={scope ? { maxWidth: Math.max(0, scope.width - 16), maxHeight: Math.max(0, scope.height - 16) } : undefined}
+        // Feed menus share the tab's clipping and collision bounds.
         className="z-20 max-h-[70vh] overflow-auto rounded-xl border border-zinc-300/70 dark:border-zinc-800/80 shadow-xl shadow-zinc-900/15 dark:shadow-black/40"
       >
         {menuItems}

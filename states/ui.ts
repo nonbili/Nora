@@ -16,21 +16,22 @@ interface Store {
   downloadVideoModalUrl: string
   // The post whose media the feed's gallery shows, and the photo or video it opened at.
   // With posts, the gallery goes on from one post's media to the next one's, in their order.
-  feedGallery: { postKey: string; profileKey: string; index: number; posts?: { postKey: string; profileKey: string }[] } | null
+  feedGallery: { tabId?: string; postKey: string; profileKey: string; index: number; posts?: { postKey: string; profileKey: string }[] } | null
   // The timeline to change, or none to make one: with the profile to start it with, and the feed tab to show it in.
   // sourcesOnly: just which sources a timeline shows, without its name and other choices.
-  timelineModal: { timelineId?: string; profileKey?: string; tabId?: string; sourcesOnly?: boolean } | null
+  // keepCurrentTimeline: source assignment creates a timeline without navigating the owning tab.
+  timelineModal: { timelineId?: string; profileKey?: string; tabId?: string; sourcesOnly?: boolean; keepCurrentTimeline?: boolean } | null
   // Quick selection of a source from the timeline the feed tab shows.
   sourcesModal: { tabId?: string; timelineId?: string } | null
   // Source management, with the feed tab to open links beside.
   sourcesScreen: { tabId?: string } | null
   // A watched source's timeline, check interval or notifications, chosen from its menu in the feed.
-  sourcePicker: { profileKey: string; kind: 'timeline' | 'interval' | 'notify' } | null
+  sourcePicker: { tabId?: string; profileKey: string; kind: 'timeline' | 'interval' | 'notify' } | null
   // A source picked from that list, for its feed tab to show.
   feedSelection: { tabId: string; profileKey: string | null } | null
   // Adding sources by their links or from a file: into the timeline it was opened from, if any.
-  addSourcesModal: { timelineId?: string } | null
-  feedSettingsModalOpen: boolean
+  addSourcesModal: { tabId?: string; timelineId?: string } | null
+  feedSettingsModal: { tabId?: string } | null
   // The hint that imginn wants its check passed was closed, until no source waits for it.
   verifyHintDismissed: boolean
   navModalOpen: boolean
@@ -91,7 +92,7 @@ export const ui$ = observable<Store>({
   sourcesScreen: null,
   feedSelection: null,
   addSourcesModal: null,
-  feedSettingsModalOpen: false,
+  feedSettingsModal: null,
   verifyHintDismissed: false,
   navModalOpen: false,
   profileLinkUrl: '',

@@ -98,7 +98,7 @@ export const TimelineModal = () => {
       const id = watch$.createTimeline(name, selectedKeys)
       watch$.updateTimeline(id, { emoji: cleanEmoji(emoji), checkIntervalMinutes: checkInterval })
       void saveNotify(id)
-      showInTab(target.tabId, id)
+      if (!target.keepCurrentTimeline) showInTab(target.tabId, id)
     }
     onClose()
   }

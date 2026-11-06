@@ -7,6 +7,7 @@ import { t } from 'i18next'
 import { NouText } from '../NouText'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { TimelineZoom } from './TimelineZoom'
+import { openFeedOverlay } from '@/lib/open-feed-overlay'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
@@ -367,6 +368,7 @@ const usePostText = () => {
 const sameAsName = (name: string, handle: string) => name.replace(/^@/, '') === handle.replace(/^@/, '')
 
 const PostRow: React.FC<{
+  tabId?: string
   post: WatchPost
   profile?: WatchedProfile
   unread: boolean
@@ -376,7 +378,7 @@ const PostRow: React.FC<{
   onOpenLink: (url: string) => void
   // Shows only this post's source, from its avatar or name; not there while it is the one shown.
   onOpenSource?: () => void
-}> = ({ post, profile, unread, now, iconColor, onOpenOriginal, onOpenLink, onOpenSource }) => {
+}> = ({ tabId, post, profile, unread, now, iconColor, onOpenOriginal, onOpenLink, onOpenSource }) => {
   const [expanded, setExpanded] = useState(false)
   const name = profile?.name || post.handle
   const source = watchSourceLabel(post)
@@ -440,7 +442,7 @@ const PostRow: React.FC<{
             // Reddit video, the post. Media still to be read, as of an Instagram post, is read by the gallery.
             onOpen={() =>
               post.media?.length || post.mediaComplete === false
-                ? ui$.feedGallery.set({ postKey: post.key, profileKey: watchKey(post), index: 0 })
+                ? openFeedOverlay('feedGallery', { tabId, postKey: post.key, profileKey: watchKey(post), index: 0 })
                 : post.link
                   ? onOpenLink(post.link)
                   : onOpenOriginal()
@@ -644,7 +646,8 @@ export const FeedView: React.FC<{
 
   // The gallery goes on through the posts shown, from the one opened.
   const openGallery = (post: WatchPost) =>
-    ui$.feedGallery.set({
+    openFeedOverlay('feedGallery', {
+      tabId,
       postKey: post.key,
       profileKey: watchKey(post),
       index: 0,
@@ -740,7 +743,7 @@ export const FeedView: React.FC<{
       label: t('feed.addSources'),
       icon: <MaterialIcons name="add-link" size={18} color={iconColor} />,
       systemImage: 'link.badge.plus',
-      handler: () => ui$.addSourcesModal.set({ timelineId: timeline?.id }),
+      handler: () => openFeedOverlay('addSourcesModal', { tabId, timelineId: timeline?.id }),
     },
     ...(timeline
       ? [
@@ -748,7 +751,7 @@ export const FeedView: React.FC<{
             label: t('feed.editTimeline'),
             icon: <MaterialIcons name="tune" size={18} color={iconColor} />,
             systemImage: 'slider.horizontal.3',
-            handler: () => ui$.timelineModal.set({ timelineId: timeline.id, tabId }),
+            handler: () => openFeedOverlay('timelineModal', { timelineId: timeline.id, tabId }),
           },
           {
             label: timeline.pinned ? t('feed.unpinFromNewTab') : t('feed.pinToNewTab'),
@@ -769,19 +772,19 @@ export const FeedView: React.FC<{
       label: t('feed.newTimeline'),
       icon: <MaterialIcons name="playlist-add" size={18} color={iconColor} />,
       systemImage: 'plus',
-      handler: () => ui$.timelineModal.set({ tabId }),
+      handler: () => openFeedOverlay('timelineModal', { tabId }),
     },
     {
       label: t('feed.manageSources'),
       icon: <MaterialIcons name="manage-accounts" size={18} color={iconColor} />,
       systemImage: 'person.2',
-      handler: () => ui$.sourcesScreen.set({ tabId }),
+      handler: () => openFeedOverlay('sourcesScreen', { tabId }),
     },
     {
       label: t('feed.settings'),
       icon: <MaterialIcons name="settings" size={18} color={iconColor} />,
       systemImage: 'gearshape',
-      handler: () => ui$.feedSettingsModalOpen.set(true),
+      handler: () => openFeedOverlay('feedSettingsModal', { tabId }),
     },
   ]
 
@@ -894,7 +897,7 @@ export const FeedView: React.FC<{
           })}
           {chips.hidden ? (
             <Pressable
-              onPress={() => ui$.sourcesModal.set({ tabId, timelineId: timeline?.id })}
+              onPress={() => openFeedOverlay('sourcesModal', { tabId, timelineId: timeline?.id })}
               accessibilityRole="button"
               accessibilityLabel={t('feed.chooseSource')}
               hitSlop={androidHitSlop}
@@ -972,19 +975,19 @@ export const FeedView: React.FC<{
                   label: t('feed.checkEveryMenu'),
                   icon: <MaterialIcons name="schedule" size={18} color={iconColor} />,
                   systemImage: 'clock',
-                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'interval' }),
+                  handler: () => openFeedOverlay('sourcePicker', { tabId, profileKey: selected.key, kind: 'interval' }),
                 },
                 {
                   label: t('feed.notifyMenu'),
                   icon: <MaterialIcons name="notifications-none" size={18} color={iconColor} />,
                   systemImage: 'bell',
-                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'notify' }),
+                  handler: () => openFeedOverlay('sourcePicker', { tabId, profileKey: selected.key, kind: 'notify' }),
                 },
                 {
                   label: t('feed.timelineMenu'),
                   icon: <MaterialIcons name="drive-file-move" size={18} color={iconColor} />,
                   systemImage: 'folder',
-                  handler: () => ui$.sourcePicker.set({ profileKey: selected.key, kind: 'timeline' }),
+                  handler: () => openFeedOverlay('sourcePicker', { tabId, profileKey: selected.key, kind: 'timeline' }),
                 },
                 {
                   label: t('feed.openOn', { site: watchSiteLabels[selected.site] }),
@@ -1035,7 +1038,7 @@ export const FeedView: React.FC<{
         // What it asks for is chosen in Feed settings, where it is told again.
         <FeedHint
           text={t('feed.loginHint', { sites: loggedOutSites.map((site) => watchSiteLabels[site]).join(', ') })}
-          onPress={() => ui$.feedSettingsModalOpen.set(true)}
+          onPress={() => openFeedOverlay('feedSettingsModal', { tabId })}
           onDismiss={dismissLoginHint}
         />
       ) : null}
@@ -1050,7 +1053,7 @@ export const FeedView: React.FC<{
       <NouText className="mt-1 text-center text-zinc-600 dark:text-zinc-400">{t('feed.emptyDescription')}</NouText>
       <WatchSites className="mt-6" />
       <Pressable
-        onPress={() => ui$.addSourcesModal.set({ timelineId: timeline?.id })}
+        onPress={() => openFeedOverlay('addSourcesModal', { tabId, timelineId: timeline?.id })}
         accessibilityRole="button"
         style={iosTouchTarget}
         className="mt-8 h-11 flex-row items-center gap-2 rounded-full bg-indigo-600 px-6"
@@ -1074,12 +1077,12 @@ export const FeedView: React.FC<{
               primary
               icon="checklist"
               label={t('feed.chooseSources')}
-              onPress={() => ui$.timelineModal.set({ timelineId: timeline.id, tabId, sourcesOnly: true })}
+              onPress={() => openFeedOverlay('timelineModal', { timelineId: timeline.id, tabId, sourcesOnly: true })}
             />
             <EmptyAction
               icon="add-link"
               label={t('feed.addSources')}
-              onPress={() => ui$.addSourcesModal.set({ timelineId: timeline.id })}
+              onPress={() => openFeedOverlay('addSourcesModal', { tabId, timelineId: timeline.id })}
               color={iconColor}
             />
           </>
@@ -1156,8 +1159,8 @@ export const FeedView: React.FC<{
             {profiles.length ? (
               <Pressable
                 onPress={() => {
-                  if (timeline) ui$.timelineModal.set({ timelineId: timeline.id, tabId })
-                  else ui$.feedSettingsModalOpen.set(true)
+                  if (timeline) openFeedOverlay('timelineModal', { timelineId: timeline.id, tabId })
+                  else openFeedOverlay('feedSettingsModal', { tabId })
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={t(timeline ? 'feed.editTimeline' : 'feed.settings')}
@@ -1203,6 +1206,7 @@ export const FeedView: React.FC<{
               <PostTile post={item} unread={isUnread(item)} columns={columns} onOpen={() => openGallery(item)} />
             ) : (
               <PostRow
+                tabId={tabId}
                 post={item}
                 profile={profileByKey.get(watchKey(item))}
                 unread={isUnread(item)}
