@@ -51,6 +51,7 @@ describe('device-local proxy credentials in settings sync', () => {
     auth$.assign({ userId: undefined, plan: undefined })
     // Also clear any debounced sync scheduled by the real listener.
     await settingsSyncer.syncNow()
+    syncOwner$.ownerUserId.set(undefined)
     fromSpy.mockRestore()
     rpcSpy.mockRestore()
   })

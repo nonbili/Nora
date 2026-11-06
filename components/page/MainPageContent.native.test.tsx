@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import React, { act } from 'react'
 import TestRenderer from 'react-test-renderer'
 import { noraViewMountCount, resetNoraViewEvents } from '../../test/component'
@@ -23,6 +23,14 @@ const { tabGroups$ } = await import('@/states/tab-groups')
 const settle = () => act(async () => void (await new Promise((resolve) => setTimeout(resolve, 5))))
 
 describe('MainPageContent (native)', () => {
+  let renderer: TestRenderer.ReactTestRenderer | undefined
+
+  afterEach(async () => {
+    await act(async () => renderer?.unmount())
+    renderer = undefined
+    settings$.desktopLayout.set('auto')
+  })
+
   beforeEach(() => {
     resetNoraViewEvents()
     tabGroups$.groups.set([])
@@ -42,7 +50,6 @@ describe('MainPageContent (native)', () => {
     tabs$.orders.set({ 'tab-1': 0, 'tab-2': 1 })
     settings$.desktopLayout.set('off')
 
-    let renderer!: TestRenderer.ReactTestRenderer
     await act(async () => {
       renderer = TestRenderer.create(<MainPageContent contentJs="" />)
     })
@@ -60,8 +67,5 @@ describe('MainPageContent (native)', () => {
     })
     await settle()
     expect(noraViewMountCount()).toBe(2)
-
-    await act(async () => renderer.unmount())
-    settings$.desktopLayout.set('auto')
   })
 })

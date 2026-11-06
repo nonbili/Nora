@@ -50,6 +50,7 @@ const from = (table: string) => ({
 const { auth$ } = await import('@/states/auth')
 const { notifyChoice, profileNotifies, watch$ } = await import('@/states/watch')
 const { syncMeta$ } = await import('@/states/sync-meta')
+const { syncOwner$ } = await import('@/states/sync-owner')
 const { feedsSyncer } = await import('./feeds')
 const { tabs$ } = await import('@/states/tabs')
 const { feedTabUrl } = await import('@/lib/feed-tab')
@@ -76,6 +77,7 @@ describe('feeds sync', () => {
     server.feed_sources.clear()
     server.feed_timelines.clear()
     syncMeta$.feeds.set({ pendingSources: [], pendingTimelines: [] })
+    syncOwner$.ownerUserId.set('u1')
     auth$.assign({ userId: 'u1', plan: 'sync' })
   })
 

@@ -1,5 +1,5 @@
-import '../../test/component'
-import { describe, expect, it, mock, spyOn } from 'bun:test'
+import { NoraViewMock } from '../../test/component'
+import { afterAll, describe, expect, it, mock, spyOn } from 'bun:test'
 import React, { act } from 'react'
 import TestRenderer from 'react-test-renderer'
 
@@ -18,7 +18,10 @@ const View = React.forwardRef((next: any, ref) => {
   return null
 })
 View.displayName = 'DownloadWebviewMock'
-mock.module('@/modules/nora-view', () => ({ NoraView: View }))
+mock.module('@/modules/nora-view', () => ({ default: View, NoraView: View }))
+afterAll(() => {
+  mock.module('@/modules/nora-view', () => ({ default: NoraViewMock, NoraView: NoraViewMock }))
+})
 const { DownloadVideoModal } = await import('./DownloadVideoModal')
 const { ui$ } = await import('@/states/ui')
 

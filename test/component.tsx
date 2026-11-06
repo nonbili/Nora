@@ -73,7 +73,7 @@ export const noraViewMountCount = () => noraViewEvents.filter((event) => event.t
  * every load the tab issues, through either the imperative handle or the `src` assignment
  * the desktop ref callback uses.
  */
-const NoraViewMock = React.forwardRef<unknown, Record<string, unknown>>((_props, ref) => {
+export const NoraViewMock = React.forwardRef<unknown, Record<string, unknown>>((_props, ref) => {
   React.useImperativeHandle(ref, () => {
     const events = new EventTarget()
     const handle = {
