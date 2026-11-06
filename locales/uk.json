@@ -72,7 +72,8 @@
     "reopenLastClosedTab": "Відкрити останню закриту вкладку",
     "restoreTabs": "Недавно закриті вкладки",
     "save": "Зберегти",
-    "toggleSidebar": "Перемкнути бокову панель"
+    "toggleSidebar": "Перемкнути бокову панель",
+    "done": "Готово"
   },
   "menus": {
     "clearSiteData": "Видалити дані сайту",
@@ -95,7 +96,17 @@
     "resume": "Відновити вкладку",
     "viewInSplitView": "Перегляд в роздільному виді",
     "blockAds": "Блокувати рекламу на сайті",
-    "addToHomeScreen": "Додати на годовний екран"
+    "addToHomeScreen": "Додати на годовний екран",
+    "back": "Назад",
+    "forward": "Вперед",
+    "hideSignInPrompts": "Приховати вікно входу на сайті",
+    "findInPage": "Знайти на сторінці",
+    "findMatches": "{{active}}/{{total}}",
+    "findNoMatches": "Збігів немає",
+    "findNext": "Наступний збіг",
+    "findPrevious": "Попередній збіг",
+    "watch": "Переглянути {{source}}",
+    "reopenInProfile": "Відкрити у профілі"
   },
   "modals": {
     "downloadVideo": "Завантажити відео",
@@ -105,7 +116,11 @@
     "exportCookies": "Експортувати поточні кукі сайту",
     "exportCookiesHint": "Зберегти кукі поточного сайту в файл ookies.txt.",
     "exportCookiesButton": "Експорт cookies.txt",
-    "clearSiteDataHint": "Видалити кукі та дані перегляду для поточного сайту та профілю."
+    "clearSiteDataHint": "Видалити кукі та дані перегляду для поточного сайту та профілю.",
+    "searchTab": "Пошук",
+    "publicSearch": "Пошук в публічних постах",
+    "publicSearchHint": "Пошук в соцмережі через DuckDuckGo. Результати відкриються в Анонімному профілі.",
+    "publicSearchPlaceholder": "Пошук в публічних постах {{service}}"
   },
   "native": {
     "menu_saveImage": "Зберегти зображення",
@@ -118,7 +133,11 @@
     "httpBlocked_body": "Цей вебсайт використовує ненадійне з'єднання HTTP. Увімкніть \"Дозволити HTTP вебсайти\" в Налаштуваннях, щоб дозволити завантаження HTTP вебсайтів.",
     "menu_openInNewTab": "Відкрити в новій вкладці",
     "httpBlocked_title": "HTTP вебсайт заблоковано",
-    "menu_openInProfile": "Відкрити в профілі"
+    "menu_openInProfile": "Відкрити в профілі",
+    "toast_savingFile": "Зберігаю файл…",
+    "toast_fileSaved": "Фвйл збережено",
+    "toast_open": "Відкрити",
+    "toast_openFolder": "Відкрити теку"
   },
   "profiles": {
     "label": "Профілі",
@@ -142,14 +161,16 @@
     "manageAutoProfiles": "Керування авто профілів ({{count}})",
     "deleteAutoProfileConfirm": "Видалити авто профіль для {{site}}? Збережені дані будуть очищені а вкладки закриті.",
     "exportCookies": "Експортувати кукі профілю",
-    "exportCookiesConfirm": "Експортувати всі кукі з \"{{name}}\"? Файл може містити сесії входу для кожного сайту цього профілю. Слідкуйте за приватністю."
+    "exportCookiesConfirm": "Експортувати всі кукі з \"{{name}}\"? Файл може містити сесії входу для кожного сайту цього профілю. Слідкуйте за приватністю.",
+    "currentProfile": "Профіль: {{name}}",
+    "reopenTabInProfile": "Відкрити вкладку в профілі"
   },
   "settings": {
     "label": "Налаштування",
     "zoom": {
       "label": "Зум сторінки",
       "defaultLabel": "Стандартний зум",
-      "defaultHint": "Встановити стандартний зум для всіх web сторінок.",
+      "defaultHint": "Встановити стандартний зум для всіх web сторінок та розмір штрифта стрічки.",
       "usingDefault": "Викорстовувати стандартний зум",
       "siteZoomLabel": "Зум на сайт"
     },
@@ -175,8 +196,8 @@
       "following": "Підписки",
       "label": "Стандартний час"
     },
-    "mentionNotifications": "Сповіщення соцмереж",
-    "mentionNotificationsHint": "Через фонові обмеження ос, надсилання може затримуватись і не гарантоване.",
+    "mentionNotifications": "Відмітки та повідомлення",
+    "mentionNotificationsHint": "Сповіщення про нові пости в Стрічці встановлені в Налаштуваннях стрічки.Через фонові обмеження ос, надсилання може затримуватись і не гарантоване.",
     "sections": {
       "general": "Загальне",
       "accounts": "Акаунти і дані",
@@ -207,7 +228,9 @@
       "deckTabWidth": "Ширина вкладки колода",
       "desktopLayout": "Десктопний вид",
       "desktopLayoutOn": "Завжди",
-      "desktopLayoutOff": "Ніколи"
+      "desktopLayoutOff": "Ніколи",
+      "desktopLayoutHint": "Показувати групи вкладок",
+      "desktopLayoutAuto": "Автоматично"
     },
     "bookmarks": {
       "saved": "Збережені Закладки",
@@ -364,7 +387,8 @@
     "doubleTapToToggleHeader": "Подвійний натиск на сторінку - сховати/показати панель",
     "webrtc": {
       "label": "WebRTC",
-      "protectIpHint": "Не дає сторінці відкрити ваш реальний IP через WebRTC, котрий обходить приксі та VPN."
+      "protectIpHint": "Не дає сторінці викрити ваш реальний IP через WebRTC, котрий обходить приксі та VPN. Виклики які використовують реле сервера працюватимуть; вимкніть якщо відео чи аудіо дзвінки не проходять. Вступить в силу пісдя перезавантаження сторінки.",
+      "protectIp": "Запобігає витоку WebRTC IP"
     },
     "pullToRefresh": "Потягніть вниз для перезавнтаження",
     "backup": {
@@ -378,6 +402,20 @@
       "importWithScriptsConfirm": "У файлі містяться{{count}} увімкнені скрипти, які запускають код всередині вебсайта. Продовжуйте лише якщо довіряєте файлу. Ваші поточні налаштування, закладки, користувацькі стилі та власні скрипти будуть замінені.",
       "importDone": "Імпортовано: {{sections}}",
       "importFailed": "Невдалось імпортувати: {{message}}"
+    },
+    "downloads": "Завантаження",
+    "askDownloadDestination": "Питати де зберігати кожен файл",
+    "videoDefaultSpeed": "Стандартна швидкість відео",
+    "feed": "Стрічка",
+    "feedHint": "Нові пости зпереглянутих вами джерел",
+    "mentionNotificationsSites": "З ваших акаунтів X та Facebook",
+    "anonymous": {
+      "title": "Анонімний режим",
+      "enable": "Приховати вікнно входу"
+    },
+    "dynamicColor": {
+      "label": "Динамічне забарвлення",
+      "hint": "Використовувати системне забарвлення."
     }
   },
   "sync": {
@@ -404,7 +442,19 @@
     "legalNotice": "Підписки поновлюються автоматично, якщо не відмінені. Підписуючись ви погоджуєтесь з Умовами Користування (EULA) і Політикою Конфіденційності.",
     "managePlan": "Керування тарифом",
     "manageIos": "Керування в App Store",
-    "activeViaIos": "Активувати через App Store"
+    "activeViaIos": "Активувати через App Store",
+    "accountChoiceTitle": "Дані з іншого акаунта",
+    "accountChoiceMessage": "Закладки, налаштування, стилі та стрічка цього приладу синхронізовано з іншим акаунтом Nora. Синхронізацью призупинено допоки ви не оберете що робити.",
+    "accountChoiceUseAccount": "Використовувати дані цього акаунта",
+    "accountChoiceLater": "Пізніше",
+    "accountChoiceToast": "Синхронізація на паузі: цей прилад використовує дані іншого акаунта. Оберіть сценарій в Налаштування › Синхронізація.",
+    "accountChoiceFailed": "Не вдалось перемкнути дані на цей акаунт: {{message}}",
+    "exportSwitchBackupHint": "Збережено {{date}}. Імпортуйте в Налаштування › Бекап, для подальшого відновлення.",
+    "restoreMergeBackup": "Відновити {{name}} з {{date}}",
+    "backupSettings": "налаштування",
+    "backupBookmarks": "закладки",
+    "backupUserStyles": "стилі та скрипти",
+    "accountChoiceMerge": "Приєднати пристрій до акаунта"
   },
   "tabs": {
     "new": "Нова вкладка",
@@ -414,7 +464,8 @@
     "pausedHint": "Контент вивантажено до збережених ресурсів.",
     "resume": "Відновити",
     "removeFromHistory": "Видалити з історії",
-    "clearRecentlyClosed": "Очистити історію"
+    "clearRecentlyClosed": "Очистити історію",
+    "open": "Відкрити вкладки ({{count}})"
   },
   "toast": {
     "blocklistUpdated": "Блоклист оновлено",
@@ -431,7 +482,9 @@
     "profileCookieExported": "Експортовані профілі cookies.txt",
     "profileCookieExportEmpty": "Для цього профілю кук не знайдено",
     "profileCookieExportFailed": "Не вдалось експортувати cookies.txt профілю",
-    "addToHomeScreenFailed": "Цей лаунчер не підтримує посилання на робочому столі"
+    "addToHomeScreenFailed": "Цей лаунчер не підтримує посилання на робочому столі",
+    "profileWatched": "Перегляд {{source}}. Нові пости у стрічці.",
+    "profileUnwatched": "Перегляд зупинено {{source}}."
   },
   "usageLimits": {
     "label": "Ліміти користування",
@@ -495,5 +548,89 @@
       "urlPlaceholder": "Вести URL",
       "searchPlaceholder": "Пошук в web"
     }
+  },
+  "upgrade": {
+    "check": "Перевірити оновлення",
+    "checking": "Перевірка оновлення…",
+    "available": "Доступна {{version}} версія Nora. Відкрити сторінку застосунка для завантаження оновлення?",
+    "download": "Відкрити сторінку завантаження",
+    "upToDate": "Версія {{version}} Nora актуальна.",
+    "failed": "Не вдалось перевірити оновлення. Спробуйте пізніше."
+  },
+  "feed": {
+    "playVideo": "Грати відео",
+    "pauseVideo": "Зупинити відео",
+    "label": "Стрічка",
+    "all": "Все",
+    "allSources": "Всі джерела",
+    "refresh": "Оновити",
+    "notify": "Сповіщати про нові пости",
+    "noPosts": "Ще жодних постів.",
+    "repostOf": "Репост від @{{handle}}",
+    "showSource": "Показувати тільки{{name}}",
+    "imginnModeOff": "Вимк",
+    "imginnModeFallback": "Коли Instagram не працює",
+    "imginnModeFirst": "Спочатку, потім Instagram",
+    "imginnModeHint": "Працює тільки пока Nora відкрита, imginn може запустити певірку, чи ви не робот.",
+    "nitterMode": "Читати X через Nitter",
+    "nitterModeOff": "Вимк",
+    "nitterModeFallback": "Коли X не працює",
+    "nitterModeFirst": "Спочатку, потім X",
+    "nitterInstancePlaceholder": "nitter.example.com",
+    "nitterInstanceAdd": "Додати",
+    "nitterInstanceRemove": "Видалити {{instance}}",
+    "verifyHint": "imginn просить про перевірку, чи ви не робот перш ніж Nora зможе чититм через нього Instagram. Натисніть щоб пройти.",
+    "verifyToast": "imginn просить про перевірку, чи ви не робот для оновлення стрічки Instagram. Натисніть щоб пройти.",
+    "verifyTitle": "Завершіть перевірку для оновлення стрічки Instagram",
+    "verifyFailed": "Перевірку не завершено. Nora спитає ще раз пізніше.",
+    "accountFrom": "{{site}} акаунт",
+    "accountAnyProfile": "Будь який профіль",
+    "mediaWifiOnly": "Завантажувати медіа лише через Wi-Fi",
+    "mediaUsage": "Вичерпано {{used}} з {{limit}}. Спочатку видалятимуться медіа файли старих постів.",
+    "mediaClear": "Очистити медіа",
+    "mediaClearConfirm": "Видалити всі фото та відео зі стрічки? За потреби будуть завантажені повторно.",
+    "inTimeline": "В {{name}}",
+    "showMediaOnly": "Показувати лише фото та відео",
+    "showAllPosts": "Показувати всі пости",
+    "mediaOnly": "Тільки фото та відео",
+    "noMedia": "Ще жодних фото чи відео.",
+    "timelineNamePlaceholder": "н. п. Друзі",
+    "emoji": "Емодзі",
+    "emojiPicker": "Вибір емодзі",
+    "chooseSources": "Обрати джерела",
+    "emojiSearch": "Пошук емодзі",
+    "emojiNoMatch": "Емодзі не знайдено",
+    "emojiCategories": {
+      "suggested": "Пропозиції",
+      "smileys_emotion": "Смайлики та емодзі",
+      "animals_nature": "Тварити і природа",
+      "food_drink": "Їжа та напої",
+      "symbols": "Символи",
+      "flags": "Прапори"
+    },
+    "openInNewTab": "Відкрити в новій вкладці",
+    "settings": "Надаштування глобальної стрічки",
+    "addSources": "Додати джерела",
+    "addSourcesTo": "Додати джерела в {{name}}",
+    "addSourcesPlaceholder": "https://bsky.app/profile/…",
+    "addSourcesAlready": "Вже додано",
+    "add": "Додати",
+    "addSourcesSubmit": "Додати {{count}}",
+    "clearFilter": "Очистити фільтр",
+    "sourcesFilterPlaceholder": "Фільтрувати за і'ям, псевдонімом чи сайтом",
+    "sourcesNoMatch": "Жодних співпадінь",
+    "chooseSource": "Обрати джерело",
+    "moreSources": "{{count}} ще",
+    "sortBy": "Сортувати за",
+    "sortName": "Ім'я (А–Я)",
+    "sortUpdated": "Час оновлення",
+    "sortAdded": "Час додавання",
+    "sortSynced": "Час синхронізації",
+    "sortReversed": "Зворотньо",
+    "lastPost": "Останні пост{{age}}",
+    "noPostsYet": "Ще жодних постів",
+    "syncedAgo": "синхронізовано {{age}}",
+    "neverSynced": "жодної синїронізації",
+    "sourcesShown_other": "{{shown}} з {{count}} джерел"
   }
 }

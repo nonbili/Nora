@@ -251,7 +251,9 @@
     },
     "feed": "Linimasa",
     "feedHint": "Postingan baru dari sumber yang Anda ikuti",
-    "mentionNotificationsSites": "Dari akun X dan Facebook Anda"
+    "mentionNotificationsSites": "Dari akun X dan Facebook Anda",
+    "downloads": "Unduhan",
+    "askDownloadDestination": "Tanyakan lokasi penyimpanan setiap unduhan"
   },
   "about": {
     "code": "Kode sumber",
@@ -387,7 +389,11 @@
     "toast_downloadSucceeded": "Disimpan ke folder Unduhan",
     "toast_downloadFailed": "Gagal mengunduh",
     "httpBlocked_title": "Situs HTTP diblokir",
-    "httpBlocked_body": "Situs web ini menggunakan koneksi HTTP yang tidak aman. Untuk mengizinkan memuat situs web HTTP, aktifkan \"Izinkan situs web HTTP\" di Pengaturan."
+    "httpBlocked_body": "Situs web ini menggunakan koneksi HTTP yang tidak aman. Untuk mengizinkan memuat situs web HTTP, aktifkan \"Izinkan situs web HTTP\" di Pengaturan.",
+    "toast_savingFile": "Menyimpan file…",
+    "toast_fileSaved": "File tersimpan",
+    "toast_open": "Buka",
+    "toast_openFolder": "Buka folder"
   },
   "profiles": {
     "label": "Profil",
@@ -731,6 +737,25 @@
     "lastPost": "Postingan terakhir {{age}}",
     "noPostsYet": "Belum ada postingan",
     "syncedAgo": "disinkronkan {{age}}",
-    "neverSynced": "belum pernah disinkronkan"
+    "neverSynced": "belum pernah disinkronkan",
+    "statusNeedsVerification": "Instagram tidak menampilkan profil ini, dan imginn meminta pemeriksaan singkat untuk memastikan Anda bukan robot. Ketuk di sini untuk melakukannya.",
+    "imginnMode": "Baca Instagram melalui imginn",
+    "imginnModeOff": "Nonaktif",
+    "imginnModeFallback": "Saat Instagram gagal",
+    "imginnModeFirst": "Terlebih dahulu, lalu Instagram",
+    "imginnModeHint": "Hanya berfungsi saat Nora terbuka, dan imginn mungkin meminta pemeriksaan singkat untuk memastikan Anda bukan robot.",
+    "nitterMode": "Baca X melalui Nitter",
+    "nitterModeOff": "Nonaktif",
+    "nitterModeFallback": "Saat X gagal",
+    "nitterModeFirst": "Terlebih dahulu, lalu X",
+    "nitterModeHint": "Membaca profil X melalui instans Nitter di bawah ini dengan mencoba satu per satu secara berurutan. Instans yang memeriksa browser hanya dapat dibaca saat Nora terbuka.",
+    "nitterInstancePlaceholder": "nitter.example.com",
+    "nitterInstanceAdd": "Tambahkan",
+    "nitterInstanceRemove": "Hapus {{instance}}",
+    "nitterInstanceInvalid": "Masukkan alamat instans Nitter, seperti nitter.example.com",
+    "verifyHint": "imginn meminta pemeriksaan singkat untuk memastikan Anda bukan robot sebelum Nora dapat membaca Instagram melaluinya. Ketuk untuk melakukannya.",
+    "verifyToast": "imginn meminta pemeriksaan singkat agar beranda Instagram Anda tetap diperbarui. Ketuk untuk melakukannya.",
+    "verifyTitle": "Selesaikan pemeriksaan agar beranda Instagram Anda tetap diperbarui",
+    "verifyFailed": "Pemeriksaan belum selesai. Nora akan meminta Anda melakukannya lagi nanti."
   }
 }
