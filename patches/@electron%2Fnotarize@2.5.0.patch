@@ -1,0 +1,18 @@
+diff --git a/lib/index.js b/lib/index.js
+index 53ba7b5f31ce3d4a5569212083ae1e4fd773192f..ad824c9e0387e4f439248c84c0bcdf875399b711 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -44,8 +44,11 @@ function notarize(_a) {
+             throw new Error('notarytool is not available, you must be on at least Xcode 13 or provide notarytoolPath');
+         }
+         yield (0, notarytool_1.notarizeAndWaitForNotaryTool)(Object.assign({ appPath }, otherOptions));
+-        yield (0, promise_retry_1.default)(() => (0, staple_1.stapleApp)({ appPath }), {
+-            retries: 3,
++        // Stapling contacts Apple's CloudKit and can fail after notarization succeeds.
++        yield (0, promise_retry_1.default)((retry) => (0, staple_1.stapleApp)({ appPath }).catch(retry), {
++            retries: 4,
++            minTimeout: 20000,
++            factor: 1,
+         });
+     });
+ }

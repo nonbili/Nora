@@ -92,6 +92,7 @@
     "unicode-emoji-json": "^0.8.0"
   },
   "patchedDependencies": {
-    "@legendapp/state@3.0.0-beta.47": "patches/@legendapp%2Fstate@3.0.0-beta.47.patch"
+    "@legendapp/state@3.0.0-beta.47": "patches/@legendapp%2Fstate@3.0.0-beta.47.patch",
+    "@electron/notarize@2.5.0": "patches/@electron%2Fnotarize@2.5.0.patch"
   }
 }

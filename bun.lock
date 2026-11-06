@@ -112,6 +112,7 @@
     },
   },
   "patchedDependencies": {
+    "@electron/notarize@2.5.0": "patches/@electron%2Fnotarize@2.5.0.patch",
     "@legendapp/state@3.0.0-beta.47": "patches/@legendapp%2Fstate@3.0.0-beta.47.patch",
   },
   "packages": {
