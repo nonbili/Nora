@@ -1,0 +1,9 @@
+- Add Open and Open folder buttons to download and feed save toasts
+- Add optional X distraction controls and Latest search default
+- Improve Facebook ad blocking to avoid hiding normal posts
+- Strip X share tokens when copying and sharing tweet links
+- Fix video downloads getting stuck on Parsing
+- Fix TikTok fullscreen controls not appearing
+- Preserve filenames for blob downloads
+- Preserve prefixed cookies when importing browser cookies
+- Translation updates

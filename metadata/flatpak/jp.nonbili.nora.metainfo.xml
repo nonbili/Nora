@@ -74,6 +74,21 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.9.2" date="2026-11-06">
+      <description>
+        <ul>
+          <li>Add Open and Open folder buttons to download and feed save toasts</li>
+          <li>Add optional X distraction controls and Latest search default</li>
+          <li>Improve Facebook ad blocking to avoid hiding normal posts</li>
+          <li>Strip X share tokens when copying and sharing tweet links</li>
+          <li>Fix video downloads getting stuck on Parsing</li>
+          <li>Fix TikTok fullscreen controls not appearing</li>
+          <li>Preserve filenames for blob downloads</li>
+          <li>Preserve prefixed cookies when importing browser cookies</li>
+          <li>Translation updates</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.9.1" date="2026-10-28">
       <description>
         <ul>
