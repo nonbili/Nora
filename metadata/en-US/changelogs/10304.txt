@@ -1,0 +1,5 @@
+- Support proxy username and password authentication
+- Add optional X distraction controls and Latest search default
+- Improve Facebook ad blocking to avoid hiding normal posts
+- Preserve prefixed cookies when importing browser cookies
+- Translation updates
