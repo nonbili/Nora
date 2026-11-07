@@ -2,14 +2,21 @@ package expo.modules.noraview
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.DownloadManager
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.view.ContextMenu
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.PermissionRequest
+import android.webkit.URLUtil
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -17,6 +24,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -36,6 +44,7 @@ class NoraStandaloneActivity : Activity() {
     const val EXTRA_PROFILE = "nora.standalone.profile"
     const val EXTRA_USER_AGENT = "nora.standalone.userAgent"
     private const val FILE_CHOOSER_REQUEST = 8104
+    private const val SAVE_IMAGE_REQUEST = 8105
   }
 
   private lateinit var webView: NouWebView
@@ -43,9 +52,26 @@ class NoraStandaloneActivity : Activity() {
   private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
   private var customView: View? = null
   private var customViewCallback: WebChromeClient.CustomViewCallback? = null
+  private var pendingImageUrl: String? = null
+
+  // A shortcut can start the process without mounting React, which normally supplies
+  // localized strings. Reuse the last locale, with defaults for the first launch.
+  private fun t(key: String): String = nouController.i18nStrings[key]
+    ?: getSharedPreferences("nora.locale", Context.MODE_PRIVATE).getString(key, null)
+    ?: when (key) {
+      "menu_saveImage" -> "Save image"
+      "menu_openImageInNewTab" -> "Open image in new tab"
+      "menu_copyImageLink" -> "Copy image link"
+      "menu_openInNewTab" -> "Open in new tab"
+      "menu_copyLink" -> "Copy link"
+      "toast_downloadStarted" -> "Download started"
+      "toast_downloadSucceeded" -> "Download succeeded"
+      else -> "Download failed"
+    }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    pendingImageUrl = savedInstanceState?.getString("pendingImageUrl")
     window.statusBarColor = Color.BLACK
     window.navigationBarColor = Color.BLACK
     WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -105,6 +131,7 @@ class NoraStandaloneActivity : Activity() {
   }
 
   private fun configureWebView() {
+    registerForContextMenu(webView)
     installGoogleOAuthShim(webView)
     webView.webViewClient = object : WebViewClient() {
       override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
@@ -195,6 +222,129 @@ class NoraStandaloneActivity : Activity() {
     }
   }
 
+  override fun onCreateContextMenu(menu: ContextMenu, view: View, info: ContextMenu.ContextMenuInfo?) {
+    super.onCreateContextMenu(menu, view, info)
+    if (view !== webView) return
+    val hit = webView.hitTestResult
+    val url = hit.extra?.takeIf { it.isNotBlank() } ?: return
+    if (!isWebUrl(url)) return
+    when (hit.type) {
+      WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+        menu.add(t("menu_saveImage")).setOnMenuItemClickListener {
+          saveImage(url)
+          true
+        }
+        menu.add(t("menu_openImageInNewTab")).setOnMenuItemClickListener {
+          openInBrowser(url)
+          true
+        }
+        menu.add(t("menu_copyImageLink")).setOnMenuItemClickListener {
+          copyLink("image", url)
+          true
+        }
+      }
+      WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
+        menu.add(t("menu_openInNewTab")).setOnMenuItemClickListener {
+          openInBrowser(url)
+          true
+        }
+        menu.add(t("menu_copyLink")).setOnMenuItemClickListener {
+          copyLink("link", url)
+          true
+        }
+      }
+    }
+  }
+
+  private fun copyLink(label: String, url: String) {
+    (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
+      .setPrimaryClip(ClipData.newPlainText(label, url))
+  }
+
+  private fun openInBrowser(url: String) {
+    if (!isWebUrl(url)) return
+    val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return
+    intent.action = Intent.ACTION_VIEW
+    intent.data = Uri.parse(url)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+    startActivity(intent)
+  }
+
+  private fun saveImage(url: String) {
+    // DownloadManager and URLConnection cannot resolve page-local blob URLs.
+    if (!isWebUrl(url)) {
+      Toast.makeText(this, t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
+      return
+    }
+    try {
+      // Preserve explicit image extensions; extensionless image endpoints need an
+      // image suffix rather than URLUtil's default .bin.
+      val uri = Uri.parse(url)
+      val extension = uri.lastPathSegment?.substringAfterLast('.', "")?.lowercase()
+      val format = uri.getQueryParameter("format")?.lowercase()
+      val mimeType = android.webkit.MimeTypeMap.getSingleton()
+        .getMimeTypeFromExtension(extension.orEmpty())?.takeIf { it.startsWith("image/") }
+        ?: android.webkit.MimeTypeMap.getSingleton()
+          .getMimeTypeFromExtension(format.orEmpty())?.takeIf { it.startsWith("image/") }
+        ?: "image/jpeg"
+      val name = URLUtil.guessFileName(url, null, mimeType)
+      if (getSharedPreferences("nora.standalone", Context.MODE_PRIVATE)
+          .getBoolean("askDownloadDestination", nouController.settings.askDownloadDestination)) {
+        pendingImageUrl = url
+        startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+          addCategory(Intent.CATEGORY_OPENABLE)
+          type = mimeType
+          putExtra(Intent.EXTRA_TITLE, name)
+        }, SAVE_IMAGE_REQUEST)
+      } else {
+        val request = DownloadManager.Request(Uri.parse(url))
+          .setMimeType(mimeType)
+          .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
+          .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+          .addRequestHeader("User-Agent", webView.settings.userAgentString)
+        (getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+        Toast.makeText(this, t("toast_downloadStarted"), Toast.LENGTH_LONG).show()
+      }
+    } catch (_: Exception) {
+      pendingImageUrl = null
+      Toast.makeText(this, t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
+    }
+  }
+
+  private fun isWebUrl(url: String): Boolean = Uri.parse(url).scheme?.lowercase() in listOf("http", "https")
+
+  private fun saveImageToDocument(url: String, destination: Uri) {
+    val app = applicationContext
+    val userAgent = webView.settings.userAgentString
+    Thread {
+      val message = try {
+        val connection = java.net.URL(url).openConnection().apply {
+          connectTimeout = 30000
+          readTimeout = 30000
+          setRequestProperty("User-Agent", userAgent)
+        }
+        connection.getInputStream().use { input ->
+          (app.contentResolver.openOutputStream(destination) ?: error("Cannot open destination")).use { output ->
+            input.copyTo(output)
+          }
+        }
+        "toast_downloadSucceeded"
+      } catch (_: Exception) {
+        try {
+          android.provider.DocumentsContract.deleteDocument(app.contentResolver, destination)
+        } catch (_: Exception) {
+        }
+        "toast_downloadFailed"
+      }
+      android.os.Handler(android.os.Looper.getMainLooper()).post {
+        val label = nouController.i18nStrings[message]
+          ?: app.getSharedPreferences("nora.locale", Context.MODE_PRIVATE).getString(message, null)
+          ?: if (message == "toast_downloadSucceeded") "Download succeeded" else "Download failed"
+        Toast.makeText(app, label, Toast.LENGTH_LONG).show()
+      }
+    }.start()
+  }
+
   private fun loadIntent(intent: Intent) {
     val url = intent.dataString ?: return finishAndRemoveTask()
     val scheme = Uri.parse(url).scheme?.lowercase()
@@ -231,12 +381,22 @@ class NoraStandaloneActivity : Activity() {
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
+    if (requestCode == SAVE_IMAGE_REQUEST) {
+      val url = pendingImageUrl
+      pendingImageUrl = null
+      val destination = data?.data
+      if (resultCode == RESULT_OK && url != null && destination != null) {
+        saveImageToDocument(url, destination)
+      }
+      return
+    }
     if (requestCode != FILE_CHOOSER_REQUEST) return
     fileChooserCallback?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
     fileChooserCallback = null
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
+    outState.putString("pendingImageUrl", pendingImageUrl)
     webView.saveState(outState)
     super.onSaveInstanceState(outState)
   }
@@ -255,6 +415,7 @@ class NoraStandaloneActivity : Activity() {
     fileChooserCallback?.onReceiveValue(null)
     fileChooserCallback = null
     hideCustomView()
+    unregisterForContextMenu(webView)
     webView.stopLoading()
     webView.destroy()
     super.onDestroy()

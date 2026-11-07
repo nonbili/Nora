@@ -175,6 +175,8 @@ class NoraViewModule : Module() {
 
     Function("setSettings") { settings: NoraSettings ->
       nouController.settings = settings
+      appContext.reactContext?.getSharedPreferences("nora.standalone", android.content.Context.MODE_PRIVATE)
+        ?.edit()?.putBoolean("askDownloadDestination", settings.askDownloadDestination)?.apply()
       applyProxy(settings)
     }
 
@@ -190,9 +192,13 @@ class NoraViewModule : Module() {
     }
 
     Function("setLocaleStrings") { v: JavaScriptObject ->
+      val preferences = appContext.reactContext
+        ?.getSharedPreferences("nora.locale", android.content.Context.MODE_PRIVATE)?.edit()
       v.getPropertyNames().forEach {
         nouController.i18nStrings[it] = v[it]!!.getString()
+        preferences?.putString(it, nouController.i18nStrings[it])
       }
+      preferences?.apply()
     }
 
     AsyncFunction("clearProfileData") { profile: String ->
