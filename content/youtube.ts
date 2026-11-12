@@ -1,3 +1,4 @@
+import { isAdBlockingDisabledHere } from './site-blocking'
 import { isYouTubeAdApi, isYouTubeHost, stripYouTubeAds, transformYouTubeResponse } from '@/lib/youtube-ads'
 
 /**
@@ -138,7 +139,7 @@ function interceptXhr() {
 
 export function installYouTubeAdGuard() {
   const root = window as Window & typeof globalThis & { __noraYouTubeAdGuard?: boolean }
-  if (root.__noraYouTubeAdGuard || !isYouTubeHost(location.host)) {
+  if (root.__noraYouTubeAdGuard || !isYouTubeHost(location.host) || isAdBlockingDisabledHere()) {
     return
   }
   root.__noraYouTubeAdGuard = true

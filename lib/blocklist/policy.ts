@@ -1,4 +1,4 @@
-import type { BlocklistSnapshot } from './types'
+import type { BlocklistSnapshot, PersistedBlocklistMatcherSnapshot } from './types'
 
 export const BLOCKLIST_BACKGROUND_REFRESH_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -66,4 +66,13 @@ export function isBlocklistExcludedHost(host: string | null | undefined, exclude
     }
   }
   return false
+}
+
+/** Cosmetic-only refreshes must also invalidate the native standalone snapshot. */
+export function hasBlocklistMatcherChanged(
+  next: Pick<PersistedBlocklistMatcherSnapshot, 'blockedHosts' | 'allowedHosts' | 'cosmeticFilters' | 'cosmeticExceptions'>,
+  previous?: Pick<PersistedBlocklistMatcherSnapshot, 'blockedHosts' | 'allowedHosts' | 'cosmeticFilters' | 'cosmeticExceptions'> | null,
+) {
+  return (['blockedHosts', 'allowedHosts', 'cosmeticFilters', 'cosmeticExceptions'] as const)
+    .some((key) => (next[key] || '') !== (previous?.[key] || ''))
 }

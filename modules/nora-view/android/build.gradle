@@ -61,3 +61,18 @@ dependencies {
   fullImplementation "com.google.mlkit:language-id:17.0.6"
   testImplementation "junit:junit:4.13.2"
 }
+
+// Build a native asset too: a pinned site can start without React loading Expo assets.
+def standaloneAssets = layout.buildDirectory.dir("generated/standaloneAssets")
+def bundleStandalone = tasks.register('bundleStandalone', Exec) {
+  workingDir rootProject.projectDir.parentFile
+  inputs.dir new File(workingDir, 'content')
+  inputs.dir new File(workingDir, 'lib')
+  inputs.file new File(workingDir, 'bun.lock')
+  outputs.dir standaloneAssets
+  commandLine 'node', 'node_modules/esbuild/bin/esbuild', 'content/standalone.ts', 'content/youtube.ts',
+    '--bundle', '--format=iife', '--target=chrome100',
+    "--outdir=${standaloneAssets.get().asFile}", '--entry-names=nora-[name]'
+}
+android.sourceSets.main.assets.srcDir standaloneAssets.get().asFile
+tasks.named('preBuild').configure { dependsOn bundleStandalone }

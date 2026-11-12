@@ -1,8 +1,11 @@
 package expo.modules.noraview
 
 import android.app.Activity
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
@@ -17,6 +20,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
 import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
 import java.util.Collections
 import java.util.WeakHashMap
 
@@ -66,6 +71,12 @@ class NoraBlocklist : Record {
   val allowedHosts: String = ""
 
   @Field
+  val cosmeticFilters: String = ""
+
+  @Field
+  val cosmeticExceptions: String = ""
+
+  @Field
   val revision: Int = 0
 }
 
@@ -77,23 +88,52 @@ class NouController {
   internal var settings = NoraSettings()
   internal var i18nStrings = mutableMapOf<String, String>()
   internal var logFn: LogFn? = null
-  private var blocklistEnabled = false
-  private var blocklistBlockedHosts = emptySet<String>()
-  private var blocklistAllowedHosts = emptySet<String>()
-  private var blocklistExcludedHosts = emptySet<String>()
-  internal var blocklistRevision = 0
+  private var blockingPreferences: SharedPreferences? = null
+  private val blockingState = NoraBlockingStateStore()
+  @Volatile private var blocklistExcludedHosts = emptySet<String>()
+  private val standaloneViews = Collections.newSetFromMap(WeakHashMap<NoraStandaloneActivity, Boolean>())
   private val registeredViews = Collections.newSetFromMap(WeakHashMap<NoraView, Boolean>())
 
-  private fun decodeHosts(value: String): Set<String> {
-    if (value.isEmpty()) {
-      return emptySet()
+  // Only small settings belong in preferences. The matcher already lives in the
+  // file written by lib/blocklist/storage.ts; don't duplicate MBs in preferences.
+  @Synchronized fun initializeBlocking(context: Context) {
+    if (blockingPreferences != null) return
+    val prefs = context.applicationContext.getSharedPreferences("nora.blocking.settings", Context.MODE_PRIVATE)
+    blocklistExcludedHosts = decodeBlockingHosts(prefs.getString("excludedHosts", "").orEmpty())
+    blockingPreferences = prefs
+  }
+
+  /** Run on IO before a standalone page is loaded; React can publish concurrently. */
+  internal fun restoreBlocking(context: Context) {
+    initializeBlocking(context)
+    if (blockingState.initialized) return
+    val enabled = blockingPreferences?.getBoolean("enabled", false) ?: false
+    val restored = try {
+      val file = File(context.filesDir, "blocklist/matcher.json")
+      if (enabled && file.exists()) {
+        val data = JSONObject(file.readText())
+        NoraBlockingState(true, data.optString("blockedHosts"), data.optString("allowedHosts"),
+          data.optString("cosmeticFilters"), data.optString("cosmeticExceptions"))
+      } else NoraBlockingState()
+    } catch (e: Exception) {
+      log("standalone blocklist restore failed: ${e.message}")
+      NoraBlockingState()
     }
-    return value
-      .lineSequence()
-      .map { it.trim() }
-      .filter { it.isNotEmpty() }
-      .map { it.lowercase() }
-      .toSet()
+    blockingState.restore(restored)
+  }
+
+  fun registerStandalone(view: NoraStandaloneActivity) { standaloneViews.add(view) }
+  fun unregisterStandalone(view: NoraStandaloneActivity) { standaloneViews.remove(view) }
+
+  private fun refreshStandaloneScripts() {
+    val refresh = { standaloneViews.toList().forEach { it.refreshBlockingScript() } }
+    if (Looper.myLooper() == Looper.getMainLooper()) refresh()
+    else Handler(Looper.getMainLooper()).post { refresh() }
+  }
+
+  internal fun cosmeticCssForHost(host: String): String {
+    val snapshot = blockingState.current
+    return if (snapshot.enabled && !isBlocklistExcludedHost(host)) snapshot.cosmetics.cssForHost(host) else ""
   }
 
   fun log(msg: String) {
@@ -132,11 +172,11 @@ class NouController {
     fileChooserCallback = null
   }
 
-  fun setBlocklist(blocklist: NoraBlocklist) {
-    blocklistEnabled = blocklist.enabled
-    blocklistBlockedHosts = decodeHosts(blocklist.blockedHosts)
-    blocklistAllowedHosts = decodeHosts(blocklist.allowedHosts)
-    blocklistRevision = blocklist.revision
+  @Synchronized fun setBlocklist(blocklist: NoraBlocklist) {
+    blockingState.update(NoraBlockingState(blocklist.enabled, blocklist.blockedHosts, blocklist.allowedHosts,
+      blocklist.cosmeticFilters, blocklist.cosmeticExceptions))
+    blockingPreferences?.edit()?.putBoolean("enabled", blocklist.enabled)?.apply()
+    refreshStandaloneScripts()
   }
 
   fun register(view: NoraView) {
@@ -147,8 +187,10 @@ class NouController {
     registeredViews.remove(view)
   }
 
-  fun setBlocklistExcludedHosts(hosts: String) {
-    blocklistExcludedHosts = decodeHosts(hosts)
+  @Synchronized fun setBlocklistExcludedHosts(hosts: String) {
+    blocklistExcludedHosts = decodeBlockingHosts(hosts)
+    blockingPreferences?.edit()?.putString("excludedHosts", hosts)?.apply()
+    refreshStandaloneScripts()
     // Every view has to be carrying the new list before the reload that follows
     // the switch is issued, which is why the exceptions are handed out from here
     // rather than travelling as a prop: a prop lands on React's own schedule.
@@ -194,36 +236,8 @@ class NouController {
     return false
   }
 
-  fun shouldBlockRequestHost(host: String?, pageHost: String?): Boolean {
-    if (!blocklistEnabled || host == null) {
-      return false
-    }
-
-    if (isBlocklistExcludedHost(pageHost)) {
-      return false
-    }
-
-    val parts = host.lowercase().split(".")
-    var blockIndex = -1
-    var allowIndex = -1
-    for (index in parts.indices) {
-      val candidate = parts.drop(index).joinToString(".")
-      if (blockIndex == -1 && blocklistBlockedHosts.contains(candidate)) {
-        blockIndex = index
-      }
-      if (allowIndex == -1 && blocklistAllowedHosts.contains(candidate)) {
-        allowIndex = index
-      }
-    }
-
-    if (blockIndex == -1) {
-      return false
-    }
-    if (allowIndex == -1) {
-      return true
-    }
-    return allowIndex > blockIndex
-  }
+  fun shouldBlockRequestHost(host: String?, pageHost: String?): Boolean =
+    !isBlocklistExcludedHost(pageHost) && blockingState.current.shouldBlock(host)
 }
 
 val nouController = NouController()

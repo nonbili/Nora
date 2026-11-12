@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   BLOCKLIST_BACKGROUND_REFRESH_MS,
+  hasBlocklistMatcherChanged,
   isBlocklistExcludedHost,
   shouldAutoRefresh,
   toBlocklistSiteKey,
@@ -92,5 +93,14 @@ describe('updateBlocklistExclusions', () => {
   it('leaves unrelated sites alone', () => {
     expect(updateBlocklistExclusions(['notexample.com'], 'example.com', false)).toEqual(['notexample.com'])
     expect(updateBlocklistExclusions(['example.com'], '', true)).toEqual(['example.com'])
+  })
+})
+
+describe('native matcher refresh', () => {
+  const previous = { blockedHosts: 'ads.example', allowedHosts: '', cosmeticFilters: '##.old', cosmeticExceptions: '' }
+  it('publishes cosmetic-only updates and exceptions even when hosts stay the same', () => {
+    expect(hasBlocklistMatcherChanged({ ...previous, cosmeticFilters: '##.new' }, previous)).toBe(true)
+    expect(hasBlocklistMatcherChanged({ ...previous, cosmeticExceptions: 'x.com#@#.old' }, previous)).toBe(true)
+    expect(hasBlocklistMatcherChanged(previous, previous)).toBe(false)
   })
 })

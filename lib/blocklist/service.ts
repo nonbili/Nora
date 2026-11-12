@@ -1,3 +1,4 @@
+import { buildCosmeticCss } from './cosmetic'
 import { observable, syncState, when } from '@legendapp/state'
 import NoraViewModule from '@/modules/nora-view'
 import { isWeb, isIos, isAndroid } from '@/lib/utils'
@@ -5,7 +6,7 @@ import { settings$ } from '@/states/settings'
 import { autoProfiles$ } from '@/states/auto-profiles'
 import { blocklist$ } from '@/states/blocklist'
 import { BLOCKLIST_PARSER_VERSION, mergeFilterListsText, mergeFilterListsAsync } from './parser'
-import { isBlocklistExcludedHost, shouldAutoRefresh } from './policy'
+import { hasBlocklistMatcherChanged, isBlocklistExcludedHost, shouldAutoRefresh } from './policy'
 import { createWorkletRuntime, runOnRuntime, type WorkletRuntime } from 'react-native-worklets'
 import {
   deleteBlocklistMatcherSnapshot,
@@ -240,67 +241,12 @@ function getCachedPayload(revision: number) {
   return payloadCache?.revision === revision ? payloadCache.payload : undefined
 }
 
-function parseCosmeticRule(rule: string) {
-  const separator = rule.includes('#@#') ? '#@#' : '##'
-  const separatorIndex = rule.indexOf(separator)
-  if (separatorIndex === -1) {
-    return null
-  }
-  return {
-    domains: rule.slice(0, separatorIndex),
-    selector: rule.slice(separatorIndex + separator.length),
-  }
-}
-
-function cosmeticRuleMatchesHost(domains: string, host: string) {
-  const normalizedHost = host.toLowerCase()
-  const candidates = normalizedHost.split('.').map((_, index, parts) => parts.slice(index).join('.'))
-  if (!domains) {
-    return true
-  }
-
-  const entries = domains
-    .split(',')
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean)
-  if (!entries.length) {
-    return true
-  }
-
-  const isMatch = (entry: string) => candidates.includes(entry)
-  if (entries.some((entry) => entry.startsWith('~') && isMatch(entry.slice(1)))) {
-    return false
-  }
-
-  const positiveEntries = entries.filter((entry) => !entry.startsWith('~'))
-  return !positiveEntries.length || positiveEntries.some(isMatch)
-}
-
 export function getCosmeticCssForHost(host?: string | null) {
-  if (!host || !payloadCache?.matcherData.enabled) {
+  if (!host || !payloadCache?.matcherData.enabled || isBlocklistExcludedHost(host, blocklist$.excludedHosts.get() || [])) {
     return ''
   }
-
-  if (isBlocklistExcludedHost(host, blocklist$.excludedHosts.get() || [])) {
-    return ''
-  }
-
-  const matcherData = payloadCache.matcherData
-  const exceptions = new Set(
-    matcherData.cosmeticExceptions
-      .map(parseCosmeticRule)
-      .filter((rule): rule is NonNullable<ReturnType<typeof parseCosmeticRule>> => !!rule)
-      .filter((rule) => cosmeticRuleMatchesHost(rule.domains, host))
-      .map((rule) => rule.selector),
-  )
-
-  return matcherData.cosmeticFilters
-    .map(parseCosmeticRule)
-    .filter((rule): rule is NonNullable<ReturnType<typeof parseCosmeticRule>> => !!rule)
-    .filter((rule) => cosmeticRuleMatchesHost(rule.domains, host))
-    .filter((rule) => !exceptions.has(rule.selector))
-    .map((rule) => `${rule.selector}{display:none!important;}`)
-    .join('\n')
+  const { cosmeticFilters, cosmeticExceptions } = payloadCache.matcherData
+  return buildCosmeticCss(host, cosmeticFilters, cosmeticExceptions)
 }
 
 export async function loadCosmeticFilters() {
@@ -648,9 +594,7 @@ async function runRefresh(manual: boolean) {
           throw new Error('Blocklist source files are missing or invalid')
         }
 
-        const snapshotChanged =
-          nextSnapshot.blockedHosts !== (previousSnapshot?.blockedHosts || '') ||
-          nextSnapshot.allowedHosts !== (previousSnapshot?.allowedHosts || '')
+        const snapshotChanged = hasBlocklistMatcherChanged(nextSnapshot, previousSnapshot)
         const nextMatcherData = toMatcherData(nextSnapshot)
         setPayloadCache(nextMatcherData)
 
@@ -682,9 +626,7 @@ async function runRefresh(manual: boolean) {
 
       await Promise.all([...writes, writeBlocklistMatcherSnapshot(nextSnapshot)])
 
-      const snapshotChanged =
-        nextSnapshot.blockedHosts !== (previousSnapshot?.blockedHosts || '') ||
-        nextSnapshot.allowedHosts !== (previousSnapshot?.allowedHosts || '')
+      const snapshotChanged = hasBlocklistMatcherChanged(nextSnapshot, previousSnapshot)
       const nextMatcherData = toMatcherData(nextSnapshot)
       setPayloadCache(nextMatcherData)
 

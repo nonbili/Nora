@@ -24,7 +24,7 @@ class FakeXhr {
 const globals = globalThis as any
 const pageGlobals = [
   'window', 'location', 'document', 'Request', 'Response', 'fetch', 'XMLHttpRequest',
-  '__noraYouTubeAdGuard', 'ytInitialPlayerResponse', 'ytInitialData',
+  '__noraBlocklistExcludedHosts', '__noraYouTubeAdGuard', 'ytInitialPlayerResponse', 'ytInitialData',
 ]
 let originalGlobals: Map<string, PropertyDescriptor | undefined>
 
@@ -44,6 +44,7 @@ function setupPage(host: string) {
   globals.window = globals
   globals.location = { host, href: `https://${host}/watch?v=abc` }
   globals.document = {
+    location: { hostname: host },
     documentElement: { appendChild: () => {} },
     head: { appendChild: (node: unknown) => created.push(node) },
     createElement: () => ({ id: '', textContent: '' }),
@@ -122,4 +123,21 @@ describe('installYouTubeAdGuard on an embedded player', () => {
     installYouTubeAdGuard()
     expect(globals.XMLHttpRequest).toBe(patched)
   })
+})
+
+it('honors site exceptions for a YouTube page and for an embedded player', () => {
+  setupPage('www.youtube.com')
+  globals.__noraBlocklistExcludedHosts = ['youtube.com']
+  installYouTubeAdGuard()
+  expect(globals.__noraYouTubeAdGuard).toBeUndefined()
+  expect(globals.XMLHttpRequest).toBe(FakeXhr)
+
+  globals.__noraBlocklistExcludedHosts = ['example.com']
+  globals.document.location.ancestorOrigins = ['https://www.example.com']
+  installYouTubeAdGuard()
+  expect(globals.__noraYouTubeAdGuard).toBeUndefined()
+
+  globals.__noraBlocklistExcludedHosts = []
+  installYouTubeAdGuard()
+  expect(globals.__noraYouTubeAdGuard).toBe(true)
 })

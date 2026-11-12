@@ -151,6 +151,10 @@ class NoraViewModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("NoraView")
 
+    OnCreate {
+      appContext.reactContext?.let { nouController.initializeBlocking(it) }
+    }
+
     OnDestroy {
       proxyRelay?.close()
       proxyRelay = null
@@ -184,10 +188,12 @@ class NoraViewModule : Module() {
     // the page as soon as this resolves, and the reload must not outrun the
     // document start script the new exceptions are reinstalled into.
     AsyncFunction("setBlocklistExcludedHosts") { hosts: String ->
+      appContext.reactContext?.let { nouController.initializeBlocking(it) }
       nouController.setBlocklistExcludedHosts(hosts)
     }.runOnQueue(Queues.MAIN)
 
     Function("setBlocklist") { blocklist: NoraBlocklist ->
+      appContext.reactContext?.let { nouController.initializeBlocking(it) }
       nouController.setBlocklist(blocklist)
     }
 

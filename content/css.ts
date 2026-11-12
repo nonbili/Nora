@@ -146,7 +146,7 @@ export const getInjectedCss = (host: string, settings: any, userStyles: any) => 
   return [coreCss, userStyleCss].filter(Boolean).join('\n\n')
 }
 
-export function injectCSS() {
+export function injectCSS(includeUserStyles = true) {
   const style = document.querySelector<HTMLStyleElement>(`#${injectedStyleId}`) || document.createElement('style')
   const { host } = document.location
 
@@ -160,7 +160,7 @@ export function injectCSS() {
   const update = () => {
     const settings = window.Nora?.getSettings?.() || {}
     const userStyles = window.Nora?.getUserStyles?.()
-    const content = getInjectedCss(host, settings, userStyles)
+    const content = includeUserStyles ? getInjectedCss(host, settings, userStyles) : getCoreCss(host, settings)
     style.textContent = content
     append()
   }

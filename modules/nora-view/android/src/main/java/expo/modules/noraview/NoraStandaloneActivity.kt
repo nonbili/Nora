@@ -20,6 +20,7 @@ import android.webkit.URLUtil
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceResponse
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -30,6 +31,15 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import java.io.ByteArrayInputStream
+import androidx.webkit.ScriptHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 
@@ -53,6 +63,44 @@ class NoraStandaloneActivity : Activity() {
   private var customView: View? = null
   private var customViewCallback: WebChromeClient.CustomViewCallback? = null
   private var pendingImageUrl: String? = null
+  private var blockingScriptHandler: ScriptHandler? = null
+  private lateinit var contentScript: String
+  private lateinit var youtubeScript: String
+  private val blockingScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+  private var blockingReady = false
+  private var cosmeticUpdate = 0
+  @Volatile private var pageUrl = ""
+
+  // Keep ad observers in the top frame and the YouTube guard in player frames. No filter-list data is
+  // injected: only this compact bundle and the site's exceptions run at startup.
+  private fun blockingScript(): String = nouController.blocklistExclusionsScript() +
+    "\n;\n" + youtubeScript + "\n;\nif(window === window.top){\n" + contentScript + "\n}"
+
+  private fun applyCosmeticCss(url: String) {
+    val host = Uri.parse(url).host ?: return
+    val update = ++cosmeticUpdate
+    blockingScope.launch {
+      val css = withContext(Dispatchers.IO) { nouController.cosmeticCssForHost(host) }
+      if (update != cosmeticUpdate) return@launch
+      val enabled = !nouController.isBlocklistExcludedHost(host)
+      // Match the host so an early SPA replaceState doesn't discard its CSS.
+      val script = "if(location.hostname===${JSONObject.quote(host)})window.Nora?.setSettings?.({cosmeticCss:${JSONObject.quote(css)},adBlockingEnabled:$enabled})"
+      webView.evaluateJavascript(script, null)
+    }
+  }
+
+  internal fun refreshBlockingScript() {
+    blockingScriptHandler?.remove()
+    blockingScriptHandler = null
+    if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+      try {
+        blockingScriptHandler = WebViewCompat.addDocumentStartJavaScript(webView, blockingScript(), setOf("*"))
+      } catch (e: Exception) {
+        nouController.log("standalone document start script failed: ${e.message}")
+      }
+    }
+    if (blockingReady) applyCosmeticCss(pageUrl)
+  }
 
   // A shortcut can start the process without mounting React, which normally supplies
   // localized strings. Reuse the last locale, with defaults for the first launch.
@@ -100,11 +148,24 @@ class NoraStandaloneActivity : Activity() {
     configureProfile(intent.getStringExtra(EXTRA_PROFILE) ?: "default")
     configureWebView()
     updateTaskLabel(intent.getStringExtra(EXTRA_LABEL))
-
-    if (savedInstanceState == null) {
-      loadIntent(intent)
-    } else {
-      webView.restoreState(savedInstanceState)
+    val launchIntent = intent
+    blockingScope.launch {
+      val scripts = withContext(Dispatchers.IO) {
+        nouController.restoreBlocking(applicationContext)
+        Pair(assets.open("nora-standalone.js").bufferedReader().use { it.readText() },
+          assets.open("nora-youtube.js").bufferedReader().use { it.readText() })
+      }
+      contentScript = scripts.first
+      youtubeScript = scripts.second
+      refreshBlockingScript()
+      nouController.registerStandalone(this@NoraStandaloneActivity)
+      blockingReady = true
+      pageUrl = intent.dataString.orEmpty()
+      if (savedInstanceState != null && intent === launchIntent) {
+        webView.restoreState(savedInstanceState)
+      } else {
+        loadIntent(intent)
+      }
     }
   }
 
@@ -116,7 +177,7 @@ class NoraStandaloneActivity : Activity() {
     if (!userAgent.isNullOrEmpty()) {
       webView.settings.userAgentString = userAgent
     }
-    loadIntent(intent)
+    if (blockingReady) loadIntent(intent)
   }
 
   private fun configureProfile(profile: String) {
@@ -134,6 +195,27 @@ class NoraStandaloneActivity : Activity() {
     registerForContextMenu(webView)
     installGoogleOAuthShim(webView)
     webView.webViewClient = object : WebViewClient() {
+      override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+        pageUrl = url
+        if (blockingScriptHandler == null) view.evaluateJavascript(blockingScript(), null)
+        applyCosmeticCss(url)
+      }
+
+      override fun onPageFinished(view: WebView, url: String) {
+        applyCosmeticCss(url)
+      }
+
+      override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
+        pageUrl = url
+      }
+
+      override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+        if (!request.isForMainFrame && nouController.shouldBlockRequestHost(request.url.host, Uri.parse(pageUrl).host)) {
+          return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
+        }
+        return null
+      }
+
       override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
         shouldOverrideUrlLoading(view, request.url.toString())
 
@@ -352,6 +434,7 @@ class NoraStandaloneActivity : Activity() {
       finishAndRemoveTask()
       return
     }
+    pageUrl = url
     webView.loadUrl(url)
   }
 
@@ -412,10 +495,14 @@ class NoraStandaloneActivity : Activity() {
   }
 
   override fun onDestroy() {
+    blockingScope.cancel()
     fileChooserCallback?.onReceiveValue(null)
     fileChooserCallback = null
     hideCustomView()
     unregisterForContextMenu(webView)
+    nouController.unregisterStandalone(this)
+    blockingScriptHandler?.remove()
+    blockingScriptHandler = null
     webView.stopLoading()
     webView.destroy()
     super.onDestroy()
