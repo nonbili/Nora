@@ -207,6 +207,15 @@
         },
         "hideFacebookFeed": {
           "label": "Masquer le flux Facebook"
+        },
+        "hideXGrok": {
+          "label": "Masquer l'interface X Grok"
+        },
+        "hideXRecommendations": {
+          "label": "Masquer les recommandations de X (Qui suivre, Tendances, Découvrir plus)"
+        },
+        "hideXEngagementCounts": {
+          "label": "Masquer les compteurs d’interactions de X"
         }
       },
       "custom": {
@@ -258,7 +267,13 @@
       "host": "Hôte proxy",
       "port": "Port proxy",
       "hostPlaceholder": "Par exemple : 127.0.0.1 ou proxy.example.com",
-      "portPlaceholder": "par ex. 1080"
+      "portPlaceholder": "par ex. 1080",
+      "applyFailed": "Impossible d'appliquer les paramètres du proxy.",
+      "username": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "credentialsHint": "Facultatif. Les modifications sont appliquées peu après l’arrêt de la saisie. Les identifiants restent sur cet appareil et sont exclus des sauvegardes et de la synchronisation. Tant que l’authentification est activée, les autres applications de cet appareil peuvent utiliser le relais de proxy local.",
+      "credentialsHintIos": "Facultatif. Les modifications sont appliquées peu après la fin de la saisie. Les identifiants restent sur cet appareil et sont exclus des sauvegardes et de la synchronisation.",
+      "iosRequires17": "Sur iOS 16, un proxy HTTP ne peut être utilisé que pour les flux. Le proxy de navigation, SOCKS et l’authentification nécessitent iOS 17 ou une version ultérieure."
     },
     "translation": {
       "enable": "Appuyez deux fois sur le texte pour traduire",
@@ -311,7 +326,8 @@
     "feedHint": "Nouvelles publications des sources que vous suivez",
     "mentionNotificationsSites": "Depuis vos comptes X et Facebook",
     "downloads": "Téléchargements",
-    "askDownloadDestination": "Demandez où enregistrer chaque téléchargement"
+    "askDownloadDestination": "Demandez où enregistrer chaque téléchargement",
+    "xDefaultSearchLatest": "Recherche par défaut : « Plus récents »"
   },
   "changelog": {
     "label": "Journal des modifs",

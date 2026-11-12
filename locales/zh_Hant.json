@@ -38,7 +38,8 @@
     "more": "更多",
     "addToHomeScreen": "新增至主畫面",
     "hideSignInPrompts": "隱藏此網站的登入提示",
-    "openInProfile": "在設定檔中開啟"
+    "openInProfile": "在設定檔中開啟",
+    "reopenInProfile": "在設定檔中重新開啟"
   },
   "modals": {
     "downloadVideo": "下載影片",
@@ -49,7 +50,8 @@
     "exportCookies": "匯出目前網站cookies",
     "exportCookiesHint": "將目前網站 cookies 儲存為 cookies.txt 。",
     "exportCookiesButton": "匯出 cookies.txt",
-    "clearSiteDataHint": "清除目前網站和設定檔的 Cookie 和瀏覽數據。"
+    "clearSiteDataHint": "清除目前網站和設定檔的 Cookie 和瀏覽數據。",
+    "downloadOnCobalt": "在 cobalt.tools下載影片"
   },
   "native": {
     "menu_saveImage": "儲存圖片",
@@ -61,7 +63,8 @@
     "menu_openInNewTab": "在新分頁中開啟",
     "menu_openInProfile": "在設定檔中開啟",
     "httpBlocked_body": "此網站使用不安全的 HTTP 連線。請在設置中啟用「允許 HTTP 網站」，以載入 HTTP 網站。",
-    "httpBlocked_title": "已阻擋 HTTP 網站"
+    "httpBlocked_title": "已阻擋 HTTP 網站",
+    "menu_openImageInNewTab": "在新分頁中開啟圖片"
   },
   "settings": {
     "label": "設定",
@@ -331,6 +334,21 @@
     "namePlaceholder": "設定檔名稱",
     "clearData": "清除資料",
     "exportCookies": "匯出設定檔 cookies",
-    "exportCookiesConfirm": "要匯出「{{name}}」中所有 cookies嗎? 該檔案，可能包含設定檔中所有網站的登入工作階段。請妥善保管。"
+    "exportCookiesConfirm": "要匯出「{{name}}」中所有 cookies嗎? 該檔案，可能包含設定檔中所有網站的登入工作階段。請妥善保管。",
+    "reopenTabInProfile": "在設定檔中重新開啟分頁"
+  },
+  "feed": {
+    "imginnModeOff": "關閉",
+    "emojiCategories": {
+      "suggested": "建議",
+      "activities": "活動",
+      "objects": "物品",
+      "symbols": "符號",
+      "flags": "旗幟"
+    },
+    "addSourcesPlaceholder": "https://bsky.app/profile/…",
+    "detailNotify": "通知",
+    "never": "永不",
+    "mediaUsage": "已使用 {{limit}} 中的 {{used}} 。將優先清除最舊貼文中的影音。"
   }
 }

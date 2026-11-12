@@ -191,7 +191,13 @@
       "host": "Proxykiszolgáló",
       "port": "Proxyport",
       "hostPlaceholder": "pl. 127.0.0.1 vagy proxy.example.com",
-      "portPlaceholder": "pl. 1080"
+      "portPlaceholder": "pl. 1080",
+      "applyFailed": "Nem sikerült alkalmazni a proxybeállításokat.",
+      "username": "Felhasználónév",
+      "password": "Jelszó",
+      "credentialsHint": "Nem kötelező. A módosítások a gépelés befejezése után rövid időn belül lépnek érvénybe. A hitelesítési adatok ezen az eszközön maradnak, és nem kerülnek bele a biztonsági mentésekbe vagy a szinkronizált adatok közé. Amíg a hitelesítés engedélyezve van, az eszközön található más alkalmazások is használhatják a helyi proxyátjátszót.",
+      "credentialsHintIos": "Nem kötelező. A módosítások a gépelés befejezése után rövid időn belül lépnek érvénybe. A hitelesítési adatok ezen az eszközön maradnak, és nem kerülnek bele a biztonsági mentésekbe vagy a szinkronizált adatok közé.",
+      "iosRequires17": "iOS 16 esetén a HTTP-proxy kizárólag a hírfolyamokhoz használható. A böngészés proxyzása, a SOCKS proxy és a hitelesítés használatához iOS 17 vagy újabb verzió szükséges."
     },
     "videoEdgeLongPressTo2x": "A képernyő szélének hosszan lenyomásával 2×-es lejátszás",
     "translation": {
@@ -351,6 +357,15 @@
         },
         "hideFacebookFeed": {
           "label": "Facebook-hírfolyam elrejtése"
+        },
+        "hideXGrok": {
+          "label": "Az X Grok kezelőfelületének elrejtése"
+        },
+        "hideXRecommendations": {
+          "label": "Az X ajánlásainak elrejtése (Kit érdemes követni, Felkapott témák, Fedezzen fel többet)"
+        },
+        "hideXEngagementCounts": {
+          "label": "Az X interakciós számainak elrejtése"
         }
       },
       "custom": {
@@ -420,7 +435,8 @@
     "feedHint": "Új bejegyzések a figyelt forrásokból",
     "mentionNotificationsSites": "Az X- és Facebook-fiókjából",
     "downloads": "Letöltések",
-    "askDownloadDestination": "Kérdezzen rá, hogy hova mentse az egyes letöltéseket"
+    "askDownloadDestination": "Kérdezzen rá, hogy hova mentse az egyes letöltéseket",
+    "xDefaultSearchLatest": "Alapértelmezett keresési rendezés: Legújabb"
   },
   "sync": {
     "label": "Szinkronizálás",
