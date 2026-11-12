@@ -1,0 +1,5 @@
+- Enable ad blocking in home screen shortcuts
+- Add context menus to home screen shortcuts
+- Fix feed text selection and header animation
+- Scope feed overlays to their owning tab
+- Translation updates
