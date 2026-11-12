@@ -32,7 +32,13 @@
       "host": "Host proksi",
       "port": "Port proksi",
       "hostPlaceholder": "mis. 127.0.0.1 atau proxy.example.com",
-      "portPlaceholder": "mis. 1080"
+      "portPlaceholder": "mis. 1080",
+      "applyFailed": "Tidak dapat menerapkan pengaturan proxy.",
+      "username": "Nama pengguna",
+      "password": "Kata sandi",
+      "credentialsHint": "Opsional. Perubahan diterapkan sesaat setelah Anda berhenti mengetik. Kredensial tetap tersimpan di perangkat ini dan tidak disertakan dalam pencadangan maupun sinkronisasi. Saat autentikasi diaktifkan, aplikasi lain di perangkat ini dapat menggunakan relai proxy lokal.",
+      "credentialsHintIos": "Opsional. Perubahan diterapkan sesaat setelah Anda berhenti mengetik. Kredensial tetap tersimpan di perangkat ini dan tidak disertakan dalam pencadangan maupun sinkronisasi.",
+      "iosRequires17": "Di iOS 16, proxy HTTP hanya dapat digunakan untuk feed. Penggunaan proxy untuk penelusuran web, SOCKS, dan autentikasi memerlukan iOS 17 atau versi yang lebih baru."
     },
     "videoEdgeLongPressTo2x": "Tekan lama di tepi untuk pemutaran 2x",
     "pullToRefresh": "Tarik ke bawah untuk memuat ulang halaman",
@@ -185,6 +191,15 @@
         },
         "hideXHomeTabs": {
           "label": "Sembunyikan tab linimasa beranda X"
+        },
+        "hideXGrok": {
+          "label": "Sembunyikan antarmuka Grok di X"
+        },
+        "hideXRecommendations": {
+          "label": "Sembunyikan rekomendasi X (Siapa yang harus diikuti, tren, Temukan lebih banyak)"
+        },
+        "hideXEngagementCounts": {
+          "label": "Sembunyikan jumlah interaksi di X"
         }
       },
       "custom": {
@@ -253,7 +268,8 @@
     "feedHint": "Postingan baru dari sumber yang Anda ikuti",
     "mentionNotificationsSites": "Dari akun X dan Facebook Anda",
     "downloads": "Unduhan",
-    "askDownloadDestination": "Tanyakan lokasi penyimpanan setiap unduhan"
+    "askDownloadDestination": "Tanyakan lokasi penyimpanan setiap unduhan",
+    "xDefaultSearchLatest": "Atur pencarian ke Terbaru secara default"
   },
   "about": {
     "code": "Kode sumber",
