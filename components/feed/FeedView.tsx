@@ -7,6 +7,7 @@ import { t } from 'i18next'
 import { NouText } from '../NouText'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { TimelineZoom } from './TimelineZoom'
+import { FeedPostText } from './FeedPostText'
 import { openFeedOverlay } from '@/lib/open-feed-overlay'
 import { ui$ } from '@/states/ui'
 import { settings$ } from '@/states/settings'
@@ -274,9 +275,9 @@ const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }
   const aspectRatio = first?.width && first?.height ? Math.min(Math.max(first.width / first.height, 0.8), 1.91) : 16 / 9
   const text = usePostText()
   return (
-    <Pressable onPress={onOpen} accessibilityRole="link" className="mt-2 overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-600">
+    <View className="mt-2 overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-600">
       <View className="px-3 pt-2.5">
-        <View className="flex-row items-center gap-1.5">
+        <Pressable onPress={onOpen} accessibilityRole="link" className="flex-row items-center gap-1.5">
           <View className="h-5 w-5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
             {quote.avatar ? <Image source={quote.avatar} contentFit="cover" style={{ width: 20, height: 20 }} /> : null}
           </View>
@@ -293,15 +294,13 @@ const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }
               · {formatPostAge(quote.createdAtMs, now)}
             </NouText>
           ) : null}
-        </View>
+        </Pressable>
         {quote.text ? (
-          <NouText className="mt-1" style={text('base')} numberOfLines={6}>
-            {quote.text}
-          </NouText>
+          <FeedPostText key={quote.url} style={text('base')} lines={6}>{quote.text}</FeedPostText>
         ) : null}
       </View>
       {cover ? (
-        <View className="mt-2">
+        <Pressable onPress={onOpen} accessibilityRole="link" className="mt-2">
           <Image source={cover} contentFit="cover" className="bg-zinc-300 dark:bg-zinc-700" style={{ width: '100%', aspectRatio }} />
           {first?.type === 'video' ? (
             <View className="absolute inset-0 items-center justify-center" pointerEvents="none">
@@ -316,11 +315,11 @@ const QuoteCard: React.FC<{ quote: WatchQuote; now: number; onOpen: () => void }
               <NouText className="text-xs text-white">{quote.media?.length}</NouText>
             </View>
           ) : null}
-        </View>
+        </Pressable>
       ) : (
         <View className="h-2.5" />
       )}
-    </Pressable>
+    </View>
   )
 }
 
@@ -379,7 +378,6 @@ const PostRow: React.FC<{
   // Shows only this post's source, from its avatar or name; not there while it is the one shown.
   onOpenSource?: () => void
 }> = ({ tabId, post, profile, unread, now, iconColor, onOpenOriginal, onOpenLink, onOpenSource }) => {
-  const [expanded, setExpanded] = useState(false)
   const name = profile?.name || post.handle
   const source = watchSourceLabel(post)
   const text = usePostText()
@@ -429,11 +427,9 @@ const PostRow: React.FC<{
           <NouText className="text-zinc-600 dark:text-zinc-400" style={text('xs')}>{t('feed.repostOf', { handle: post.repostOf })}</NouText>
         ) : null}
         {post.text ? (
-          <Pressable onPress={() => setExpanded((value) => !value)} style={iosTouchTarget} className="pr-3">
-            <NouText className="mt-1" style={text('base')} numberOfLines={expanded ? undefined : 8}>
-              {post.text}
-            </NouText>
-          </Pressable>
+          <View className="pr-3">
+            <FeedPostText key={post.key} style={text('base')}>{post.text}</FeedPostText>
+          </View>
         ) : null}
         <View className="pr-3">
           <PostMedia
@@ -489,17 +485,16 @@ export const FeedView: React.FC<{
   const detailsOpen = detailsAt !== null
   const [refreshing, setRefreshing] = useState(false)
   // The title row slides away as the list is scrolled down and comes back on the way up; a phone's screen is short.
-  const headProgress = useRef(new Animated.Value(1)).current
-  const headHeight = useRef(0)
+  const [headProgress] = useState(() => new Animated.Value(1))
+  const [headHeight, setHeadHeight] = useState(0)
   const headHidden = useRef(false)
   const lastScrollY = useRef(0)
   const scrollRun = useRef(0)
-  const [headMeasured, setHeadMeasured] = useState(false)
   const setHeadHidden = useCallback(
     (hidden: boolean) => {
       if (headHidden.current === hidden) return
       headHidden.current = hidden
-      Animated.timing(headProgress, { toValue: hidden ? 0 : 1, duration: 180, useNativeDriver: false }).start()
+      Animated.timing(headProgress, { toValue: hidden ? 0 : 1, duration: 180, useNativeDriver: true }).start()
     },
     [headProgress],
   )
@@ -507,10 +502,15 @@ export const FeedView: React.FC<{
     (y: number) => {
       const delta = y - lastScrollY.current
       lastScrollY.current = y
+      if (y <= 0) {
+        scrollRun.current = 0
+        setHeadHidden(false)
+        return
+      }
+      if (delta === 0) return
       // The way scrolled in one direction adds up, so that a slow scroll counts as much as a fast one.
       scrollRun.current = Math.sign(delta) === Math.sign(scrollRun.current) ? scrollRun.current + delta : delta
-      if (y <= 0) setHeadHidden(false)
-      else if (scrollRun.current > 24 && y > 80) setHeadHidden(true)
+      if (scrollRun.current > 24 && y > 80) setHeadHidden(true)
       else if (scrollRun.current < -16) setHeadHidden(false)
     },
     [setHeadHidden],
@@ -854,7 +854,7 @@ export const FeedView: React.FC<{
   const sharedHandles = new Set([...handleCounts].filter(([, count]) => count > 1).map(([handle]) => handle))
 
   const header = (
-    <View>
+    <View style={isWeb ? undefined : { paddingTop: headHeight }}>
       {profiles.length ? (
         <ScrollView
           ref={chipsRef}
@@ -1114,19 +1114,19 @@ export const FeedView: React.FC<{
     <GestureHandlerRootView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
       <TimelineZoom onScaleChange={onTimelineScaleChange}>
         <Animated.View
-          className="w-full max-w-[640px] self-center"
-          style={
-            isWeb || !headMeasured
-              ? undefined
-              : { height: Animated.multiply(headProgress, headHeight.current), opacity: headProgress, overflow: 'hidden' }
-          }
+          className="w-full max-w-[640px] self-center bg-zinc-100 dark:bg-zinc-950"
+          style={isWeb ? undefined : {
+            position: 'absolute',
+            top: 0,
+            zIndex: 1,
+            opacity: headProgress,
+            transform: [{ translateY: headProgress.interpolate({ inputRange: [0, 1], outputRange: [-headHeight, 0] }) }],
+          }}
         >
           <View
             className="flex-row items-center gap-2 py-1 pl-4 pr-2"
             onLayout={(e) => {
-              if (isWeb || headMeasured) return
-              headHeight.current = e.nativeEvent.layout.height
-              setHeadMeasured(true)
+              if (!isWeb) setHeadHeight(e.nativeEvent.layout.height)
             }}
           >
             <View className="min-w-0 flex-1 flex-row">
@@ -1186,10 +1186,14 @@ export const FeedView: React.FC<{
         </Animated.View>
         <FlatList
           className="w-full max-w-[640px] self-center"
+          style={{ flex: 1 }}
           ref={listRef}
           onScroll={(event) => {
-            listScrollY.current = event.nativeEvent.contentOffset.y
-            if (!isWeb) onListScroll(listScrollY.current)
+            const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent
+            listScrollY.current = contentOffset.y
+            // Overscroll and its rebound are not a change in the user's scroll direction.
+            const y = Math.max(0, Math.min(contentOffset.y, Math.max(0, contentSize.height - layoutMeasurement.height)))
+            if (!isWeb) onListScroll(y)
           }}
           scrollEventThrottle={16}
           // The columns of a list can only be set as it is made.

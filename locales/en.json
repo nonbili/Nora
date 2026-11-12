@@ -525,6 +525,8 @@
     "profileUnwatched": "Stopped watching {{source}}."
   },
   "feed": {
+    "showMore": "Show more",
+    "showLess": "Show less",
     "resetZoom": "Reset zoom",
     "playVideo": "Play video",
     "pauseVideo": "Pause video",
