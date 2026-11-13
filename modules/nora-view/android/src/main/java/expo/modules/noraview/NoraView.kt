@@ -178,13 +178,19 @@ fun redirectFacebookUrl(url: String): String? {
   return null
 }
 
-fun isMessengerUrl(url: String): Boolean {
-  val uri = Uri.parse(url)
+private fun isFacebookPathUrl(url: String, prefix: String): Boolean {
+  val uri = runCatching { java.net.URI(url) }.getOrNull() ?: return false
   val path = uri.path ?: return false
   return uri.scheme == "https" &&
     (uri.host == "www.facebook.com" || uri.host == "m.facebook.com") &&
-    (path == "/messages" || path.startsWith("/messages/"))
+    (path == prefix || path.startsWith("$prefix/"))
 }
+
+fun isMessengerUrl(url: String): Boolean = isFacebookPathUrl(url, "/messages")
+
+fun isMarketplaceUrl(url: String): Boolean = isFacebookPathUrl(url, "/marketplace")
+
+fun isDesktopFacebookUrl(url: String): Boolean = isMessengerUrl(url) || isMarketplaceUrl(url)
 
 // Share links (vm.tiktok.com, vt.tiktok.com) redirect to www.tiktok.com keeping the agent they
 // were loaded with, so they need the desktop one too.
@@ -194,7 +200,7 @@ fun isTikTokUrl(url: String): Boolean {
   return uri.scheme == "https" && (host == "tiktok.com" || host.endsWith(".tiktok.com"))
 }
 
-fun desktopMessengerUrl(url: String): String {
+fun desktopFacebookUrl(url: String): String {
   return url.replaceFirst("https://m.facebook.com", "https://www.facebook.com")
 }
 
@@ -205,7 +211,7 @@ fun shouldRedirectFacebookToMobile(currentUrl: String, targetUrl: String, deskto
   if (!targetUrl.startsWith("https://www.facebook.com/")) {
     return false
   }
-  if (isMessengerUrl(targetUrl)) {
+  if (isDesktopFacebookUrl(targetUrl)) {
     return false
   }
   if (isMessengerUrl(currentUrl)) {
@@ -874,8 +880,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               load(url.replace("www.reddit.com", "old.reddit.com"))
               return
             }
-            if (isMessengerUrl(url) && (Uri.parse(url).host == "m.facebook.com" || view.settings.userAgentString != uaLinux)) {
-              load(desktopMessengerUrl(url))
+            if (isDesktopFacebookUrl(url) && (Uri.parse(url).host == "m.facebook.com" || view.settings.userAgentString != uaLinux)) {
+              load(desktopFacebookUrl(url))
               return
             }
             if (shouldRedirectFacebookToMobile(pageUrl, url, userAgent?.contains(" Mobile ") == false)) {
@@ -941,8 +947,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
               load(redirectedUrl)
               return true
             }
-            if (isMessengerUrl(url) && (Uri.parse(url).host == "m.facebook.com" || view.settings.userAgentString != uaLinux)) {
-              load(desktopMessengerUrl(url))
+            if (isDesktopFacebookUrl(url) && (Uri.parse(url).host == "m.facebook.com" || view.settings.userAgentString != uaLinux)) {
+              load(desktopFacebookUrl(url))
               return true
             }
             if (shouldRedirectFacebookToMobile(pageUrl, url, userAgent?.contains(" Mobile ") == false)) {
@@ -1322,7 +1328,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
     pageUrl = url
     var ua = userAgent
-    if (isMessengerUrl(url) || isTikTokUrl(url)) {
+    if (isDesktopFacebookUrl(url) || isTikTokUrl(url)) {
       ua = uaLinux
     } else if (ua == null) {
       ua = uaAndroid

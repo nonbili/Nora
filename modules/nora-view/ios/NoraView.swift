@@ -4,11 +4,23 @@ import Network
 
 let uaMac = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
 
-func isMessengerUrl(_ url: URL) -> Bool {
+private func isFacebookPathUrl(_ url: URL, prefix: String) -> Bool {
   let path = url.path
   return url.scheme == "https" &&
     (url.host == "www.facebook.com" || url.host == "m.facebook.com") &&
-    (path == "/messages" || path.hasPrefix("/messages/"))
+    (path == prefix || path.hasPrefix("\(prefix)/"))
+}
+
+func isMessengerUrl(_ url: URL) -> Bool {
+  isFacebookPathUrl(url, prefix: "/messages")
+}
+
+func isMarketplaceUrl(_ url: URL) -> Bool {
+  isFacebookPathUrl(url, prefix: "/marketplace")
+}
+
+func isDesktopFacebookUrl(_ url: URL) -> Bool {
+  isMessengerUrl(url) || isMarketplaceUrl(url)
 }
 
 // Share links (vm.tiktok.com, vt.tiktok.com) redirect to www.tiktok.com keeping the agent they
@@ -488,7 +500,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
 
   func load(url: String) {
       var targetUrl = url
-      if let sourceUrl = URL(string: url), isMessengerUrl(sourceUrl), sourceUrl.host == "m.facebook.com" {
+      if let sourceUrl = URL(string: url), isDesktopFacebookUrl(sourceUrl), sourceUrl.host == "m.facebook.com" {
           targetUrl = url.replacingOccurrences(of: "https://m.facebook.com", with: "https://www.facebook.com", options: .anchored)
       }
       guard let u = URL(string: targetUrl) else { return }
@@ -501,7 +513,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
       // Settle the rule list before the load starts; a change made once a
       // navigation is under way only takes effect on the next one.
       setBlocklistHost(u.host)
-      if isMessengerUrl(u) || isTikTokUrl(u) {
+      if isDesktopFacebookUrl(u) || isTikTokUrl(u) {
           webView.customUserAgent = uaMac
       } else {
           webView.customUserAgent = userAgent
@@ -584,7 +596,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
           return
       }
 
-      if isMainFrame && isMessengerUrl(url) && (url.host == "m.facebook.com" || webView.customUserAgent != uaMac) {
+      if isMainFrame && isDesktopFacebookUrl(url) && (url.host == "m.facebook.com" || webView.customUserAgent != uaMac) {
           decisionHandler(.cancel)
           load(url: urlString)
           return

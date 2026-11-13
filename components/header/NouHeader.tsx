@@ -138,9 +138,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const anonymousOnThisSite = !isBlocklistExcludedHost(hostname, anonymousDisabledHosts || [])
 
   const isFacebookMessenger = hostname.endsWith('.facebook.com') && (pathname === '/messages' || pathname.startsWith('/messages/'))
+  const isFacebookMarketplace = hostname.endsWith('.facebook.com') && (pathname === '/marketplace' || pathname.startsWith('/marketplace/'))
   // Instagram is always its desktop site in the Anonymous profile, whatever the switch says.
   const anonymousDesktopSite = showAnonymousToggle && anonymousOnThisSite && wantsAnonymousDesktopSite(hostname)
-  const hideDesktopSiteToggle = isFacebookMessenger || hostname.endsWith('.tiktok.com') || anonymousDesktopSite || isFeedTabUrl(currentTab?.url)
+  const hideDesktopSiteToggle = isFacebookMessenger || isFacebookMarketplace || hostname.endsWith('.tiktok.com') || anonymousDesktopSite || isFeedTabUrl(currentTab?.url)
 
   const onLayout = (event: LayoutChangeEvent) => {
     // In the desktop layout the header is a full height sidebar, and its height means
