@@ -23,4 +23,12 @@ class NouJsInterface(private val context: Context, private val noraView: NoraVie
   fun setPullToRefreshSuspended(suspended: Boolean) {
     noraView.setPullToRefreshSuspended(suspended)
   }
+
+  // Called from the page when a long-press starts on an element with its own
+  // long-press action (e.g. Facebook reaction picker), so Android's context menu
+  // does not open on top of it.
+  @JavascriptInterface
+  fun setContextMenuSuppressed(suppressed: Boolean) {
+    noraView.setContextMenuSuppressed(suppressed)
+  }
 }

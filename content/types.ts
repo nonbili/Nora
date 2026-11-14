@@ -8,6 +8,8 @@ interface NoraI {
   setScrolledRegions?: (rects: string) => void
   /** Android only. */
   setPullToRefreshSuspended?: (suspended: boolean) => void
+  /** Android only. */
+  setContextMenuSuppressed?: (suppressed: boolean) => void
 }
 
 declare global {

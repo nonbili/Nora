@@ -11,6 +11,7 @@ import {
   isFacebookReelPagerAdCandidate,
   isFacebookReelsPath,
   isFacebookSponsoredText,
+  runFacebookContextMenuGuard,
   shouldHideFacebookOpenAppBanner,
   shouldScanFacebookDesktopContainer,
 } from './facebook'
@@ -237,5 +238,70 @@ describe('invalidateFacebookDesktopAdVerdict', () => {
   it('ignores nodes outside any post container', () => {
     expect(() => invalidateFacebookDesktopAdVerdict(null)).not.toThrow()
     expect(() => invalidateFacebookDesktopAdVerdict({} as unknown as Node)).not.toThrow()
+  })
+})
+
+describe('runFacebookContextMenuGuard', () => {
+  const createMockDocument = () => {
+    const listeners = new Map<string, (event: any) => void>()
+    return {
+      addEventListener: (type: string, listener: (event: any) => void) => {
+        listeners.set(type, listener)
+      },
+      dispatch: (type: string, target: unknown) => {
+        let prevented = false
+        let stopped = false
+        listeners.get(type)?.({
+          target,
+          preventDefault: () => {
+            prevented = true
+          },
+          stopPropagation: () => {
+            stopped = true
+          },
+        })
+        return { prevented, stopped }
+      },
+    }
+  }
+
+  it('prevents contextmenu when long-press starts on a long-click action even if overlay replaces target', () => {
+    const doc = createMockDocument()
+    runFacebookContextMenuGuard(doc)
+
+    const likeButton = {
+      closest: (selector: string) => (selector === '[data-long-click-action-id]' ? likeButton : null),
+    }
+    const overlayBackdrop = {
+      closest: () => null,
+    }
+
+    doc.dispatch('pointerdown', likeButton)
+    const result = doc.dispatch('contextmenu', overlayBackdrop)
+
+    expect(result.prevented).toBe(true)
+    expect(result.stopped).toBe(true)
+  })
+
+  it('allows contextmenu on normal images after a long-click gesture ends', async () => {
+    const doc = createMockDocument()
+    runFacebookContextMenuGuard(doc)
+
+    const likeButton = {
+      closest: (selector: string) => (selector === '[data-long-click-action-id]' ? likeButton : null),
+    }
+    const postImage = {
+      closest: () => null,
+    }
+
+    doc.dispatch('pointerdown', likeButton)
+    doc.dispatch('pointerup', likeButton)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    doc.dispatch('pointerdown', postImage)
+    const result = doc.dispatch('contextmenu', postImage)
+
+    expect(result.prevented).toBe(false)
+    expect(result.stopped).toBe(false)
   })
 })

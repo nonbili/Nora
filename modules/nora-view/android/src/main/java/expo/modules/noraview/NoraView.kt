@@ -527,6 +527,12 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   private var customView: View? = null
   private var contextMenuLinkUrl: String? = null
   private var contextMenuImageUrl: String? = null
+  @Volatile
+  private var contextMenuSuppressed = false
+
+  internal fun setContextMenuSuppressed(suppressed: Boolean) {
+    contextMenuSuppressed = suppressed
+  }
   internal var userAgent: String? = null
   private var profileSet = false
   private var profileName = "default"
@@ -619,7 +625,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     cancelContextMenuPrewarm()
     val runnable = Runnable {
       contextMenuPrewarm = null
-      resolveContextMenuTargetsFromPoint()
+      if (!contextMenuSuppressed) {
+        resolveContextMenuTargetsFromPoint()
+      }
     }
     contextMenuPrewarm = runnable
     touchHandler.postDelayed(runnable, ViewConfiguration.getLongPressTimeout() / 2L)
@@ -630,6 +638,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
 
   override fun onCreateContextMenu(menu: ContextMenu) {
     super.onCreateContextMenu(menu)
+    if (contextMenuSuppressed) {
+      return
+    }
 
     val result = webView.getHitTestResult()
     val activity = currentActivity
@@ -1200,6 +1211,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             lastTouchY = event.y
             contextMenuLinkUrl = null
             contextMenuImageUrl = null
+            contextMenuSuppressed = false
             scheduleContextMenuPrewarm()
             v.requestFocus()
           }
@@ -1219,7 +1231,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         false
       }
       setOnLongClickListener {
-        prepareContextMenuTargets()
+        if (!contextMenuSuppressed) {
+          prepareContextMenuTargets()
+        }
         false
       }
     }

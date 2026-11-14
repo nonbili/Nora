@@ -179,6 +179,86 @@ export function runFacebookFeedController() {
   apply()
 }
 
+const isFacebookLongClickTarget = (target: EventTarget | null) => {
+  const candidate = target as {
+    closest?: (selector: string) => unknown
+    parentElement?: { closest?: (selector: string) => unknown } | null
+  } | null
+  const element = typeof candidate?.closest === 'function' ? candidate : candidate?.parentElement
+  return Boolean(element?.closest?.('[data-long-click-action-id]'))
+}
+
+/**
+ * Suppresses the browser context menu when a long-press starts on a Facebook
+ * long-click action target (e.g. Like -> reaction picker), because the picker
+ * overlay replaces the target under the finger before `contextmenu` fires.
+ */
+export function runFacebookContextMenuGuard(doc: Pick<Document, 'addEventListener'> = document) {
+  if (typeof document !== 'undefined' && doc === document) {
+    const root = window as Window &
+      typeof globalThis & {
+        __noraFacebookContextMenuGuardInit?: boolean
+      }
+    if (root.__noraFacebookContextMenuGuardInit) {
+      return
+    }
+    root.__noraFacebookContextMenuGuardInit = true
+  }
+
+  let suppress = false
+  let clearTimer: ReturnType<typeof setTimeout> | null = null
+
+  const cancelClear = () => {
+    if (clearTimer !== null) {
+      clearTimeout(clearTimer)
+      clearTimer = null
+    }
+  }
+
+  const setNativeSuppressed = (value: boolean) => {
+    if (typeof window !== 'undefined') {
+      window.NoraI?.setContextMenuSuppressed?.(value)
+    }
+  }
+
+  const onPressStart = (event: Event) => {
+    cancelClear()
+    suppress = isFacebookLongClickTarget(event.target)
+    setNativeSuppressed(suppress)
+  }
+
+  const onPressEnd = () => {
+    if (!suppress) {
+      return
+    }
+    cancelClear()
+    clearTimer = setTimeout(() => {
+      clearTimer = null
+      suppress = false
+      setNativeSuppressed(false)
+    }, 0)
+  }
+
+  const passiveCapture = { capture: true, passive: true } as const
+  doc.addEventListener('pointerdown', onPressStart, passiveCapture)
+  doc.addEventListener('touchstart', onPressStart, passiveCapture)
+  doc.addEventListener('pointerup', onPressEnd, passiveCapture)
+  doc.addEventListener('pointercancel', onPressEnd, passiveCapture)
+  doc.addEventListener('touchend', onPressEnd, passiveCapture)
+  doc.addEventListener('touchcancel', onPressEnd, passiveCapture)
+  doc.addEventListener(
+    'contextmenu',
+    (event) => {
+      if (!suppress && !isFacebookLongClickTarget(event.target)) {
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+    },
+    true,
+  )
+}
+
 export const isFacebookDesktopSponsoredPost = (element: HTMLElement) => {
   const candidates = element.matches('[aria-label], a, span, div[role="button"]')
     ? [element]

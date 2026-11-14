@@ -1,7 +1,7 @@
 import { hostHomes } from './css'
 import { noraSettingsEvent } from './nora'
 import { normalizeVideoSpeed, videoLongPressSpeeds } from '../lib/video-speed'
-import { runFacebookFeedController } from './services/facebook'
+import { runFacebookContextMenuGuard, runFacebookFeedController } from './services/facebook'
 import { runXHomeTabsController } from './services/twitter/home-tabs'
 import { runXSearchController } from './services/twitter/search'
 import { runXRecommendationsController } from './services/twitter/recommendations'
@@ -609,6 +609,7 @@ export function injectScript() {
   }
   if (host === 'm.facebook.com' || host === 'www.facebook.com') {
     runFacebookFeedController()
+    runFacebookContextMenuGuard()
   }
   const key = hostHomes[host]
   switch (key) {
