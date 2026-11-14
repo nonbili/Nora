@@ -1,3 +1,18 @@
+const mediaViewerHosts = /(^|\.)(x\.com|twitter\.com|instagram\.com|facebook\.com|reddit\.com)$/
+
+export function isGestureMediaViewer({ hostname, pathname, hash }: Pick<Location, 'hostname' | 'pathname' | 'hash'>) {
+  if (/(^|\.)(x\.com|twitter\.com)$/.test(hostname)) {
+    return /^\/[^/]+\/status\/\d+\/photo\/\d+\/?$/.test(pathname)
+  }
+  if (/(^|\.)instagram\.com$/.test(hostname)) {
+    return /^\/(stories|reels?)(\/|$)/.test(pathname)
+  }
+  if (/(^|\.)facebook\.com$/.test(hostname)) {
+    return /^\/(photo\.php|photo|stories)(\/|$)/.test(pathname)
+  }
+  return /(^|\.)reddit\.com$/.test(hostname) && hash === '#lightbox'
+}
+
 // Android's pull to refresh wraps the WebView, so it only knows the top level
 // scroll position. Sites that scroll an inner element (a fixed body with a
 // scrolling feed) keep the WebView at scrollY 0 at any depth, which would let a
@@ -19,10 +34,18 @@ export function trackInnerScrollers() {
   const scrolledAway = new Set<Element>()
   let sent = ''
   let frame = 0
+  const hasMediaViewers = mediaViewerHosts.test(window.location.hostname)
 
   const report = () => {
     frame = 0
     const rects: number[][] = []
+    // Media viewers own downward drags (dismiss/pan/page) as well as sideways
+    // swipes. Protect the whole viewport even though nothing has scrolled.
+    // Use regions rather than the suspension flag shared with video long-press.
+    if (hasMediaViewers && isGestureMediaViewer(window.location)) {
+      const dpr = window.devicePixelRatio || 1
+      rects.push([0, 0, Math.round(window.innerWidth * dpr), Math.round(window.innerHeight * dpr)])
+    }
     for (const el of scrolledAway) {
       if (!el.isConnected) {
         scrolledAway.delete(el)
@@ -54,6 +77,16 @@ export function trackInnerScrollers() {
     if (!frame) {
       frame = requestAnimationFrame(report)
     }
+  }
+
+  if (hasMediaViewers) {
+    // Opening/closing the viewer changes the SPA route and its DOM without a
+    // document load or scroll event. Back/Forward can also change that route.
+    new MutationObserver(schedule).observe(document, { childList: true, subtree: true })
+    window.addEventListener('popstate', schedule)
+    window.addEventListener('hashchange', schedule)
+    window.addEventListener('resize', schedule)
+    schedule()
   }
 
   document.addEventListener(
