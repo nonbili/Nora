@@ -55,16 +55,10 @@ describe('hasFacebookMobileSponsoredLabel', () => {
   const post = (html: string) => {
     const $ = cheerio.load(`<div data-tracking-duration-id="1">${html}</div>`)
     return {
-      querySelectorAll: (selector: string) =>
-        $(selector)
-          .toArray()
-          .map((element) => {
-            const previous = $(element).prev()
-            return {
-              textContent: $(element).text(),
-              previousElementSibling: previous.length ? { getAttribute: (name: string) => previous.attr(name) ?? null } : null,
-            }
-          }),
+      querySelector: (selector: string) => {
+        const element = $(selector).first()
+        return element.length ? { textContent: element.text() } : null
+      },
     }
   }
 

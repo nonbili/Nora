@@ -1,4 +1,5 @@
 import {
+  collectFacebookMobileAdCandidates,
   facebookDesktopAdContainerSelector,
   hasFacebookMobileSponsoredLabel,
   invalidateFacebookDesktopAdVerdict,
@@ -203,6 +204,7 @@ const watchReelPager = (scroller: HTMLElement) => {
 }
 
 const hideFacebookMobileAd = (element: HTMLElement) => {
+  element.dataset.noraHiddenAd = '1'
   const scroller = findSnapScroller(element)
   if (!scroller || element.parentElement !== scroller) {
     hideElement(element)
@@ -296,6 +298,7 @@ export function blockAds() {
 // than that starves the page's own script: comments and post routes then spin forever
 // until a reload trims the DOM back down.
 let sweepScheduled = false
+const mobileFacebookCandidates = new Set<HTMLElement>()
 
 const scheduleSweep = () => {
   if (sweepScheduled) {
@@ -315,11 +318,18 @@ const scheduleSweep = () => {
 
 const sweepAds = () => {
   if (!adBlockingEnabled()) {
+    mobileFacebookCandidates.clear()
     return
   }
 
   switch (host) {
     case 'm.facebook.com': {
+      for (const post of mobileFacebookCandidates) {
+        if (post.isConnected && post.dataset.noraHiddenAd !== '1' && hasFacebookMobileSponsoredLabel(post)) {
+          hideFacebookMobileAd(post)
+        }
+      }
+      mobileFacebookCandidates.clear()
       const target = document.querySelector('.fixed-container.bottom') as HTMLElement | null
 
       // facebook open app btn
@@ -379,14 +389,15 @@ export function hideAds(mutations: MutationRecord[]) {
         if (mutation.addedNodes.length) {
           reelPagerWatches.get(mutation.target as HTMLElement)?.childrenChanged()
         }
+        // Resolve the target without traversing its subtree: a feed-root mutation
+        // must not rescan the entire growing feed. Only added subtrees need walking.
+        const target = mutation.target.nodeType === 1
+          ? mutation.target as HTMLElement
+          : mutation.target.parentElement
+        const post = target?.closest<HTMLElement>('[data-tracking-duration-id]')
+        if (post) mobileFacebookCandidates.add(post)
         for (const node of mutation.addedNodes.values()) {
-          const el = node as HTMLElement
-          if (el.dataset?.trackingDurationId) {
-            // facebook server rendered ads
-            if (hasFacebookMobileSponsoredLabel(el)) {
-              hideFacebookMobileAd(el)
-            }
-          }
+          collectFacebookMobileAdCandidates(node, mobileFacebookCandidates)
         }
         break
       }

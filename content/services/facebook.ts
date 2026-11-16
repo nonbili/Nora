@@ -63,19 +63,29 @@ export const isFacebookMobileSponsoredLabel = (value?: string | null) => {
 // before the body and the comments. A label word anywhere else, an author named "Ad" or a
 // comment saying "Sponsored", does not count; a layout that puts another pair first misses the
 // ad rather than hiding a post.
-type FacebookMobileTextBlock = Pick<Element, 'textContent'> & {
-  previousElementSibling: Pick<Element, 'getAttribute'> | null
+export const hasFacebookMobileSponsoredLabel = (post: {
+  querySelector(selector: string): Pick<Element, 'textContent'> | null
+}) => {
+  // Stop at the header pair rather than collecting text blocks from a potentially
+  // huge comment subtree every time a counter or comment changes.
+  const meta = post.querySelector('[data-mcomponent="TextArea"] + [data-mcomponent="TextArea"]')
+  return isFacebookMobileSponsoredLabel(meta?.textContent)
 }
 
-export const hasFacebookMobileSponsoredLabel = (post: {
-  querySelectorAll(selector: string): Iterable<FacebookMobileTextBlock>
-}) => {
-  for (const block of post.querySelectorAll('[data-mcomponent="TextArea"]')) {
-    if (block.previousElementSibling?.getAttribute('data-mcomponent') === 'TextArea') {
-      return isFacebookMobileSponsoredLabel(block.textContent)
-    }
+// Mutations may add a whole feed wrapper, fill in an existing header, or change a
+// label's text node. Resolve all three back to the post, not just added post roots.
+export const facebookMobileAdContainerSelector = '[data-tracking-duration-id]'
+
+export const collectFacebookMobileAdCandidates = (node: Node, candidates: Set<HTMLElement>) => {
+  const element = node.nodeType === 1 ? node as HTMLElement : node.parentElement
+  if (!element) return
+  const post = element.closest<HTMLElement>(facebookMobileAdContainerSelector)
+  if (post) candidates.add(post)
+  // A text node has no descendants. Its existing parent may be the entire feed.
+  if (node.nodeType !== 1) return
+  for (const child of element.querySelectorAll<HTMLElement>(facebookMobileAdContainerSelector)) {
+    candidates.add(child)
   }
-  return false
 }
 
 export const isFacebookMessagesPath = (pathname: string) => pathname === '/messages' || pathname.startsWith('/messages/')

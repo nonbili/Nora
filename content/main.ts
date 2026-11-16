@@ -43,7 +43,10 @@ async function initObserver() {
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
+    characterData: document.location.hostname === 'm.facebook.com',
   })
+  // Include server-rendered posts that existed before the observer was attached.
+  hideAds([{ target: document.documentElement, addedNodes: [document.documentElement] } as unknown as MutationRecord])
 
   injectCSS()
   injectScript()
