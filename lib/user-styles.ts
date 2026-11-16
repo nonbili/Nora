@@ -93,8 +93,8 @@ export const builtinUserStyleDefinitions: BuiltinUserStyleDefinition[] = [
     labelKey: 'settings.userStyles.builtin.hideRedditGame.label',
     hostGlobs: ['www.reddit.com'],
     css: css`
-      /* GAME */
-      article:has([slot='ssr-post-content-header']) {
+      /* The SSR header slot is shared by ordinary posts too. */
+      article:has(> shreddit-post[game]) {
         display: none !important;
       }
     `,

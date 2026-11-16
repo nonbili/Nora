@@ -166,9 +166,9 @@ describe('user style css composition', () => {
   it('includes builtin css only on matching hosts', () => {
     const snapshot = withBuiltinEnabled('hide-reddit-game')
 
-    expect(getEnabledUserStyleCss('www.reddit.com', snapshot)).toContain("ssr-post-content-header")
+    expect(getEnabledUserStyleCss('www.reddit.com', snapshot)).toContain('shreddit-post[game]')
     expect(getEnabledUserStyleCss('x.com', snapshot)).not.toContain("[role='tablist']")
-    expect(getEnabledUserStyleCss('example.com', snapshot)).not.toContain("ssr-post-content-header")
+    expect(getEnabledUserStyleCss('example.com', snapshot)).not.toContain('shreddit-post[game]')
   })
 
   it('appends matching custom css after builtin css', () => {
@@ -188,9 +188,9 @@ describe('user style css composition', () => {
     })
 
     const css = getInjectedCss('www.reddit.com', {}, snapshot)
-    expect(css).toContain("ssr-post-content-header")
+    expect(css).toContain('shreddit-post[game]')
     expect(css).toContain('.custom-rule { color: red; }')
-    expect(css.indexOf('.custom-rule { color: red; }')).toBeGreaterThan(css.indexOf("ssr-post-content-header"))
+    expect(css.indexOf('.custom-rule { color: red; }')).toBeGreaterThan(css.indexOf('shreddit-post[game]'))
   })
 
   it('keeps always-on site css even when user styles are disabled', () => {
@@ -210,7 +210,7 @@ describe('user style css composition', () => {
     const css = getInjectedCss('www.instagram.com', {}, snapshot)
     expect(css).toContain('._acc8._abpk')
     expect(css).toContain('article:has(.x1fhwpqd.x132q4wb.x5n08af)')
-    expect(css).not.toContain("ssr-post-content-header")
+    expect(css).not.toContain('shreddit-post[game]')
   })
 
   it('includes x home tab css when the builtin is enabled', () => {
@@ -229,6 +229,27 @@ describe('user style css composition', () => {
     expect(getEnabledUserStyleCss('m.facebook.com', on)).toContain("[data-type='vscroller']")
     expect(getEnabledUserStyleCss('www.facebook.com', on)).toContain("[role='feed']")
     expect(getEnabledUserStyleCss('messenger.com', on)).not.toContain("[role='feed']")
+  })
+})
+
+describe('Reddit game posts', () => {
+  it('selects only game feed articles, not ordinary posts sharing the SSR header slot', () => {
+    const css = builtinUserStyleDefinitionById['hide-reddit-game'].css
+    const selector = css.replace(/\/\*[\s\S]*?\*\//g, '').split('{')[0].trim()
+    const $ = load(`<main>
+      <article id="game"><shreddit-post game post-type="customPost">
+        <div slot="ssr-post-content-header"></div>
+      </shreddit-post></article>
+      <article id="text"><shreddit-post post-type="text">
+        <div slot="ssr-post-content-header"></div>
+      </shreddit-post></article>
+      <article id="image"><shreddit-post post-type="image">
+        <div slot="ssr-post-content-header"></div><img src="photo.jpg">
+      </shreddit-post></article>
+      <article id="custom"><shreddit-post post-type="customPost"></shreddit-post></article>
+      </main>`)
+    expect($(selector).map((_, node) => $(node).attr('id')).get()).toEqual(['game'])
+    expect(css).toContain('display: none !important')
   })
 })
 
