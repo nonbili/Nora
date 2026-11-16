@@ -11,6 +11,7 @@ export const BaseModal: React.FC<{
   useNativeModal?: boolean
   safeAreaEdges?: Edge[]
   sheetOnPhone?: boolean
+  onShow?: () => void
 }> = ({
   className,
   children,
@@ -19,6 +20,7 @@ export const BaseModal: React.FC<{
   useNativeModal = !isWeb,
   safeAreaEdges,
   sheetOnPhone = false,
+  onShow,
 }) => {
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
@@ -26,7 +28,7 @@ export const BaseModal: React.FC<{
 
   if (isIos && sheetOnPhone && width < 768) {
     return (
-      <Modal visible animationType="slide" presentationStyle="pageSheet" allowSwipeDismissal onRequestClose={onRequestClose || onClose}>
+      <Modal visible animationType="slide" presentationStyle="pageSheet" allowSwipeDismissal onShow={onShow} onRequestClose={onRequestClose || onClose}>
         <SafeAreaView className="flex-1 bg-zinc-100 dark:bg-gray-950" edges={['bottom', 'left', 'right']}>
           {children}
         </SafeAreaView>
@@ -36,7 +38,7 @@ export const BaseModal: React.FC<{
 
   if (!isWeb && useNativeModal) {
     return (
-      <Modal transparent visible onRequestClose={onRequestClose || onClose}>
+      <Modal transparent visible onShow={onShow} onRequestClose={onRequestClose || onClose}>
         <View className="flex-1">
           <Pressable className="absolute inset-0 bg-zinc-300/50 dark:bg-gray-600/50" onPress={onClose} />
           <KeyboardAvoidingView

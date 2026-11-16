@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect } from 'react'
+import type { ViewProps } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   measure,
@@ -15,9 +16,9 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated'
 import { moveTabPosition } from '@/lib/tab-reorder'
+import { TAB_ROW_GAP as GAP } from '@/lib/tab-modal-scroll'
 
 type Positions = Record<string, number>
-const GAP = 12
 const EDGE = 72
 const SCROLL_SPEED = 900
 const MOVE_TIMING = { duration: 160 }
@@ -25,7 +26,7 @@ const MOVE_TIMING = { duration: 160 }
 // Uses the same shared-position approach as Nori's SortableList and SortableGrid:
 // pointer movement and neighboring rows animate entirely on the UI thread.
 export function SortableTabList<T extends { id: string }>({
-  items, rowHeight, scrollViewRef, renderItem, onReorder, onDragging,
+  items, rowHeight, scrollViewRef, renderItem, onReorder, onDragging, onLayout,
 }: {
   items: T[]
   rowHeight: number
@@ -33,6 +34,7 @@ export function SortableTabList<T extends { id: string }>({
   renderItem: (item: T) => ReactNode
   onReorder: (ids: string[]) => void
   onDragging: (dragging: boolean) => void
+  onLayout?: ViewProps['onLayout']
 }) {
   const idsKey = JSON.stringify(items.map((item) => item.id))
   const positions = useSharedValue<Positions>({})
@@ -75,7 +77,7 @@ export function SortableTabList<T extends { id: string }>({
   }
 
   return (
-    <Animated.View ref={listRef} style={{ height: items.length * (rowHeight + GAP) }}>
+    <Animated.View ref={listRef} onLayout={onLayout} style={{ height: items.length * (rowHeight + GAP) }}>
       {items.map((item, index) => (
         <SortableRow
           key={item.id}

@@ -15,12 +15,13 @@ import { t } from 'i18next'
 import { colors } from '@/lib/colors'
 import { getTabColor } from '@/lib/profile'
 import { isFeedTabUrl } from '@/lib/feed-tab'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTwColor } from '@/lib/theme'
 import { SortableTabList } from './SortableTabList'
 import Animated, { useAnimatedRef } from 'react-native-reanimated'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { createTabModalScroll } from '@/lib/tab-modal-scroll'
 
 const getTabLabel = (tab?: Pick<Tab, 'title' | 'url'> | null) => tab?.title || tab?.url || t('tabs.new')
 type Anchor = { x: number; y: number; width: number; height: number }
@@ -46,6 +47,20 @@ export const TabModal = () => {
   const { width: screenWidth, height: screenHeight, fontScale } = useWindowDimensions()
   const rowHeight = Math.max(44, Math.ceil(20 * fontScale + 18))
   const insets = useSafeAreaInsets()
+  const initialScroll = useRef(createTabModalScroll(isWeb))
+
+  useEffect(() => {
+    if (!tabModalOpen) {
+      initialScroll.current = createTabModalScroll(isWeb)
+    }
+  }, [tabModalOpen])
+
+  const scrollToActiveTab = () => {
+    if (!scrollViewRef.current) return
+    initialScroll.current.scroll(orderedTabs, tabs[activeTabIndex]?.id, rowHeight, (y) => {
+      scrollViewRef.current?.scrollTo({ y, animated: false })
+    })
+  }
 
   if (!tabModalOpen) {
     return null
@@ -176,13 +191,25 @@ export const TabModal = () => {
   )
 
   return (
-    <BaseModal onClose={closeModal} sheetOnPhone>
+    <BaseModal onClose={closeModal} sheetOnPhone onShow={() => {
+      initialScroll.current.shown = true
+      scrollToActiveTab()
+    }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         {isIos ? controls : null}
         <Animated.ScrollView
           ref={scrollViewRef}
           className={clsx('pl-4', isIos ? 'flex-1' : 'my-4 min-h-full')}
           scrollEnabled={!dragging}
+          onScrollBeginDrag={() => { initialScroll.current.done = true }}
+          onLayout={(event) => {
+            initialScroll.current.viewportHeight = event.nativeEvent.layout.height
+            scrollToActiveTab()
+          }}
+          onContentSizeChange={(_, height) => {
+            initialScroll.current.contentHeight = height
+            scrollToActiveTab()
+          }}
           contentContainerClassName={clsx('min-h-full pb-20', oneHandMode && 'justify-end pt-[35vh]')}
         >
           {!isIos ? controls : null}
@@ -190,7 +217,14 @@ export const TabModal = () => {
             items={orderedTabs}
             rowHeight={rowHeight}
             scrollViewRef={scrollViewRef}
-            onDragging={setDragging}
+            onDragging={(value) => {
+              if (value) initialScroll.current.done = true
+              setDragging(value)
+            }}
+            onLayout={(event) => {
+              initialScroll.current.listY = event.nativeEvent.layout.y
+              scrollToActiveTab()
+            }}
             onReorder={(ids) => tabs$.reorderTabs(ids)}
             renderItem={(tab) => {
               const index = tabs.findIndex((item) => item.id === tab.id)
