@@ -38,6 +38,10 @@ class NoraSettings : Record {
   @Field
   val askDownloadDestination: Boolean = false
 
+  // A tree URI picked in Settings, or empty for the shared Downloads.
+  @Field
+  val downloadFolder: String = ""
+
   @Field
   val internalHosts: List<String> = emptyList()
 

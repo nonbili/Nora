@@ -114,6 +114,7 @@ class NoraStandaloneActivity : Activity() {
       "menu_copyLink" -> "Copy link"
       "toast_downloadStarted" -> "Download started"
       "toast_downloadSucceeded" -> "Download succeeded"
+      "toast_downloadFolderUnavailable" -> "Can't access the download folder, choose it again in Settings"
       else -> "Download failed"
     }
 
@@ -370,14 +371,17 @@ class NoraStandaloneActivity : Activity() {
           .getMimeTypeFromExtension(format.orEmpty())?.takeIf { it.startsWith("image/") }
         ?: "image/jpeg"
       val name = URLUtil.guessFileName(url, null, mimeType)
-      if (getSharedPreferences("nora.standalone", Context.MODE_PRIVATE)
-          .getBoolean("askDownloadDestination", nouController.settings.askDownloadDestination)) {
+      val prefs = getSharedPreferences("nora.standalone", Context.MODE_PRIVATE)
+      val folder = prefs.getString("downloadFolder", nouController.settings.downloadFolder).orEmpty()
+      if (prefs.getBoolean("askDownloadDestination", nouController.settings.askDownloadDestination)) {
         pendingImageUrl = url
         startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
           addCategory(Intent.CATEGORY_OPENABLE)
           type = mimeType
           putExtra(Intent.EXTRA_TITLE, name)
         }, SAVE_IMAGE_REQUEST)
+      } else if (folder.isNotEmpty()) {
+        saveImageToFolder(url, folder, name, mimeType)
       } else {
         val request = DownloadManager.Request(Uri.parse(url))
           .setMimeType(mimeType)
@@ -395,6 +399,20 @@ class NoraStandaloneActivity : Activity() {
 
   private fun isWebUrl(url: String): Boolean = Uri.parse(url).scheme?.lowercase() in listOf("http", "https")
 
+  private fun saveImageToFolder(url: String, folder: String, name: String, mimeType: String) {
+    val app = applicationContext
+    Thread {
+      val destination = try {
+        NoraDownloadFolder.createDocument(app, folder, name, mimeType)
+      } catch (error: Exception) {
+        val key = NoraDownloadFolder.failureMessageKey(error)
+        runOnUiThread { Toast.makeText(app, t(key), Toast.LENGTH_LONG).show() }
+        return@Thread
+      }
+      runOnUiThread { saveImageToDocument(url, destination) }
+    }.start()
+  }
+
   private fun saveImageToDocument(url: String, destination: Uri) {
     val app = applicationContext
     val userAgent = webView.settings.userAgentString
@@ -410,7 +428,7 @@ class NoraStandaloneActivity : Activity() {
             input.copyTo(output)
           }
         }
-        "toast_downloadSucceeded"
+        "toast_fileSaved"
       } catch (_: Exception) {
         try {
           android.provider.DocumentsContract.deleteDocument(app.contentResolver, destination)
@@ -421,7 +439,7 @@ class NoraStandaloneActivity : Activity() {
       android.os.Handler(android.os.Looper.getMainLooper()).post {
         val label = nouController.i18nStrings[message]
           ?: app.getSharedPreferences("nora.locale", Context.MODE_PRIVATE).getString(message, null)
-          ?: if (message == "toast_downloadSucceeded") "Download succeeded" else "Download failed"
+          ?: if (message == "toast_fileSaved") "File saved" else "Download failed"
         Toast.makeText(app, label, Toast.LENGTH_LONG).show()
       }
     }.start()

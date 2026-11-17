@@ -19,6 +19,7 @@ import androidx.webkit.ProxyConfig
 import androidx.webkit.ProxyController
 import androidx.webkit.WebViewFeature
 import expo.modules.kotlin.Promise
+import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.functions.Queues
 import expo.modules.kotlin.jni.JavaScriptObject
@@ -180,7 +181,10 @@ class NoraViewModule : Module() {
     Function("setSettings") { settings: NoraSettings ->
       nouController.settings = settings
       appContext.reactContext?.getSharedPreferences("nora.standalone", android.content.Context.MODE_PRIVATE)
-        ?.edit()?.putBoolean("askDownloadDestination", settings.askDownloadDestination)?.apply()
+        ?.edit()
+        ?.putBoolean("askDownloadDestination", settings.askDownloadDestination)
+        ?.putString("downloadFolder", settings.downloadFolder)
+        ?.apply()
       applyProxy(settings)
     }
 
@@ -304,9 +308,9 @@ class NoraViewModule : Module() {
     }
 
     // Copies a file the app already has, like media kept for the feed, to the shared
-    // Downloads, where the user's other apps can see it, and resolves to its content URI.
-    // Android 10 and later only: before that it takes a storage permission, and the app
-    // shares the file instead.
+    // Downloads, or the download folder picked in Settings, where the user's other apps can
+    // see it, and resolves to its content URI. Android 10 and later only: before that it
+    // takes a storage permission, and the app shares the file instead.
     AsyncFunction("saveFileToDownloads") Coroutine { sourceUri: String, fileName: String, mimeType: String? ->
       val context = appContext.reactContext ?: return@Coroutine null
       withContext(Dispatchers.IO) {
@@ -314,6 +318,23 @@ class NoraViewModule : Module() {
         if (!source.exists()) return@withContext null
         val type = mimeType ?: "application/octet-stream"
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) return@withContext null
+        val folder = nouController.settings.downloadFolder
+        if (folder.isNotEmpty()) {
+          var uri: Uri? = null
+          return@withContext try {
+            uri = NoraDownloadFolder.createDocument(context, folder, fileName, type)
+            context.contentResolver.openOutputStream(uri, "w")?.use { output -> source.inputStream().use { it.copyTo(output) } }
+              ?: throw java.io.IOException("Cannot open download destination")
+            uri.toString()
+          } catch (e: Exception) {
+            uri?.let { runCatching { android.provider.DocumentsContract.deleteDocument(context.contentResolver, it) } }
+            log("saveFileToDownloads failed: ${e.message}")
+            if (e is NoraDownloadFolder.UnavailableException) {
+              throw CodedException("ERR_DOWNLOAD_FOLDER_UNAVAILABLE", e.message, e)
+            }
+            null
+          }
+        }
         try {
           val values = android.content.ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)

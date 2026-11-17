@@ -1487,7 +1487,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
 
-    if (nouController.settings.askDownloadDestination) {
+    if (nouController.settings.askDownloadDestination || nouController.settings.downloadFolder.isNotEmpty()) {
       downloadToDocument(activity, url, fileName, mimeType)
       return
     }
@@ -1513,6 +1513,22 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
     }
   }
 
+  // Saves where the settings say: a file the user names in the save dialog, or one created in
+  // the download folder. Null when the user dismissed the dialog.
+  private suspend fun createDownloadDocument(
+    activity: Activity,
+    fileName: String,
+    mimeType: String,
+    settings: NoraSettings = nouController.settings,
+  ): Uri? {
+    if (!settings.askDownloadDestination && settings.downloadFolder.isNotEmpty()) {
+      return withContext(Dispatchers.IO) {
+        NoraDownloadFolder.createDocument(context, settings.downloadFolder, fileName, mimeType)
+      }
+    }
+    return nouController.downloadPicker.createDocument(activity, fileName, mimeType)
+  }
+
   private fun downloadToDocument(activity: Activity, url: String, fileName: String?, mimeType: String?) {
     CoroutineScope(Dispatchers.Main).launch {
       var destination: Uri? = null
@@ -1527,7 +1543,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         } else {
           CookieManager.getInstance()
         }
-        val uri = nouController.downloadPicker.createDocument(activity, name, type) ?: return@launch
+        val uri = createDownloadDocument(activity, name, type) ?: return@launch
         destination = uri
         Toast.makeText(context, nouController.t("toast_savingFile"), Toast.LENGTH_LONG).show()
         withContext(Dispatchers.IO) {
@@ -1542,7 +1558,7 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
         destination?.let { uri -> withContext(Dispatchers.IO) { deleteDownloadDocument(uri) } }
         if (error is CancellationException) throw error
         log("Download failed: ${error.message}")
-        Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
+        Toast.makeText(context, nouController.t(NoraDownloadFolder.failureMessageKey(error)), Toast.LENGTH_LONG).show()
       }
     }
   }
@@ -1558,7 +1574,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
   // DownloadManager posts its own notification; other saves need one as well.
   private fun notifySaved(uri: Uri, fileName: String, mimeType: String?) {
     try {
-      if (DocumentsContract.isDocumentUri(context, uri)) {
+      // A file in the download folder is covered by the folder's own persisted grant.
+      if (DocumentsContract.isDocumentUri(context, uri) && !DocumentsContract.isTreeUri(uri)) {
         // The notification can outlive the activity's temporary URI grant. If a
         // provider cannot persist read access, keep the save but skip the notification.
         context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -1605,7 +1622,8 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       return
     }
 
-    val askDestination = nouController.settings.askDownloadDestination
+    val settings = nouController.settings
+    val toDocument = settings.askDownloadDestination || settings.downloadFolder.isNotEmpty()
     CoroutineScope(Dispatchers.IO).launch {
       val resolver = context.contentResolver
       var uri: Uri? = null
@@ -1625,9 +1643,9 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
           }
         }
         val fileName = normalizeFileName(_fileName, mimeType, detected)
-        if (askDestination) {
-          val destination = nouController.downloadPicker.createDocument(
-            activity, fileName, mimeType ?: "application/octet-stream"
+        if (toDocument) {
+          val destination = createDownloadDocument(
+            activity, fileName, mimeType ?: "application/octet-stream", settings
           ) ?: return@launch
           uri = destination
           val output = resolver.openOutputStream(destination, "w")
@@ -1658,11 +1676,11 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
       } catch (e: Exception) {
         e.printStackTrace()
         uri?.let {
-          if (askDestination) deleteDownloadDocument(it) else resolver.delete(it, null, null)
+          if (toDocument) deleteDownloadDocument(it) else resolver.delete(it, null, null)
         }
         if (e is CancellationException) throw e
         activity.runOnUiThread {
-          Toast.makeText(context, nouController.t("toast_downloadFailed"), Toast.LENGTH_LONG).show()
+          Toast.makeText(context, nouController.t(NoraDownloadFolder.failureMessageKey(e)), Toast.LENGTH_LONG).show()
         }
       }
     }

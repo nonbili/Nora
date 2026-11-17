@@ -47,6 +47,7 @@ import { isDynamicColorAvailable } from '@/lib/dynamic-palette'
 import NoraViewModule from '@/modules/nora-view'
 import { useTwColor } from '@/lib/theme'
 import { videoSpeeds } from '@/lib/video-speed'
+import { downloadFolderLabel, getDownloadDestination, pickDownloadFolder } from '@/lib/download-folder'
 
 const headerPositions = ['top', 'bottom'] as const
 const desktopLayoutModes = ['auto', 'on', 'off'] as const
@@ -162,6 +163,16 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
   const settings = useValue(settings$)
   const supportsProxyAuthentication = isAndroid || (isIos && Number.parseInt(String(Platform.Version), 10) >= 17)
   const builtinScripts = useValue(userStyles$.builtinScripts)
+  const downloadDestination = getDownloadDestination(settings)
+
+  const chooseDownloadFolder = async () => {
+    try {
+      const folder = await pickDownloadFolder(settings$.downloadFolder.peek())
+      if (folder) settings$.assign({ askDownloadDestination: false, downloadFolder: folder })
+    } catch {
+      showToast(t('settings.downloadFolderFailed'))
+    }
+  }
 
   return (
     <View className="pb-4">
@@ -306,12 +317,41 @@ export const SettingsBrowsingContent: React.FC<{ onFocusInput?: () => void }> = 
         <View className="mt-10">
           <NouText className={subheaderCls}>{t('settings.downloads')}</NouText>
           <SettingsSurface>
-            <SettingsRow isLast>
-              <NouSwitch
-                label={<NouText>{t('settings.askDownloadDestination')}</NouText>}
-                value={settings.askDownloadDestination}
-                onPress={() => settings$.askDownloadDestination.toggle()}
-              />
+            <SettingsRow isLast className="items-center flex-row justify-between">
+              <View className="flex-1 pr-3">
+                <NouText>{t('settings.downloadDestination')}</NouText>
+              </View>
+              <View className="flex-row items-center gap-1 shrink">
+                <View className="shrink rounded-lg bg-zinc-100 dark:bg-zinc-950 px-2.5 py-1">
+                  <NouText className="text-sm text-zinc-600 dark:text-zinc-400" numberOfLines={1}>
+                    {downloadDestination === 'folder'
+                      ? downloadFolderLabel(settings.downloadFolder)
+                      : downloadDestination === 'ask'
+                        ? t('settings.downloadDestinationAsk')
+                        : t('settings.downloadDestinationDownloads')}
+                  </NouText>
+                </View>
+                <NouMenu
+                  trigger={isWeb ? <MaterialButton name="more-vert" /> : isIos ? 'ellipsis' : 'filled.MoreVert'}
+                  items={[
+                    {
+                      label: t('settings.downloadDestinationDownloads'),
+                      handler: () => settings$.assign({ askDownloadDestination: false, downloadFolder: '' }),
+                      metaLabel: downloadDestination === 'downloads' ? '✓' : undefined,
+                    },
+                    {
+                      label: t('settings.downloadDestinationAsk'),
+                      handler: () => settings$.assign({ askDownloadDestination: true, downloadFolder: '' }),
+                      metaLabel: downloadDestination === 'ask' ? '✓' : undefined,
+                    },
+                    {
+                      label: t('settings.downloadDestinationFolder'),
+                      handler: chooseDownloadFolder,
+                      metaLabel: downloadDestination === 'folder' ? '✓' : undefined,
+                    },
+                  ]}
+                />
+              </View>
             </SettingsRow>
           </SettingsSurface>
         </View>

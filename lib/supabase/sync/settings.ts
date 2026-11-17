@@ -22,11 +22,12 @@ class SettingsSyncer extends BaseSyncer<Settings> {
   }
 
   setValue(value: Settings) {
-    // Remote documents must not replace device-local zoom or proxy credentials.
+    // Remote documents must not replace device-local zoom, proxy credentials or download folder.
     const siteZoom = settings$.siteZoom.get()
     const proxyUsername = settings$.proxyUsername.get()
     const proxyPassword = settings$.proxyPassword.get()
-    settings$.assign(normalizeSettings({ ...value, siteZoom, proxyUsername, proxyPassword }))
+    const downloadFolder = settings$.downloadFolder.get()
+    settings$.assign(normalizeSettings({ ...value, siteZoom, proxyUsername, proxyPassword, downloadFolder }))
   }
 
   // Each setting on its own; one both devices changed is the other device's.

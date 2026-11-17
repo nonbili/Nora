@@ -52,6 +52,7 @@ declare class NoraViewModule extends NativeModule {
     redirectToOldReddit?: boolean
     allowHttpWebsite?: boolean
     askDownloadDestination?: boolean
+    downloadFolder?: string
     internalHosts?: string[]
     proxyEnabled?: boolean
     proxyType?: 'http' | 'socks'

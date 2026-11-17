@@ -9,6 +9,8 @@ import { SharedRequests } from '@/lib/shared-request'
 import { watchFetch } from '@/lib/watch-fetch'
 import { clearMediaFiles, deleteMediaFile, downloadMediaFile, listMediaFiles, mediaFileExists, mediaFileUri } from '@/lib/watch-media-files'
 import { watch$ } from '@/states/watch'
+import { settings$ } from '@/states/settings'
+import { downloadFolderLabel } from '@/lib/download-folder'
 import { findWatchPost, getPostsNewestFirst, getWatchPostKeys, updateWatchPost } from '@/lib/watch-db'
 import { findSignedInCookies } from '@/lib/watch-account'
 import {
@@ -429,7 +431,10 @@ export const saveWatchPostMedia = async (post: WatchPost, only?: number): Promis
  * and on Android the file itself, when it is just one.
  */
 export const showMediaSavedToast = (saved: number, path?: string) => {
-  const msg = t('feed.mediaSaved', { count: saved })
+  const folder = Platform.OS === 'android' ? settings$.downloadFolder.peek() : ''
+  const msg = folder
+    ? t('feed.mediaSavedToFolder', { count: saved, folder: downloadFolderLabel(folder) })
+    : t('feed.mediaSaved', { count: saved })
   if (path && NoraViewModule.showItemInFolder) {
     showButtonToast(msg, t('native.toast_openFolder'), () => void NoraViewModule.showItemInFolder?.(path))
   } else if (path && saved === 1 && NoraViewModule.openFile) {
@@ -447,3 +452,8 @@ watch$.profiles.onChange(({ getPrevious, value }) => {
 watch$.mediaLimitMB.onChange(() => pruneWatchMedia())
 watch$.postsPerSource.onChange(() => pruneWatchMedia())
 
+/** Why saving media failed: Android's download folder can lose its grant, which the user must fix in Settings. */
+export const mediaSaveFailedMessage = (error?: unknown) =>
+  (error as { code?: unknown } | undefined)?.code === 'ERR_DOWNLOAD_FOLDER_UNAVAILABLE'
+    ? t('native.toast_downloadFolderUnavailable')
+    : t('feed.mediaSaveFailed')

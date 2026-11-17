@@ -27,6 +27,7 @@ describe('device-local proxy credentials in settings sync', () => {
       proxyUsername: 'device user',
       proxyPassword: 'päss:@/% word',
       siteZoom: { 'local.example': 1.5 },
+      downloadFolder: 'content://com.android.externalstorage.documents/tree/primary%3ADownload',
     })
     syncMeta$.settings.set({ dirty: false })
     syncOwner$.ownerUserId.set('settings-test-user')
@@ -64,6 +65,7 @@ describe('device-local proxy credentials in settings sync', () => {
     expect(writes[0]).not.toHaveProperty('proxyUsername')
     expect(writes[0]).not.toHaveProperty('proxyPassword')
     expect(writes[0]).not.toHaveProperty('siteZoom')
+    expect(writes[0]).not.toHaveProperty('downloadFolder')
     expect(syncMeta$.settings.base.peek()).not.toHaveProperty('proxyPassword')
   })
 
@@ -86,8 +88,8 @@ describe('device-local proxy credentials in settings sync', () => {
   })
 
   for (const credentials of [
-    { proxyUsername: 'remote user', proxyPassword: 'remote password' },
-    { proxyUsername: '', proxyPassword: '' },
+    { proxyUsername: 'remote user', proxyPassword: 'remote password', downloadFolder: 'content://remote/tree/x' },
+    { proxyUsername: '', proxyPassword: '', downloadFolder: '' },
     {},
   ]) {
     it(`preserves local credentials when pulling ${JSON.stringify(credentials)}`, async () => {
@@ -102,6 +104,7 @@ describe('device-local proxy credentials in settings sync', () => {
       expect(settings$.proxyUsername.peek()).toBe('device user')
       expect(settings$.proxyPassword.peek()).toBe('päss:@/% word')
       expect(settings$.siteZoom.peek()).toEqual({ 'local.example': 1.5 })
+      expect(settings$.downloadFolder.peek()).toBe('content://com.android.externalstorage.documents/tree/primary%3ADownload')
       expect(writes).toHaveLength(0)
       expect(syncMeta$.settings.dirty.peek()).toBe(false)
       expect(syncMeta$.settings.base.peek()).not.toHaveProperty('proxyUsername')
@@ -111,8 +114,9 @@ describe('device-local proxy credentials in settings sync', () => {
 
   it('strips credentials from every merge input, including old sync metadata', () => {
     const value = copy(settingsSyncer.getValue())
-    const legacy = { ...value, proxyUsername: 'legacy user', proxyPassword: 'legacy password' }
+    const legacy = { ...value, proxyUsername: 'legacy user', proxyPassword: 'legacy password', downloadFolder: 'content://x/tree/y' }
     const merged = settingsSyncer.merge(legacy, legacy, legacy)
+    expect(merged.value).not.toHaveProperty('downloadFolder')
     expect(merged.value).not.toHaveProperty('proxyUsername')
     expect(merged.value).not.toHaveProperty('proxyPassword')
     expect(legacy.proxyPassword).toBe('legacy password')

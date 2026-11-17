@@ -57,6 +57,7 @@ const syncNativeSettings = () => {
       redirectToOldReddit: value?.redirectToOldReddit,
       allowHttpWebsite: value?.allowHttpWebsite,
       askDownloadDestination: value?.askDownloadDestination,
+      downloadFolder: value?.downloadFolder || '',
       internalHosts: getInternalHosts(),
       proxyEnabled: value?.proxyEnabled,
       proxyType: value?.proxyType,

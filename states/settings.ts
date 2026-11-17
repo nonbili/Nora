@@ -113,6 +113,8 @@ interface Store extends Settings {
   // Device-local credentials: intentionally absent from backup and sync snapshots.
   proxyUsername: string
   proxyPassword: string
+  // Android: the folder downloads go to, a tree URI only this device holds a grant for, or empty for Downloads.
+  downloadFolder: string
   setLanguage: (language: SupportedI18nLanguage | null) => void
   toggleService: (service: string) => void
   toggleSearchProvider: (providerId: string) => void
@@ -304,6 +306,10 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.askDownloadDestination !== 'boolean') {
     data.askDownloadDestination = false
   }
+  const local = data as Partial<Store>
+  if ('downloadFolder' in local && typeof local.downloadFolder !== 'string') {
+    local.downloadFolder = ''
+  }
   if (typeof data.oneProfilePerSite !== 'boolean') {
     data.oneProfilePerSite = false
   }
@@ -369,6 +375,7 @@ export const settings$: Observable<Store> = observable<Store>({
   proxyPort: '',
   proxyUsername: '',
   proxyPassword: '',
+  downloadFolder: '',
 
   showNewTabButtonInHeader: true,
   showBackButtonInHeader: false,
