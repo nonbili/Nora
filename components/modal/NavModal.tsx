@@ -10,6 +10,7 @@ import {
   ScrollView,
   TouchableHighlight,
   TextInput,
+  Keyboard,
   Modal,
   useColorScheme,
   useWindowDimensions,
@@ -97,6 +98,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   const enabledSearchProviders = getEnabledSearchProviders(enabledSearchProviderIds, customSearchProviders)
   const selectedSearchProvider =
     getResolvedSearchProvider(selectedSearchProviderId, customSearchProviders) || enabledSearchProviders[0]
+  const isUrlMode = selectedSearchProvider?.kind === 'url'
   const bookmarkIndexByUrl = new Map(bookmarks.map((bookmark, index) => [bookmark.url, index]))
   const visiblePresetBookmarks = presetBookmarks.filter((bookmark) => bookmark.groupId === selectedPresetGroupId)
 
@@ -151,7 +153,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
     }
 
     const nextUrl =
-      selectedSearchProvider.kind === 'url'
+      isUrlMode
         ? resolveUrlInput(value)
         : resolveSearchUrl(selectedSearchProvider.id, value, customSearchProviders)
 
@@ -159,6 +161,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
       return
     }
 
+    Keyboard.dismiss()
     onPress(nextUrl)
     setInput('')
   }
@@ -200,6 +203,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
       </ScrollView>
       <ScrollView
         className="flex-1"
+        keyboardShouldPersistTaps="handled"
         contentContainerClassName={clsx('px-4 pb-16 flex-grow', oneHandMode ? 'justify-end pt-[40vh]' : 'justify-center')}
       >
         <View className="mb-8 mt-6 w-full max-w-2xl self-center px-4">
@@ -232,22 +236,20 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
               value={input}
               onChangeText={setInput}
               onSubmitEditing={submitInput}
-              returnKeyType="search"
+              returnKeyType={isUrlMode ? 'go' : 'search'}
               autoCapitalize="none"
               autoCorrect={false}
-              placeholder={
-                selectedSearchProvider?.kind === 'url'
-                  ? t('newTab.search.urlPlaceholder')
-                  : t('newTab.search.searchPlaceholder')
-              }
+              placeholder={t(isUrlMode ? 'newTab.search.urlPlaceholder' : 'newTab.search.searchPlaceholder')}
               placeholderTextColor={isDark ? tw('#71717a') : tw('#52525b')}
             />
             <Pressable
               onPress={submitInput}
+              accessibilityRole="button"
+              accessibilityLabel={t(isUrlMode ? 'buttons.openUrl' : 'newTab.search.searchPlaceholder')}
               className="h-[52px] w-[52px] items-center justify-center border-l border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 active:bg-zinc-200 dark:active:bg-zinc-800"
             >
               <MaterialIcons
-                name={selectedSearchProvider?.kind === 'url' ? 'arrow-forward' : 'search'}
+                name={isUrlMode ? 'arrow-forward' : 'search'}
                 color={isDark ? tw(colors.icon) : tw(colors.iconLightStrong)}
                 size={18}
               />
