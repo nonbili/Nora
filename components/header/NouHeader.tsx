@@ -9,7 +9,7 @@ import { feedTabActions, isFeedTabUrl } from '@/lib/feed-tab'
 import { settings$, resolveZoom } from '@/states/settings'
 import { colors } from '@/lib/colors'
 import { SettingsModal } from '../modal/SettingsModal'
-import { NouMenu } from '../menu/NouMenu'
+import { NouMenu, type Item } from '../menu/NouMenu'
 import { MenuToggleBadge } from '../menu/MenuToggleBadge'
 import { isWeb, isIos, isAndroid, nIf, clsx } from '@/lib/utils'
 import { getOrderedTabIds, tabs$ } from '@/states/tabs'
@@ -43,6 +43,9 @@ import { getWatchTarget, watchKey, watchSourceLabel } from '@/lib/watch'
 import { toggleWatched } from '@/lib/watch-feed'
 import { openFindInPage } from '@/lib/find-in-page'
 import { desktopSiteUrl } from '@/lib/desktop-site'
+import { visibleHeaderMenuActions, type HeaderMenuActionId } from '@/lib/settings/header-menu'
+
+type HeaderMenuItem = Item & { id: HeaderMenuActionId }
 
 // The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
 // any time. On native the same decision is made in JS, so the classes are duplicated
@@ -88,6 +91,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
   const showForwardButtonInHeader = useValue(settings$.showForwardButtonInHeader)
   const showReloadButtonInHeader = useValue(settings$.showReloadButtonInHeader)
   const showScrollButtonInHeader = useValue(settings$.showScrollButtonInHeader)
+  const hiddenHeaderMenuActions = useValue(settings$.hiddenHeaderMenuActions)
   const sidebarCollapsedValue = useValue(settings$.sidebarCollapsed)
   const desktopLayout = useDesktopLayout()
   const nativeDesktop = desktopLayout && !isWeb
@@ -253,9 +257,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
     void executeWebviewJavaScriptQuietly(activeWebview(), buildUserScriptExecutionSource(script))
   }
 
-  const blocklistMenuItems = showBlocklistToggle
+  const blocklistMenuItems: HeaderMenuItem[] = showBlocklistToggle
     ? [
         {
+          id: 'blockAds',
           label: t('menus.blockAds'),
           icon: <MaterialCommunityIcons name="shield-outline" size={18} color={headerControlColor} />,
           systemImage: 'shield',
@@ -267,9 +272,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
       ]
     : []
 
-  const anonymousMenuItems = showAnonymousToggle
+  const anonymousMenuItems: HeaderMenuItem[] = showAnonymousToggle
     ? [
         {
+          id: 'hideSignInPrompts',
           label: t('menus.hideSignInPrompts'),
           icon: <MaterialIcons name="visibility-off" size={18} color={headerControlColor} />,
           systemImage: 'eye.slash',
@@ -284,9 +290,10 @@ export const NouHeader: React.FC<{}> = ({}) => {
 
   const watchTarget = isWeb || !feedEnabled ? null : getWatchTarget(currentTab?.url)
   const watchingThisProfile = !!watchTarget && watchedProfiles.some((profile) => profile.key === watchKey(watchTarget))
-  const watchMenuItems = watchTarget
+  const watchMenuItems: HeaderMenuItem[] = watchTarget
     ? [
         {
+          id: 'watch',
           label: t('menus.watch', { handle: watchTarget.handle, source: watchSourceLabel(watchTarget), interpolation: { escapeValue: false } }),
           icon: <MaterialIcons name="rss-feed" size={18} color={headerControlColor} />,
           systemImage: 'dot.radiowaves.left.and.right',
@@ -460,32 +467,27 @@ export const NouHeader: React.FC<{}> = ({}) => {
           </Tooltip>,
         )}
         {(() => {
-          const moreMenu = (
-          <NouMenu
-            triggerColor={headerControlColor}
-            triggerSize={44}
-            trigger={
-              isIos
-                ? 'ellipsis'
-                : <MaterialButton name="more-vert" accessibilityLabel={t('menus.more')} size={headerIconSize} color={headerControlColor} style={headerButtonStyle} />
-            }
-            items={[
+          const pageActions = visibleHeaderMenuActions<HeaderMenuItem>(
+            [
               ...(isWeb
                 ? []
                 : [
                     {
+                      id: 'reload' as const,
                       label: t('menus.reload'),
                       icon: <MaterialIcons name="refresh" size={18} color={headerControlColor} />,
                       systemImage: 'arrow.clockwise',
                       handler: reloadPage,
                     },
                     {
+                      id: 'scrollToTop' as const,
                       label: t('menus.scroll'),
                       icon: <MaterialIcons name="vertical-align-top" size={18} color={headerControlColor} />,
                       systemImage: 'arrow.up.to.line',
                       handler: scrollToTop,
                     },
                     {
+                      id: 'openUrl' as const,
                       label: t('buttons.openUrl'),
                       icon: <MaterialIcons name="language" size={18} color={headerControlColor} />,
                       systemImage: 'globe',
@@ -495,6 +497,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       ? []
                       : [
                           {
+                            id: 'findInPage' as const,
                             label: t('menus.findInPage'),
                             icon: <MaterialIcons name="find-in-page" size={18} color={headerControlColor} />,
                             systemImage: 'text.magnifyingglass',
@@ -505,6 +508,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       ? []
                       : [
                           {
+                            id: 'desktopSite' as const,
                             label: t('menus.desktop'),
                             icon: <MaterialIcons name="desktop-windows" size={18} color={headerControlColor} />,
                             systemImage: 'desktopcomputer',
@@ -564,6 +568,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       ? []
                       : [
                           {
+                            id: 'reopenInProfile' as const,
                             label: t('menus.reopenInProfile'),
                             icon: <MaterialIcons name="switch-account" size={18} color={headerControlColor} />,
                             systemImage: 'person.crop.circle',
@@ -575,6 +580,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       ? []
                       : [
                           {
+                            id: 'zoom' as const,
                             label: t('menus.zoom') || 'Zoom',
                             icon: <MaterialIcons name="zoom-in" size={18} color={headerControlColor} />,
                             systemImage: 'plus.magnifyingglass',
@@ -583,6 +589,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                           },
                         ]),
                     {
+                      id: 'addBookmark' as const,
                       label: t('menus.addBookmark'),
                       icon: <MaterialIcons name="bookmark-add" size={18} color={headerControlColor} />,
                       systemImage: 'bookmark',
@@ -592,6 +599,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                       ? []
                       : [
                           {
+                            id: 'share' as const,
                             label: t('menus.share'),
                             icon: <MaterialIcons name="share" size={18} color={headerControlColor} />,
                             systemImage: 'square.and.arrow.up',
@@ -601,6 +609,7 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     ...(currentTab && canPinTabToHomeScreen(currentTab)
                       ? [
                           {
+                            id: 'addToHomeScreen' as const,
                             label: t('menus.addToHomeScreen'),
                             icon: <MaterialIcons name="add-to-home-screen" size={18} color={headerControlColor} />,
                             handler: () => {
@@ -610,13 +619,16 @@ export const NouHeader: React.FC<{}> = ({}) => {
                         ]
                       : []),
                   ]),
-              ...(isWeb
-                ? []
-                : [{ label: '', handler: () => {}, kind: 'separator' as const }]),
+            ],
+            hiddenHeaderMenuActions,
+          )
+          const appActions = visibleHeaderMenuActions<HeaderMenuItem>(
+            [
               ...(!feedEnabled
                 ? []
                 : [
                     {
+                      id: 'feed' as const,
                       label: t('feed.label'),
                       icon: <MaterialIcons name="rss-feed" size={18} color={headerControlColor} />,
                       systemImage: 'list.bullet.rectangle',
@@ -625,21 +637,39 @@ export const NouHeader: React.FC<{}> = ({}) => {
                     },
                   ]),
               {
+                id: 'tools',
                 label: t('menus.tools'),
                 icon: <MaterialIcons name="build" size={18} color={headerControlColor} />,
                 systemImage: 'wrench.and.screwdriver',
                 handler: () => ui$.toolsModalOpen.set(true),
               },
-              {
-                label: t('settings.label'),
-                icon: <MaterialIcons name="settings" size={18} color={headerControlColor} />,
-                systemImage: 'gearshape',
-                handler: () => ui$.settingsModalOpen.set(true),
-              },
-            ]}
-          />
+            ],
+            hiddenHeaderMenuActions,
           )
-          return <Tooltip title={t('menus.more')}>{moreMenu}</Tooltip>
+          return (
+            <Tooltip title={t('menus.more')}>
+              <NouMenu
+                triggerColor={headerControlColor}
+                triggerSize={44}
+                trigger={
+                  isIos
+                    ? 'ellipsis'
+                    : <MaterialButton name="more-vert" accessibilityLabel={t('menus.more')} size={headerIconSize} color={headerControlColor} style={headerButtonStyle} />
+                }
+                items={[
+                  ...pageActions,
+                  ...(pageActions.length ? [{ label: '', handler: () => {}, kind: 'separator' as const }] : []),
+                  ...appActions,
+                  {
+                    label: t('settings.label'),
+                    icon: <MaterialIcons name="settings" size={18} color={headerControlColor} />,
+                    systemImage: 'gearshape',
+                    handler: () => ui$.settingsModalOpen.set(true),
+                  },
+                ]}
+              />
+            </Tooltip>
+          )
         })()}
       </View>
     </HeaderRoot>

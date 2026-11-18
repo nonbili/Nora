@@ -22,6 +22,19 @@ describe('X Latest search preference', () => {
   })
 })
 
+describe('hidden header menu actions', () => {
+  it('keeps every action visible by default for older settings', () => {
+    expect(getSettingsSnapshot({}).hiddenHeaderMenuActions).toEqual([])
+    expect(normalizeSettings({} as Partial<import('./settings').Settings>).hiddenHeaderMenuActions).toEqual([])
+  })
+
+  it('preserves only valid hidden actions in snapshots and restored settings', () => {
+    const settings = { hiddenHeaderMenuActions: ['reload', 'settings', 'reload', 'tools'] } as any
+    expect(getSettingsSnapshot(settings).hiddenHeaderMenuActions).toEqual(['reload', 'tools'])
+    expect(normalizeSettings(settings).hiddenHeaderMenuActions).toEqual(['reload', 'tools'])
+  })
+})
+
 describe('device-local proxy credentials', () => {
   it('defaults credentials to empty strings', () => {
     expect(settings$.proxyUsername.get()).toBe('')

@@ -16,6 +16,7 @@ import { toBlocklistSiteKey, updateBlocklistExclusions } from '@/lib/blocklist/p
 import { ANONYMOUS_PROFILE_COLOR, ANONYMOUS_PROFILE_ID, ANONYMOUS_PROFILE_NAME } from '@/lib/anonymous'
 import { DEFAULT_PUBLIC_SEARCH_SERVICE_ID, normalizePublicSearchServiceId } from '@/lib/public-search'
 import { normalizeVideoSpeed } from '@/lib/video-speed'
+import { normalizeHiddenHeaderMenuActions, type HeaderMenuActionId } from '@/lib/settings/header-menu'
 
 export interface Profile {
   id: string
@@ -88,6 +89,7 @@ export interface Settings {
   showForwardButtonInHeader: boolean
   showReloadButtonInHeader: boolean
   showScrollButtonInHeader: boolean
+  hiddenHeaderMenuActions: HeaderMenuActionId[]
   oneHandMode: boolean
   oneTabPerSite: boolean
   oneProfilePerSite: boolean
@@ -213,6 +215,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     showForwardButtonInHeader: bool(value?.showForwardButtonInHeader),
     showReloadButtonInHeader: bool(value?.showReloadButtonInHeader),
     showScrollButtonInHeader: bool(value?.showScrollButtonInHeader),
+    hiddenHeaderMenuActions: normalizeHiddenHeaderMenuActions(value?.hiddenHeaderMenuActions),
     oneHandMode: bool(value?.oneHandMode),
     oneTabPerSite: bool(value?.oneTabPerSite),
     oneProfilePerSite: bool(value?.oneProfilePerSite),
@@ -290,6 +293,7 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   if (typeof data.showReloadButtonInHeader !== 'boolean') {
     data.showReloadButtonInHeader = false
   }
+  data.hiddenHeaderMenuActions = normalizeHiddenHeaderMenuActions(data.hiddenHeaderMenuActions)
   if (typeof data.doubleTapToToggleHeader !== 'boolean') {
     data.doubleTapToToggleHeader = false
   }
@@ -382,6 +386,7 @@ export const settings$: Observable<Store> = observable<Store>({
   showForwardButtonInHeader: false,
   showReloadButtonInHeader: false,
   showScrollButtonInHeader: false,
+  hiddenHeaderMenuActions: [],
   oneHandMode: false,
   oneTabPerSite: false,
   oneProfilePerSite: false,

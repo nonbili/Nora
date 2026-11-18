@@ -48,10 +48,12 @@ import NoraViewModule from '@/modules/nora-view'
 import { useTwColor } from '@/lib/theme'
 import { videoSpeeds } from '@/lib/video-speed'
 import { downloadFolderLabel, getDownloadDestination, pickDownloadFolder } from '@/lib/download-folder'
+import { headerMenuOptions, normalizeHiddenHeaderMenuActions, type HeaderMenuActionId } from '@/lib/settings/header-menu'
 
 const headerPositions = ['top', 'bottom'] as const
 const desktopLayoutModes = ['auto', 'on', 'off'] as const
 const themes = [null, 'dark', 'light'] as const
+const moreMenuOptions = headerMenuOptions(isWeb ? 'web' : isAndroid ? 'android' : isIos ? 'ios' : 'native')
 const subheaderCls = settingsUi.subheaderCls
 const surfaceCls = settingsUi.surfaceCls
 const rowCls = settingsUi.rowCls
@@ -503,6 +505,14 @@ export const SettingsAppearanceContent = () => {
   const isDark = colorScheme !== 'light'
   const locales = useLocales()
   const [deckTabWidthInput, setDeckTabWidthInput] = useState(settings.deckTabWidth.toString())
+  const [headerMenuExpanded, setHeaderMenuExpanded] = useState(false)
+  const hiddenHeaderMenuActions = settings.hiddenHeaderMenuActions
+  const toggleHeaderMenuAction = (id: HeaderMenuActionId) => {
+    const hidden = settings$.hiddenHeaderMenuActions.get()
+    settings$.hiddenHeaderMenuActions.set(
+      hidden.includes(id) ? hidden.filter((action) => action !== id) : normalizeHiddenHeaderMenuActions([...hidden, id]),
+    )
+  }
   const [translationLanguages, setTranslationLanguages] = useState<string[]>([])
   const translationAvailable = supportsNativeTranslation && translationLanguages.length > 0
   const systemLanguage = resolveI18nLanguageFromExpoLocale(locales[0]) || 'en'
@@ -613,11 +623,10 @@ export const SettingsAppearanceContent = () => {
         </>,
       )}
 
-      {nIf(
-        !isWeb,
-        <>
-          <NouText className={subheaderCls}>{t('settings.appearance.toolbar')}</NouText>
-          <View className={surfaceCls}>
+      <NouText className={subheaderCls}>{t('settings.appearance.toolbar')}</NouText>
+      <View className={surfaceCls}>
+        {!isWeb && (
+          <>
             <View className={clsx('items-center flex-row justify-between', rowCls, rowBorderCls)}>
               <NouText>{t('settings.headerPosition.label')}</NouText>
               <Segemented
@@ -676,16 +685,47 @@ export const SettingsAppearanceContent = () => {
                 onPress={() => settings$.showReloadButtonInHeader.toggle()}
               />
             </View>
-            <View className={rowCls}>
+            <View className={clsx(rowCls, rowBorderCls)}>
               <NouSwitch
                 label={<NouText>{t('settings.showScrollButton')}</NouText>}
                 value={settings.showScrollButtonInHeader}
                 onPress={() => settings$.showScrollButtonInHeader.toggle()}
               />
             </View>
-          </View>
-        </>,
-      )}
+          </>
+        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: headerMenuExpanded }}
+          onPress={() => setHeaderMenuExpanded(!headerMenuExpanded)}
+          className={clsx('flex-row items-center justify-between', rowCls, headerMenuExpanded && rowBorderCls)}
+        >
+          <NouText className="flex-1">{t('settings.headerMenu.label')}</NouText>
+          <MaterialIcons name={headerMenuExpanded ? 'expand-less' : 'expand-more'} size={24} color={tw(colors.iconSubtle)} />
+        </Pressable>
+        {headerMenuExpanded && (
+          <>
+            <View className={clsx(rowCls, rowBorderCls)}>
+              <NouText className="text-sm text-zinc-600 dark:text-zinc-400">{t('settings.headerMenu.hint')}</NouText>
+            </View>
+            {moreMenuOptions.map(({ id, labelKey }) => (
+              <View key={id} className={clsx(rowCls, rowBorderCls)}>
+                <NouSwitch label={t(labelKey)} value={!hiddenHeaderMenuActions.includes(id)} onPress={() => toggleHeaderMenuAction(id)} />
+              </View>
+            ))}
+            <View className={clsx(rowCls, 'items-start')}>
+              <NouButton
+                size="1"
+                variant="outline"
+                disabled={!hiddenHeaderMenuActions.length}
+                onPress={() => settings$.hiddenHeaderMenuActions.set([])}
+              >
+                {t('settings.headerMenu.reset')}
+              </NouButton>
+            </View>
+          </>
+        )}
+      </View>
 
       <NouText className="mt-8 mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600 dark:text-gray-500">
         {t('settings.language.label')}

@@ -427,6 +427,12 @@
     "showForwardButton": "Show forward button",
     "showReloadButton": "Show reload button",
     "showScrollButton": "Show scroll to top button",
+    "headerMenu": {
+      "label": "Customize three-dot menu",
+      "hint": "Choose which actions to show when available. Settings is always visible.",
+      "watch": "Watch profile",
+      "reset": "Restore menu defaults"
+    },
     "oneHandMode": "One hand mode",
     "oneTabPerSite": "One tab per site when opening shared link",
     "theme": {
