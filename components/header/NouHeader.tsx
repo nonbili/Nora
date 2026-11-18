@@ -42,6 +42,7 @@ import { watch$ } from '@/states/watch'
 import { getWatchTarget, watchKey, watchSourceLabel } from '@/lib/watch'
 import { toggleWatched } from '@/lib/watch-feed'
 import { openFindInPage } from '@/lib/find-in-page'
+import { desktopSiteUrl } from '@/lib/desktop-site'
 
 // The sidebar layout is a `lg:` breakpoint on web, where the window can be narrow at
 // any time. On native the same decision is made in JS, so the classes are duplicated
@@ -534,6 +535,11 @@ export const NouHeader: React.FC<{}> = ({}) => {
                               setTimeout(() => {
                                 const target = activeWebview()
                                 if (currentTab?.url) {
+                                  const desktopUrl = desktopMode ? desktopSiteUrl(currentTab.url) : currentTab.url
+                                  if (desktopUrl !== currentTab.url) {
+                                    target?.loadUrl?.(desktopUrl)
+                                    return
+                                  }
                                   const url = new URL(currentTab.url)
                                   if (url.hostname === 'm.facebook.com' && desktopMode) {
                                     url.hostname = 'www.facebook.com'

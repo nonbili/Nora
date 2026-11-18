@@ -21,6 +21,7 @@ import {
   type ChildBackParentByTabId,
 } from '@/lib/tab-behavior'
 import { removeTrackingParams } from '@/lib/url'
+import { wantsDesktopSite } from '@/lib/desktop-site'
 import { isFeedTabUrl } from '@/lib/feed-tab'
 import { autoProfiles$ } from './auto-profiles'
 import { isAnonymousProfile } from '@/lib/anonymous'
@@ -433,6 +434,9 @@ export const tabs$: Observable<Store> = observable<Store>({
                 tabs$.tabs[existingTabIndex].profileMode.set('auto')
               }
             }
+            if (wantsDesktopSite(url)) {
+              tabs$.tabs[existingTabIndex].desktopMode.set(true)
+            }
             tabs$.tabs[existingTabIndex].url.set(url)
             tabs$.tabs[existingTabIndex].isLoading.set(Boolean(url))
             return tabs$.tabs[existingTabIndex].id.get()
@@ -450,6 +454,7 @@ export const tabs$: Observable<Store> = observable<Store>({
       isLoading: Boolean(url) && !isFeedTabUrl(url),
       ...profile,
       backToNewTab: !url,
+      ...(wantsDesktopSite(url) ? { desktopMode: true } : {}),
     }
     tabs$.tabs.push(tab)
     if (options?.source === 'child' && options.parentTabId && options.parentTabId !== tab.id) {
@@ -817,6 +822,10 @@ export const tabs$: Observable<Store> = observable<Store>({
           tab$.profile.set(siteProfile)
           tab$.profileMode.set('auto')
         }
+      }
+      // Set before the url, so the page is loaded with the desktop user agent.
+      if (wantsDesktopSite(url)) {
+        tab$.desktopMode.set(true)
       }
       tab$.url.set(url)
       tab$.isLoading.set(Boolean(url))

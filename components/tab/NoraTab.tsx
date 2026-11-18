@@ -28,6 +28,8 @@ import MaterialIcons from '@react-native-vector-icons/material-icons'
 import { NouText } from '../NouText'
 import { ServiceIcon } from '../service/Services'
 import { getUserAgent } from '@/lib/useragent'
+import { desktopSiteUrl, wantsDesktopSite } from '@/lib/desktop-site'
+import { whatsAppKeyboardGuardScript } from '@/lib/whatsapp-guard'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { webRtcGuardScript$ } from '@/lib/webrtc'
 import { composeDocumentStartScript, youTubeGuardScript$ } from '@/lib/youtube-guard'
@@ -379,20 +381,49 @@ const WebTab: React.FC<NoraTabProps> = ({
     }
   }, [])
 
+  const desktopReloadRef = useRef('')
+  const desktopRetryAtRef = useRef(0)
+
   const setPageUrl = useCallback(
     (url: string) => {
       if (!url || url === 'about:blank') {
         return
       }
+      const previousUrl = pageUrlRef.current
       pageUrlRef.current = url
       const currentIndex = tabs$.tabs.get().findIndex((currentTab) => currentTab?.id === tab.id)
       const tab$ = currentIndex === -1 ? undefined : tabs$.tabs[currentIndex]
       if (tab$?.get()) {
         tab$.url.set(url)
+        if (!desktopChrome && wantsDesktopSite(url)) {
+          const desktopUrl = desktopSiteUrl(url)
+          if (!tab$.desktopMode.peek()) {
+            // A link inside the page reached a site that only serves computers: load it again as one, once the new
+            // user agent is on the view. Only on arriving, so a reload after turning desktop mode off keeps it off.
+            if (!wantsDesktopSite(previousUrl)) {
+              desktopReloadRef.current = desktopUrl
+              tab$.desktopMode.set(true)
+            }
+          } else if (desktopUrl !== url && Date.now() - desktopRetryAtRef.current > 10_000) {
+            // On a phone page in desktop mode: the load meant for a computer went out before the new user agent reached
+            // the view (Android applies it after the effect below runs), or the tab was saved there. Once more as one.
+            desktopRetryAtRef.current = Date.now()
+            void nativeRef.current?.loadUrl?.(desktopUrl)
+          }
+        }
       }
     },
-    [tab.id],
+    [tab.id, desktopChrome],
   )
+
+  useEffect(() => {
+    const url = desktopReloadRef.current
+    if (url && tab.desktopMode) {
+      desktopReloadRef.current = ''
+      // Load the url, not reload the page: WhatsApp's own script may have moved it to /mobile/ by now.
+      void nativeRef.current?.loadUrl?.(url)
+    }
+  }, [tab.desktopMode])
 
   const setTabLoading = useCallback(
     (loading: boolean) => {
@@ -1176,6 +1207,7 @@ const WebTab: React.FC<NoraTabProps> = ({
           scriptOnDocumentStart={composeDocumentStartScript(
             protectWebRtcIp && webRtcGuardScript,
             youTubeGuardScript,
+            whatsAppKeyboardGuardScript,
             anonymousModeScript,
           )}
           useragent={
