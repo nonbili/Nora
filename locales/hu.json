@@ -138,7 +138,8 @@
     "toast_savingFile": "Fájl mentése…",
     "toast_fileSaved": "Fájl mentve",
     "toast_open": "Megnyitás",
-    "toast_openFolder": "Mappa megnyitása"
+    "toast_openFolder": "Mappa megnyitása",
+    "toast_downloadFolderUnavailable": "Nem lehet hozzáférni a letöltési mappához; válassza ki újra a Beállítások menüben"
   },
   "profiles": {
     "label": "Profilok",
@@ -436,7 +437,18 @@
     "mentionNotificationsSites": "Az X- és Facebook-fiókjából",
     "downloads": "Letöltések",
     "askDownloadDestination": "Kérdezzen rá, hogy hova mentse az egyes letöltéseket",
-    "xDefaultSearchLatest": "Alapértelmezett keresési rendezés: Legújabb"
+    "xDefaultSearchLatest": "Alapértelmezett keresési rendezés: Legújabb",
+    "downloadDestination": "Mentés ide",
+    "downloadDestinationDownloads": "Letöltések",
+    "downloadDestinationAsk": "Minden alkalommal kérdezzen rá",
+    "downloadDestinationFolder": "Mappa kiválasztása…",
+    "downloadFolderFailed": "Nem sikerült mappát kiválasztani. Próbálja meg újra.",
+    "headerMenu": {
+      "label": "Hárompontos menü testreszabása",
+      "hint": "Válassza ki, mely műveletek jelenjenek meg, ha elérhetők. A „Beállítások” menüpont mindig látható.",
+      "watch": "Profil figyelése",
+      "reset": "Menü alapértelmezett beállításainak visszaállítása"
+    }
   },
   "sync": {
     "label": "Szinkronizálás",
@@ -773,6 +785,10 @@
     "verifyHint": "Az imginn gyors ellenőrzést kér annak megerősítésére, hogy Ön nem robot, mielőtt a Nora beolvashatná az Instagramot. Koppintson az ellenőrzés elvégzéséhez.",
     "verifyToast": "Az imginn gyors ellenőrzést kér az Instagram-hírfolyam frissítésének fenntartásához. Koppintson az ellenőrzés elvégzéséhez.",
     "verifyTitle": "Végezze el az ellenőrzést az Instagram-hírfolyam frissítésének fenntartásához",
-    "verifyFailed": "Az ellenőrzés nem fejeződött be. A Nora később újra kérni fogja."
+    "verifyFailed": "Az ellenőrzés nem fejeződött be. A Nora később újra kérni fogja.",
+    "showMore": "Több megjelenítése",
+    "showLess": "Kevesebb megjelenítése",
+    "mediaSavedToFolder_one": "{{count}} fájl elmentve a(z) {{folder}} mappába",
+    "mediaSavedToFolder_other": "{{count}} fájl mentve a(z) {{folder}} mappába"
   }
 }

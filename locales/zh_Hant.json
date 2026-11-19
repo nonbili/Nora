@@ -115,7 +115,15 @@
       }
     },
     "backup": {
-      "importConfirm": "將取代目前的設定、書籤、使用者樣式及自訂腳本。確定繼續嗎？"
+      "importConfirm": "將取代目前的設定、書籤、使用者樣式及自訂腳本，並在檔案中新增feed來源。確定繼續嗎？",
+      "export": "匯出設定",
+      "import": "匯入設定",
+      "importDone": "已匯入: {{sections}}",
+      "exportFailed": "匯出失敗: {{message}}",
+      "importFailed": "匯入失敗: {{message}}",
+      "importDescription": "自 Nora 設定檔恢復設定",
+      "description": "匯出或恢復設定、書籤、使用者樣式及feed來源。",
+      "exportDescription": "將設定、書籤、使用者樣式、自訂腳本及feed來源匯出為 JSON 檔"
     },
     "zoom": {
       "defaultLabel": "預設縮放",
@@ -145,7 +153,8 @@
       "browsing": "偏好設定",
       "appearance": "應用程式外觀",
       "services": "服務",
-      "profiles": "設定檔與工作階段"
+      "profiles": "設定檔與工作階段",
+      "backup": "備份"
     },
     "appearance": {
       "desktopLayoutOn": "永遠",
@@ -182,7 +191,10 @@
     "activeViaIos": "透過 App Store 啟用",
     "restoreConflict": "此 App Store 訂閱已與 {{email}} 綁定。",
     "signOutSwitch": "登出並切換帳號",
-    "signedInAs": "以 {{email}} 登入"
+    "signedInAs": "以 {{email}} 登入",
+    "backupBookmarks": "書籤",
+    "backupSettings": "設定",
+    "restoreMergeBackup": "自 {{date}} 恢復 {{name}}"
   },
   "tabs": {
     "new": "新分頁"
@@ -349,6 +361,8 @@
     "addSourcesPlaceholder": "https://bsky.app/profile/…",
     "detailNotify": "通知",
     "never": "永不",
-    "mediaUsage": "已使用 {{limit}} 中的 {{used}} 。將優先清除最舊貼文中的影音。"
+    "mediaUsage": "已使用 {{limit}} 中的 {{used}} 。將優先清除最舊貼文中的影音。",
+    "statusRateLimited": "{{site}} 要求放慢存取速度。Nora 將在一小時後重試。",
+    "importSourcesEmpty": "查無訂閱來源。請使用 OPML 檔案或個人檔案連結清單。"
   }
 }
