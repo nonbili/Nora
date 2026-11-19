@@ -1,11 +1,12 @@
-// Android's DownloadListener receives the blob URL, but not <a download>.
+// Android's DownloadListener receives the local URL, but not <a download>.
 // Remember the name before the page removes the link or revokes its object URL.
 export function trackBlobDownloadNames(win: Window, doc: Document) {
   const names = new Map<string, string>()
   const remember = (anchor: HTMLAnchorElement) => {
-    if (!anchor.href.startsWith('blob:') || !anchor.download) return
-    names.delete(anchor.href)
-    names.set(anchor.href, anchor.download)
+    const url = anchor.href
+    if ((!url.startsWith('blob:') && !url.startsWith('data:')) || !anchor.download) return
+    names.delete(url)
+    names.set(url, anchor.download)
     while (names.size > 8) names.delete(names.keys().next().value!)
   }
   // Export libraries commonly click a detached anchor, so a document listener

@@ -1,6 +1,7 @@
 import { emit, waitUntil } from './utils'
 import { getFacebookDownloadInfo, getTikTokDownloadUrl } from './download'
 import { sanitizeDownloadName, trackBlobDownloadNames } from './blob-download'
+import { decodeDataDownload } from './data-download'
 import { getService } from './services/manager'
 import { getEmbedUrlForPage } from '../lib/instagram'
 import {
@@ -93,12 +94,16 @@ async function resolveBlob(url: string, init?: RequestInit) {
 
 async function downloadBlob(url: string, fileName?: string, mimeType?: string, init?: RequestInit) {
   try {
-    const blob = await resolveBlob(url, init)
+    const data = url.startsWith('data:') ? decodeDataDownload(url) : undefined
+    const blob = data?.blob ?? (await resolveBlob(url, init))
     const content = await blobToBase64(blob)
     fileName =
-      getBlobDownloadName?.(url) || fileName || (blob instanceof File ? blob.name : '') || url.split('/').at(-1)
+      getBlobDownloadName?.(url) ||
+      fileName ||
+      (blob instanceof File ? blob.name : '') ||
+      (data ? 'download' : url.split('/').at(-1))
     fileName = sanitizeDownloadName(fileName || 'download')
-    emit('save-file', { content, fileName, mimeType: mimeType || blob.type || undefined })
+    emit('save-file', { content, fileName, mimeType: data?.mimeType || mimeType || blob.type || undefined })
     return true
   } catch (e) {
     console.error('[nora] failed to save blob', url, e)

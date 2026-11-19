@@ -67,6 +67,13 @@ describe('blob download filenames', () => {
     expect(getName('https://example.com/file')).toBeUndefined()
     expect(getName('blob:unnamed')).toBeUndefined()
   })
+  it('remembers the filename for a data URL download', () => {
+    const { Anchor, getName, clicks } = setup()
+    const url = 'data:image/png;base64,AA=='
+    new Anchor(url, 'image.png').click()
+    expect(getName(url)).toBe('image.png')
+    expect(clicks()).toBe(1)
+  })
   it('bounds retained names and uses the latest name for a reused URL', () => {
     const { Anchor, getName } = setup()
     for (let i = 0; i < 10; i++) new Anchor(`blob:${i}`, `${i}.txt`).click()

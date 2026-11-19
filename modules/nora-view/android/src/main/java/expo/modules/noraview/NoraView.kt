@@ -1187,14 +1187,18 @@ class NoraView(context: Context, appContext: AppContext) : ExpoView(context, app
             mimeType: String,
             contentLength: Long
           ) {
+            val isDataUrl = url.startsWith("data:")
             var fileName: String? = null
-            if (contentDisposition != "") {
+            if (contentDisposition != "" && !isDataUrl) {
               fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
             }
-            if (url.startsWith("blob:")) {
+            if (url.startsWith("blob:") || isDataUrl) {
+              // DownloadManager accepts HTTP(S) only. For data URLs, use the
+              // anchor's filename and the MIME type decoded from the URL.
               val name = fileName?.let(JSONObject::quote) ?: "null"
+              val type = if (isDataUrl) "null" else JSONObject.quote(mimeType)
               evaluateJavascript(
-                "window.Nora?.downloadBlob(${JSONObject.quote(url)}, $name, ${JSONObject.quote(mimeType)})",
+                "window.Nora?.downloadBlob(${JSONObject.quote(url)}, $name, $type)",
                 null
               )
             } else {
