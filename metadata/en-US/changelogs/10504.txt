@@ -1,0 +1,6 @@
+- Support choosing a download folder on Android and fix data URL downloads
+- Make three-dot menu actions configurable
+- Open WhatsApp Web in desktop mode and fix picker/keyboard behavior
+- Use desktop Facebook for Marketplace to allow messaging sellers
+- Fix Facebook ad blocking, reaction long-presses, and Reddit game filter
+- Improve tab, media viewer, and incoming link navigation behavior
