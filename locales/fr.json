@@ -327,7 +327,18 @@
     "mentionNotificationsSites": "Depuis vos comptes X et Facebook",
     "downloads": "Téléchargements",
     "askDownloadDestination": "Demandez où enregistrer chaque téléchargement",
-    "xDefaultSearchLatest": "Recherche par défaut : « Plus récents »"
+    "xDefaultSearchLatest": "Recherche par défaut : « Plus récents »",
+    "downloadDestination": "Enregistrer les téléchargements dans",
+    "downloadDestinationDownloads": "Téléchargements",
+    "downloadDestinationAsk": "Demander à chaque fois",
+    "downloadDestinationFolder": "Choisir un dossier…",
+    "downloadFolderFailed": "Impossible de sélectionner un dossier. Veuillez réessayer.",
+    "headerMenu": {
+      "label": "Personnaliser le menu à trois points",
+      "hint": "Choisissez les actions à afficher lorsqu'elles sont disponibles. Les paramètres sont toujours visibles.",
+      "watch": "Surveiller le profil",
+      "reset": "Rétablir les paramètres par défaut du menu"
+    }
   },
   "changelog": {
     "label": "Journal des modifs",
@@ -415,7 +426,8 @@
     "toast_savingFile": "Enregistrement du fichier…",
     "toast_fileSaved": "Fichier enregistré",
     "toast_open": "Ouvrir",
-    "toast_openFolder": "Ouvrir le dossier"
+    "toast_openFolder": "Ouvrir le dossier",
+    "toast_downloadFolderUnavailable": "Impossible d'accéder au dossier de téléchargement, choisissez-le à nouveau dans les paramètres"
   },
   "profiles": {
     "label": "Profils",
@@ -778,6 +790,10 @@
     "verifyHint": "imginn veut vérifier rapidement que vous n'êtes pas un robot avant que Nora puisse lire Instagram à partir de celui-ci. Appuyez pour le faire.",
     "verifyToast": "imginn souhaite une vérification rapide pour maintenir votre flux Instagram à jour. Appuyez pour le faire.",
     "verifyTitle": "Complétez la vérification pour garder votre flux Instagram à jour",
-    "verifyFailed": "Le contrôle n'a pas été complété. Nora redemandera plus tard."
+    "verifyFailed": "Le contrôle n'a pas été complété. Nora redemandera plus tard.",
+    "showMore": "Afficher plus",
+    "showLess": "Afficher moins",
+    "mediaSavedToFolder_one": "{{count}} fichier enregistré dans {{folder}}",
+    "mediaSavedToFolder_other": "{{count}} fichiers enregistrés dans {{folder}}"
   }
 }
