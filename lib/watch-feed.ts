@@ -125,9 +125,12 @@ const notificationChannel = () => ({ id: NOTIFICATION_CHANNEL_ID, name: t('feed.
 const notifyFresh = async (profile: WatchedProfile, fresh: WatchPost[]) => {
   const current = watch$.profiles.peek().find((p) => p.key === profile.key) || profile
   const timelineId = getTimeline(current.timelineId)?.id
-  // Match the feed's media filter, including posts whose media has yet to be loaded.
+  // Match the feed's media and Instagram reel filters, including posts whose media has yet to be loaded.
   if (isMediaOnly(timelineId)) {
     fresh = fresh.filter((post) => Boolean(post.media?.length) || post.mediaComplete === false)
+  }
+  if (!watch$.instagramIncludeReels.peek()) {
+    fresh = fresh.filter((post) => !(post.site === 'instagram' && post.url.startsWith('https://www.instagram.com/reel/')))
   }
   if (!fresh.length) return
   const latest = fresh[0]

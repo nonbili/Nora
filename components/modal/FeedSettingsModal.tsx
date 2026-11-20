@@ -124,6 +124,7 @@ export const FeedSettingsModal = () => {
   const postsPerSource = useValue(watch$.postsPerSource)
   const useAccounts = useValue(watch$.useAccounts)
   const imginnMode = useValue(watch$.imginnMode)
+  const instagramIncludeReels = useValue(watch$.instagramIncludeReels)
   const nitterMode = useValue(watch$.nitterMode)
   const feedPinned = useValue(watch$.feedPinned)
   const feedEmoji = useValue(watch$.feedEmoji)
@@ -244,6 +245,13 @@ export const FeedSettingsModal = () => {
               )
             })
           : null}
+        <Divider />
+        <NouSwitch
+          className="py-3"
+          label={t('feed.instagramIncludeReels')}
+          value={instagramIncludeReels}
+          onPress={() => watch$.instagramIncludeReels.set(!instagramIncludeReels)}
+        />
         <Divider />
         <View className="py-3">
           <ChoicePicker

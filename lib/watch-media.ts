@@ -21,7 +21,7 @@ import {
   mediaExpired,
   mediaToEvict,
   parseFacebookPostPage,
-  parseInstagramEmbed,
+  parseInstagramEmbedWithProduct,
   parseThreadsPostPage,
   parseTikTokChainToken,
   parseTikTokPostPage,
@@ -94,7 +94,7 @@ const updatePost = (post: WatchPost, patch: Partial<WatchPost>) => updateWatchPo
 
 // An embed page, or a photo or video, asked for by the gallery and a prefetch run at once is
 // fetched once; each has a time limit of its own, whoever asked for it.
-const detailRequests = new SharedRequests<{ media: WatchMedia[]; cover?: string }>(30 * 1000)
+const detailRequests = new SharedRequests<{ media: WatchMedia[]; cover?: string; isReel?: boolean }>(30 * 1000)
 const downloadRequests = new SharedRequests<string | undefined>(5 * 60 * 1000)
 
 /**
@@ -148,12 +148,13 @@ export const ensurePostMedia = async (
     if (post.site === 'threads') return { media: parseThreadsPostPage(html, post.id) }
     // Its videos are made for the cookie the page was answered with.
     if (post.site === 'tiktok') return parseTikTokPostPage(html, parseTikTokChainToken(res.headers.get('set-cookie')))
-    return ownPage ? parseFacebookPostPage(html, post) : { media: parseInstagramEmbed(html) }
+    return ownPage ? parseFacebookPostPage(html, post) : parseInstagramEmbedWithProduct(html)
   }, signal)
   let media: WatchMedia[]
   let cover: string | undefined
+  let isReel: boolean | undefined
   try {
-    ;({ media, cover } = await read)
+    ;({ media, cover, isReel } = await read)
   } catch (e) {
     // Addresses are read again a little before they expire: up to then they still work.
     if (force || signal?.aborted || post.mediaComplete === false || !post.media?.length) throw e
@@ -162,7 +163,12 @@ export const ensurePostMedia = async (
   }
   // Each caller's own copy: a post two profiles share is in both their lists.
   // A video Facebook only streams has no media, but a cover at a new address.
-  updatePost(post, { media, mediaComplete: true, ...(cover && !media.length ? { image: cover } : {}) })
+  updatePost(post, {
+    media,
+    mediaComplete: true,
+    ...(cover && !media.length ? { image: cover } : {}),
+    ...(isReel && post.site === 'instagram' ? { url: `https://www.instagram.com/reel/${post.id}/` } : {}),
+  })
   return media
 }
 
@@ -352,11 +358,20 @@ function* postsNewestFirst() {
   }
 }
 
+const isInstagramReelPost = (post: WatchPost) =>
+  post.site === 'instagram' &&
+  (post.url.startsWith('https://www.instagram.com/reel/') ||
+    (post.media?.length === 1 && post.media[0].type === 'video'))
+
 const syncPosts = async (start: number, budget: number, signal: AbortSignal) => {
   const limitBytes = watch$.mediaLimitMB.peek() * 1024 * 1024
+  const includeInstagramReels = watch$.instagramIncludeReels.peek()
   let embedPages = 0
   for (const post of postsNewestFirst()) {
     if (signal.aborted || Date.now() - start > budget) break
+    if (!includeInstagramReels && isInstagramReelPost(post)) {
+      continue
+    }
     // When nearly full, a post older than the oldest kept would be the next to go: everything
     // newer is kept already, so the run is done. The oldest kept itself is gone through again, as a
     // run can end partway through its photos.
@@ -371,6 +386,9 @@ const syncPosts = async (start: number, budget: number, signal: AbortSignal) => 
       } catch (e) {
         if (signal.aborted) break
         console.warn('watch media details failed', post.key, e)
+        continue
+      }
+      if (!includeInstagramReels && isInstagramReelPost(currentPost(post))) {
         continue
       }
     }
@@ -451,6 +469,9 @@ watch$.profiles.onChange(({ getPrevious, value }) => {
 })
 watch$.mediaLimitMB.onChange(() => pruneWatchMedia())
 watch$.postsPerSource.onChange(() => pruneWatchMedia())
+watch$.instagramIncludeReels.onChange(({ value }) => {
+  if (!value) void syncWatchMedia('foreground')
+})
 
 /** Why saving media failed: Android's download folder can lose its grant, which the user must fix in Settings. */
 export const mediaSaveFailedMessage = (error?: unknown) =>

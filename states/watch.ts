@@ -78,6 +78,8 @@ interface Store {
   // Whether Instagram profiles are read from imginn, while Nora is open: when Instagram does not
   // show them, or first, and from Instagram when imginn does not.
   imginnMode: ImginnMode
+  // Whether Instagram reels are included in the feed; photo and carousel posts stay either way.
+  instagramIncludeReels: boolean
   // Whether X profiles are read from the RSS of the Nitter instances below, tried in turn: when X
   // does not show them, or first, and from X when none does.
   nitterMode: NitterMode
@@ -135,6 +137,7 @@ export const watch$: Observable<Store> = observable<Store>({
   useAccounts: true,
   accountProfiles: {},
   imginnMode: 'off',
+  instagramIncludeReels: true,
   nitterMode: 'off',
   nitterInstances: [],
   feedMediaOnly: false,
@@ -295,7 +298,13 @@ export const unreadKeys = (timelineId?: string) => {
   const feedSeenAt = watch$.feedSeenAt.get()
   const seenAt = Object.fromEntries(watch$.profiles.get().map((profile) => [profile.key, profile.seenAt ?? feedSeenAt]))
   // A timeline of photos and videos counts only the posts it shows.
-  return getUnreadPostKeys(timelineProfileKeys(timelineId), seenAt, feedSeenAt, isMediaOnly(timelineId))
+  return getUnreadPostKeys(
+    timelineProfileKeys(timelineId),
+    seenAt,
+    feedSeenAt,
+    isMediaOnly(timelineId),
+    watch$.instagramIncludeReels.get(),
+  )
 }
 
 syncObservable(watch$, {

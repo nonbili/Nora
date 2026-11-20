@@ -38,6 +38,8 @@ export interface WatchBackup {
   feedEmoji?: string
   // Only there when the whole feed notifies of new posts.
   feedNotify?: true
+  // Only there when Instagram reels are skipped.
+  instagramIncludeReels?: false
   profiles: WatchSourceBackup[]
   timelines: WatchTimelineBackup[]
 }
@@ -69,6 +71,7 @@ export const createWatchBackup = (): WatchBackup => ({
   ...(watch$.feedPinned.get() ? {} : { feedPinned: false as const }),
   ...(watch$.feedEmoji.get() ? { feedEmoji: watch$.feedEmoji.get() } : {}),
   ...(watch$.feedNotify.get() ? { feedNotify: true as const } : {}),
+  ...(watch$.instagramIncludeReels.get() ? {} : { instagramIncludeReels: false as const }),
   profiles: watch$.profiles.get().map((profile) => {
     const timeline = getTimeline(profile.timelineId)
     return {
@@ -190,6 +193,7 @@ export const normalizeWatchBackup = (value: unknown): WatchBackup | undefined =>
     ...(value.feedPinned === false ? { feedPinned: false as const } : {}),
     ...(cleanEmoji(value.feedEmoji) ? { feedEmoji: cleanEmoji(value.feedEmoji) } : {}),
     ...(value.feedNotify === true ? { feedNotify: true as const } : {}),
+    ...(value.instagramIncludeReels === false ? { instagramIncludeReels: false as const } : {}),
     // A source's timeline is one the backup has, or it is in none.
     profiles: [...profiles.values()].map(({ timeline, ...source }) => {
       const known = timeline && timelines.get(timelineName(timeline))
@@ -214,6 +218,7 @@ export const applyWatchBackup = (backup: WatchBackup): WatchImportResult => {
     if (backup.mediaLimitMB) watch$.mediaLimitMB.set(backup.mediaLimitMB)
     if (backup.postsPerSource) watch$.postsPerSource.set(backup.postsPerSource)
     if (backup.feedPinned === false) watch$.feedPinned.set(false)
+    if (backup.instagramIncludeReels === false) watch$.instagramIncludeReels.set(false)
     // What was chosen here stays.
     if (backup.feedEmoji && !watch$.feedEmoji.peek()) watch$.feedEmoji.set(backup.feedEmoji)
 

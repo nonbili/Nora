@@ -89,15 +89,19 @@ export function mergeWatchPosts(
     const again = fetchedByKey.get(post.key)
     if (!again) return post
     // What the embed page told of a post is not lost to a fetch that only knows its cover: the
-    // photos of a carousel kept on the phone stay reachable. Expired addresses of photos that are
-    // not kept have the post read from its embed page again when they are needed.
+    // photos of a carousel kept on the phone stay reachable, and an Instagram reel address is kept
+    // even when imginn fetches the post again as `/p/`. Expired addresses of photos that are not
+    // kept have the post read from its embed page again when they are needed.
     const keepMedia = post.mediaComplete && !again.mediaComplete
+    const keepReelUrl =
+      post.site === 'instagram' && post.url.startsWith('https://www.instagram.com/reel/')
     return {
       ...post,
       ...again,
       key: post.key,
       firstSeenAt: post.firstSeenAt,
       ...(keepMedia ? { media: post.media, mediaComplete: true } : {}),
+      ...(keepReelUrl ? { url: post.url } : {}),
     }
   })
   const known = new Set(knownKeys)

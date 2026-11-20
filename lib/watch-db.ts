@@ -114,19 +114,24 @@ export const updateWatchPost = (profileKey: string, key: string, patch: Partial<
 
 // A post with photos or videos, or whose media is still to be read; a cover alone, as of a link, is not.
 const HAS_MEDIA = `(json_array_length(p.data, '$.media') > 0 OR json_extract(p.data, '$.mediaComplete') = 0)`
+// On Instagram, every single-video post is a reel; an imginn reel whose embed was read before
+// its URL was rewritten to `/reel/` is recognized by having a single video item too.
+const NOT_INSTAGRAM_REEL = `NOT (p.profile_key LIKE 'instagram:%' AND (json_extract(p.data, '$.url') LIKE 'https://www.instagram.com/reel/%' OR (COALESCE(json_array_length(p.data, '$.media'), 0) = 1 AND COALESCE(json_extract(p.data, '$.media[0].type'), '') = 'video')))`
 
 /**
  * The newest posts of these profiles as one list, up to the limit. A post two of them share, as a
  * collaboration on Instagram, is shown once, as the first of them has it.
  */
-export const getFeedPosts = (profileKeys: string[], limit: number, mediaOnly = false): WatchPost[] =>
-  parse(
+export const getFeedPosts = (profileKeys: string[], limit: number, mediaOnly = false, includeInstagramReels = true): WatchPost[] => {
+  const filters = [mediaOnly ? HAS_MEDIA : '', !includeInstagramReels ? NOT_INSTAGRAM_REEL : ''].filter(Boolean)
+  const where = filters.length ? `WHERE ${filters.join(' AND ')}` : ''
+  return parse(
     db().getAllSync(
       `SELECT data FROM (
         SELECT p.data, p.created_at_ms, w.key AS rank,
           ROW_NUMBER() OVER (PARTITION BY p.key ORDER BY w.key) AS copy
         FROM posts p JOIN json_each(?) w ON w.value = p.profile_key
-        ${mediaOnly ? `WHERE ${HAS_MEDIA}` : ''}
+        ${where}
       )
       WHERE copy = 1
       ORDER BY created_at_ms DESC, rank
@@ -134,6 +139,7 @@ export const getFeedPosts = (profileKeys: string[], limit: number, mediaOnly = f
       [JSON.stringify(profileKeys), limit],
     ),
   )
+}
 
 /**
  * The posts of these profiles not shown yet: first seen after a tab last showed one of the profiles
@@ -144,6 +150,7 @@ export const getUnreadPostKeys = (
   seenAtByProfile: Record<string, number>,
   defaultSeenAt: number,
   mediaOnly = false,
+  includeInstagramReels = true,
 ): Set<string> => {
   // Every profile is looked at: a post these share with another was read where that other was shown.
   const rows = db().getAllSync<{ key: string }>(
@@ -152,6 +159,7 @@ export const getUnreadPostKeys = (
     WHERE p.profile_key IN (SELECT value FROM json_each(?2))
       AND p.first_seen_at > COALESCE(s.seen_at, ?3)
       ${mediaOnly ? `AND ${HAS_MEDIA}` : ''}
+      ${!includeInstagramReels ? `AND ${NOT_INSTAGRAM_REEL}` : ''}
       AND NOT EXISTS (
         SELECT 1 FROM posts r LEFT JOIN seen rs USING (profile_key)
         WHERE r.key = p.key AND r.first_seen_at <= COALESCE(rs.seen_at, ?3)
@@ -175,21 +183,22 @@ export const findWatchPosts = (refs: { profileKey: string; key: string }[]): Wat
   )
 
 /** The profiles with a post among these, or first seen after the time, when there is one. */
-export const getProfilesWithPosts = (keys: Iterable<string>, seenAfter: number): Set<string> => {
+export const getProfilesWithPosts = (keys: Iterable<string>, seenAfter: number, includeInstagramReels = true): Set<string> => {
   const rows = db().getAllSync<{ profile_key: string }>(
-    `SELECT DISTINCT profile_key FROM posts
-    WHERE key IN (SELECT value FROM json_each(?)) OR (? > 0 AND first_seen_at > ?)`,
+    `SELECT DISTINCT p.profile_key FROM posts p
+    WHERE (p.key IN (SELECT value FROM json_each(?)) OR (? > 0 AND p.first_seen_at > ?))
+      ${!includeInstagramReels ? `AND ${NOT_INSTAGRAM_REEL}` : ''}`,
     [JSON.stringify([...keys]), seenAfter, seenAfter],
   )
   return new Set(rows.map((row) => row.profile_key))
 }
 
 /** When each profile's newest kept post was made. */
-export const getNewestPostTimes = (): Record<string, number> =>
+export const getNewestPostTimes = (includeInstagramReels = true): Record<string, number> =>
   Object.fromEntries(
     db()
       .getAllSync<{ profile_key: string; newest: number }>(
-        'SELECT profile_key, MAX(created_at_ms) AS newest FROM posts GROUP BY profile_key',
+        `SELECT p.profile_key, MAX(p.created_at_ms) AS newest FROM posts p ${!includeInstagramReels ? `WHERE ${NOT_INSTAGRAM_REEL}` : ''} GROUP BY p.profile_key`,
       )
       .map((row) => [row.profile_key, row.newest]),
   )

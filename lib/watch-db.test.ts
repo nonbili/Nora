@@ -104,6 +104,61 @@ describe('watch db', () => {
     })
   })
 
+  describe('includeInstagramReels', () => {
+    beforeEach(() => {
+      setProfilePosts('instagram:nasa', [
+        {
+          key: 'instagram:reel1',
+          id: 'reel1',
+          site: 'instagram',
+          handle: 'nasa',
+          url: 'https://www.instagram.com/reel/reel1/',
+          text: 'Reel',
+          createdAtMs: 20,
+          firstSeenAt: 200,
+        },
+        {
+          key: 'instagram:legacy_reel',
+          id: 'legacy_reel',
+          site: 'instagram',
+          handle: 'nasa',
+          url: 'https://www.instagram.com/p/legacy_reel/',
+          text: 'Legacy Reel',
+          media: [{ type: 'video', url: 'https://cdn/v.mp4', thumb: 'https://cdn/v.jpg' }],
+          mediaComplete: true,
+          createdAtMs: 15,
+          firstSeenAt: 200,
+        },
+        {
+          key: 'instagram:post1',
+          id: 'post1',
+          site: 'instagram',
+          handle: 'nasa',
+          url: 'https://www.instagram.com/p/post1/',
+          text: 'Photo',
+          createdAtMs: 10,
+          firstSeenAt: 200,
+        },
+      ])
+    })
+
+    it('hides Instagram reels from the feed and unread count when disabled', () => {
+      expect(ids(getFeedPosts(['instagram:nasa'], 10, false, true))).toEqual(['reel1', 'legacy_reel', 'post1'])
+      expect(ids(getFeedPosts(['instagram:nasa'], 10, false, false))).toEqual(['post1'])
+      expect([...getUnreadPostKeys(['instagram:nasa'], {}, 100, false, true)].sort()).toEqual([
+        'instagram:legacy_reel',
+        'instagram:post1',
+        'instagram:reel1',
+      ])
+      expect([...getUnreadPostKeys(['instagram:nasa'], {}, 100, false, false)]).toEqual(['instagram:post1'])
+      expect(getNewestPostTimes(true)).toEqual({ 'instagram:nasa': 20 })
+      expect(getNewestPostTimes(false)).toEqual({ 'instagram:nasa': 10 })
+      expect([...getProfilesWithPosts(['instagram:reel1'], 0, true)]).toEqual(['instagram:nasa'])
+      expect([...getProfilesWithPosts(['instagram:reel1'], 0, false)]).toEqual([])
+      expect([...getProfilesWithPosts(['instagram:legacy_reel'], 0, false)]).toEqual([])
+    })
+  })
+
   it('finds posts in the order asked for, of any profile when not of the one given', () => {
     setProfilePosts('x:a', [post('1', 1), post('2', 2)])
     setProfilePosts('x:b', [post('3', 3)])

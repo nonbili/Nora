@@ -3,8 +3,10 @@ import {
   imginnProfileUrl,
   INSTAGRAM_PAGE_HEADERS,
   INSTAGRAM_APP_ID,
+  instagramEmbedUrl,
   instagramProfileInfoUrl,
   parseImginnProfilePage,
+  parseInstagramEmbedWithProduct,
   parseInstagramProfileInfo,
   parseInstagramProfilePage,
   watchProfileUrl,
@@ -21,12 +23,14 @@ import {
   isNeedsVerification,
   isRateLimited,
   RETRY_AFTER_MS,
+  sleep,
   timeLeft,
   WATCH_ERROR_NEEDS_VERIFICATION,
   WatchFetchError,
   withDeadline,
   type WatchRunSource,
 } from './common'
+import { getProfilePosts } from '@/lib/watch-db'
 
 const fetchInstagramApi = (handle: string, cookie: string, deadline: number): Promise<WatchFetchResult> =>
   withDeadline(deadline, async (signal) => {
@@ -134,11 +138,82 @@ watch$.imginnMode.onChange(({ value }) => {
 const canUseImginn = (source: WatchRunSource, deadline: number) =>
   watch$.imginnMode.peek() !== 'off' && canUseWebView(source) && Date.now() >= imginnPausedUntil && Boolean(timeLeft(deadline))
 
+const EMBED_CHECK_GAP_MS = 200
+const EMBED_CHECK_TIMEOUT_MS = 8000
+
+/**
+ * Imginn's profile page tells neither whether a post is a reel nor the rest of its media. When
+ * reels are skipped, any post not already classified in the database is checked on its embed page
+ * before the fetch returns, so reels get their `/reel/` address and never enter the feed or
+ * trigger notifications.
+ */
+const classifyImginnPosts = async (
+  handle: string,
+  result: WatchFetchResult,
+  deadline: number,
+): Promise<WatchFetchResult> => {
+  if (watch$.instagramIncludeReels.peek()) return result
+  const profileKey = `instagram:${handle.toLowerCase()}`
+  const existingById = new Map(getProfilePosts(profileKey).map((post) => [post.id, post]))
+  const posts: WatchFetchResult['posts'] = []
+  let checked = 0
+  for (const post of result.posts) {
+    const known = existingById.get(post.id)
+    if (known?.url.startsWith('https://www.instagram.com/reel/')) {
+      posts.push({ ...post, url: known.url, ...(known.mediaComplete ? { media: known.media, mediaComplete: true } : {}) })
+      continue
+    }
+    if (known?.mediaComplete) {
+      const isKnownReel = known.media?.length === 1 && known.media[0].type === 'video'
+      posts.push({
+        ...post,
+        url: isKnownReel ? `https://www.instagram.com/reel/${post.id}/` : post.url,
+        media: known.media,
+        mediaComplete: true,
+      })
+      continue
+    }
+    if (!timeLeft(deadline)) {
+      throw new WatchFetchError('could not classify imginn posts')
+    }
+    if (checked > 0) await sleep(EMBED_CHECK_GAP_MS)
+    checked += 1
+    try {
+      const embedDeadline = Math.min(deadline, Date.now() + EMBED_CHECK_TIMEOUT_MS)
+      const embed = await withDeadline(embedDeadline, async (signal) => {
+        const res = await watchFetch(instagramEmbedUrl(post.id), {
+          signal,
+          headers: {
+            'user-agent': DESKTOP_USER_AGENT,
+            accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'accept-language': 'en-US,en;q=0.9',
+            'sec-fetch-dest': 'iframe',
+            'sec-fetch-mode': 'navigate',
+            'sec-fetch-site': 'cross-site',
+          },
+          credentials: 'omit',
+        })
+        if (!res.ok) throw new Error(`embed HTTP ${res.status}`)
+        return parseInstagramEmbedWithProduct(await res.text())
+      })
+      posts.push({
+        ...post,
+        url: embed.isReel ? `https://www.instagram.com/reel/${post.id}/` : post.url,
+        media: embed.media,
+        mediaComplete: true,
+      })
+    } catch {
+      throw new WatchFetchError('could not classify imginn posts')
+    }
+  }
+  return { ...result, posts }
+}
+
 const readImginn = async (handle: string, deadline: number) => {
   try {
     const result = await fetchImginn(handle, timeLeft(deadline))
     imginnBlocked$.set('')
-    return result
+    return await classifyImginnPosts(handle, result, deadline)
   } catch (e) {
     if (isNeedsVerification(e)) {
       imginnBlocked$.set(handle)

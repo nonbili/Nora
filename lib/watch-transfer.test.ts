@@ -11,6 +11,7 @@ const reset = () => {
   watch$.mediaWifiOnly.set(true)
   watch$.mediaLimitMB.set(1024)
   watch$.postsPerSource.set(100)
+  watch$.instagramIncludeReels.set(true)
   watch$.timelineNotify.set({})
   watch$.feedNotify.set(false)
 }
@@ -26,9 +27,11 @@ describe('watch transfer', () => {
     watch$.setTimelineNotify(id, true)
     watch$.setTimelineNotify(news, false)
     watch$.feedNotify.set(true)
+    watch$.instagramIncludeReels.set(false)
 
     const backup = normalizeWatchBackup(JSON.parse(JSON.stringify(createWatchBackup())))!
     expect(backup.feedNotify).toBe(true)
+    expect(backup.instagramIncludeReels).toBe(false)
     expect(backup.timelines).toEqual([
       { name: 'Friends', notify: true },
       { name: 'News', notify: false },
@@ -38,6 +41,7 @@ describe('watch transfer', () => {
 
     reset()
     applyWatchBackup(backup)
+    expect(watch$.instagramIncludeReels.get()).toBe(false)
     // On is left for enableTimelineNotifications, which asks for permission first; off needs none.
     const [friends, newsHere] = watch$.timelines.get().map((timeline) => timeline.id)
     expect(watch$.timelineNotify.get()).toEqual({ [newsHere]: false })

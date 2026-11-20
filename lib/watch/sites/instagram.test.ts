@@ -5,6 +5,7 @@ import {
   instagramShortcodePk,
   parseImginnProfilePage,
   parseInstagramEmbed,
+  parseInstagramEmbedWithProduct,
   parseInstagramProfileInfo,
   parseInstagramProfilePage,
 } from './instagram'
@@ -157,6 +158,24 @@ describe('parseInstagramEmbed', () => {
         embedPage({ __typename: 'GraphVideo', is_video: true, display_url: 'https://cdn/c.jpg', video_url: 'https://cdn/v.mp4', dimensions: { width: 1080, height: 1920 } }),
       ),
     ).toEqual([{ type: 'video', url: 'https://cdn/v.mp4', thumb: 'https://cdn/c.jpg', width: 1080, height: 1920 }])
+  })
+
+  it('detects whether the embed is a reel', () => {
+    expect(
+      parseInstagramEmbedWithProduct(
+        embedPage({ __typename: 'GraphVideo', product_type: 'clips', is_video: true, display_url: 'https://cdn/c.jpg', video_url: 'https://cdn/v.mp4' }),
+      ).isReel,
+    ).toBe(true)
+    expect(
+      parseInstagramEmbedWithProduct(
+        `${embedPage({ __typename: 'GraphVideo', product_type: 'clips', is_video: true, display_url: 'https://cdn/c.jpg' })}<img class="EmbeddedMediaImage" src="https://cdn/c.jpg" />`,
+      ).isReel,
+    ).toBe(true)
+    expect(
+      parseInstagramEmbedWithProduct(
+        embedPage({ __typename: 'GraphSidecar', product_type: 'feed', display_url: 'https://cdn/1.jpg', edge_sidecar_to_children: { edges: [{ node: { is_video: false, display_url: 'https://cdn/1.jpg' } }] } }),
+      ).isReel,
+    ).toBe(false)
   })
 
   it('reads each photo and video of a carousel', () => {

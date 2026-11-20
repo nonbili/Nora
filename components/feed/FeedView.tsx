@@ -628,11 +628,12 @@ export const FeedView: React.FC<{
   // How many posts the view has scrolled through; a view shown again starts at the first page.
   const postProfileKeys = selected ? [selected.key] : profiles.map((profile) => profile.key)
   const feedMediaOnly = useValue(watch$.feedMediaOnly)
+  const instagramIncludeReels = useValue(watch$.instagramIncludeReels)
   const mediaOnly = timeline ? Boolean(timeline.mediaOnly) : feedMediaOnly
-  const view = `${mediaOnly}\n${postProfileKeys.join('\n')}`
+  const view = `${mediaOnly}\n${instagramIncludeReels}\n${postProfileKeys.join('\n')}`
   const [page, setPage] = useState({ view, limit: FEED_PAGE_SIZE })
   const limit = page.view === view ? page.limit : FEED_PAGE_SIZE
-  const posts = useWatchPosts(() => getFeedPosts(postProfileKeys, limit, mediaOnly), `${limit}\n${view}`)
+  const posts = useWatchPosts(() => getFeedPosts(postProfileKeys, limit, mediaOnly, instagramIncludeReels), `${limit}\n${view}`)
   // As many squares across as fit at about the size of a phone's three.
   const [listWidth, setListWidth] = useState(0)
   const columns = Math.max(3, Math.round(listWidth / 180))
@@ -822,8 +823,11 @@ export const FeedView: React.FC<{
   const selectedAccount = selected ? profileAccount(selected) : null
   const selectedInherited = useValue(() => (selected ? inheritedInterval(selected) : inheritedInterval({})))
 
-  const newestPostAt = useWatchPosts(getNewestPostTimes)
-  const unreadSourceKeys = useWatchPosts(() => getProfilesWithPosts(unreadOnShow.keys, unreadOnShow.at), unreadOnShow)
+  const newestPostAt = useWatchPosts(() => getNewestPostTimes(instagramIncludeReels), instagramIncludeReels)
+  const unreadSourceKeys = useWatchPosts(
+    () => getProfilesWithPosts(unreadOnShow.keys, unreadOnShow.at, instagramIncludeReels),
+    `${instagramIncludeReels}\n${unreadOnShow.at}`,
+  )
   const ago = (at?: number) => (at ? t('feed.ago', { age: formatPostAge(at, detailsAt ?? now) }) : t('feed.never'))
   // The last successful check is told apart only when the last check failed.
   const detailRows: string[][] = selected

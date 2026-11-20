@@ -140,10 +140,28 @@ describe('mergeWatchPosts', () => {
 
   it('keeps the media read from the embed page over a fetch that only knows the cover', () => {
     const full = [{ type: 'image' as const, url: 'https://cdn/1.jpg' }, { type: 'image' as const, url: 'https://cdn/2.jpg' }]
-    const existing = [{ ...kept('1', 10), media: full, mediaComplete: true }]
-    const { posts } = mergeWatchPosts(existing, [{ ...fetched('1', 10), media: [full[0]], mediaComplete: false }], { now: 99, initial: false })
+    const existing = [{ ...kept('1', 10), site: 'instagram' as const, url: 'https://www.instagram.com/reel/1/', media: full, mediaComplete: true }]
+    const { posts } = mergeWatchPosts(
+      existing,
+      [{ ...fetched('1', 10), site: 'instagram' as const, url: 'https://www.instagram.com/p/1/', media: [full[0]], mediaComplete: false }],
+      { now: 99, initial: false },
+    )
     expect(posts[0].media).toEqual(full)
     expect(posts[0].mediaComplete).toBe(true)
+    expect(posts[0].url).toBe('https://www.instagram.com/reel/1/')
+  })
+
+  it('allows an Instagram fetch to upgrade a cached /p/ post to a /reel/ address even when keeping cached media', () => {
+    const full = [{ type: 'video' as const, url: 'https://cdn/1.mp4', thumb: 'https://cdn/1.jpg' }]
+    const existing = [{ ...kept('1', 10), site: 'instagram' as const, url: 'https://www.instagram.com/p/1/', media: full, mediaComplete: true }]
+    const { posts } = mergeWatchPosts(
+      existing,
+      [{ ...fetched('1', 10), site: 'instagram' as const, url: 'https://www.instagram.com/reel/1/', media: [full[0]], mediaComplete: false }],
+      { now: 99, initial: false },
+    )
+    expect(posts[0].media).toEqual(full)
+    expect(posts[0].mediaComplete).toBe(true)
+    expect(posts[0].url).toBe('https://www.instagram.com/reel/1/')
   })
 
   it('keeps the media read from the embed page even once its addresses have expired', () => {

@@ -30,18 +30,21 @@ export const instagramEmbedUrl = (code: string) => `https://www.instagram.com/p/
 
 /**
  * Reads the media of a post from its embed page. A video or a carousel comes as data for the
- * page's player; a single photo only as the page's picture, the largest of its sizes.
+ * page's player; a single photo only as the page's picture, the largest of its sizes. Also tells
+ * when the post is a reel, which a profile page on imginn does not tell apart from a photo post.
  */
-export function parseInstagramEmbed(html: string): WatchMedia[] {
+export function parseInstagramEmbedWithProduct(html: string): { media: WatchMedia[]; isReel: boolean } {
   const context = html.match(/"contextJSON":"((?:[^"\\]|\\.)*)"/)
+  let isReel = false
   if (context) {
     let shortcodeMedia: any
     try {
       shortcodeMedia = JSON.parse(JSON.parse(`"${context[1]}"`))?.gql_data?.shortcode_media
     } catch {}
     if (shortcodeMedia) {
+      isReel = shortcodeMedia.product_type === 'clips' || shortcodeMedia.is_video === true
       const { media } = instagramGraphMedia(shortcodeMedia)
-      if (media.length) return media
+      if (media.length) return { media, isReel }
     }
   }
   const image = html.match(/<img[^>]*class="EmbeddedMediaImage"[^>]*>/)?.[0]
@@ -54,9 +57,13 @@ export function parseInstagramEmbed(html: string): WatchMedia[] {
       .sort((a, b) => b.width - a.width)
     const src = image.match(/src="([^"]*)"/)?.[1]
     const url = candidates[0]?.url || (src ? decodeEntities(src) : undefined)
-    if (url) return [{ type: 'image', url }]
+    if (url) return { media: [{ type: 'image', url }], isReel }
   }
   throw new Error('no media in the embed page')
+}
+
+export function parseInstagramEmbed(html: string): WatchMedia[] {
+  return parseInstagramEmbedWithProduct(html).media
 }
 
 export function parseInstagramProfileInfo(json: any, handle: string): WatchFetchResult {
