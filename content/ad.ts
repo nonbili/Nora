@@ -235,14 +235,12 @@ export function blockAds() {
   if (!['www.instagram.com', 'www.reddit.com', 'x.com'].includes(host)) {
     return
   }
-  function interceptResponse(url: string, response: string) {
-    if (!adBlockingEnabled()) {
-      return response
-    }
+  function interceptResponse(url: string, body: unknown, response: string) {
     try {
       const service = getService(document.location.href)
       if (service?.shouldIntercept(url)) {
-        response = service.transformResponse(response)
+        // Services decide what still applies with ads allowed (X's feed de-duplication does).
+        response = service.transformResponse(response, { url, body }, { blockAds: adBlockingEnabled() })
       }
     } catch (e) {
       console.error(e)
@@ -255,6 +253,7 @@ export function blockAds() {
   // request. `open()` drops it, since a reused request can hit another URL and get the
   // same body back. Non-text bodies (json, blob, arraybuffer) are passed through untouched.
   const transformed = new WeakMap<XMLHttpRequest, { source: string; result: string }>()
+  const requestBodies = new WeakMap<XMLHttpRequest, unknown>()
   const transformOnce = (xhr: XMLHttpRequest, source: unknown) => {
     if (typeof source !== 'string') {
       return source
@@ -263,7 +262,7 @@ export function blockAds() {
     if (cached?.source === source) {
       return cached.result
     }
-    const result = interceptResponse(xhr.responseURL, source)
+    const result = interceptResponse(xhr.responseURL, requestBodies.get(xhr), source)
     transformed.set(xhr, { source, result })
     return result
   }
@@ -273,7 +272,13 @@ export function blockAds() {
   class XMLHttpRequest extends XHR {
     open(...args: unknown[]) {
       transformed.delete(this)
+      requestBodies.delete(this)
       return (super.open as (...args: unknown[]) => void)(...args)
+    }
+
+    send(body?: Document | XMLHttpRequestBodyInit | null) {
+      requestBodies.set(this, body)
+      return super.send(body)
     }
 
     get responseText() {

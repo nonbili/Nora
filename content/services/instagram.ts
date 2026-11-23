@@ -1,4 +1,4 @@
-import { BaseService } from './base'
+import { BaseService, type InterceptedRequest, type TransformOptions } from './base'
 
 interface InstagramEdge {
   node: {
@@ -19,7 +19,10 @@ export class InstagramService extends BaseService {
     return url.startsWith('https://www.instagram.com/graphql/query')
   }
 
-  transformResponse(res: string) {
+  transformResponse(res: string, _request: InterceptedRequest, { blockAds }: TransformOptions) {
+    if (!blockAds) {
+      return res
+    }
     // Every GraphQL query shares one endpoint, and only the feed carries ads. A substring
     // scan is far cheaper than parsing and re-serializing every other query's payload.
     if (!res.includes('xdt_api__v1__feed__timeline__connection')) {
