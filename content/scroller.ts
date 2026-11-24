@@ -13,6 +13,44 @@ export function isGestureMediaViewer({ hostname, pathname, hash }: Pick<Location
   return /(^|\.)reddit\.com$/.test(hostname) && hash === '#lightbox'
 }
 
+// How far a scroller can still go up. A column-reverse scroller (a chat thread
+// such as Instagram's DMs) starts at its newest content with scrollTop 0 and goes
+// negative as it scrolls back, so 0 is its bottom, not its top.
+export function canScrollUp(el: Element) {
+  const range = el.scrollHeight - el.clientHeight
+  if (range <= 1) {
+    return false
+  }
+  if (el.scrollTop > 0) {
+    return true
+  }
+  if (el.scrollTop < 0) {
+    return el.scrollTop > 1 - range
+  }
+  // flex-direction computes to column-reverse on any element, but only reverses a flex container.
+  const { display, flexDirection } = getComputedStyle(el)
+  return flexDirection === 'column-reverse' && (display === 'flex' || display === 'inline-flex')
+}
+
+// Whether one of `el`'s ancestors is in `set`, so a walk of that ancestor's subtree covers it.
+function hasAncestorIn(el: Element, set: Set<Element>) {
+  for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+    if (set.has(parent)) {
+      return true
+    }
+  }
+  return false
+}
+
+function isScrollable(el: Element) {
+  if (el.scrollHeight - el.clientHeight <= 1) {
+    return false
+  }
+  // A pane hidden with visibility keeps its size and scroll range, but takes no touch.
+  const { overflowY, visibility } = getComputedStyle(el)
+  return visibility === 'visible' && (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay')
+}
+
 // Android's pull to refresh wraps the WebView, so it only knows the top level
 // scroll position. Sites that scroll an inner element (a fixed body with a
 // scrolling feed) keep the WebView at scrollY 0 at any depth, which would let a
@@ -51,7 +89,8 @@ export function trackInnerScrollers() {
         scrolledAway.delete(el)
         continue
       }
-      if (el.scrollTop <= 0) {
+      // A pane switched to overflow hidden can't be dragged any more either.
+      if (!isScrollable(el) || !canScrollUp(el)) {
         scrolledAway.delete(el)
         continue
       }
@@ -79,10 +118,83 @@ export function trackInnerScrollers() {
     }
   }
 
+  // Track the nearest scroller above `start` that can go up. `visited` lets a
+  // batch of walks stop where an earlier one went.
+  const adoptScrollerAbove = (start: Element | null, visited?: Set<Element>) => {
+    const root = document.scrollingElement
+    for (let el = start; el && el !== root; el = el.parentElement) {
+      if (visited) {
+        if (visited.has(el)) {
+          return
+        }
+        visited.add(el)
+      }
+      if (scrolledAway.has(el)) {
+        return
+      }
+      if (isScrollable(el) && canScrollUp(el)) {
+        scrolledAway.add(el)
+        return
+      }
+    }
+  }
+
+  // A scroller that can go up without ever having scrolled (a chat thread opened
+  // at its newest message) sends no scroll event. It fills as its content renders,
+  // so look above where the page changed, once the changes settle, and report it
+  // before the first touch rather than racing that touch. A pane built off the
+  // page and inserted whole holds its scroller below the change, so added
+  // subtrees are searched too.
+  const changed = new Set<Element>()
+  const added = new Set<Element>()
+  let scanTimer: ReturnType<typeof setTimeout> | undefined
+  const scan = () => {
+    scanTimer = undefined
+    const visited = new Set<Element>()
+    for (const root of added) {
+      if (!root.isConnected || hasAncestorIn(root, added)) {
+        continue
+      }
+      for (const el of [root, ...root.querySelectorAll('*')]) {
+        if (!scrolledAway.has(el) && isScrollable(el) && canScrollUp(el)) {
+          scrolledAway.add(el)
+        }
+      }
+    }
+    for (const el of changed) {
+      if (el.isConnected) {
+        adoptScrollerAbove(el, visited)
+      }
+    }
+    added.clear()
+    changed.clear()
+    // Also when nothing was found: a removed pane's region has to be cleared.
+    if (scrolledAway.size || sent !== '[]') {
+      schedule()
+    }
+  }
+  new MutationObserver((records) => {
+    for (const record of records) {
+      if (record.target instanceof Element) {
+        changed.add(record.target)
+      }
+      for (const node of record.addedNodes) {
+        if (node instanceof Element) {
+          added.add(node)
+        }
+      }
+    }
+    if (!scanTimer) {
+      scanTimer = setTimeout(scan, 200)
+    }
+    if (hasMediaViewers) {
+      schedule()
+    }
+  }).observe(document, { childList: true, subtree: true })
+
   if (hasMediaViewers) {
     // Opening/closing the viewer changes the SPA route and its DOM without a
     // document load or scroll event. Back/Forward can also change that route.
-    new MutationObserver(schedule).observe(document, { childList: true, subtree: true })
     window.addEventListener('popstate', schedule)
     window.addEventListener('hashchange', schedule)
     window.addEventListener('resize', schedule)
@@ -95,7 +207,7 @@ export function trackInnerScrollers() {
       const target = event.target
       // The document scroller is covered by the WebView's own scroll position.
       if (target instanceof Element) {
-        if (target.scrollTop > 0) {
+        if (canScrollUp(target)) {
           scrolledAway.add(target)
         } else {
           scrolledAway.delete(target)
@@ -103,6 +215,24 @@ export function trackInnerScrollers() {
       }
       if (scrolledAway.size || sent !== '[]') {
         schedule()
+      }
+    },
+    { capture: true, passive: true },
+  )
+
+  // Also check under the finger as a touch starts, for a scroller the scan above
+  // hasn't reached yet, and report right away: the refresh layout only decides
+  // once the drag passes the touch slop. Reporting rebuilds every tracked rect, so
+  // a pane that moved without a scroll or resize is current for this drag too.
+  document.addEventListener(
+    'touchstart',
+    (event) => {
+      adoptScrollerAbove(event.target instanceof Element ? event.target : null)
+      if (scrolledAway.size || sent !== '[]') {
+        if (frame) {
+          cancelAnimationFrame(frame)
+        }
+        report()
       }
     },
     { capture: true, passive: true },

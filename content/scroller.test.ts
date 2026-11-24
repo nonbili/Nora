@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { isGestureMediaViewer, trackInnerScrollers } from './scroller'
+import { canScrollUp, isGestureMediaViewer, trackInnerScrollers } from './scroller'
 
 test.each([
   ['x.com', '/user/status/123/photo/1', '', 'popstate'],
@@ -17,7 +17,7 @@ test.each([
   }
   const reports: number[][][] = []
   const listeners: Record<string, () => void> = {}
-  let mutation = () => {}
+  let mutation = (_records: unknown[]) => {}
   let nextFrame: (() => void) | undefined
   const flush = () => {
     const callback = nextFrame
@@ -38,7 +38,7 @@ test.each([
     install('document', { addEventListener() {} })
     install('requestAnimationFrame', (callback: () => void) => { nextFrame = callback; return 1 })
     install('MutationObserver', class {
-      constructor(callback: () => void) { mutation = callback }
+      constructor(callback: (records: unknown[]) => void) { mutation = callback }
       observe() {}
     })
     trackInnerScrollers()
@@ -47,12 +47,12 @@ test.each([
 
     location.pathname = pathname
     location.hash = hash
-    mutation()
+    mutation([])
     flush()
     expect(reports.at(-1)).toEqual([[0, 0, 800, 1600]])
 
     // Viewer mutations with unchanged bounds don't resend protection.
-    mutation()
+    mutation([])
     flush()
     expect(reports).toHaveLength(2)
 
@@ -100,4 +100,41 @@ test.each([
   'https://example.com/#lightbox',
 ])('ordinary pages retain refresh: %s', (href) => {
   expect(isGestureMediaViewer(new URL(href))).toBe(false)
+})
+
+test.each([
+  ['normal scroller at its top', 0, 'column', false],
+  ['normal scroller scrolled down', 300, 'column', true],
+  ['reversed scroller at its newest content', 0, 'column-reverse', true],
+  ['reversed scroller scrolled back', -300, 'column-reverse', true],
+  ['reversed scroller at its oldest content', -1000, 'column-reverse', false],
+])('canScrollUp: %s', (_, scrollTop, flexDirection, expected) => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'getComputedStyle')
+  Object.defineProperty(globalThis, 'getComputedStyle', { configurable: true, writable: true, value: () => ({ display: 'flex', flexDirection }) })
+  try {
+    const el = { scrollTop, scrollHeight: 1800, clientHeight: 800 } as unknown as Element
+    expect(canScrollUp(el)).toBe(expected)
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'getComputedStyle', original)
+    else Reflect.deleteProperty(globalThis, 'getComputedStyle')
+  }
+})
+
+test('canScrollUp: column-reverse without flex is a normal scroller at its top', () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'getComputedStyle')
+  Object.defineProperty(globalThis, 'getComputedStyle', {
+    configurable: true,
+    writable: true,
+    value: () => ({ display: 'block', flexDirection: 'column-reverse' }),
+  })
+  try {
+    expect(canScrollUp({ scrollTop: 0, scrollHeight: 1800, clientHeight: 800 } as unknown as Element)).toBe(false)
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'getComputedStyle', original)
+    else Reflect.deleteProperty(globalThis, 'getComputedStyle')
+  }
+})
+
+test('canScrollUp: nothing to scroll', () => {
+  expect(canScrollUp({ scrollTop: 0, scrollHeight: 800, clientHeight: 800 } as unknown as Element)).toBe(false)
 })
