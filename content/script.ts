@@ -5,6 +5,7 @@ import { runFacebookContextMenuGuard, runFacebookFeedController } from './servic
 import { runXHomeTabsController } from './services/twitter/home-tabs'
 import { runXSearchController } from './services/twitter/search'
 import { runXRecommendationsController } from './services/twitter/recommendations'
+import { deferVideoPlayWhileScrolling } from './defer-video-play'
 
 function runVideoLongPressScript() {
   const root = window as Window & typeof globalThis & { __noraVideoEdgeLongPressInit?: boolean }
@@ -620,6 +621,7 @@ export function injectScript() {
       runXHomeTabsController()
       runXSearchController()
       runXRecommendationsController()
+      deferVideoPlayWhileScrolling()
       break
   }
 }
