@@ -233,6 +233,15 @@
         },
         "hideXHomeTabs": {
           "label": "Ocultar pestañas de la línea de tiempo de inicio de X"
+        },
+        "hideXGrok": {
+          "label": "Ocultar la interfaz de Grok"
+        },
+        "hideXRecommendations": {
+          "label": "Ocultar recomendaciones de X (A quién seguir, tendencias, Descubrir)"
+        },
+        "hideXEngagementCounts": {
+          "label": "Ocultar los recuentos de interacción en X"
         }
       },
       "custom": {
@@ -282,7 +291,13 @@
       "host": "Host del proxy",
       "port": "Puerto del proxy",
       "hostPlaceholder": "p. ej., 127.0.0.1 o proxy.example.com",
-      "portPlaceholder": "p. ej. 1080"
+      "portPlaceholder": "p. ej. 1080",
+      "applyFailed": "No se pudo aplicar la configuración de proxy.",
+      "username": "Nombre de usuario",
+      "password": "Contraseña",
+      "credentialsHint": "Opcional. Los cambios se aplican poco después de que dejes de escribir. Las credenciales permanecen en este dispositivo y no se incluyen en las copias de seguridad ni en la sincronización. Mientras la autenticación esté habilitada, otras aplicaciones en este dispositivo pueden utilizar el relé proxy local.",
+      "credentialsHintIos": "Opcional. Los cambios se aplican poco después de que dejes de escribir. Las credenciales permanecen en este dispositivo y no se incluyen en las copias de seguridad ni en la sincronización.",
+      "iosRequires17": "En iOS 16, se puede utilizar un proxy HTTP únicamente para los feeds. El uso de proxy para la navegación, el protocolo SOCKS y la autenticación requiere iOS 17 o una versión posterior."
     },
     "webrtc": {
       "label": "WebRTC",
@@ -334,7 +349,18 @@
     "feedHint": "Nuevas publicaciones de las fuentes que sigues",
     "mentionNotificationsSites": "Desde tus cuentas de X y Facebook",
     "downloads": "Descargas",
-    "askDownloadDestination": "Preguntar dónde guardar cada descarga"
+    "askDownloadDestination": "Preguntar dónde guardar cada descarga",
+    "downloadDestination": "Guardar descargas en",
+    "downloadDestinationDownloads": "Descargas",
+    "downloadDestinationAsk": "Preguntar siempre",
+    "downloadDestinationFolder": "Elegir carpeta…",
+    "downloadFolderFailed": "No se pudo seleccionar una carpeta. Por favor, inténtalo de nuevo.",
+    "xDefaultSearchLatest": "Establecer búsqueda predeterminada en «Más recientes»",
+    "headerMenu": {
+      "label": "Personalizar el menú de tres puntos",
+      "hint": "Elige qué acciones mostrar cuando estén disponibles. La opción «Configuración» siempre está visible.",
+      "reset": "Restaurar valores predeterminados del menú"
+    }
   },
   "sync": {
     "label": "Sincronizar",
@@ -575,6 +601,31 @@
     "pauseVideo": "Pausar vídeo",
     "allSources": "Todas las fuentes",
     "refresh": "Recargar",
-    "notify": "Notificarme sobre nuevas publicaciones"
+    "notify": "Notificarme sobre nuevas publicaciones",
+    "neverSynced": "nunca sincronizado",
+    "showMore": "Mostrar más",
+    "showLess": "Mostrar menos",
+    "seekVideo": "Posición del video",
+    "empty": "Abre una cuenta en X, Instagram, Threads, Bluesky, Mastodon o TikTok, en un subreddit, o bien una página, un perfil o un grupo en Facebook, y selecciona «Seguir» (Watch) en el menú. Sus nuevas publicaciones aparecerán aquí, a menudo sin necesidad de iniciar sesión.",
+    "emptyTitle": "Sigue cuentas aquí",
+    "emptyDescription": "Añade perfiles de estos sitios y sus nuevas publicaciones aparecerán aquí, a menudo sin necesidad de iniciar sesión.",
+    "emptyWatchHint": "También puedes abrir una cuenta en una pestaña y seleccionar «Ver» en el menú.",
+    "noPosts": "Aún no hay publicaciones.",
+    "repostOf": "Republicado de @{{handle}}",
+    "loginHint": "Algunas fuentes se consultan sin haber iniciado sesión, lo que puede provocar retrasos o bloqueos. Inicia sesión en {{sites}} desde cualquier perfil de Nora para obtener actualizaciones más fiables.",
+    "loggedOutSites": "Algunas fuentes en {{sites}} se consultan sin iniciar sesión, lo que puede provocar retrasos o bloqueos. Inicia sesión en estos sitios desde cualquier perfil de Nora para obtener actualizaciones más fiables.",
+    "showSource": "Mostrar solo {{name}}",
+    "showDetails": "Mostrar detalles",
+    "detailNewestPost": "Publicación más reciente",
+    "detailAccount": "Cuenta",
+    "detailNotify": "Notificaciones",
+    "ago": "Hace {{age}}",
+    "never": "Nunca",
+    "notifyMenu": "Notificaciones…",
+    "notifyMuted": "Silenciado. Ya no recibirás notificaciones de esta fuente.",
+    "newPost": "Nueva publicación",
+    "newPosts": "{{count}} publicaciones nuevas",
+    "checkEvery": "Revisa cada",
+    "checkEveryMenu": "Revisa cada…"
   }
 }
