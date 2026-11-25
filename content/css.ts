@@ -1,6 +1,7 @@
 import { getEnabledUserStyleCss } from '../lib/user-styles'
 import { getAnonymousCss } from './anonymous'
 import { noraSettingsEvent, noraUserStylesEvent } from './nora'
+import { isPinterestHost } from './services/pinterest'
 
 export const hostHomes: Record<string, string> = {
   'bsky.app': 'bluesky',
@@ -16,6 +17,10 @@ export const hostHomes: Record<string, string> = {
   'm.vk.com': 'vk',
   'x.com': 'x',
 }
+
+// Pinterest moves signed-in users to a country subdomain (jp.pinterest.com, ...).
+export const getHostHome = (host: string): string | undefined =>
+  hostHomes[host] ?? (isPinterestHost(host) ? 'pinterest' : undefined)
 
 const injectedStyleId = '_nora_injected_css'
 
@@ -136,8 +141,8 @@ const styles: Record<string, (settings: any) => string> = {
 }
 
 export const getCoreCss = (host: string, settings: any) => {
-  const key = hostHomes[host]
-  return styles.base(settings) + (styles[key]?.(settings) || '') + getAnonymousCss(host, settings.anonymousMode === true)
+  const key = getHostHome(host)
+  return styles.base(settings) + ((key && styles[key]?.(settings)) || '') + getAnonymousCss(host, settings.anonymousMode === true)
 }
 
 export const getInjectedCss = (host: string, settings: any, userStyles: any) => {

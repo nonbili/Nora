@@ -27,7 +27,6 @@ const getDuckDuckGoIcon = (url: string) => {
 }
 
 export const presetBookmarks: PresetBookmark[] = [
-  { id: 'preset-sns-pinterest', groupId: 'preset-sns', title: 'Pinterest', url: 'https://www.pinterest.com' },
   { id: 'preset-sns-mastodon', groupId: 'preset-sns', title: 'Mastodon', url: 'https://mastodon.social' },
   { id: 'preset-sns-twitch', groupId: 'preset-sns', title: 'Twitch', url: 'https://www.twitch.tv' },
   { id: 'preset-sns-quora', groupId: 'preset-sns', title: 'Quora', url: 'https://www.quora.com' },

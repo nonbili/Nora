@@ -2,6 +2,8 @@ const VIEW_HOSTS = new Set([
   'bsky.app',
   'www.linkedin.com',
   'www.instagram.com',
+  'www.pinterest.com',
+  'pin.it',
   'chat.reddit.com',
   'old.reddit.com',
   'www.reddit.com',
@@ -79,12 +81,15 @@ export function shouldOpenInSystemBrowser(rawUrl: string, sourceUrl?: string): b
   const host = url.host.toLowerCase()
   const sourceHost = getHost(sourceUrl)
   const isFacebook = host.endsWith('.facebook.com') && host !== 'l.facebook.com'
+  // Pinterest moves signed-in users to a country subdomain (jp.pinterest.com, ...).
+  const isPinterest = /^(?:[a-z]{2,3}\.)?pinterest\.(?:com|co\.[a-z]{2}|com\.[a-z]{2}|[a-z]{2})$/.test(host)
   const isGoogle = host.includes('google.com') || host.includes('gstatic.com') || host.includes('recaptcha.net')
   return (
     host !== sourceHost &&
     !VIEW_HOSTS.has(host) &&
     !settings.internalHosts.includes(host) &&
     !isFacebook &&
+    !isPinterest &&
     !isGoogle
   )
 }

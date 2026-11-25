@@ -21,6 +21,8 @@ declare global {
     __noraBlocklistExcludedHosts?: string[]
     /** Sites the anonymous mode is off for; present only when the mode is on for this tab. */
     __noraAnonymousDisabledHosts?: string[]
+    /** Set once the XHR response filter is installed, so a second bundle does not stack another. */
+    __noraAdXhrInstalled?: boolean
     electron: ElectronAPI
   }
 }

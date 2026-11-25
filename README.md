@@ -41,6 +41,7 @@ Install from App Store, Google Play, F-Droid, or download APK from GitHub.
 - Facebook
 - Instagram
 - LinkedIn
+- Pinterest
 - Reddit
 - Threads
 - TikTok

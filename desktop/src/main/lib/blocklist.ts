@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { app, session } from 'electron'
+import { app, ipcMain, session } from 'electron'
+import { BLOCKLIST_EXCLUDED_HOSTS_CHANNEL } from '../ipc/constants.js'
 import type { OnBeforeRequestListenerDetails } from 'electron'
 import { shouldBlockHost } from '@/lib/blocklist/parser'
 import { isBlocklistExcludedHost } from '@/lib/blocklist/policy'
@@ -25,6 +26,8 @@ let enabled = false
 let blockedHosts = new Set<string>()
 let allowedHosts = new Set<string>()
 let excludedHosts = new Set<string>()
+// Until the app has pushed its saved exceptions, the empty set above means unknown, not none.
+let excludedHostsReceived = false
 
 function decodeHosts(value: string) {
   if (!value) {
@@ -143,6 +146,7 @@ export async function hasDesktopBlocklistSourceFiles(ids: BlocklistSourceId[]) {
 
 export function setDesktopBlocklistExcludedHosts(payload: BlocklistExclusionsPayload) {
   excludedHosts = new Set(payload.excludedHosts)
+  excludedHostsReceived = true
   return { excludedHosts: payload.excludedHosts.length }
 }
 
@@ -153,4 +157,16 @@ export function setDesktopBlocklist(payload: DesktopBlocklistPayload) {
 
   payload.partitions.forEach(attachPartition)
   return { revision: payload.revision }
+}
+
+/**
+ * Tab preloads run guards ahead of the page's scripts (Pinterest's), before the app can
+ * inject the per-site "Block ads" exceptions at dom-ready, so they ask for them here.
+ * Null while a cold start is still loading them: the guard then stands down and leaves the
+ * page to the main content script, rather than block ads on a site they were turned off for.
+ */
+export function setupBlocklistExcludedHostsChannel() {
+  ipcMain.on(BLOCKLIST_EXCLUDED_HOSTS_CHANNEL, (event) => {
+    event.returnValue = excludedHostsReceived ? [...excludedHosts] : null
+  })
 }

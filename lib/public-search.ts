@@ -14,6 +14,7 @@ export const publicSearchSites: Record<string, string> = {
   facebook: 'facebook.com',
   instagram: 'instagram.com',
   linkedin: 'linkedin.com',
+  pinterest: 'pinterest.com',
   reddit: 'reddit.com',
   threads: 'threads.com',
   tiktok: 'tiktok.com',

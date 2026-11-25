@@ -1,4 +1,4 @@
-import { hostHomes } from './css'
+import { getHostHome } from './css'
 import { noraSettingsEvent } from './nora'
 import { normalizeVideoSpeed, videoLongPressSpeeds } from '../lib/video-speed'
 import { runFacebookContextMenuGuard, runFacebookFeedController } from './services/facebook'
@@ -611,7 +611,7 @@ export function injectScript() {
     runFacebookFeedController()
     runFacebookContextMenuGuard()
   }
-  const key = hostHomes[host]
+  const key = getHostHome(host)
   switch (key) {
     case 'bluesky':
       runBlueskyScript()

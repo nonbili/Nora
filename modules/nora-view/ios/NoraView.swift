@@ -628,6 +628,7 @@ class NoraView: ExpoView, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHan
         VIEW_HOSTS.contains(host) ||
         isDynamicInternalHost ||
         isFacebook ||
+        isPinterestHost(host.lowercased()) ||
         isGoogle ||
         !NouController.shared.settings.openExternalLinkInSystemBrowser
 

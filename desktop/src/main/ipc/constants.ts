@@ -8,3 +8,5 @@ export const WATCH_MEDIA_FILES_CHANNEL = 'nora:watch-media-files'
 // The script the hidden webview starts its pages with, asked for by its preload.
 export const WATCH_PAGE_SCRIPT_CHANNEL = 'nora:watch-page-script'
 export const WATCH_MEDIA_SCHEME = 'nora-media'
+// The sites ad blocking is off for, asked for by tab preloads before the page's scripts run.
+export const BLOCKLIST_EXCLUDED_HOSTS_CHANNEL = 'nora:blocklist-excluded-hosts'

@@ -1,10 +1,10 @@
-import { hostHomes } from '@/content/css'
+import { getHostHome } from '@/content/css'
 
 export const resolveServiceFromUrl = (url: string | undefined | null): string | null => {
   if (!url) return null
   try {
     const { host } = new URL(url)
-    return hostHomes[host] || null
+    return getHostHome(host) || null
   } catch {
     return null
   }

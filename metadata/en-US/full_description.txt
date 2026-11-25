@@ -3,5 +3,5 @@
 <h2>Private and ad-free</h2><ul><li>Block ads and trackers with EasyList and EasyPrivacy</li><li>Remove tracking parameters from links</li><li>Anonymous mode hides sign-in and open-in-app prompts</li><li>Search public posts without signing in</li></ul>
 <h2>Multiple accounts</h2><ul><li>Profiles with separate cookie storage, for several accounts on the same site</li><li>Tabs to keep many pages open</li></ul>
 <h2>Download and more</h2><ul><li>Save images and videos from Instagram, Facebook, TikTok and X</li><li>Usage limits to spend less time scrolling</li><li>Select text, zoom and custom CSS</li></ul>
-<h2>Supported sites</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Reddit, Threads, TikTok, Tumblr, VK and X (Twitter).</p>
+<h2>Supported sites</h2><p>Bluesky, Facebook, Instagram, LinkedIn, Mastodon, Pinterest, Reddit, Threads, TikTok, Tumblr, VK and X (Twitter).</p>
 <p>Nora shows each site's own web pages, with ads and trackers blocked. It is open source, and also available for Linux, macOS and Windows.</p>

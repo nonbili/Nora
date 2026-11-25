@@ -6,6 +6,7 @@ import {
   IconInstagram,
   IconLinkedIn,
   IconMastodon,
+  IconPinterest,
   IconReddit,
   IconThreads,
   IconTikTok,
@@ -21,7 +22,7 @@ import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
 import { settings$ } from '@/states/settings'
 import { useValue } from '@legendapp/state/react'
-import { hostHomes } from '@/content/css'
+import { getHostHome } from '@/content/css'
 import { getFeedTimelineId, isFeedTabUrl } from '@/lib/feed-tab'
 import { timelineEmoji } from '@/states/watch'
 import { t } from 'i18next'
@@ -33,6 +34,7 @@ export const services: Record<string, [string, () => ReactNode]> = {
   'facebook-messenger': ['Facebook Messenger', () => <IconFacebookMessenger />],
   instagram: ['Instagram', () => <IconInstagram />],
   linkedin: ['LinkedIn', () => <IconLinkedIn />],
+  pinterest: ['Pinterest', () => <IconPinterest />],
   reddit: ['Reddit', () => <IconReddit />],
   threads: ['Threads', () => <IconThreads />],
   tiktok: ['TikTok', () => <IconTikTok />],
@@ -109,7 +111,7 @@ export const ServiceIcon: React.FC<{ url: string; icon?: string }> = ({ url, ico
   let home: any
   try {
     const { host } = new URL(url)
-    home = hostHomes[host]
+    home = getHostHome(host)
   } catch {}
 
   const fallback = services[home]?.[1]?.()

@@ -33,6 +33,7 @@ import { whatsAppKeyboardGuardScript } from '@/lib/whatsapp-guard'
 import { useContentJs } from '@/lib/hooks/useContentJs'
 import { webRtcGuardScript$ } from '@/lib/webrtc'
 import { composeDocumentStartScript, youTubeGuardScript$ } from '@/lib/youtube-guard'
+import { pinterestGuardScript$ } from '@/lib/pinterest-guard'
 import { parseJson } from '@/content/utils'
 import { NavModalContent } from '../modal/NavModal'
 import { useTabAnimation } from './tab-animation'
@@ -260,6 +261,7 @@ const WebTab: React.FC<NoraTabProps> = ({
   const anonymousDisabledHosts = useValue(settings$.anonymousDisabledHosts)
   const webRtcGuardScript = useValue(webRtcGuardScript$)
   const youTubeGuardScript = useValue(youTubeGuardScript$)
+  const pinterestGuardScript = useValue(pinterestGuardScript$)
   const videoEdgeLongPressTo2x = useValue(settings$.videoEdgeLongPressTo2x)
   const videoDefaultSpeed = useValue(settings$.videoDefaultSpeed)
   const pullToRefresh = useValue(settings$.pullToRefresh)
@@ -1207,6 +1209,7 @@ const WebTab: React.FC<NoraTabProps> = ({
           scriptOnDocumentStart={composeDocumentStartScript(
             protectWebRtcIp && webRtcGuardScript,
             youTubeGuardScript,
+            pinterestGuardScript,
             whatsAppKeyboardGuardScript,
             anonymousModeScript,
           )}

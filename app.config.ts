@@ -16,6 +16,11 @@ const intentFilters = [
       'www.facebook.com',
       'www.linkedin.com',
       'www.instagram.com',
+      'pinterest.com',
+      'www.pinterest.com',
+      // Country subdomains (jp., de., ...); Android matches a leading wildcard.
+      '*.pinterest.com',
+      'pin.it',
       'www.reddit.com',
       'www.threads.com',
       'www.tiktok.com',

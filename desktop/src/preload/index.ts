@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer, webFrame } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import youTubeGuard from 'nora/assets/scripts/youtube.bjs?raw'
-import { WATCH_PAGE_SCRIPT_CHANNEL } from '../main/ipc/constants'
+import pinterestGuard from 'nora/assets/scripts/pinterest.bjs?raw'
+import { BLOCKLIST_EXCLUDED_HOSTS_CHANNEL, WATCH_PAGE_SCRIPT_CHANNEL } from '../main/ipc/constants'
 import { observeNotificationClicks, installNotificationClickHandler, setupNotificationClicks } from './notifications'
 
 // Tab webviews load this preload in every frame (see `nodeIntegrationInSubFrames`
@@ -26,6 +27,22 @@ if (process.argv.includes('--nora-tab-guest')) {
       () => webFrame.executeJavaScript(`(${installNotificationClickHandler.toString()})()`),
       (error) => console.error('[nora] failed to install notification click handler', error),
     )
+  }
+
+  // Pinterest's first page and first feed requests come before dom-ready, when the main
+  // content bundle is injected. The guard no-ops on every other host. The per-site
+  // "Block ads" exceptions go in first, since the app's own copy also lands at dom-ready.
+  if (process.isMainFrame && /(?:^|\.)pinterest\./.test(location.hostname)) {
+    try {
+      // Null until the app has handed the main process its saved exceptions.
+      const excludedHosts = ipcRenderer.sendSync(BLOCKLIST_EXCLUDED_HOSTS_CHANNEL)
+      if (Array.isArray(excludedHosts)) {
+        const exclusions = `try{window.__noraBlocklistExcludedHosts=${JSON.stringify(excludedHosts)}}catch(e){}`
+        void webFrame.executeJavaScript(`${exclusions};\n${pinterestGuard}`)
+      }
+    } catch (error) {
+      console.error('[nora] failed to install Pinterest ad guard', error)
+    }
   }
 
   // The hidden webview reading a watched profile has a script of its own, run in the page

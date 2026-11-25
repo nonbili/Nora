@@ -10,8 +10,8 @@
   "buildNumber": "46",
   "scripts": {
     "test:sync:local": "bun scripts/test-sync-local.ts",
-    "bundle": "bun build --target browser --format iife content/main.ts content/webrtc.ts content/youtube.ts --outdir assets/scripts --entry-naming '[name].bjs'",
-    "bundle:es": "esbuild --bundle content/main.ts --outfile=assets/scripts/main.bjs && esbuild --bundle content/webrtc.ts --outfile=assets/scripts/webrtc.bjs && esbuild --bundle content/youtube.ts --outfile=assets/scripts/youtube.bjs",
+    "bundle": "bun build --target browser --format iife content/main.ts content/webrtc.ts content/youtube.ts content/pinterest.ts --outdir assets/scripts --entry-naming '[name].bjs'",
+    "bundle:es": "esbuild --bundle content/main.ts --outfile=assets/scripts/main.bjs && esbuild --bundle content/webrtc.ts --outfile=assets/scripts/webrtc.bjs && esbuild --bundle content/youtube.ts --outfile=assets/scripts/youtube.bjs && esbuild --bundle content/pinterest.ts --outfile=assets/scripts/pinterest.bjs",
     "dev": "bun bundle --watch",
     "start": "expo start",
     "android": "expo run:android --variant fullDebug",

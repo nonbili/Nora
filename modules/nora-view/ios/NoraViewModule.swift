@@ -7,6 +7,8 @@ let VIEW_HOSTS = [
     "bsky.app",
     "www.linkedin.com",
     "www.instagram.com",
+    "www.pinterest.com",
+    "pin.it",
     "chat.reddit.com",
     "old.reddit.com",
     "www.reddit.com",
@@ -20,6 +22,11 @@ let VIEW_HOSTS = [
     "vk.com",
     "x.com"
 ]
+
+// Pinterest moves signed-in users to a country subdomain (jp.pinterest.com, ...).
+func isPinterestHost(_ host: String) -> Bool {
+  host.range(of: "^(?:[a-z]{2,3}\\.)?pinterest\\.(?:com|co\\.[a-z]{2}|com\\.[a-z]{2}|[a-z]{2})$", options: .regularExpression) != nil
+}
 
 let TRACKING_PARAMS: Set<String> = [
   "utm_source",

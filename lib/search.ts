@@ -17,6 +17,7 @@ export type BuiltinSearchProviderId =
   | 'facebook-messenger'
   | 'instagram'
   | 'linkedin'
+  | 'pinterest'
   | 'reddit'
   | 'threads'
   | 'tiktok'
@@ -99,6 +100,13 @@ export const builtinSearchProviders: Record<BuiltinSearchProviderId, BuiltinSear
     kind: 'builtin',
     templateUrl: 'https://www.linkedin.com/search/results/all/?keywords=%s',
     serviceId: 'linkedin',
+  },
+  pinterest: {
+    id: 'pinterest',
+    name: 'Pinterest',
+    kind: 'builtin',
+    templateUrl: 'https://www.pinterest.com/search/pins/?q=%s',
+    serviceId: 'pinterest',
   },
   reddit: {
     id: 'reddit',

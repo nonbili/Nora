@@ -81,6 +81,8 @@ val VIEW_HOSTS = arrayOf(
   "bsky.app",
   "www.linkedin.com",
   "www.instagram.com",
+  "www.pinterest.com",
+  "pin.it",
   "chat.reddit.com",
   "old.reddit.com",
   "www.reddit.com",
@@ -94,6 +96,11 @@ val VIEW_HOSTS = arrayOf(
   "vk.com",
   "x.com"
 )
+
+// Pinterest moves signed-in users to a country subdomain (jp.pinterest.com, ...).
+private val PINTEREST_HOST = Regex("^(?:[a-z]{2,3}\\.)?pinterest\\.(?:com|co\\.[a-z]{2}|com\\.[a-z]{2}|[a-z]{2})$")
+
+fun isPinterestHost(host: String?): Boolean = host != null && PINTEREST_HOST.matches(host)
 
 // https://www.whatismybrowser.com/guides/the-latest-user-agent/chrome
 val uaAndroid = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.172 Mobile Safari/537.36"
@@ -342,7 +349,7 @@ fun shouldOpenInSystemBrowser(uri: Uri): Boolean {
   val normalizedHost = host?.lowercase()
   val dynamicInternalHosts = nouController.settings.internalHosts.map { it.lowercase() }.toSet()
   val isFacebookHost = normalizedHost?.endsWith(".facebook.com") == true && normalizedHost != "l.facebook.com"
-  return !(host in VIEW_HOSTS || (normalizedHost != null && normalizedHost in dynamicInternalHosts) || isFacebookHost)
+  return !(host in VIEW_HOSTS || (normalizedHost != null && normalizedHost in dynamicInternalHosts) || isFacebookHost || isPinterestHost(normalizedHost))
 }
 
 fun openInSystemBrowser(context: Context, uri: Uri): Boolean {

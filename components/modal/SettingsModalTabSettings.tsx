@@ -70,6 +70,7 @@ const serviceHosts: Record<string, string> = {
   'facebook-messenger': 'messenger.com',
   instagram: 'instagram.com',
   linkedin: 'linkedin.com',
+  pinterest: 'pinterest.com',
   reddit: 'reddit.com',
   threads: 'threads.net',
   tiktok: 'tiktok.com',

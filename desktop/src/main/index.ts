@@ -18,6 +18,7 @@ import { attachGuestShortcuts } from './lib/shortcuts'
 import { attachGuestNotifications } from './lib/notifications'
 import { exportApplication } from './lib/xdg-activation'
 import { isWatchPage, registerWatchMediaScheme, setupWatch } from './lib/watch'
+import { setupBlocklistExcludedHostsChannel } from './lib/blocklist'
 
 app.userAgentFallback = getUserAgent(process.platform, true)
 
@@ -261,6 +262,7 @@ app.whenReady().then(() => {
 
   initMainChannel()
   setupWatch()
+  setupBlocklistExcludedHostsChannel()
 
   attachDownloadHandler(session.defaultSession)
 

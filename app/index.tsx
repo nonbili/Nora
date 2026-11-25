@@ -16,6 +16,7 @@ import { useBlocklistSync } from '@/lib/hooks/useBlocklistSync'
 import { showToast } from '@/lib/toast'
 import { loadWebRtcGuardScript } from '@/lib/webrtc'
 import { loadYouTubeGuardScript } from '@/lib/youtube-guard'
+import { loadPinterestGuardScript } from '@/lib/pinterest-guard'
 import { t } from 'i18next'
 import { onNotificationOpened } from '@/lib/notifications'
 
@@ -131,6 +132,7 @@ export default function HomeScreen() {
       // the restored tabs unprotected.
       await loadWebRtcGuardScript().catch((e) => console.error('[nora] failed to load WebRTC guard', e))
       await loadYouTubeGuardScript().catch((e) => console.error('[nora] failed to load YouTube guard', e))
+      await loadPinterestGuardScript().catch((e) => console.error('[nora] failed to load Pinterest guard', e))
       if (localUri) {
         const res = await fetch(localUri)
         const content = await res.text()

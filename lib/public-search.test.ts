@@ -48,7 +48,7 @@ describe('normalizePublicSearchServiceId', () => {
 describe('publicSearchSites', () => {
   it('covers the built-in services except messenger', () => {
     expect([...publicSearchServiceIds].sort()).toEqual(
-      ['bluesky', 'facebook', 'instagram', 'linkedin', 'reddit', 'threads', 'tiktok', 'tumblr', 'vk', 'x'],
+      ['bluesky', 'facebook', 'instagram', 'linkedin', 'pinterest', 'reddit', 'threads', 'tiktok', 'tumblr', 'vk', 'x'],
     )
   })
 

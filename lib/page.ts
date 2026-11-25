@@ -17,6 +17,7 @@ export const homeUrls: Record<string, string> = {
   'facebook-messenger': 'https://www.facebook.com/messages/',
   instagram: 'https://www.instagram.com',
   linkedin: 'https://www.linkedin.com',
+  pinterest: 'https://www.pinterest.com',
   reddit: 'https://www.reddit.com',
   threads: 'https://www.threads.com',
   tiktok: 'https://www.tiktok.com',
