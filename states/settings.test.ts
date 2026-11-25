@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'bun:test'
-import { getSettingsSnapshot, normalizeSettings, settings$ } from './settings'
+import { beforeEach, describe, expect, it, test } from 'bun:test'
+import { getSettingsSnapshot, isServiceEnabled, normalizeSettings, settings$ } from './settings'
 
 beforeEach(() => {
   settings$.profiles.set([{ id: 'default', name: 'Default', color: '#6366f1', isDefault: true }])
@@ -126,4 +126,19 @@ describe('Anonymous profile and the mode', () => {
     const loaded = normalizeSettings({ anonymousMode: true, profiles: [{ id: 'default', name: 'Default', color: '#000', isDefault: true }] } as any)
     expect(loaded!.profiles!.some((profile: { id: string }) => profile.id === 'anonymous')).toBe(true)
   })
+})
+
+test('pinterest starts off and is turned on through the enabled list', () => {
+  expect(isServiceEnabled({ disabledServicesArr: [], enabledServicesArr: [] }, 'pinterest')).toBe(false)
+  expect(isServiceEnabled({ disabledServicesArr: ['pinterest'], enabledServicesArr: [] }, 'pinterest')).toBe(false)
+  expect(isServiceEnabled({ disabledServicesArr: [], enabledServicesArr: ['pinterest'] }, 'pinterest')).toBe(true)
+})
+
+test('other services start on and are turned off through the disabled list', () => {
+  expect(isServiceEnabled({ disabledServicesArr: [], enabledServicesArr: [] }, 'x')).toBe(true)
+  expect(isServiceEnabled({ disabledServicesArr: ['x'], enabledServicesArr: ['x'] }, 'x')).toBe(false)
+})
+
+test('settings stored before the enabled list existed read as off', () => {
+  expect(isServiceEnabled({ disabledServicesArr: [] } as any, 'pinterest')).toBe(false)
 })

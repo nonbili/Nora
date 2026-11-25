@@ -104,6 +104,8 @@ export interface Settings {
   siteZoom: Record<string, number>
 
   disabledServicesArr: string[]
+  /** Services in `defaultOffServices` the user turned on. */
+  enabledServicesArr: string[]
   enabledSearchProviderIds: string[]
   selectedSearchProviderId: string
   selectedPublicSearchServiceId: string
@@ -230,6 +232,7 @@ export const getSettingsSnapshot = (value: Partial<Store> | undefined = settings
     siteZoom: sanitizeSiteZoom(value?.siteZoom),
 
     disabledServicesArr: (value?.disabledServicesArr || []).filter((service): service is string => typeof service === 'string'),
+    enabledServicesArr: (value?.enabledServicesArr || []).filter((service): service is string => typeof service === 'string'),
     enabledSearchProviderIds,
     selectedSearchProviderId: normalizeSelectedSearchProviderId(value?.selectedSearchProviderId, enabledSearchProviderIds),
     selectedPublicSearchServiceId: normalizePublicSearchServiceId(value?.selectedPublicSearchServiceId),
@@ -347,6 +350,20 @@ export const normalizeSettings = <T extends Partial<Settings> | undefined>(data:
   return data
 }
 
+/**
+ * Services added after people had settled their new tab page start off, so an update does not
+ * put a new icon there; they are turned on in Settings → Services.
+ */
+export const defaultOffServices = ['pinterest']
+
+export const isServiceEnabled = (
+  settings: Pick<Settings, 'disabledServicesArr' | 'enabledServicesArr'>,
+  service: string,
+) =>
+  defaultOffServices.includes(service)
+    ? (settings.enabledServicesArr || []).includes(service)
+    : !(settings.disabledServicesArr || []).includes(service)
+
 export const settings$: Observable<Store> = observable<Store>({
   language: null,
   autoHideHeader: false,
@@ -401,6 +418,7 @@ export const settings$: Observable<Store> = observable<Store>({
   siteZoom: {},
 
   disabledServicesArr: [],
+  enabledServicesArr: [],
   enabledSearchProviderIds: ['url', 'duckduckgo', 'google'],
   selectedSearchProviderId: 'url',
   selectedPublicSearchServiceId: DEFAULT_PUBLIC_SEARCH_SERVICE_ID,
@@ -420,11 +438,13 @@ export const settings$: Observable<Store> = observable<Store>({
     }
   },
   toggleService: (service) => {
-    const index = settings$.disabledServicesArr.indexOf(service)
+    // A service that starts off is tracked by being turned on, every other one by being turned off.
+    const list = defaultOffServices.includes(service) ? settings$.enabledServicesArr : settings$.disabledServicesArr
+    const index = list.indexOf(service)
     if (index === -1) {
-      settings$.disabledServicesArr.push(service)
+      list.push(service)
     } else {
-      settings$.disabledServicesArr.splice(index, 1)
+      list.splice(index, 1)
     }
   },
   toggleSearchProvider: (providerId) => {

@@ -7,7 +7,7 @@ import { services } from '../service/Services'
 import { clsx, isWeb, isIos, isAndroid, nIf } from '@/lib/utils'
 import { useValue } from '@legendapp/state/react'
 import { NouText } from '../NouText'
-import { settings$, ZOOM_PRESETS } from '@/states/settings'
+import { isServiceEnabled, settings$, ZOOM_PRESETS } from '@/states/settings'
 import { Segemented } from '../picker/Segmented'
 import { bookmarks$ } from '@/states/bookmarks'
 import { Image } from 'expo-image'
@@ -1029,7 +1029,7 @@ export const SettingsServicesContent = () => {
     <View>
       <View className="gap-5">
         {entries.map((entry) => {
-          const serviceEnabled = !settings.disabledServicesArr.includes(entry.serviceId)
+          const serviceEnabled = isServiceEnabled(settings, entry.serviceId)
           const hasRedditSettings = !isWeb && entry.serviceId === 'reddit'
           const hasXSettings = entry.serviceId === 'x'
           const rowCount = serviceEnabled

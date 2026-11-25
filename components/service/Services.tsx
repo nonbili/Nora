@@ -20,7 +20,7 @@ import { Text, View } from 'react-native'
 import { clsx, isWeb } from '@/lib/utils'
 import { NouText } from '../NouText'
 import { NouSwitch } from '../switch/NouSwitch'
-import { settings$ } from '@/states/settings'
+import { isServiceEnabled, settings$ } from '@/states/settings'
 import { useValue } from '@legendapp/state/react'
 import { getHostHome } from '@/content/css'
 import { getFeedTimelineId, isFeedTabUrl } from '@/lib/feed-tab'
@@ -47,7 +47,8 @@ export const services: Record<string, [string, () => ReactNode]> = {
 export const siteIcon = (site: string) => (site === 'mastodon' ? <IconMastodon /> : services[site]?.[1]())
 
 export const ServiceManager: React.FC<{ hideTitle?: boolean }> = ({ hideTitle = false }) => {
-  const disabledServices = useValue(settings$.disabledServicesArr)
+  const disabledServicesArr = useValue(settings$.disabledServicesArr)
+  const enabledServicesArr = useValue(settings$.enabledServicesArr)
   const entries = Object.entries(services)
 
   return (
@@ -62,7 +63,7 @@ export const ServiceManager: React.FC<{ hideTitle?: boolean }> = ({ hideTitle = 
                 <NouText>{label}</NouText>
               </View>
             }
-            value={!disabledServices.includes(value)}
+            value={isServiceEnabled({ disabledServicesArr, enabledServicesArr }, value)}
             onPress={() => settings$.toggleService(value)}
           />
         </View>

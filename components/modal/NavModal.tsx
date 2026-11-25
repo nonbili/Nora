@@ -17,7 +17,7 @@ import {
 } from 'react-native'
 import { clsx, isIos, isWeb, nIf } from '@/lib/utils'
 import { getHomeUrl } from '@/lib/page'
-import { settings$ } from '@/states/settings'
+import { isServiceEnabled, settings$ } from '@/states/settings'
 import { tabs$ } from '@/states/tabs'
 import { bookmarks$ } from '@/states/bookmarks'
 import { unreadKeys, watch$ } from '@/states/watch'
@@ -56,7 +56,8 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
   profileId,
 }) => {
   const tw = useTwColor()
-  const disabledServices = useValue(settings$.disabledServicesArr)
+  const disabledServicesArr = useValue(settings$.disabledServicesArr)
+  const enabledServicesArr = useValue(settings$.enabledServicesArr)
   const profiles = useValue(settings$.profiles)
   const bookmarks = useValue(bookmarks$.bookmarks)
   // The whole feed, then the timelines pinned here, each with its unread count.
@@ -279,7 +280,7 @@ export const NavModalContent: React.FC<NavModalContentProps> = ({
           ))}
           {Object.entries(services).map(([value, [label, icon]]) =>
             nIf(
-              !disabledServices.includes(value),
+              isServiceEnabled({ disabledServicesArr, enabledServicesArr }, value),
               <TouchableHighlight
                 key={value}
                 onPress={() => onPress(getHomeUrl(value))}

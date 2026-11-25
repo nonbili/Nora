@@ -11,7 +11,7 @@ import { isDownloadable, normalizeDownloadUrl } from '@/content/download'
 import { mainClient } from '@/desktop/src/renderer/ipc/main'
 import { clsx, isIos, isWeb } from '@/lib/utils'
 import { tabs$ } from '@/states/tabs'
-import { settings$ } from '@/states/settings'
+import { isServiceEnabled, settings$ } from '@/states/settings'
 import { publicSearchServiceIds, resolvePublicSearchUrl } from '@/lib/public-search'
 import { services } from '../service/Services'
 import { NouMenu } from '../menu/NouMenu'
@@ -70,7 +70,8 @@ export const ToolsModal = () => {
   const [cobaltUrl, setCobaltUrl] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [exportingCookies, setExportingCookies] = useState(false)
-  const disabledServices = use$(settings$.disabledServicesArr)
+  const disabledServicesArr = use$(settings$.disabledServicesArr)
+  const enabledServicesArr = use$(settings$.enabledServicesArr)
   const selectedSearchServiceId = use$(settings$.selectedPublicSearchServiceId)
   const [selectedTab, setSelectedTab] = useState<ToolsTab>(isIos ? 'cookies' : 'download')
   const tabs = use$(tabs$.tabs)
@@ -116,7 +117,9 @@ export const ToolsModal = () => {
   }
 
   // Services that are turned off are not offered here either.
-  const enabledSearchServiceIds = publicSearchServiceIds.filter((serviceId) => !disabledServices.includes(serviceId))
+  const enabledSearchServiceIds = publicSearchServiceIds.filter((serviceId) =>
+    isServiceEnabled({ disabledServicesArr, enabledServicesArr }, serviceId),
+  )
   const searchServiceIds = enabledSearchServiceIds.length ? enabledSearchServiceIds : publicSearchServiceIds
   const searchServiceId = searchServiceIds.includes(selectedSearchServiceId) ? selectedSearchServiceId : searchServiceIds[0]
   const searchUrl = resolvePublicSearchUrl(searchServiceId, searchQuery)
