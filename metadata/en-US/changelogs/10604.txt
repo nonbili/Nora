@@ -1,0 +1,5 @@
+- Add Pinterest service with promoted pin blocking
+- Add setting to include or skip Instagram Reels in Feed
+- Improve X feed scrolling by deferring video autoplay and dropping duplicate posts
+- Prevent pull-to-refresh from triggering in reversed scrollers like Instagram DMs
+- Translation updates

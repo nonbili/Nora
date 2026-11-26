@@ -5,9 +5,9 @@
   "name": "nora",
   "private": true,
   "main": "index.ts",
-  "version": "0.9.7",
-  "versionCode": 105,
-  "buildNumber": "46",
+  "version": "0.9.8",
+  "versionCode": 106,
+  "buildNumber": "47",
   "scripts": {
     "test:sync:local": "bun scripts/test-sync-local.ts",
     "bundle": "bun build --target browser --format iife content/main.ts content/webrtc.ts content/youtube.ts content/pinterest.ts --outdir assets/scripts --entry-naming '[name].bjs'",
